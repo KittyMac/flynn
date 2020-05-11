@@ -11,7 +11,6 @@ import Flynn
 
 
 class Foo: Actor {
-    
     var counter:Int = 0
     
     lazy var increment = Behavior<Foo>(self) { (args:BehaviorArgs) in
@@ -33,14 +32,8 @@ class Foo: Actor {
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
-
-
-
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        
-        
         let foo = Foo()
-        
         print("before")
         foo.increment(1)
            .increment(10)

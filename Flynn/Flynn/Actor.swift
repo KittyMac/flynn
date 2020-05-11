@@ -8,49 +8,32 @@
 
 import Foundation
 
-public typealias BehaviorBlock = ((BehaviorArgs) -> Void)
-
-@dynamicCallable
-public struct Behavior<T:Actor> {
-    let actor:T!
-    let block:BehaviorBlock!
-    public init(_ actor:T, _ block:@escaping BehaviorBlock) {
-        self.actor = actor
-        self.block = block
-    }
-    @discardableResult public func dynamicallyCall(withKeywordArguments args:BehaviorArgs) -> T {
-        actor.messages.async {
-            self.block(args)
-        }
-        return actor
-    }
-}
-
-@dynamicCallable
-public struct UIBehavior<T:Actor> {
-    let actor:T!
-    let block:BehaviorBlock!
-    public init(_ actor:T, _ block:@escaping BehaviorBlock) {
-        self.actor = actor
-        self.block = block
-    }
-    @discardableResult public func dynamicallyCall(withKeywordArguments args:BehaviorArgs) -> T {
-        actor.messages.async {
-            DispatchQueue.main.sync {
-                self.block(args)
-            }
-        }
-        return actor
-    }
-}
-
 open class Actor {
-    fileprivate let uuid:String!
-    fileprivate let messages:DispatchQueue!
+    internal let uuid:String!
+    internal let messages:OperationQueue!
+    
+    // While not 100% accurate, it can be helpful to know how large the
+    // actor's mailbox size is in order to perform lite load balancing
+    var messagesCount:Int {
+        get {
+            return messages.operationCount
+        }
+    }
+    
+    func yield(_ ms:Int) {
+        // stop processing messages for ms number of milliseconds
+        messages.isSuspended = true
+        let deadlineTime = DispatchTime.now() + .milliseconds(ms)
+        DispatchQueue.main.asyncAfter(deadline: deadlineTime) {
+            self.messages.isSuspended = false
+        }
+    }
     
     public init() {
         uuid = UUID().uuidString
-        messages = DispatchQueue(label: "actor.queue.\(uuid!)")
+        messages = OperationQueue()
+        messages.qualityOfService = .userInteractive
+        messages.maxConcurrentOperationCount = 1
     }
 }
 
