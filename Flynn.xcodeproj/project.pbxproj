@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		462DA3A12468FEAB00D48470 /* Behavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462DA3A02468FEAB00D48470 /* Behavior.swift */; };
+		46530F122469A1330046BAC5 /* Counter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46530F102469A1330046BAC5 /* Counter.swift */; };
+		46530F132469A1330046BAC5 /* StringBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46530F112469A1330046BAC5 /* StringBuilder.swift */; };
+		46530F152469A1A50046BAC5 /* PigLatin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46530F142469A1A50046BAC5 /* PigLatin.swift */; };
+		46530F172469B32B0046BAC5 /* Flowable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46530F162469B32B0046BAC5 /* Flowable.swift */; };
 		46C1720324687811004242E1 /* Flynn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46C171F924687811004242E1 /* Flynn.framework */; };
 		46C1720824687811004242E1 /* FlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C1720724687811004242E1 /* FlynnTests.swift */; };
 		46C1720A24687811004242E1 /* Flynn.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C171FC24687811004242E1 /* Flynn.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -26,6 +30,10 @@
 
 /* Begin PBXFileReference section */
 		462DA3A02468FEAB00D48470 /* Behavior.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Behavior.swift; sourceTree = "<group>"; };
+		46530F102469A1330046BAC5 /* Counter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Counter.swift; sourceTree = "<group>"; };
+		46530F112469A1330046BAC5 /* StringBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringBuilder.swift; sourceTree = "<group>"; };
+		46530F142469A1A50046BAC5 /* PigLatin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PigLatin.swift; sourceTree = "<group>"; };
+		46530F162469B32B0046BAC5 /* Flowable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Flowable.swift; sourceTree = "<group>"; };
 		46C171F924687811004242E1 /* Flynn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		46C171FC24687811004242E1 /* Flynn.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Flynn.h; sourceTree = "<group>"; };
 		46C171FD24687811004242E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -54,6 +62,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		46530F0F2469A0ED0046BAC5 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				46530F162469B32B0046BAC5 /* Flowable.swift */,
+				46530F142469A1A50046BAC5 /* PigLatin.swift */,
+				46530F102469A1330046BAC5 /* Counter.swift */,
+				46530F112469A1330046BAC5 /* StringBuilder.swift */,
+			);
+			path = "Support Files";
+			sourceTree = "<group>";
+		};
 		46C171EF24687811004242E1 = {
 			isa = PBXGroup;
 			children = (
@@ -86,6 +105,7 @@
 		46C1720624687811004242E1 /* FlynnTests */ = {
 			isa = PBXGroup;
 			children = (
+				46530F0F2469A0ED0046BAC5 /* Support Files */,
 				46C1720724687811004242E1 /* FlynnTests.swift */,
 				46C1720924687811004242E1 /* Info.plist */,
 			);
@@ -211,7 +231,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				46530F122469A1330046BAC5 /* Counter.swift in Sources */,
+				46530F172469B32B0046BAC5 /* Flowable.swift in Sources */,
+				46530F152469A1A50046BAC5 /* PigLatin.swift in Sources */,
 				46C1720824687811004242E1 /* FlynnTests.swift in Sources */,
+				46530F132469A1330046BAC5 /* StringBuilder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
