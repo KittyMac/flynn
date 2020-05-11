@@ -26,6 +26,24 @@ public struct Behavior<T:Actor> {
     }
 }
 
+@dynamicCallable
+public struct UIBehavior<T:Actor> {
+    let actor:T!
+    let block:BehaviorBlock!
+    public init(_ actor:T, _ block:@escaping BehaviorBlock) {
+        self.actor = actor
+        self.block = block
+    }
+    @discardableResult public func dynamicallyCall(withKeywordArguments args:BehaviorArgs) -> T {
+        actor.messages.async {
+            DispatchQueue.main.sync {
+                self.block(args)
+            }
+        }
+        return actor
+    }
+}
+
 open class Actor {
     fileprivate let uuid:String!
     fileprivate let messages:DispatchQueue!
