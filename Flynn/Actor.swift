@@ -7,11 +7,12 @@
 //
 
 import Foundation
-/*
-infix operator | : MultiplicationPrecedence
-public func | (lhs:Actor, rhs:Actor) -> Actor {
-    return rhs
-}*/
+
+infix operator |> : AssignmentPrecedence
+public func |> (left: Actor, right: Actor) -> Actor {
+    left.target(right)
+    return left
+}
 
 open class Actor {
     internal let _uuid:String!
@@ -26,18 +27,25 @@ open class Actor {
         chain.dynamicallyCall(withKeywordArguments: args)
     }
     
-    func chainProcess(args:BehaviorArgs) -> BehaviorArgs {
-        // overridden by subclasses to handle processing chained requests
-        print("Actor:chainProcess")
+    func chainEnd(args:BehaviorArgs) -> BehaviorArgs {
+        // overridden by subclasses to handle the end of a processing chain
+        print("Actor:chainEnd")
         return args
+    }
+    
+    func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
+        // overridden by subclasses to handle processing chained requests
+        return (true,args)
     }
     
     lazy var chain = Behavior(self) { (args:BehaviorArgs) in
         // This is called when from another actor wanting to pass us data in a generic manner
         // We need to process the data, then pass it on to the next actor in the chain.
         self._messages.addOperation {
-            let new_args = self.chainProcess(args: args)
-            self._target?.chainCall(withKeywordArguments: new_args)
+            let (should_chain,new_args) = self.chainProcess(args: args)
+            if should_chain {
+                self._target?.chainCall(withKeywordArguments: new_args)
+            }
         }
     }
     
@@ -50,7 +58,7 @@ open class Actor {
         }
     }
     
-    func target(_ target:Actor) -> Actor {
+    @discardableResult func target(_ target:Actor) -> Actor {
         _messages.addOperation {
             self._target = target
         }

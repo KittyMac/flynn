@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 public typealias BehaviorArgs = KeyValuePairs<String, Any>
 
 public extension KeyValuePairs {
@@ -17,6 +16,10 @@ public extension KeyValuePairs {
     // in order to help identify buggy code faster.
     subscript<T>(_ idx: Int) -> T {
         return self[idx].value as! T
+    }
+    
+    func check(_ idx: Int) -> Any {
+        return self[idx].value
     }
 }
 

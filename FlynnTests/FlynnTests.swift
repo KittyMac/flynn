@@ -45,22 +45,18 @@ class FlynnTests: XCTestCase {
     
     func testFlowable() {
         let expectation = XCTestExpectation(description: "Flowable actors")
-        
-        /*
-        let pipeline = Passthrough().target(
-            Passthrough().target(
-                Passthrough().target(
-                    Print()
-                )
-            )
-        )*/
-        
-        let pipeline = Passthrough().target(Print())
+                
+        let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args:BehaviorArgs) in
+            let s:String = args[0]
+            XCTAssertEqual(s, "HELLO WORLD", "chaining actors did not work as intended")
+            expectation.fulfill()
+        })
         
         pipeline.chain("hello")
-        
-        //pipeline.flow("hello")
-        
+        pipeline.chain(" ")
+        pipeline.chain("world")
+        pipeline.chain()
+        wait(for: [expectation], timeout: 10.0)
     }
 /*
     func testPerformanceExample() {
