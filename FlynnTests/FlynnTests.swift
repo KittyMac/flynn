@@ -58,10 +58,5 @@ class FlynnTests: XCTestCase {
         pipeline.chain()
         wait(for: [expectation], timeout: 10.0)
     }
-/*
-    func testPerformanceExample() {
-        self.measure { }
-    }
- */
-
+    
 }
