@@ -7,11 +7,26 @@
 //
 
 import XCTest
+
 @testable import Flynn
 
 class Foo: Actor {
-    lazy var println : Behavior = Behavior(self) { [weak self] (args:BehaviorArgs) in
-        print("\(args.count)")
+    
+    var counter:Int = 0
+    
+    lazy var increment = Behavior<Foo>(self) { (args:BehaviorArgs) in
+        let n:Int = args[0]
+        self.counter += n
+    }
+    
+    lazy var decrement = Behavior<Foo>(self) { (args:BehaviorArgs) in
+        let n:Int = args[0]
+        self.counter -= n
+    }
+    
+    lazy var result = Behavior<Foo>(self) { (args:BehaviorArgs) in
+        let callback:((Int) -> Void) = args[0]
+        callback(self.counter)
     }
 }
 
@@ -27,11 +42,16 @@ class FlynnTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
         let foo = Foo()
-        foo.println(1)
-        foo.println(1, 2)
-        foo.println(1, 2, 3)
-        foo.println(1, 2, 3, 4)
-        print("here")
+                
+        foo.increment(1)
+            .increment(10)
+            .increment(20)
+            .decrement(1)
+            .result() { (x:Int) in
+                print("The result is \(x)")
+            }
+        
+        
     }
 
     func testPerformanceExample() {

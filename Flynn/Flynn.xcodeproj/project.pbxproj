@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		462DA3A12468FEAB00D48470 /* BehaviorArgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462DA3A02468FEAB00D48470 /* BehaviorArgs.swift */; };
 		46C1720324687811004242E1 /* Flynn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46C171F924687811004242E1 /* Flynn.framework */; };
 		46C1720824687811004242E1 /* FlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C1720724687811004242E1 /* FlynnTests.swift */; };
 		46C1720A24687811004242E1 /* Flynn.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C171FC24687811004242E1 /* Flynn.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		46DD01DA24687871000A926A /* Actor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DD01D924687871000A926A /* Actor.swift */; };
-		46DD01DC24687D20000A926A /* Referencable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DD01DB24687D20000A926A /* Referencable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +25,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		462DA3A02468FEAB00D48470 /* BehaviorArgs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BehaviorArgs.swift; sourceTree = "<group>"; };
 		46C171F924687811004242E1 /* Flynn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		46C171FC24687811004242E1 /* Flynn.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Flynn.h; sourceTree = "<group>"; };
 		46C171FD24687811004242E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -32,7 +33,6 @@
 		46C1720724687811004242E1 /* FlynnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlynnTests.swift; sourceTree = "<group>"; };
 		46C1720924687811004242E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		46DD01D924687871000A926A /* Actor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actor.swift; sourceTree = "<group>"; };
-		46DD01DB24687D20000A926A /* Referencable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Referencable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,8 +76,8 @@
 			isa = PBXGroup;
 			children = (
 				46C171FC24687811004242E1 /* Flynn.h */,
+				462DA3A02468FEAB00D48470 /* BehaviorArgs.swift */,
 				46DD01D924687871000A926A /* Actor.swift */,
-				46DD01DB24687D20000A926A /* Referencable.swift */,
 				46C171FD24687811004242E1 /* Info.plist */,
 			);
 			path = Flynn;
@@ -202,8 +202,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				462DA3A12468FEAB00D48470 /* BehaviorArgs.swift in Sources */,
 				46DD01DA24687871000A926A /* Actor.swift in Sources */,
-				46DD01DC24687D20000A926A /* Referencable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

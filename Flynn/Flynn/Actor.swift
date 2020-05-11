@@ -8,42 +8,31 @@
 
 import Foundation
 
-typealias BehaviorArgs = KeyValuePairs<String, Any>
-typealias BehaviorBlock = ((BehaviorArgs) -> Void)
+public typealias BehaviorBlock = ((BehaviorArgs) -> Void)
 
 @dynamicCallable
-struct Behavior {
-    let actor:Actor!
+public struct Behavior<T:Actor> {
+    let actor:T!
     let block:BehaviorBlock!
-    init(_ actor:Actor, _ block:@escaping BehaviorBlock) {
+    public init(_ actor:T, _ block:@escaping BehaviorBlock) {
         self.actor = actor
         self.block = block
     }
-    func dynamicallyCall(withKeywordArguments args:BehaviorArgs) -> Void {
+    @discardableResult public func dynamicallyCall(withKeywordArguments args:BehaviorArgs) -> T {
         actor.messages.async {
             self.block(args)
         }
+        return actor
     }
 }
 
-public class Actor {
+open class Actor {
     fileprivate let uuid:String!
     fileprivate let messages:DispatchQueue!
     
-    init() {
+    public init() {
         uuid = UUID().uuidString
         messages = DispatchQueue(label: "actor.queue.\(uuid!)")
     }
-    
-    
-    // Every exposed "function" on an actor MUST wrap its contents in
-    // a call to messages.async.  TODO: How do we enfore this?
-    /* Example:
-     private func behavior(_ b:ActorBehavior) {
-         messages.async {
-             
-         }
-     }
-     */
 }
 
