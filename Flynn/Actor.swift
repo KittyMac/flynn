@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Flynn.Pony
 
 infix operator |> : AssignmentPrecedence
 public func |> (left: Actor, right: Actor) -> Actor {
@@ -25,6 +26,7 @@ public func |> (left: [Actor], right: Actor) -> [Actor] {
 }
 
 open class Actor {
+        
     internal let _uuid:String!
     internal let _messages:DispatchQueue!
     internal var _targets:[Actor]
@@ -108,6 +110,8 @@ open class Actor {
     }
         
     public init() {
+        pony_init()
+        
         _uuid = UUID().uuidString
         _messages = DispatchQueue(label: "actor." + _uuid + ".queue")
         _targets = []

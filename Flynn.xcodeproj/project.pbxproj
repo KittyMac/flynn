@@ -12,6 +12,22 @@
 		46530F132469A1330046BAC5 /* StringBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46530F112469A1330046BAC5 /* StringBuilder.swift */; };
 		46530F172469B32B0046BAC5 /* Flowable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46530F162469B32B0046BAC5 /* Flowable.swift */; };
 		46A5E648246A5EBD00159AA0 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A5E647246A5EBD00159AA0 /* Extensions.swift */; };
+		46B93022246AE7B4004C54F7 /* scheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 46B93020246AE7B4004C54F7 /* scheduler.h */; };
+		46B93023246AE7B4004C54F7 /* scheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = 46B93021246AE7B4004C54F7 /* scheduler.c */; };
+		46B93026246AE7E4004C54F7 /* ponyrt.h in Headers */ = {isa = PBXBuildFile; fileRef = 46B93024246AE7E4004C54F7 /* ponyrt.h */; };
+		46B93027246AE7E4004C54F7 /* ponyrt.c in Sources */ = {isa = PBXBuildFile; fileRef = 46B93025246AE7E4004C54F7 /* ponyrt.c */; };
+		46B9302A246AE829004C54F7 /* mpmcq.h in Headers */ = {isa = PBXBuildFile; fileRef = 46B93028246AE829004C54F7 /* mpmcq.h */; };
+		46B9302B246AE829004C54F7 /* mpmcq.c in Sources */ = {isa = PBXBuildFile; fileRef = 46B93029246AE829004C54F7 /* mpmcq.c */; };
+		46B9302E246AE847004C54F7 /* messageq.h in Headers */ = {isa = PBXBuildFile; fileRef = 46B9302C246AE847004C54F7 /* messageq.h */; };
+		46B9302F246AE847004C54F7 /* messageq.c in Sources */ = {isa = PBXBuildFile; fileRef = 46B9302D246AE847004C54F7 /* messageq.c */; };
+		46B93031246AEBF4004C54F7 /* atomics.h in Headers */ = {isa = PBXBuildFile; fileRef = 46B93030246AEBF4004C54F7 /* atomics.h */; };
+		46B9303F246AFC52004C54F7 /* alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 46B93037246AFC52004C54F7 /* alloc.c */; };
+		46B93040246AFC52004C54F7 /* alloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 46B93038246AFC52004C54F7 /* alloc.h */; };
+		46B93043246AFC52004C54F7 /* pagemap.c in Sources */ = {isa = PBXBuildFile; fileRef = 46B9303B246AFC52004C54F7 /* pagemap.c */; };
+		46B93044246AFC52004C54F7 /* pagemap.h in Headers */ = {isa = PBXBuildFile; fileRef = 46B9303C246AFC52004C54F7 /* pagemap.h */; };
+		46B93045246AFC52004C54F7 /* pool.c in Sources */ = {isa = PBXBuildFile; fileRef = 46B9303D246AFC52004C54F7 /* pool.c */; };
+		46B93046246AFC52004C54F7 /* pool.h in Headers */ = {isa = PBXBuildFile; fileRef = 46B9303E246AFC52004C54F7 /* pool.h */; };
+		46B93048246B3045004C54F7 /* pony.h in Headers */ = {isa = PBXBuildFile; fileRef = 46B93047246B3045004C54F7 /* pony.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		46C1720324687811004242E1 /* Flynn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46C171F924687811004242E1 /* Flynn.framework */; };
 		46C1720824687811004242E1 /* FlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C1720724687811004242E1 /* FlynnTests.swift */; };
 		46C1720A24687811004242E1 /* Flynn.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C171FC24687811004242E1 /* Flynn.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -34,6 +50,23 @@
 		46530F112469A1330046BAC5 /* StringBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringBuilder.swift; sourceTree = "<group>"; };
 		46530F162469B32B0046BAC5 /* Flowable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Flowable.swift; sourceTree = "<group>"; };
 		46A5E647246A5EBD00159AA0 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		46B93020246AE7B4004C54F7 /* scheduler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = scheduler.h; sourceTree = "<group>"; };
+		46B93021246AE7B4004C54F7 /* scheduler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = scheduler.c; sourceTree = "<group>"; };
+		46B93024246AE7E4004C54F7 /* ponyrt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ponyrt.h; sourceTree = "<group>"; };
+		46B93025246AE7E4004C54F7 /* ponyrt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ponyrt.c; sourceTree = "<group>"; };
+		46B93028246AE829004C54F7 /* mpmcq.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mpmcq.h; sourceTree = "<group>"; };
+		46B93029246AE829004C54F7 /* mpmcq.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = mpmcq.c; sourceTree = "<group>"; };
+		46B9302C246AE847004C54F7 /* messageq.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = messageq.h; sourceTree = "<group>"; };
+		46B9302D246AE847004C54F7 /* messageq.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = messageq.c; sourceTree = "<group>"; };
+		46B93030246AEBF4004C54F7 /* atomics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = atomics.h; sourceTree = "<group>"; };
+		46B93037246AFC52004C54F7 /* alloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = alloc.c; sourceTree = "<group>"; };
+		46B93038246AFC52004C54F7 /* alloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = alloc.h; sourceTree = "<group>"; };
+		46B9303B246AFC52004C54F7 /* pagemap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pagemap.c; sourceTree = "<group>"; };
+		46B9303C246AFC52004C54F7 /* pagemap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pagemap.h; sourceTree = "<group>"; };
+		46B9303D246AFC52004C54F7 /* pool.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pool.c; sourceTree = "<group>"; };
+		46B9303E246AFC52004C54F7 /* pool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pool.h; sourceTree = "<group>"; };
+		46B93047246B3045004C54F7 /* pony.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pony.h; sourceTree = "<group>"; };
+		46B9304D246B4073004C54F7 /* PonySwift.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = PonySwift.modulemap; path = Flynn/PonySwift.modulemap; sourceTree = "<group>"; };
 		46C171F924687811004242E1 /* Flynn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		46C171FC24687811004242E1 /* Flynn.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Flynn.h; sourceTree = "<group>"; };
 		46C171FD24687811004242E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -72,9 +105,41 @@
 			path = "Support Files";
 			sourceTree = "<group>";
 		};
+		46B9301F246AE737004C54F7 /* PonyRT */ = {
+			isa = PBXGroup;
+			children = (
+				46B93047246B3045004C54F7 /* pony.h */,
+				46B93030246AEBF4004C54F7 /* atomics.h */,
+				46B93036246AFC52004C54F7 /* mem */,
+				46B93024246AE7E4004C54F7 /* ponyrt.h */,
+				46B93025246AE7E4004C54F7 /* ponyrt.c */,
+				46B93020246AE7B4004C54F7 /* scheduler.h */,
+				46B93021246AE7B4004C54F7 /* scheduler.c */,
+				46B93028246AE829004C54F7 /* mpmcq.h */,
+				46B93029246AE829004C54F7 /* mpmcq.c */,
+				46B9302C246AE847004C54F7 /* messageq.h */,
+				46B9302D246AE847004C54F7 /* messageq.c */,
+			);
+			path = PonyRT;
+			sourceTree = "<group>";
+		};
+		46B93036246AFC52004C54F7 /* mem */ = {
+			isa = PBXGroup;
+			children = (
+				46B93038246AFC52004C54F7 /* alloc.h */,
+				46B93037246AFC52004C54F7 /* alloc.c */,
+				46B9303C246AFC52004C54F7 /* pagemap.h */,
+				46B9303B246AFC52004C54F7 /* pagemap.c */,
+				46B9303E246AFC52004C54F7 /* pool.h */,
+				46B9303D246AFC52004C54F7 /* pool.c */,
+			);
+			path = mem;
+			sourceTree = "<group>";
+		};
 		46C171EF24687811004242E1 = {
 			isa = PBXGroup;
 			children = (
+				46B9304D246B4073004C54F7 /* PonySwift.modulemap */,
 				46C171FB24687811004242E1 /* Flynn */,
 				46C1720624687811004242E1 /* FlynnTests */,
 				46C171FA24687811004242E1 /* Products */,
@@ -94,6 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				46C171FC24687811004242E1 /* Flynn.h */,
+				46B9301F246AE737004C54F7 /* PonyRT */,
 				46A5E647246A5EBD00159AA0 /* Extensions.swift */,
 				462DA3A02468FEAB00D48470 /* Behavior.swift */,
 				46DD01D924687871000A926A /* Actor.swift */,
@@ -119,7 +185,16 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				46B93040246AFC52004C54F7 /* alloc.h in Headers */,
+				46B93048246B3045004C54F7 /* pony.h in Headers */,
+				46B9302E246AE847004C54F7 /* messageq.h in Headers */,
+				46B93046246AFC52004C54F7 /* pool.h in Headers */,
+				46B93031246AEBF4004C54F7 /* atomics.h in Headers */,
+				46B93022246AE7B4004C54F7 /* scheduler.h in Headers */,
+				46B93044246AFC52004C54F7 /* pagemap.h in Headers */,
+				46B93026246AE7E4004C54F7 /* ponyrt.h in Headers */,
 				46C1720A24687811004242E1 /* Flynn.h in Headers */,
+				46B9302A246AE829004C54F7 /* mpmcq.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -174,7 +249,7 @@
 				TargetAttributes = {
 					46C171F824687811004242E1 = {
 						CreatedOnToolsVersion = 11.2.1;
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1130;
 					};
 					46C1720124687811004242E1 = {
 						CreatedOnToolsVersion = 11.2.1;
@@ -222,9 +297,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				46B9303F246AFC52004C54F7 /* alloc.c in Sources */,
+				46B9302B246AE829004C54F7 /* mpmcq.c in Sources */,
 				462DA3A12468FEAB00D48470 /* Behavior.swift in Sources */,
+				46B9302F246AE847004C54F7 /* messageq.c in Sources */,
+				46B93045246AFC52004C54F7 /* pool.c in Sources */,
+				46B93043246AFC52004C54F7 /* pagemap.c in Sources */,
 				46A5E648246A5EBD00159AA0 /* Extensions.swift in Sources */,
+				46B93027246AE7E4004C54F7 /* ponyrt.c in Sources */,
 				46DD01DA24687871000A926A /* Actor.swift in Sources */,
+				46B93023246AE7B4004C54F7 /* scheduler.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -387,6 +469,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MODULEMAP_FILE = "${SRCROOT}/Flynn/PonySwift.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.Flynn;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -413,6 +496,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MODULEMAP_FILE = "${SRCROOT}/Flynn/PonySwift.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.Flynn;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;

@@ -29,3 +29,11 @@ The Pony runtime has an interesting bag of tricks for handling when and how acto
 4. Actors should be able to yield (stop processing messages for x period of time)
 5. Actors should be able to load balance against other actors
 6. Actors should be chain-able in a generic manner (ie file reader -> lzip decompress -> tranform -> lzip compress -> file write)
+
+• **PonyRT**
+
+1. Early tests with DispatchQueues have left us... wanting better. So we're attempting a minimal implementation of the ponyrt.
+2. We should have one scheduler per core
+3. Pony "actors" become something less; message queues only to be scheduled on the schedulers
+4. Retain lockless messaging
+5. Don't use the pony memory system or the pony garbage collector

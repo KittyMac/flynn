@@ -1,0 +1,9 @@
+framework module Flynn {
+    umbrella header "Flynn.h"
+
+    explicit module Pony {
+        private header "pony.h"
+    }
+
+    export *
+}
