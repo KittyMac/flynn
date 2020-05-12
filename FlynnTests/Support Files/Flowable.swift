@@ -37,8 +37,8 @@ class Uppercase: Actor {
 }
 
 // Takes a string as the first argument, concatenates all strings
-// received.  When it receives ChainEnd as the first argument, it
-// then sends along the entire string
+// received.  When it receives an empty argument list it considers
+// that to be "done", and sends the concatenated string to the target
 class Concatenate: Actor {
     var combined:String = ""
     override func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
