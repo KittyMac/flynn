@@ -5,6 +5,7 @@
 //  Created by Rocco Bowling on 5/12/20.
 //  Copyright © 2020 Rocco Bowling. All rights reserved.
 //
+// Note: This code is derivative of the Pony runtime; see README.md for more details
 
 #ifndef ponyrt_h
 #define ponyrt_h
@@ -21,6 +22,10 @@
 #  define PLATFORM_IS_ILP32
 #endif
 
+
+typedef struct pony_actor_t pony_actor_t;
+
+typedef struct pony_ctx_t pony_ctx_t;
 
 /** Message header.
  *

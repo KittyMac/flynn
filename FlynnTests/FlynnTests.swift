@@ -12,9 +12,13 @@ import XCTest
 
 class FlynnTests: XCTestCase {
 
-    override func setUp() { }
+    override func setUp() {
+        Actor.startup()
+    }
 
-    override func tearDown() { }
+    override func tearDown() {
+        Actor.shutdown()
+    }
 
     func test1() {
         let expectation = XCTestExpectation(description: "Wait for counter to finish")

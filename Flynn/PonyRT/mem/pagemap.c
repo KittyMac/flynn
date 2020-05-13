@@ -1,3 +1,5 @@
+// Note: This code is derivative of the Pony runtime; see README.md for more details
+
 #define PONY_WANT_ATOMIC_DEFS
 
 #include "pagemap.h"

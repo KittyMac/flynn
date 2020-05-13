@@ -1,3 +1,5 @@
+// Note: This code is derivative of the Pony runtime; see README.md for more details
+
 #ifndef mem_alloc_h
 #define mem_alloc_h
 

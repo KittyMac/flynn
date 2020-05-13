@@ -26,7 +26,19 @@ public func |> (left: [Actor], right: Actor) -> [Actor] {
 }
 
 open class Actor {
-        
+    
+    internal static var pony_is_started:Bool = false
+    
+    open class func startup() {
+        pony_startup()
+        pony_is_started = true
+    }
+    
+    open class func shutdown() {
+        pony_shutdown()
+        pony_is_started = false
+    }
+    
     internal let _uuid:String!
     internal let _messages:DispatchQueue!
     internal var _targets:[Actor]
@@ -110,7 +122,9 @@ open class Actor {
     }
         
     public init() {
-        pony_init()
+        if Actor.pony_is_started == false {
+            Actor.startup()
+        }
         
         _uuid = UUID().uuidString
         _messages = DispatchQueue(label: "actor." + _uuid + ".queue")

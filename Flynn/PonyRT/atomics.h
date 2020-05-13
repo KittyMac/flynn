@@ -1,4 +1,4 @@
-// Taken directoy from the Pony Runtime: https://github.com/KittyMac/ponyc
+// Note: This code is derivative of the Pony runtime; see README.md for more details
 
 #ifndef PONY_DETAIL_ATOMICS_H
 #define PONY_DETAIL_ATOMICS_H

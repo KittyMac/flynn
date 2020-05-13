@@ -1,8 +1,12 @@
+// Note: This code is derivative of the Pony runtime; see README.md for more details
+
 #define PONY_WANT_ATOMIC_DEFS
 
 #include "ponyrt.h"
 #include "pool.h"
 #include "alloc.h"
+#include "threads.h"
+#include "cpu.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -106,8 +110,8 @@ static pool_global_t pool_global[POOL_COUNT] =
 static pool_block_t pool_block_global;
 static PONY_ATOMIC(size_t) in_pool_block_global;
 
-static __thread pool_local_t pool_local[POOL_COUNT];
-static __thread pool_block_header_t pool_block_header;
+static __pony_thread_local pool_local_t pool_local[POOL_COUNT];
+static __pony_thread_local pool_block_header_t pool_block_header;
 
 #ifdef USE_POOLTRACK
 #include "../ds/stack.h"
@@ -132,7 +136,7 @@ typedef struct
     pool_track_t* stack;
 } pool_track_info_t;
 
-static __thread pool_track_info_t track;
+static __pony_thread_local pool_track_info_t track;
 static PONY_ATOMIC(int) track_global_thread_id;
 static pool_track_info_t* track_global_info[POOL_TRACK_MAX_THREADS];
 
@@ -500,7 +504,7 @@ static pool_block_t* pool_block_pull( size_t size)
     // from it (e.g. to check if it can be popped from the global list). To do
     // this, we wait until nobody is trying to either push or pull.
     while(atomic_load_explicit(&in_pool_block_global, memory_order_relaxed) != 0) {
-        asm volatile("pause" ::: "memory");
+        ponyint_cpu_relax();
     }
     
     atomic_thread_fence(memory_order_acquire);
