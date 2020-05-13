@@ -91,19 +91,19 @@ static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
     
     // Start with a quick scan of all schedulers to check their num_messages and see if any
     // have waiting work.  If they do we can end quickly with a better guess as a victim.
-    uint32_t current_active_scheduler_count = get_active_scheduler_count();
     scheduler_t* max_victim = scheduler;
-    scheduler_t* last_victim = scheduler + current_active_scheduler_count;
+    scheduler_t* last_victim = scheduler + scheduler_count;
     scheduler_t* scan_victim = scheduler + 1;
     
-    *total_messages = 0;
+    int64_t n = 0;
     while (scan_victim < last_victim) {
-        *total_messages += scan_victim->q.num_messages;
+        n += scan_victim->q.num_messages;
         if(scan_victim->q.num_messages > max_victim->q.num_messages) {
             max_victim = scan_victim;
         }
         scan_victim++;
     }
+    *total_messages = n;
     
     sched->last_victim = max_victim;
     
@@ -134,11 +134,6 @@ static pony_actor_t* steal(scheduler_t* sched)
         if(actor != NULL)
             break;
         
-        // We yield the CPU if:
-        // 1. we even get down here, which means we failed to get an actor to run with
-        // 2. all other actors at the time I chose a victim have no waiting actors
-        // 3. 1+2 have happened enough times in a row scaling_sleep >= scaling_sleep_min
-        // 4. we reset if there is ever an indication there is work waiting to be done
         if(total_actors_waiting == 0) {
             scaling_sleep += scaling_sleep_delta;
             if (scaling_sleep > scaling_sleep_max) {
@@ -147,7 +142,7 @@ static pony_actor_t* steal(scheduler_t* sched)
             if(scaling_sleep >= scaling_sleep_min) {
                 ponyint_cpu_sleep(scaling_sleep);
             }
-        } else {
+        }else{
             scaling_sleep = 0;
         }
     }
@@ -165,39 +160,30 @@ static void run(scheduler_t* sched)
     
     pony_actor_t* actor = pop_global(sched);
     
-    while(sched->terminate == false)
-    {
+    while(sched->terminate == false) {
         if(actor == NULL) {
             actor = pop_global(sched);
         }
-        
-        if(actor == NULL)
-        {
-            // We had an empty queue and no rescheduled actor.
+        if(actor == NULL) {
             actor = steal(sched);
-            if(actor == NULL)
-            {
-                continue;
-            }
         }
-        
-        // Run the current actor and get the next actor.
-        bool reschedule = ponyint_actor_run(&sched->ctx, actor);
-        pony_actor_t* next = pop_global(sched);
-        
-        if(reschedule)
-        {
-            if(next != NULL)
-            {
-                // If we have a next actor, we go on the back of the queue. Otherwise,
-                // we continue to run this actor.
-                push(sched, actor);
+        if(actor != NULL) {
+            // Run the current actor and get the next actor.
+            bool reschedule = ponyint_actor_run(&sched->ctx, actor);
+            pony_actor_t* next = pop_global(sched);
+            
+            if(reschedule) {
+                if(next != NULL) {
+                    // If we have a next actor, we go on the back of the queue. Otherwise,
+                    // we continue to run this actor.
+                    push(sched, actor);
+                    actor = next;
+                }
+            } else {
+                // We aren't rescheduling, so run the next actor. This may be NULL if our
+                // queue was empty.
                 actor = next;
             }
-        } else {
-            // We aren't rescheduling, so run the next actor. This may be NULL if our
-            // queue was empty.
-            actor = next;
         }
     }
 }

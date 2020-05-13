@@ -41,11 +41,6 @@ static void unset_flag(pony_actor_t* actor, uint8_t flag)
                           memory_order_relaxed);
 }
 
-static bool batch_limit_reached(pony_actor_t* actor)
-{
-    return !has_flag(actor, FLAG_UNSCHEDULED);
-}
-
 bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
 {
     ctx->current = actor;
@@ -53,6 +48,7 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
     if(actor->running) {
         // we're actively running, but someone else is trying to run us at the same time! No worries,
         // we will just flag ourself to be rescheduled.
+        fprintf(stderr, ".");
         return true;
     }
     actor->running = true;
@@ -74,30 +70,12 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
         
         app++;
         
-        // if we've reached our batch limit we want to stop
-        if(app == actor->batch) {
-            actor->running = false;
-            return batch_limit_reached(actor);
-        }
-        
         // Stop handling a batch if we reach the head we found when we were
         // scheduled.
         if(msg == head)
             break;
     }
-    
-    // We didn't hit our app message batch limit. We now believe our queue to be
-    // empty, but we may have received further messages.
-    assert(app < actor->batch);
             
-    if(has_flag(actor, FLAG_UNSCHEDULED))
-    {
-        // When unscheduling, don't mark the queue as empty, since we don't want
-        // to get rescheduled if we receive a message.
-        actor->running = false;
-        return false;
-    }
-        
     bool empty = ponyint_messageq_markempty(&actor->q);
     
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
@@ -123,13 +101,15 @@ void ponyint_actor_destroy(pony_actor_t* actor)
     
     ponyint_messageq_destroy(&actor->q);
     
+    int32_t typeSize = sizeof(actor);
+    
     // Note: While the memset to 0 is not strictly necessary, there were quite
     // a few "access the actor after it was deleted" bugs going by
     // undetected because the contents of the memory just hadn't been
     // changed yet.  Leaving this code in as a reminder to help hunt
     // down such crash bugs in the future.
-    int32_t typeSize = sizeof(actor);
-    memset(actor, 0, typeSize);
+    //memset(actor, 0, typeSize);
+    
     ponyint_pool_free_size(typeSize, actor);
 }
 
@@ -211,10 +191,7 @@ void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t
     // is expensive and very hard to optimise.
     if(ponyint_actor_messageq_push(&to->q, first, last))
     {
-        if(!has_flag(to, FLAG_UNSCHEDULED))
-        {
-            ponyint_sched_add(ctx, to);
-        }
+        ponyint_sched_add(ctx, to);
     }
 }
 
@@ -224,12 +201,9 @@ void pony_sendv_single(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pon
     // is expensive and very hard to optimise.
     if(ponyint_actor_messageq_push_single(&to->q, first, last))
     {
-        if(!has_flag(to, FLAG_UNSCHEDULED))
-        {
-            // if the receiving actor is currently not unscheduled AND it's not
-            // muted, schedule it.
-            ponyint_sched_add(ctx, to);
-        }
+        // if the receiving actor is currently not unscheduled AND it's not
+        // muted, schedule it.
+        ponyint_sched_add(ctx, to);
     }
 }
 
@@ -268,21 +242,6 @@ void pony_sendi(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, intptr_t i)
     m->i = i;
     
     pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_schedule(pony_ctx_t* ctx, pony_actor_t* actor)
-{
-    if(!has_flag(actor, FLAG_UNSCHEDULED))
-        return;
-    
-    unset_flag(actor, FLAG_UNSCHEDULED);
-    ponyint_sched_add(ctx, actor);
-}
-
-void pony_unschedule(pony_ctx_t* ctx, pony_actor_t* actor)
-{
-    ((void) ctx);
-    set_flag(actor, FLAG_UNSCHEDULED);
 }
 
 void pony_become(pony_ctx_t* ctx, pony_actor_t* actor)

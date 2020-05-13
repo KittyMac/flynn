@@ -29,8 +29,7 @@ typedef struct pony_actor_t
 enum
 {
     FLAG_SYSTEM = 1 << 0,
-    FLAG_UNSCHEDULED = 1 << 1,
-    FLAG_PENDINGDESTROY = 1 << 2
+    FLAG_PENDINGDESTROY = 1 << 1
 };
 
 bool has_flag(pony_actor_t* actor, uint8_t flag);
