@@ -65,11 +65,11 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
     
     while((msg = ponyint_actor_messageq_pop(&actor->q)) != NULL)
     {
-        // TODO: run the block associated with this message
-        //actor->type->dispatch(ctx, actor, msg);
         if (msg->id == 1) {
-            pony_msgp_t * m = (pony_msgp_t *)msg;
-            fprintf(stderr, "EXECUTE MESSAGE ID %d, POINTER %d\n", msg->id, (int)m->p);
+            pony_msgpp_t * m = (pony_msgpp_t *)msg;
+            void * p1 = m->p1;
+            PonyCallback * p2 = m->p2;
+            p2(p1);
         }
         
         app++;
@@ -249,6 +249,15 @@ void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, void* p)
 {
     pony_msgp_t* m = (pony_msgp_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgp_t)), id);
     m->p = p;
+    
+    pony_sendv(ctx, to, &m->msg, &m->msg);
+}
+
+void pony_sendpp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, void* p1, void* p2)
+{
+    pony_msgpp_t* m = (pony_msgpp_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgpp_t)), id);
+    m->p1 = p1;
+    m->p2 = p2;
     
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }

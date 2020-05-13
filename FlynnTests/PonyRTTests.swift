@@ -20,18 +20,14 @@ class PonyRTTests: XCTestCase {
     }
 
     func testScheduleActor1() {
-        
-        let actor = pony_actor_create()
-        
-        pony_actor_dispatch(actor, nil);
-        pony_actor_dispatch(actor, nil);
-        pony_actor_dispatch(actor, nil);
-        pony_actor_dispatch(actor, nil);
-        pony_actor_dispatch(actor, nil);
-        
-        Thread.sleep(forTimeInterval: 1)
-        
-        pony_actor_destroy(actor)
+        let expectation = XCTestExpectation(description: "Wait for counter to finish")
+        Counter()
+            .inc(1)
+            .equals() { (x:Int) in
+                XCTAssertEqual(x, 1, "Counter did not add up to 30")
+                expectation.fulfill()
+            }
+        wait(for: [expectation], timeout: 10.0)
     }
 
 

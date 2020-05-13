@@ -9,6 +9,23 @@
 import Foundation
 import Flynn.Pony
 
+public typealias ActorBlock = (() -> Void)
+
+func bridge(_ obj : AnyObject) -> UnsafeMutableRawPointer {
+    return UnsafeMutableRawPointer(Unmanaged.passRetained(obj).toOpaque())
+}
+
+func bridge<T:AnyObject>(_ ptr : UnsafeMutableRawPointer?) -> T? {
+    if let ptr = ptr {
+        return Unmanaged.fromOpaque(ptr).takeRetainedValue()
+    }
+    return nil
+}
+
+func bridge<T:AnyObject>(_ ptr : UnsafeMutableRawPointer) -> T? {
+    return Unmanaged.fromOpaque(ptr).takeRetainedValue()
+}
+
 infix operator |> : AssignmentPrecedence
 public func |> (left: Actor, right: Actor) -> Actor {
     left.target(right)
@@ -23,6 +40,13 @@ public func |> (left: [Actor], right: Actor) -> [Actor] {
         one.target(right)
     }
     return left
+}
+
+internal class ActorBlockBox {
+    let block:ActorBlock
+    init(_ block:@escaping ActorBlock) {
+        self.block = block
+    }
 }
 
 open class Actor {
@@ -40,16 +64,19 @@ open class Actor {
     }
     
     internal let _uuid:String!
-    internal let _messages:DispatchQueue!
     internal var _targets:[Actor]
-    internal var _waitingMessages:Int = 0
+    internal lazy var pony_actor = pony_actor_create()
     
-    internal func send(_ block: @escaping () -> Void) {
-        _waitingMessages += 1
-        _messages.async() {
-            block()
-            self._waitingMessages -= 1
-        }
+    internal func send(_ block: @escaping ActorBlock) {
+        // we need to be careful here: multiple other threads can
+        // call this asynchronously
+        let box = ActorBlockBox(block)
+        pony_actor_dispatch(pony_actor, bridge(box), { (box2) in
+            let thisBox:ActorBlockBox? = bridge(box2)
+            if let thisBox = thisBox {
+                thisBox.block()
+            }
+        })
     }
     
     internal func chainCall(withKeywordArguments args:BehaviorArgs) {
@@ -78,7 +105,7 @@ open class Actor {
                         // need to delay sending this item until all of the targets have finished processing
                         // all of their messages.  Otherwise we can have a race condition.
                         while true {
-                            var num:Int = 0;
+                            var num:Int32 = 0;
                             for target in self._targets {
                                 num += target.messagesCount
                             }
@@ -101,9 +128,9 @@ open class Actor {
     
     // While not 100% accurate, it can be helpful to know how large the
     // actor's mailbox size is in order to perform lite load balancing
-    var messagesCount:Int {
+    var messagesCount:Int32 {
         get {
-            return _waitingMessages
+            return pony_actor_num_messages(pony_actor)
         }
     }
     
@@ -127,8 +154,11 @@ open class Actor {
         }
         
         _uuid = UUID().uuidString
-        _messages = DispatchQueue(label: "actor." + _uuid + ".queue")
         _targets = []
+    }
+    
+    deinit {
+        pony_actor_destroy(pony_actor)
     }
 }
 

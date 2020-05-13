@@ -49,9 +49,12 @@ void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
 }
 
-void pony_actor_dispatch(void * actor, void * block) {
-    pony_sendp(pony_ctx(), actor, 1, block);
-    
+void pony_actor_dispatch(void * actor, void * context, PonyCallback callback) {
+    pony_sendpp(pony_ctx(), actor, 1, context, callback);
+}
+
+int pony_actor_num_messages(void * actor) {
+    return (int)ponyint_actor_num_messages(actor);
 }
 
 void pony_actor_destroy(void * actor) {

@@ -56,4 +56,12 @@ typedef struct pony_msgp_t
     void* p;
 } pony_msgp_t;
 
+/// Convenience message for sending two pointers.
+typedef struct pony_msgpp_t
+{
+    pony_msg_t msg;
+    void* p1;
+    void* p2;
+} pony_msgpp_t;
+
 #endif /* ponyrt_h */

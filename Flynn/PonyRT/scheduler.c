@@ -15,6 +15,7 @@
 #include "pool.h"
 #include "alloc.h"
 #include "cpu.h"
+#include "actor.h"
 #include <string.h>
 #include <stdio.h>
 
