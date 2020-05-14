@@ -34,7 +34,9 @@ public struct Behavior<T:Actor> {
         self._block = block
     }
     @discardableResult public func dynamicallyCall(withKeywordArguments args:BehaviorArgs) -> T {
-        _actor.send { self._block(args) }
+        _actor.send {
+            self._block(args)
+        }
         return _actor
     }
 }

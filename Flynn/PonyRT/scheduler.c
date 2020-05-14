@@ -29,6 +29,7 @@ static uint32_t scheduler_count;
 static PONY_ATOMIC(uint32_t) active_scheduler_count;
 static PONY_ATOMIC(uint32_t) active_scheduler_count_check;
 static scheduler_t* scheduler;
+static mpmcq_t inject;
 static __pony_thread_local scheduler_t* this_scheduler;
 
 static pthread_mutex_t sched_mut;
@@ -71,6 +72,11 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
  */
 static pony_actor_t* pop_global(scheduler_t* sched)
 {
+    if (inject.num_messages > 0) {
+        pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
+        if(actor != NULL)
+            return actor;
+    }
     if (sched != NULL)
         return pop(sched);
     return NULL;
@@ -79,7 +85,7 @@ static pony_actor_t* pop_global(scheduler_t* sched)
 static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
 {
     // we have work to do or the global inject does, we can return right away
-    if(sched->last_victim->q.num_messages > 0) {
+    if(sched->last_victim->q.num_messages > 0 || inject.num_messages > 0) {
         *total_messages = 1;
         return sched->last_victim;
     }
@@ -90,15 +96,13 @@ static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
     scheduler_t* last_victim = scheduler + scheduler_count;
     scheduler_t* scan_victim = scheduler + 1;
     
-    int64_t n = 0;
     while (scan_victim < last_victim) {
-        n += scan_victim->q.num_messages;
         if(scan_victim->q.num_messages > max_victim->q.num_messages) {
             max_victim = scan_victim;
         }
         scan_victim++;
     }
-    *total_messages = n;
+    *total_messages = scan_victim->q.num_messages;
     
     sched->last_victim = max_victim;
     
@@ -115,7 +119,7 @@ static pony_actor_t* steal(scheduler_t* sched)
     scheduler_t* victim = NULL;
     
     int scaling_sleep = 0;
-    int scaling_sleep_delta = 100;
+    int scaling_sleep_delta = 50;
     int scaling_sleep_min = 50;      // The minimum value we start actually sleeping at
     int scaling_sleep_max = 5000;     // The maximimum amount of time we are allowed to sleep at any single call
     int64_t total_actors_waiting = 0;
@@ -223,6 +227,8 @@ static void ponyint_sched_shutdown()
     scheduler = NULL;
     scheduler_count = 0;
     atomic_store_explicit(&active_scheduler_count, 0, memory_order_relaxed);
+    
+    ponyint_mpmcq_destroy(&inject);
 }
 
 pony_ctx_t* ponyint_sched_init()
@@ -259,6 +265,8 @@ pony_ctx_t* ponyint_sched_init()
         ponyint_mpmcq_init(&scheduler[i].q);
     }
     
+    ponyint_mpmcq_init(&inject);
+    
     return pony_ctx();
 }
 
@@ -290,10 +298,8 @@ void ponyint_sched_add(pony_ctx_t* ctx, pony_actor_t* actor)
 {
     if(ctx->scheduler != NULL) {
         push(ctx->scheduler, actor);
-    }else{
-        static int idx = 0;
-        idx = (idx + 1) % scheduler_count;
-        push(scheduler + idx, actor);
+    } else {
+        ponyint_mpmcq_push(&inject, actor);
     }
 }
 

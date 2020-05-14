@@ -70,22 +70,22 @@ open class Actor {
     }
     
     internal let _uuid:String!
+    
+    internal var _num_targets:Int = 0
     internal var _targets:[Actor]
     internal var _pony_actor_targets:[UnsafeMutableRawPointer]
-    internal let pony_actor:UnsafeMutableRawPointer!
+    internal let _pony_actor:UnsafeMutableRawPointer!
     
-    internal var poolIdx:Int = 0
-    internal var loadBalance:LoadBalance = .RoundRobin
+    internal var _poolIdx:Int = 0
+    internal var _loadBalance:LoadBalance = .RoundRobin
     
     internal func send(_ block: @escaping ActorBlock) {
         // we need to be careful here: multiple other threads can
         // call this asynchronously. So we must not access any shared state.
         let box = ActorBlockBox(block)
-        pony_actor_dispatch(pony_actor, bridge(box), { (box2) in
+        pony_actor_dispatch(_pony_actor, bridge(box), { (box2) in
             let thisBox:ActorBlockBox? = bridge(box2)
-            if let thisBox = thisBox {
-                thisBox.block()
-            }
+            thisBox?.block()
         })
     }
     
@@ -104,24 +104,26 @@ open class Actor {
         self.send {
             let (should_chain,new_args) = self.chainProcess(args: args)
             if should_chain {
-                switch self._targets.count {
+                let num_targets = self._num_targets
+                switch num_targets {
                 case 0:
                     return
                 case 1:
                     self._targets.first?.chainCall(withKeywordArguments: new_args)
                 default:
-                    var pony_actors = self._pony_actor_targets
-                    if args.count == 0 {
+                    if args.isEmpty {
+                        var pony_actors = self._pony_actor_targets
                         // If we're sending the "end of chain" item, and we have more than one target, then we
                         // need to delay sending this item until all of the targets have finished processing
                         // all of their messages.  Otherwise we can have a race condition.
-                        pony_actors_wait(&pony_actors, Int32(pony_actors.count))
+                        pony_actors_wait(&pony_actors, Int32(num_targets))
                     }
                     
-                    switch self.loadBalance {
+                    switch self._loadBalance {
                     case .Minimum:
                         // automatic load balancing, find the target with the least amout of work queued up
-                        let minIdx = Int(pony_actors_load_balance(&pony_actors, Int32(pony_actors.count)))
+                        var pony_actors = self._pony_actor_targets
+                        let minIdx = Int(pony_actors_load_balance(&pony_actors, Int32(num_targets)))
                         let minTarget = self._targets[minIdx]
                         minTarget.chainCall(withKeywordArguments: new_args)
                         break
@@ -130,8 +132,8 @@ open class Actor {
                         target!.chainCall(withKeywordArguments: new_args)
                         break
                     case .RoundRobin:
-                        self.poolIdx = (self.poolIdx + 1) % pony_actors.count
-                        let minTarget = self._targets[self.poolIdx]
+                        self._poolIdx = (self._poolIdx + 1) % num_targets
+                        let minTarget = self._targets[self._poolIdx]
                         minTarget.chainCall(withKeywordArguments: new_args)
                         break
                     }
@@ -145,13 +147,13 @@ open class Actor {
     // actor's mailbox size is in order to perform lite load balancing
     var messagesCount:Int32 {
         get {
-            return pony_actor_num_messages(pony_actor)
+            return pony_actor_num_messages(_pony_actor)
         }
     }
     
     @discardableResult func balanced(_ loadBalance:LoadBalance) -> Actor {
         send {
-            self.loadBalance = loadBalance
+            self._loadBalance = loadBalance
         }
         return self
     }
@@ -159,7 +161,8 @@ open class Actor {
     @discardableResult func target(_ target:Actor) -> Actor {
         send {
             self._targets.append(target)
-            self._pony_actor_targets.append(target.pony_actor)
+            self._pony_actor_targets.append(target._pony_actor)
+            self._num_targets = self._targets.count
         }
         return self
     }
@@ -168,8 +171,9 @@ open class Actor {
         send {
             self._targets.append(contentsOf: targets)
             for target in targets {
-                self._pony_actor_targets.append(target.pony_actor)
+                self._pony_actor_targets.append(target._pony_actor)
             }
+            self._num_targets = self._targets.count
         }
         return self
     }
@@ -179,7 +183,7 @@ open class Actor {
             Actor.startup()
         }
         
-        pony_actor = pony_actor_create()
+        _pony_actor = pony_actor_create()
         
         _uuid = UUID().uuidString
         _targets = []
@@ -187,7 +191,7 @@ open class Actor {
     }
     
     deinit {
-        pony_actor_destroy(pony_actor)
+        pony_actor_destroy(_pony_actor)
     }
 }
 
