@@ -71,6 +71,4 @@ typedef struct pony_msgb_t
     PonyCallback p;
 } pony_msgb_t;
 
-void pony_callback_release(PonyCallback callback);
-
 #endif /* ponyrt_h */

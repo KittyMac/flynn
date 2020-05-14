@@ -51,11 +51,7 @@ void * pony_actor_create() {
 }
 
 void pony_actor_dispatch(void * actor, PonyCallback callback) {
-    pony_send_block(pony_ctx(), actor, 1, Block_copy(callback));
-}
-
-void pony_callback_release(PonyCallback callback) {
-    Block_release(callback);
+    pony_send_block(pony_ctx(), actor, 1, callback);
 }
 
 int pony_actors_load_balance(void * actorArray, int num_actors) {

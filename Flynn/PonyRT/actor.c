@@ -9,6 +9,7 @@
 
 #define PONY_WANT_ATOMIC_DEFS
 
+#include "block.h"
 #include "actor.h"
 #include "scheduler.h"
 #include "cpu.h"
@@ -16,9 +17,6 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
-
-// default actor batch size
-#define PONY_SCHED_BATCH 100
 
 // The flags of a given actor cannot be mutated from more than one actor at
 // once, so these operations need not be atomic RMW.
@@ -33,14 +31,14 @@ static void set_flag(pony_actor_t* actor, uint8_t flag)
     uint8_t flags = atomic_load_explicit(&actor->flags, memory_order_relaxed);
     atomic_store_explicit(&actor->flags, flags | flag, memory_order_relaxed);
 }
-
+/*
 static void unset_flag(pony_actor_t* actor, uint8_t flag)
 {
     uint8_t flags = atomic_load_explicit(&actor->flags, memory_order_relaxed);
     atomic_store_explicit(&actor->flags, flags & (uint8_t)~flag,
                           memory_order_relaxed);
 }
-
+*/
 bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
 {
     pony_msgb_t* msg;
@@ -48,7 +46,9 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
     // If we have been scheduled, the head will not be marked as empty.
     while((msg = (pony_msgb_t *)ponyint_actor_messageq_pop(&actor->q)) != NULL) {
         msg->p();
-        pony_callback_release(msg->p);
+        
+        Block_release_pony(msg->p);
+        
         ponyint_actor_messageq_pop_mark_done(&actor->q);
     }
     
@@ -118,7 +118,6 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     pony_actor_t* actor = (pony_actor_t*)ponyint_pool_alloc_size(typeSize);
     
     memset(actor, 0, typeSize);
-    actor->batch = PONY_SCHED_BATCH;
     
     static int32_t actorUID = 1;
     actor->uid = actorUID++;
@@ -184,8 +183,7 @@ void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id)
 void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, PonyCallback p)
 {
     pony_msgb_t* m = (pony_msgb_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgb_t)), id);
-    m->p = p;
-    
+    m->p = Block_copy_pony(p);
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
