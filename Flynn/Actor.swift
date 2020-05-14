@@ -105,7 +105,7 @@ open class Actor {
                         // If we're sending the "end of chain" item, and we have more than one target, then we
                         // need to delay sending this item until all of the targets have finished processing
                         // all of their messages.  Otherwise we can have a race condition.
-                        pony_actors_wait(&pony_actors, Int32(num_targets))
+                        pony_actors_wait(0, &pony_actors, Int32(num_targets))
                     }
                     
                     switch self._loadBalance {
@@ -131,6 +131,11 @@ open class Actor {
         }
     }
     
+    func wait(_ min_msgs:Int32) {
+        // Pause while waiting for this actor's message queue to reach 0
+        var my_pony_actor = _pony_actor
+        pony_actors_wait(min_msgs, &my_pony_actor, 1)
+    }
     
     // While not 100% accurate, it can be helpful to know how large the
     // actor's mailbox size is in order to perform lite load balancing

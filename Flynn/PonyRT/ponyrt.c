@@ -74,20 +74,20 @@ int pony_actors_load_balance(void * actorArray, int num_actors) {
     return minIdx;
 }
 
-void pony_actors_wait(void * actorArray, int num_actors) {
+void pony_actors_wait(int min_msgs, void * actorArray, int num_actors) {
     // we hard wait until all actors we have been given have no messages waiting
     pony_actor_t ** actorsPtr = (pony_actor_t**)actorArray;
-    int scaling_sleep = 100;
+    int scaling_sleep = 10;
     while (true) {
         int32_t n = 0;
         for (int i = 0; i < num_actors; i++) {
             n += actorsPtr[i]->q.num_messages;
         }
-        if (n == 0) {
+        if (n <= min_msgs) {
             break;
         }
         ponyint_cpu_sleep(scaling_sleep);
-        scaling_sleep += 100;
+        scaling_sleep += 10;
     }
 }
 
