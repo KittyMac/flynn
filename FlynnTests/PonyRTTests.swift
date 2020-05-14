@@ -24,7 +24,7 @@ class PonyRTTests: XCTestCase {
         Counter()
             .inc(1)
             .equals() { (x:Int) in
-                XCTAssertEqual(x, 1, "Counter did not add up to 30")
+                XCTAssertEqual(x, 1, "Counter did not add up to 1")
                 expectation.fulfill()
             }
         wait(for: [expectation], timeout: 10.0)

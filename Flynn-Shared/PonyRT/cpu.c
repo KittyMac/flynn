@@ -45,7 +45,8 @@ void ponyint_cpu_sleep(int ns)
 
 void ponyint_cpu_relax()
 {
-    asm volatile("pause" ::: "memory");
+    //asm volatile("pause" ::: "memory");
+    usleep(1);
 } 
 
 uint64_t ponyint_cpu_tick()

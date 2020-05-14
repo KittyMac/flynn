@@ -33,14 +33,14 @@ static void set_flag(pony_actor_t* actor, uint8_t flag)
     uint8_t flags = atomic_load_explicit(&actor->flags, memory_order_relaxed);
     atomic_store_explicit(&actor->flags, flags | flag, memory_order_relaxed);
 }
-
+/*
 static void unset_flag(pony_actor_t* actor, uint8_t flag)
 {
     uint8_t flags = atomic_load_explicit(&actor->flags, memory_order_relaxed);
     atomic_store_explicit(&actor->flags, flags & (uint8_t)~flag,
                           memory_order_relaxed);
 }
-
+*/
 bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
 {
     pony_msgb_t* msg;

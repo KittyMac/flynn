@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "46C171F824687811004242E1"
-               BuildableName = "Flynn.framework"
-               BlueprintName = "Flynn"
+               BuildableName = "Flynn_macOS.framework"
+               BlueprintName = "Flynn-macOS"
                ReferencedContainer = "container:Flynn.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,8 +29,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "46C1720124687811004242E1"
-               BuildableName = "FlynnTests.xctest"
-               BlueprintName = "FlynnTests"
+               BuildableName = "Flynn-macOSTests.xctest"
+               BlueprintName = "Flynn-macOSTests"
                ReferencedContainer = "container:Flynn.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -47,8 +47,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "46C1720124687811004242E1"
-               BuildableName = "FlynnTests.xctest"
-               BlueprintName = "FlynnTests"
+               BuildableName = "Flynn-macOSTests.xctest"
+               BlueprintName = "Flynn-macOSTests"
                ReferencedContainer = "container:Flynn.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -75,8 +75,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "46C171F824687811004242E1"
-            BuildableName = "Flynn.framework"
-            BlueprintName = "Flynn"
+            BuildableName = "Flynn_macOS.framework"
+            BlueprintName = "Flynn-macOS"
             ReferencedContainer = "container:Flynn.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
