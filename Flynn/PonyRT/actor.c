@@ -43,35 +43,17 @@ static void unset_flag(pony_actor_t* actor, uint8_t flag)
 
 bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
 {
-    if(actor->running) {
-        // we're actively running, but someone else is trying to run us at the same time! No worries,
-        // we will just flag ourself to be rescheduled.
-        return true;
-    }
-    actor->running = true;
+    pony_msgb_t* msg;
     
-    pony_msg_t* msg;
-    int32_t app = 0;
-        
     // If we have been scheduled, the head will not be marked as empty.
-    while((msg = ponyint_actor_messageq_pop(&actor->q)) != NULL)
-    {
-        if (msg->id == 1) {
-            pony_msgb_t * m = (pony_msgb_t *)msg;
-            m->p();
-            pony_callback_release(m->p);
-        }
-        
+    while((msg = (pony_msgb_t *)ponyint_actor_messageq_pop(&actor->q)) != NULL) {
+        msg->p();
+        pony_callback_release(msg->p);
         ponyint_actor_messageq_pop_mark_done(&actor->q);
-        
-        app++;
     }
-            
-    bool empty = ponyint_messageq_markempty(&actor->q);
     
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
-    actor->running = false;
-    return !empty;
+    return !ponyint_messageq_markempty(&actor->q);
 }
 
 void ponyint_actor_destroy(pony_actor_t* actor)

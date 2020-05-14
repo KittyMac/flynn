@@ -18,9 +18,10 @@ void pony_shutdown(void);
 
 void * pony_actor_create();
 void pony_actor_dispatch(void * actor, PonyCallback callback);
-int pony_actors_load_balance(void * actorArray, int num_actors);
-void pony_actors_wait(int min_msgs, void * actor, int num_actors);
 int pony_actor_num_messages(void * actor);
 void pony_actor_destroy(void * actor);
+
+int pony_actors_load_balance(void * actorArray, int num_actors);
+void pony_actors_wait(int min_msgs, void * actor, int num_actors);
 
 #endif
