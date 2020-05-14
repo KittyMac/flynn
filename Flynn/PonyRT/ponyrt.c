@@ -61,6 +61,9 @@ int pony_actors_load_balance(void * actorArray, int num_actors) {
         if(actorsPtr[i]->q.num_messages < minActor->q.num_messages) {
             minActor = actorsPtr[i];
             minIdx = i;
+            if (minActor->q.num_messages == 0) {
+                return minIdx;
+            }
         }
     }
     return minIdx;

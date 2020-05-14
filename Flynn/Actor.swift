@@ -49,6 +49,12 @@ internal class ActorBlockBox {
     }
 }
 
+enum LoadBalance {
+  case Minimum
+  case Random
+  case RoundRobin
+}
+
 open class Actor {
     
     internal static var pony_is_started:Bool = false
@@ -67,6 +73,9 @@ open class Actor {
     internal var _targets:[Actor]
     internal var _pony_actor_targets:[UnsafeMutableRawPointer]
     internal let pony_actor:UnsafeMutableRawPointer!
+    
+    internal var poolIdx:Int = 0
+    internal var loadBalance:LoadBalance = .RoundRobin
     
     internal func send(_ block: @escaping ActorBlock) {
         // we need to be careful here: multiple other threads can
@@ -109,10 +118,23 @@ open class Actor {
                         pony_actors_wait(&pony_actors, Int32(pony_actors.count))
                     }
                     
-                    // automatic load balancing, find the target with the least amout of work queued up
-                    let minIdx = Int(pony_actors_load_balance(&pony_actors, Int32(pony_actors.count)))
-                    let minTarget = self._targets[minIdx]
-                    minTarget.chainCall(withKeywordArguments: new_args)
+                    switch self.loadBalance {
+                    case .Minimum:
+                        // automatic load balancing, find the target with the least amout of work queued up
+                        let minIdx = Int(pony_actors_load_balance(&pony_actors, Int32(pony_actors.count)))
+                        let minTarget = self._targets[minIdx]
+                        minTarget.chainCall(withKeywordArguments: new_args)
+                        break
+                    case .Random:
+                        let target = self._targets.randomElement()
+                        target!.chainCall(withKeywordArguments: new_args)
+                        break
+                    case .RoundRobin:
+                        self.poolIdx = (self.poolIdx + 1) % pony_actors.count
+                        let minTarget = self._targets[self.poolIdx]
+                        minTarget.chainCall(withKeywordArguments: new_args)
+                        break
+                    }
                 }
             }
         }
@@ -125,6 +147,13 @@ open class Actor {
         get {
             return pony_actor_num_messages(pony_actor)
         }
+    }
+    
+    @discardableResult func balanced(_ loadBalance:LoadBalance) -> Actor {
+        send {
+            self.loadBalance = loadBalance
+        }
+        return self
     }
     
     @discardableResult func target(_ target:Actor) -> Actor {
