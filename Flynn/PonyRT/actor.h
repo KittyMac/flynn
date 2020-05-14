@@ -44,8 +44,6 @@ bool ponyint_actor_pendingdestroy(pony_actor_t* actor);
 
 void ponyint_actor_setpendingdestroy(pony_actor_t* actor);
 
-void ponyint_actor_final(pony_ctx_t* ctx, pony_actor_t* actor);
-
 size_t ponyint_actor_num_messages(pony_actor_t* actor);
 
 void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id);

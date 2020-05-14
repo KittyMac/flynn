@@ -43,12 +43,9 @@ static void unset_flag(pony_actor_t* actor, uint8_t flag)
 
 bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
 {
-    ctx->current = actor;
-    
     if(actor->running) {
         // we're actively running, but someone else is trying to run us at the same time! No worries,
         // we will just flag ourself to be rescheduled.
-        fprintf(stderr, ".");
         return true;
     }
     actor->running = true;
@@ -57,8 +54,6 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
     int32_t app = 0;
         
     // If we have been scheduled, the head will not be marked as empty.
-    pony_msg_t* head = atomic_load_explicit(&actor->q.head, memory_order_relaxed);
-    
     while((msg = ponyint_actor_messageq_pop(&actor->q)) != NULL)
     {
         if (msg->id == 1) {
@@ -71,11 +66,6 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
         ponyint_actor_messageq_pop_mark_done(&actor->q);
         
         app++;
-        
-        // Stop handling a batch if we reach the head we found when we were
-        // scheduled.
-        if(msg == head)
-            break;
     }
             
     bool empty = ponyint_messageq_markempty(&actor->q);
@@ -128,17 +118,6 @@ void ponyint_actor_setpendingdestroy(pony_actor_t* actor)
     // The synchronisation is done through the ACK message sent by the actor to
     // the cycle detector.
     set_flag(actor, FLAG_PENDINGDESTROY);
-}
-
-void ponyint_actor_final(pony_ctx_t* ctx, pony_actor_t* actor)
-{
-    // This gets run while the cycle detector is handling a message. Set the
-    // current actor before running anything.
-    pony_actor_t* prev = ctx->current;
-    ctx->current = actor;
-    
-    // Restore the current actor.
-    ctx->current = prev;
 }
 
 size_t ponyint_actor_num_messages(pony_actor_t* actor)
@@ -244,9 +223,4 @@ void pony_sendi(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, intptr_t i)
     m->i = i;
     
     pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_become(pony_ctx_t* ctx, pony_actor_t* actor)
-{
-    ctx->current = actor;
 }

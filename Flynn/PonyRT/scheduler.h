@@ -29,7 +29,6 @@ typedef struct scheduler_t scheduler_t;
 typedef struct pony_ctx_t
 {
     scheduler_t* scheduler;
-    pony_actor_t* current;
 } pony_ctx_t;
 
 struct scheduler_t

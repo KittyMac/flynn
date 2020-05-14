@@ -29,8 +29,6 @@ static uint32_t scheduler_count;
 static PONY_ATOMIC(uint32_t) active_scheduler_count;
 static PONY_ATOMIC(uint32_t) active_scheduler_count_check;
 static scheduler_t* scheduler;
-static pony_ctx_t* inject_context;
-static mpmcq_t inject;
 static __pony_thread_local scheduler_t* this_scheduler;
 
 static pthread_mutex_t sched_mut;
@@ -73,9 +71,6 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
  */
 static pony_actor_t* pop_global(scheduler_t* sched)
 {
-    pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
-    if(actor != NULL)
-        return actor;
     if (sched != NULL)
         return pop(sched);
     return NULL;
@@ -84,7 +79,7 @@ static pony_actor_t* pop_global(scheduler_t* sched)
 static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
 {
     // we have work to do or the global inject does, we can return right away
-    if(sched->last_victim->q.num_messages > 0 || inject.num_messages > 0) {
+    if(sched->last_victim->q.num_messages > 0) {
         *total_messages = 1;
         return sched->last_victim;
     }
@@ -226,11 +221,8 @@ static void ponyint_sched_shutdown()
     
     ponyint_pool_free_size(scheduler_count * sizeof(scheduler_t), scheduler);
     scheduler = NULL;
-    inject_context = NULL;
     scheduler_count = 0;
     atomic_store_explicit(&active_scheduler_count, 0, memory_order_relaxed);
-    
-    ponyint_mpmcq_destroy(&inject);
 }
 
 pony_ctx_t* ponyint_sched_init()
@@ -267,11 +259,7 @@ pony_ctx_t* ponyint_sched_init()
         ponyint_mpmcq_init(&scheduler[i].q);
     }
     
-    ponyint_mpmcq_init(&inject);
-    
-    inject_context = pony_ctx();
-    
-    return inject_context;
+    return pony_ctx();
 }
 
 bool ponyint_sched_start()
@@ -300,13 +288,12 @@ void ponyint_sched_stop()
 
 void ponyint_sched_add(pony_ctx_t* ctx, pony_actor_t* actor)
 {
-    if(ctx->scheduler != NULL)
-    {
-        // Add to the current scheduler thread.
+    if(ctx->scheduler != NULL) {
         push(ctx->scheduler, actor);
-    } else {
-        // Put on the shared mpmcq.
-        ponyint_mpmcq_push(&inject, actor);
+    }else{
+        static int idx = 0;
+        idx = (idx + 1) % scheduler_count;
+        push(scheduler + idx, actor);
     }
 }
 
@@ -347,10 +334,6 @@ pony_ctx_t* pony_ctx()
 {
     assert(this_scheduler != NULL);
     return &this_scheduler->ctx;
-}
-
-pony_ctx_t* ponyint_sched_get_inject_context() {
-    return inject_context;
 }
 
 // Return the scheduler's index
