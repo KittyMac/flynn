@@ -8,6 +8,7 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
 #include <stdlib.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 #include "ponyrt.h"
 
@@ -49,8 +50,12 @@ void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
 }
 
-void pony_actor_dispatch(void * actor, void * context, PonyCallback callback) {
-    pony_sendpp(pony_ctx(), actor, 1, context, callback);
+void pony_actor_dispatch(void * actor, PonyCallback callback) {
+    pony_send_block(pony_ctx(), actor, 1, Block_copy(callback));
+}
+
+void pony_callback_release(PonyCallback callback) {
+    Block_release(callback);
 }
 
 int pony_actors_load_balance(void * actorArray, int num_actors) {

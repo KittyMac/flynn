@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdalign.h>
 
-typedef void (PonyCallback)(void * context);
+typedef void (^PonyCallback)(void);
 
 typedef struct pony_actor_t
 {
@@ -47,6 +47,8 @@ void ponyint_actor_setpendingdestroy(pony_actor_t* actor);
 size_t ponyint_actor_num_messages(pony_actor_t* actor);
 
 void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id);
+
+void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, PonyCallback p);
 
 void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, void* p);
 

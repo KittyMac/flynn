@@ -11,13 +11,13 @@
 #define pony_h
 
 // This header should contain only the minimum needed to communicate with Swift
-typedef void (PonyCallback)(void * context);
+typedef void (^PonyCallback)();
 
 bool pony_startup(void);
 void pony_shutdown(void);
 
 void * pony_actor_create();
-void pony_actor_dispatch(void * actor, void * context, PonyCallback callback);
+void pony_actor_dispatch(void * actor, PonyCallback callback);
 int pony_actors_load_balance(void * actorArray, int num_actors);
 void pony_actors_wait(void * actor, int num_actors);
 int pony_actor_num_messages(void * actor);

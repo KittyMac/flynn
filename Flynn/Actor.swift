@@ -42,13 +42,6 @@ public func |> (left: [Actor], right: Actor) -> [Actor] {
     return left
 }
 
-internal class ActorBlockBox {
-    let block:ActorBlock
-    init(_ block:@escaping ActorBlock) {
-        self.block = block
-    }
-}
-
 enum LoadBalance {
   case Minimum
   case Random
@@ -82,11 +75,7 @@ open class Actor {
     internal func send(_ block: @escaping ActorBlock) {
         // we need to be careful here: multiple other threads can
         // call this asynchronously. So we must not access any shared state.
-        let box = ActorBlockBox(block)
-        pony_actor_dispatch(_pony_actor, bridge(box), { (box2) in
-            let thisBox:ActorBlockBox? = bridge(box2)
-            thisBox?.block()
-        })
+        pony_actor_dispatch(_pony_actor, block)
     }
     
     internal func chainCall(withKeywordArguments args:BehaviorArgs) {

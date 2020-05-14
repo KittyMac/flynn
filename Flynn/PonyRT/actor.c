@@ -57,10 +57,9 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
     while((msg = ponyint_actor_messageq_pop(&actor->q)) != NULL)
     {
         if (msg->id == 1) {
-            pony_msgpp_t * m = (pony_msgpp_t *)msg;
-            void * p1 = m->p1;
-            PonyCallback * p2 = m->p2;
-            p2(p1);
+            pony_msgb_t * m = (pony_msgb_t *)msg;
+            m->p();
+            pony_callback_release(m->p);
         }
         
         ponyint_actor_messageq_pop_mark_done(&actor->q);
@@ -198,6 +197,14 @@ void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id)
 {
     pony_msg_t* m = pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_t)), id);
     pony_sendv(ctx, to, m, m);
+}
+
+void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, PonyCallback p)
+{
+    pony_msgb_t* m = (pony_msgb_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgb_t)), id);
+    m->p = p;
+    
+    pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
 void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, void* p)

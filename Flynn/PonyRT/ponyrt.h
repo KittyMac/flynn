@@ -22,6 +22,7 @@
 #  define PLATFORM_IS_ILP32
 #endif
 
+typedef void (^PonyCallback)(void);
 
 typedef struct pony_actor_t pony_actor_t;
 
@@ -63,5 +64,13 @@ typedef struct pony_msgpp_t
     void* p1;
     void* p2;
 } pony_msgpp_t;
+
+typedef struct pony_msgb_t
+{
+    pony_msg_t msg;
+    PonyCallback p;
+} pony_msgb_t;
+
+void pony_callback_release(PonyCallback callback);
 
 #endif /* ponyrt_h */
