@@ -58,6 +58,8 @@ void ponyint_mpmcq_push(mpmcq_t* q, void* data)
 {
     mpmcq_node_t* node = node_alloc(data);
     
+    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
+    
     // Without that fence, the store to node->next in node_alloc could be
     // reordered after the exchange on the head and after the store to prev->next
     // done by the next push, which would result in the pop incorrectly seeing
@@ -68,13 +70,13 @@ void ponyint_mpmcq_push(mpmcq_t* q, void* data)
     mpmcq_node_t* prev = atomic_exchange_explicit(&q->head, node, memory_order_relaxed);
     
     atomic_store_explicit(&prev->next, node, memory_order_relaxed);
-    
-    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
 }
 
 void ponyint_mpmcq_push_single(mpmcq_t* q, void* data)
 {
     mpmcq_node_t* node = node_alloc(data);
+    
+    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
     
     // If we have a single producer, the swap of the head need not be atomic RMW.
     mpmcq_node_t* prev = atomic_load_explicit(&q->head, memory_order_relaxed);
@@ -83,8 +85,6 @@ void ponyint_mpmcq_push_single(mpmcq_t* q, void* data)
     // If we have a single producer, the fence can be replaced with a store
     // release on prev->next.
     atomic_store_explicit(&prev->next, node, memory_order_release);
-    
-    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
 }
 
 void* ponyint_mpmcq_pop(mpmcq_t* q)

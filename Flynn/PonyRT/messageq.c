@@ -13,6 +13,8 @@
 
 static bool messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
 {
+    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
+    
     atomic_store_explicit(&last->next, NULL, memory_order_relaxed);
     
     // Without that fence, the store to last->next above could be reordered after
@@ -30,14 +32,14 @@ static bool messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
     
     atomic_store_explicit(&prev->next, first, memory_order_relaxed);
     
-    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
-    
     return was_empty;
 }
 
 static bool messageq_push_single(messageq_t* q,
                                  pony_msg_t* first, pony_msg_t* last)
 {
+    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
+    
     atomic_store_explicit(&last->next, NULL, memory_order_relaxed);
     
     // If we have a single producer, the swap of the head need not be atomic RMW.
@@ -50,9 +52,7 @@ static bool messageq_push_single(messageq_t* q,
     // If we have a single producer, the fence can be replaced with a store
     // release on prev->next.
     atomic_store_explicit(&prev->next, first, memory_order_release);
-    
-    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
-    
+        
     return was_empty;
 }
 
@@ -110,11 +110,13 @@ pony_msg_t* ponyint_actor_messageq_pop(messageq_t* q)
         q->tail = next;
         atomic_thread_fence(memory_order_acquire);
         ponyint_pool_free(tail->index, tail);
-        
-        atomic_fetch_sub_explicit(&q->num_messages, 1, memory_order_relaxed);
     }
     
     return next;
+}
+
+void ponyint_actor_messageq_pop_mark_done(messageq_t* q) {
+    atomic_fetch_sub_explicit(&q->num_messages, 1, memory_order_relaxed);
 }
 
 pony_msg_t* ponyint_thread_messageq_pop(messageq_t* q)
@@ -151,7 +153,7 @@ bool ponyint_messageq_markempty(messageq_t* q)
     
     bool empty = atomic_compare_exchange_strong_explicit(&q->head, &tail, head,
                                                          memory_order_release, memory_order_relaxed);
-    if(empty){
+    if(empty) {
         atomic_store_explicit(&q->num_messages, 0, memory_order_relaxed);
     }
     return empty;

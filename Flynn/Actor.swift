@@ -65,11 +65,12 @@ open class Actor {
     
     internal let _uuid:String!
     internal var _targets:[Actor]
-    internal lazy var pony_actor = pony_actor_create()
+    internal var _pony_actor_targets:[UnsafeMutableRawPointer]
+    internal let pony_actor:UnsafeMutableRawPointer!
     
     internal func send(_ block: @escaping ActorBlock) {
         // we need to be careful here: multiple other threads can
-        // call this asynchronously
+        // call this asynchronously. So we must not access any shared state.
         let box = ActorBlockBox(block)
         pony_actor_dispatch(pony_actor, bridge(box), { (box2) in
             let thisBox:ActorBlockBox? = bridge(box2)
@@ -100,26 +101,18 @@ open class Actor {
                 case 1:
                     self._targets.first?.chainCall(withKeywordArguments: new_args)
                 default:
+                    var pony_actors = self._pony_actor_targets
                     if args.count == 0 {
                         // If we're sending the "end of chain" item, and we have more than one target, then we
                         // need to delay sending this item until all of the targets have finished processing
                         // all of their messages.  Otherwise we can have a race condition.
-                        while true {
-                            var num:Int32 = 0;
-                            for target in self._targets {
-                                num += target.messagesCount
-                            }
-                            if num == 0 {
-                                break
-                            }
-                            usleep(1000)
-                        }
-                        
+                        pony_actors_wait(&pony_actors, Int32(pony_actors.count))
                     }
                     
                     // automatic load balancing, find the target with the least amout of work queued up
-                    let minTarget = self._targets.min { a, b in a.messagesCount < b.messagesCount }
-                    minTarget?.chainCall(withKeywordArguments: new_args)
+                    let minIdx = Int(pony_actors_load_balance(&pony_actors, Int32(pony_actors.count)))
+                    let minTarget = self._targets[minIdx]
+                    minTarget.chainCall(withKeywordArguments: new_args)
                 }
             }
         }
@@ -137,6 +130,7 @@ open class Actor {
     @discardableResult func target(_ target:Actor) -> Actor {
         send {
             self._targets.append(target)
+            self._pony_actor_targets.append(target.pony_actor)
         }
         return self
     }
@@ -144,6 +138,9 @@ open class Actor {
     @discardableResult func targets(_ targets:[Actor]) -> Actor {
         send {
             self._targets.append(contentsOf: targets)
+            for target in targets {
+                self._pony_actor_targets.append(target.pony_actor)
+            }
         }
         return self
     }
@@ -153,8 +150,11 @@ open class Actor {
             Actor.startup()
         }
         
+        pony_actor = pony_actor_create()
+        
         _uuid = UUID().uuidString
         _targets = []
+        _pony_actor_targets = []
     }
     
     deinit {

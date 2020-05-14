@@ -68,6 +68,8 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
             p2(p1);
         }
         
+        ponyint_actor_messageq_pop_mark_done(&actor->q);
+        
         app++;
         
         // Stop handling a batch if we reach the head we found when we were

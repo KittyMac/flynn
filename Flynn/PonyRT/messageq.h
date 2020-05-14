@@ -17,7 +17,7 @@ typedef struct messageq_t
 {
     PONY_ATOMIC(pony_msg_t*) head;
     pony_msg_t* tail;
-    PONY_ATOMIC(int64_t) num_messages;
+    PONY_ATOMIC(int32_t) num_messages;
 } messageq_t;
 
 #define UNKNOWN_SCHEDULER -1
@@ -31,6 +31,8 @@ bool ponyint_actor_messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* l
 bool ponyint_actor_messageq_push_single(messageq_t* q,pony_msg_t* first, pony_msg_t* last);
 
 pony_msg_t* ponyint_actor_messageq_pop(messageq_t* q);
+
+void ponyint_actor_messageq_pop_mark_done(messageq_t* q);
 
 bool ponyint_thread_messageq_push(messageq_t* q,pony_msg_t* first, pony_msg_t* last);
 
