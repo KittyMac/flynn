@@ -89,7 +89,8 @@ static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
         *total_messages = 1;
         return sched->last_victim;
     }
-    
+
+#if 0
     // Start with a quick scan of all schedulers to check their num_messages and see if any
     // have waiting work.  If they do we can end quickly with a better guess as a victim.
     scheduler_t* max_victim = scheduler;
@@ -107,6 +108,29 @@ static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
     sched->last_victim = max_victim;
     
     return max_victim;
+#else
+    scheduler_t* victim = sched->last_victim;
+    while(true)
+    {
+      victim--;
+
+      if(victim < scheduler)
+        victim = &scheduler[scheduler_count - 1];
+
+      if((victim == sched->last_victim) || (scheduler_count == 1)) {
+        sched->last_victim = sched;
+        break;
+      }
+      if(victim == sched) {
+        continue;
+      }
+      sched->last_victim = victim;
+      return victim;
+    }
+
+    return NULL;
+    
+#endif
 }
 
 /**
