@@ -28,15 +28,17 @@ public typealias BehaviorBlock = ((BehaviorArgs) -> Void)
 @dynamicCallable
 public struct Behavior<T:Actor> {
     let _actor:T!
-    let _block:BehaviorBlock!
+    let _block:BehaviorBlock
     public init(_ actor:T, _ block:@escaping BehaviorBlock) {
         self._actor = actor
         self._block = block
     }
     @discardableResult public func dynamicallyCall(withKeywordArguments args:BehaviorArgs) -> T {
-        _actor.send {
-            self._block(args)
-        }
+        let local_args = args
+        let local_block = _block
+        pony_actor_dispatch(_actor._pony_actor, {
+            local_block(local_args)
+        })
         return _actor
     }
 }

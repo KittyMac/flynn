@@ -22,7 +22,6 @@ typedef struct pony_actor_t
     messageq_t q;
     PONY_ATOMIC(uint8_t) flags;
     int32_t uid;
-    int32_t batch;
 } pony_actor_t;
 
 enum

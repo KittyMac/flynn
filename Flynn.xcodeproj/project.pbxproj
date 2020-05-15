@@ -71,6 +71,8 @@
 		46C1720824687811004242E1 /* FlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C1720724687811004242E1 /* FlynnTests.swift */; };
 		46C1720A24687811004242E1 /* Flynn.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C171FC24687811004242E1 /* Flynn.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		46DD01DA24687871000A926A /* Actor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DD01D924687871000A926A /* Actor.swift */; };
+		46E8659A246DC3E50054B0F1 /* block.h in Headers */ = {isa = PBXBuildFile; fileRef = 46E86598246DC3E50054B0F1 /* block.h */; };
+		46E8659B246DC3E50054B0F1 /* block.c in Sources */ = {isa = PBXBuildFile; fileRef = 46E86599246DC3E50054B0F1 /* block.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,6 +132,8 @@
 		46C1720724687811004242E1 /* FlynnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlynnTests.swift; sourceTree = "<group>"; };
 		46C1720924687811004242E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		46DD01D924687871000A926A /* Actor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actor.swift; sourceTree = "<group>"; };
+		46E86598246DC3E50054B0F1 /* block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = block.h; sourceTree = "<group>"; };
+		46E86599246DC3E50054B0F1 /* block.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = block.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +206,8 @@
 				46B93047246B3045004C54F7 /* pony.h */,
 				46B93024246AE7E4004C54F7 /* ponyrt.h */,
 				46B93025246AE7E4004C54F7 /* ponyrt.c */,
+				46E86598246DC3E50054B0F1 /* block.h */,
+				46E86599246DC3E50054B0F1 /* block.c */,
 				46B93030246AEBF4004C54F7 /* atomics.h */,
 				46B9306B246B8CAE004C54F7 /* threads.h */,
 				46B9306D246B9114004C54F7 /* threads.c */,
@@ -310,6 +316,7 @@
 				46B93031246AEBF4004C54F7 /* atomics.h in Headers */,
 				46B9306C246B8CAE004C54F7 /* threads.h in Headers */,
 				46B93022246AE7B4004C54F7 /* scheduler.h in Headers */,
+				46E8659A246DC3E50054B0F1 /* block.h in Headers */,
 				46B93044246AFC52004C54F7 /* pagemap.h in Headers */,
 				46B93026246AE7E4004C54F7 /* ponyrt.h in Headers */,
 				46B93059246B89A9004C54F7 /* cpu.h in Headers */,
@@ -514,6 +521,7 @@
 				46B9302F246AE847004C54F7 /* messageq.c in Sources */,
 				46B9306E246B9114004C54F7 /* threads.c in Sources */,
 				46B93051246B85A1004C54F7 /* actor.c in Sources */,
+				46E8659B246DC3E50054B0F1 /* block.c in Sources */,
 				46B93045246AFC52004C54F7 /* pool.c in Sources */,
 				46B93043246AFC52004C54F7 /* pagemap.c in Sources */,
 				46A5E648246A5EBD00159AA0 /* Extensions.swift in Sources */,
