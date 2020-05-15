@@ -27,14 +27,12 @@ typedef struct {
 } PonyActor;
 
 void * pony_register_fast_block(FastBlockCallback callback) {
-    return Block_copy(callback);
-    //fprintf(stderr, "> %d\n", (int)p2);
-    //return p2;
+    return objc_retain(callback);
 }
 
 void pony_unregister_fast_block(void * callback) {
     FastBlockCallback * p = (FastBlockCallback *)callback;
-    Block_release(*p);
+    objc_autorelease(*p);
 }
 
 bool pony_startup() {

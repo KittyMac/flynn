@@ -9,7 +9,6 @@
 
 #define PONY_WANT_ATOMIC_DEFS
 
-#include "block.h"
 #include "actor.h"
 #include "scheduler.h"
 #include "cpu.h"
@@ -48,7 +47,7 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
         if (msg->msgId == kMessageBlock) {
             pony_msgb_t * msgb = (pony_msgb_t *)msg;
             msgb->p();
-            Block_release_pony(msgb->p);
+            objc_autorelease(msgb->p);
         } else if (msg->msgId == kMessageFastBlock) {
             pony_msgfb_t * msgfb = (pony_msgfb_t *)msg;
             msgfb->p(msgfb->a);
@@ -189,7 +188,7 @@ void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId)
 void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, BlockCallback p)
 {
     pony_msgb_t* m = (pony_msgb_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgb_t)), kMessageBlock);
-    m->p = Block_copy_pony(p);
+    m->p = objc_retain(p);
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
