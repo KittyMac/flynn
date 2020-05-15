@@ -41,13 +41,23 @@ static void unset_flag(pony_actor_t* actor, uint8_t flag)
 */
 bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
 {
-    pony_msgb_t* msg;
+    pony_msg_t* msg;
     
     // If we have been scheduled, the head will not be marked as empty.
-    while((msg = (pony_msgb_t *)ponyint_actor_messageq_pop(&actor->q)) != NULL) {
-        msg->p();
+    while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&actor->q)) != NULL) {
         
-        Block_release_pony(msg->p);
+        if (msg->msgId == kMessageBlock) {
+            pony_msgb_t * msgb = (pony_msgb_t *)msg;
+            msgb->p();
+            Block_release_pony(msgb->p);
+        } else if (msg->msgId == kMessageFastBlock) {
+            pony_msgfb_t * msgfb = (pony_msgfb_t *)msg;
+            msgfb->p(msgfb->a);
+            objc_release(msgfb->a);
+            FastBlock_release_pony(msgfb->p);
+        }
+        
+        
         
         ponyint_actor_messageq_pop_mark_done(&actor->q);
     }
@@ -133,17 +143,17 @@ void ponyint_destroy_actor(pony_actor_t* actor)
     ponyint_actor_destroy(actor);
 }
 
-pony_msg_t* pony_alloc_msg(uint32_t index, uint32_t id)
+pony_msg_t* pony_alloc_msg(uint32_t index, uint32_t msgId)
 {
     pony_msg_t* msg = (pony_msg_t*)ponyint_pool_alloc(index);
     msg->index = index;
-    msg->id = id;
+    msg->msgId = msgId;
     return msg;
 }
 
-pony_msg_t* pony_alloc_msg_size(size_t size, uint32_t id)
+pony_msg_t* pony_alloc_msg_size(size_t size, uint32_t msgId)
 {
-    return pony_alloc_msg((uint32_t)ponyint_pool_index(size), id);
+    return pony_alloc_msg((uint32_t)ponyint_pool_index(size), msgId);
 }
 
 void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)
@@ -174,39 +184,47 @@ void pony_chain(pony_msg_t* prev, pony_msg_t* next)
     atomic_store_explicit(&prev->next, next, memory_order_relaxed);
 }
 
-void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id)
+void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId)
 {
-    pony_msg_t* m = pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_t)), id);
+    pony_msg_t* m = pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_t)), msgId);
     pony_sendv(ctx, to, m, m);
 }
 
-void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, PonyCallback p)
+void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, BlockCallback p)
 {
-    pony_msgb_t* m = (pony_msgb_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgb_t)), id);
+    pony_msgb_t* m = (pony_msgb_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgb_t)), kMessageBlock);
     m->p = Block_copy_pony(p);
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
-void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, void* p)
+void pony_send_fast_block(pony_ctx_t* ctx, pony_actor_t* to, void * args, FastBlockCallback p)
 {
-    pony_msgp_t* m = (pony_msgp_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgp_t)), id);
+    pony_msgfb_t* m = (pony_msgfb_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgb_t)), kMessageFastBlock);
+    m->p = FastBlock_copy_pony(p);
+    m->a = args;
+    pony_sendv(ctx, to, &m->msg, &m->msg);
+}
+
+void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p)
+{
+    pony_msgp_t* m = (pony_msgp_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgp_t)), msgId);
     m->p = p;
     
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
-void pony_sendpp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, void* p1, void* p2)
+void pony_sendpp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p1, void* p2)
 {
-    pony_msgpp_t* m = (pony_msgpp_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgpp_t)), id);
+    pony_msgpp_t* m = (pony_msgpp_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgpp_t)), msgId);
     m->p1 = p1;
     m->p2 = p2;
     
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
-void pony_sendi(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, intptr_t i)
+void pony_sendi(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, intptr_t i)
 {
-    pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgi_t)), id);
+    pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgi_t)), msgId);
     m->i = i;
     
     pony_sendv(ctx, to, &m->msg, &m->msg);

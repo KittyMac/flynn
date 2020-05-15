@@ -16,6 +16,8 @@
 #include "scheduler.h"
 #include "actor.h"
 #include "cpu.h"
+#include "alloc.h"
+#include "pool.h"
 
 static bool pony_is_inited = false;
 
@@ -50,8 +52,13 @@ void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
 }
 
-void pony_actor_dispatch(void * actor, PonyCallback callback) {
-    pony_send_block(pony_ctx(), actor, 1, callback);
+void pony_actor_dispatch(void * actor, BlockCallback callback) {
+    pony_send_block(pony_ctx(), actor, callback);
+}
+
+void pony_actor_fast_dispatch(void * actor, void * argsPtr, FastBlockCallback callback) {
+    objc_retain(argsPtr);
+    pony_send_fast_block(pony_ctx(), actor, argsPtr, callback);
 }
 
 int pony_actors_load_balance(void * actorArray, int num_actors) {

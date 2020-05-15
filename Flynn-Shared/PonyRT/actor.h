@@ -15,7 +15,8 @@
 #include <stdbool.h>
 #include <stdalign.h>
 
-typedef void (^PonyCallback)(void);
+typedef void (^BlockCallback)(void);
+typedef void (^FastBlockCallback)(void *);
 
 typedef struct pony_actor_t
 {
@@ -44,14 +45,16 @@ void ponyint_actor_setpendingdestroy(pony_actor_t* actor);
 
 size_t ponyint_actor_num_messages(pony_actor_t* actor);
 
-void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id);
+void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, BlockCallback p);
 
-void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, PonyCallback p);
+void pony_send_fast_block(pony_ctx_t* ctx, pony_actor_t* to, void * args, FastBlockCallback p);
 
-void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, void* p);
+void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p);
 
-void pony_sendpp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, void* p1, void* p2);
+void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId);
 
-void pony_sendi(pony_ctx_t* ctx, pony_actor_t* to, uint32_t id, intptr_t i);
+void pony_sendpp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p1, void* p2);
+
+void pony_sendi(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, intptr_t i);
 
 #endif /* actor_h */

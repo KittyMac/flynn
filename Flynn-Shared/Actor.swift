@@ -11,21 +11,6 @@ import Flynn.Pony
 
 public typealias ActorBlock = (() -> Void)
 
-func bridge(_ obj : AnyObject) -> UnsafeMutableRawPointer {
-    return UnsafeMutableRawPointer(Unmanaged.passRetained(obj).toOpaque())
-}
-
-func bridge<T:AnyObject>(_ ptr : UnsafeMutableRawPointer?) -> T? {
-    if let ptr = ptr {
-        return Unmanaged.fromOpaque(ptr).takeRetainedValue()
-    }
-    return nil
-}
-
-func bridge<T:AnyObject>(_ ptr : UnsafeMutableRawPointer) -> T? {
-    return Unmanaged.fromOpaque(ptr).takeRetainedValue()
-}
-
 infix operator |> : AssignmentPrecedence
 public func |> (left: Actor, right: Actor) -> Actor {
     left.target(right)

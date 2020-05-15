@@ -14,13 +14,21 @@
 #include "alloc.h"
 #include "ponyrt.h"
 
-#if !USE_CUSTOM_BLOCK_COPY
-
-void Block_release_pony(PonyCallback p) {
+void FastBlock_release_pony(FastBlockCallback p) {
     Block_release(p);
 }
 
-PonyCallback Block_copy_pony(PonyCallback p) {
+FastBlockCallback FastBlock_copy_pony(FastBlockCallback p) {
+    return Block_copy(p);
+}
+
+#if !USE_CUSTOM_BLOCK_COPY
+
+void Block_release_pony(BlockCallback p) {
+    Block_release(p);
+}
+
+BlockCallback Block_copy_pony(BlockCallback p) {
     return Block_copy(p);
 }
 
@@ -96,7 +104,7 @@ static void _Block_call_dispose_helper(struct Block_layout *aBlock)
     (*desc->dispose)(aBlock);
 }
 
-void Block_release_pony(PonyCallback p) {
+void Block_release_pony(BlockCallback p) {
     struct Block_layout *aBlock = (struct Block_layout *)p;
     
     _Block_call_dispose_helper(aBlock);
@@ -104,7 +112,7 @@ void Block_release_pony(PonyCallback p) {
     ponyint_pool_free_size(aBlock->descriptor->size, aBlock);
 }
 
-PonyCallback Block_copy_pony(PonyCallback p) {
+BlockCallback Block_copy_pony(BlockCallback p) {
     // We've re-implemented Block_copy to allocate memory in this pony message to
     // contain the contents of the block. This avoids extraneous calls to malloc
     // (which inherently locks, which is bad)
@@ -119,7 +127,7 @@ PonyCallback Block_copy_pony(PonyCallback p) {
     result->flags |= BLOCK_NEEDS_FREE | 2;  // logical refcount 1
     result->isa = _NSConcreteMallocBlock;
     _Block_call_copy_helper(result, aBlock);
-    return (PonyCallback)result;
+    return (BlockCallback)result;
 }
 
 #endif

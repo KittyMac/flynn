@@ -8,6 +8,21 @@
 
 import Foundation
 
+func bridge(_ obj : AnyObject) -> UnsafeMutableRawPointer {
+    return UnsafeMutableRawPointer(Unmanaged.passRetained(obj).toOpaque())
+}
+
+func bridge<T:AnyObject>(_ ptr : UnsafeMutableRawPointer?) -> T? {
+    if let ptr = ptr {
+        return Unmanaged.fromOpaque(ptr).takeRetainedValue()
+    }
+    return nil
+}
+
+func bridge<T:AnyObject>(_ ptr : UnsafeMutableRawPointer) -> T? {
+    return Unmanaged.fromOpaque(ptr).takeRetainedValue()
+}
+
 // TODO: switch BehaviorArgs to dynamicallyCall(withArguments:). This has several benefits
 // 1. it sends an Array (I think), and not a struct.
 // 2. If its an Array, it can be passed to C and back as a pointer without copying
@@ -28,6 +43,8 @@ public extension Array {
     }
 }
 
+
+
 public typealias BehaviorBlock = ((BehaviorArgs) -> Void)
 
 @dynamicCallable
@@ -38,11 +55,13 @@ public struct Behavior<T:Actor> {
         self._actor = actor
         self._block = block
     }
-    @discardableResult public func dynamicallyCall(withArguments args:BehaviorArgs) -> T {
-        let local_args = args
+    @discardableResult public func dynamicallyCall(withArguments local_args:BehaviorArgs) -> T {
         let local_block = _block
-        pony_actor_dispatch(_actor._pony_actor, {
-            local_block(local_args)
+
+        pony_actor_fast_dispatch(_actor._pony_actor, local_args, { (remote_args) in
+            if let remote_args = remote_args {
+                local_block(remote_args as! BehaviorArgs)
+            }
         })
         return _actor
     }

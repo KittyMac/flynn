@@ -22,7 +22,18 @@
 #  define PLATFORM_IS_ILP32
 #endif
 
-typedef void (^PonyCallback)(void);
+#define kMessageBlock 1
+#define kMessageFastBlock 2
+
+#ifndef id
+#define id void*
+#endif
+
+void objc_release(id value);
+id objc_retain(id value);
+
+typedef void (^BlockCallback)(void);
+typedef void (^FastBlockCallback)(void *);
 
 typedef struct pony_actor_t pony_actor_t;
 
@@ -39,7 +50,7 @@ typedef struct pony_msg_t pony_msg_t;
 struct pony_msg_t
 {
     uint32_t index;
-    uint32_t id;
+    uint32_t msgId;
     PONY_ATOMIC(pony_msg_t*) next;
 };
 
@@ -68,7 +79,14 @@ typedef struct pony_msgpp_t
 typedef struct pony_msgb_t
 {
     pony_msg_t msg;
-    PonyCallback p;
+    BlockCallback p;
 } pony_msgb_t;
+
+typedef struct pony_msgfb_t
+{
+    pony_msg_t msg;
+    FastBlockCallback p;
+    void * a;
+} pony_msgfb_t;
 
 #endif /* ponyrt_h */

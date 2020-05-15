@@ -30,7 +30,7 @@ class FlynnTests: XCTestCase {
             .equals() { (x:Int) in
                 XCTAssertEqual(x, 30, "Counter did not add up to 30")
                 expectation.fulfill()
-            }
+            }.wait(0)
         wait(for: [expectation], timeout: 10.0)
     }
     
