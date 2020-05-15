@@ -13,15 +13,15 @@ import XCTest
 class Counter: Actor {
     var counter:Int = 0
     lazy var inc = Behavior(self) { (args:BehaviorArgs) in
-        let n:Int = args[0]
+        let n:Int = args.get(0)
         self.counter += n
     }
     lazy var dec = Behavior(self) { (args:BehaviorArgs) in
-        let n:Int = args[0]
+        let n:Int = args.get(0)
         self.counter -= n
     }
     lazy var equals = Behavior(self) { (args:BehaviorArgs) in
-        let callback:((Int) -> Void) = args[0]
+        let callback:((Int) -> Void) = args.get(0)
         callback(self.counter)
     }
 }

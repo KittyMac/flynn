@@ -78,8 +78,8 @@ open class Actor {
         pony_actor_dispatch(_pony_actor, block)
     }
     
-    internal func chainCall(withKeywordArguments args:BehaviorArgs) {
-        chain.dynamicallyCall(withKeywordArguments: args)
+    internal func chainCall(withArguments args:BehaviorArgs) {
+        chain.dynamicallyCall(withArguments: args)
     }
         
     func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
@@ -98,7 +98,7 @@ open class Actor {
                 case 0:
                     return
                 case 1:
-                    self._targets.first?.chainCall(withKeywordArguments: new_args)
+                    self._targets.first?.chainCall(withArguments: new_args)
                 default:
                     if args.isEmpty {
                         var pony_actors = self._pony_actor_targets
@@ -114,20 +114,20 @@ open class Actor {
                         var pony_actors = self._pony_actor_targets
                         let minIdx = Int(pony_actors_load_balance(&pony_actors, Int32(num_targets)))
                         let minTarget = self._targets[minIdx]
-                        minTarget.chainCall(withKeywordArguments: new_args)
+                        minTarget.chainCall(withArguments: new_args)
                         break
                     case .Random:
                         if let target = self._targets.randomElement() {
-                            target.chainCall(withKeywordArguments: new_args)
+                            target.chainCall(withArguments: new_args)
                         } else {
                             let minTarget = self._targets[0]
-                            minTarget.chainCall(withKeywordArguments: new_args)
+                            minTarget.chainCall(withArguments: new_args)
                         }
                         break
                     case .RoundRobin:
                         self._poolIdx = (self._poolIdx + 1) % num_targets
                         let minTarget = self._targets[self._poolIdx]
-                        minTarget.chainCall(withKeywordArguments: new_args)
+                        minTarget.chainCall(withArguments: new_args)
                         break
                     }
                 }

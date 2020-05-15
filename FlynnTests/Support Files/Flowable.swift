@@ -29,8 +29,8 @@ class Print: Actor {
 class Uppercase: Actor {
     override func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
         if args.isEmpty == false {
-            let s:String = args[0]
-            return (true,["": s.uppercased()])
+            let s:String = args.get(0)
+            return (true,[s.uppercased()])
         }
         return (true,args)
     }
@@ -43,11 +43,11 @@ class Concatenate: Actor {
     var combined:String = ""
     override func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
         if args.isEmpty == false {
-            let s:String = args[0]
+            let s:String = args.get(0)
             combined.append(s)
             return (false,args)
         }
-        return (true,["": combined])
+        return (true,[combined])
     }
 }
 

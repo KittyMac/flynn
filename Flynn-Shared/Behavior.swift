@@ -8,25 +8,23 @@
 
 import Foundation
 
-
 // TODO: switch BehaviorArgs to dynamicallyCall(withArguments:). This has several benefits
 // 1. it sends an Array (I think), and not a struct.
 // 2. If its an Array, it can be passed to C and back as a pointer without copying
 // 3. we know how to do blocks without copying (store in bahavior, store pointer to block, send pointer to block).
 // 4. given 1-3, if we do them all we might be able to have fast, copy-less behavior calling!
+public typealias BehaviorArgs = [Any]
 
-public typealias BehaviorArgs = KeyValuePairs<String, Any>
-
-public extension KeyValuePairs {
+public extension Array {
     // Extract and convert a subscript all in one command. Since we don't have compiler
     // support for checking parameters with behaviors, I am leaning towards crashing
     // in order to help identify buggy code faster.
-    subscript<T>(_ idx: Int) -> T {
-        return self[idx].value as! T
+    func get<T>(_ idx: Int) -> T {
+        return self[idx] as! T
     }
     
     func check(_ idx: Int) -> Any {
-        return self[idx].value
+        return self[idx]
     }
 }
 
@@ -40,7 +38,7 @@ public struct Behavior<T:Actor> {
         self._actor = actor
         self._block = block
     }
-    @discardableResult public func dynamicallyCall(withKeywordArguments args:BehaviorArgs) -> T {
+    @discardableResult public func dynamicallyCall(withArguments args:BehaviorArgs) -> T {
         let local_args = args
         let local_block = _block
         pony_actor_dispatch(_actor._pony_actor, {

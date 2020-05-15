@@ -51,7 +51,7 @@ class FlynnTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Flowable actors")
                 
         let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args:BehaviorArgs) in
-            let s:String = args[0]
+            let s:String = args.get(0)
             XCTAssertEqual(s, "HELLO WORLD", "chaining actors did not work as intended")
             expectation.fulfill()
         })
@@ -68,7 +68,7 @@ class FlynnTests: XCTestCase {
             let expectation = XCTestExpectation(description: "Load balancing")
             
             let pipeline = Passthrough() |> Array(count: 128) { Uppercase() } |> Concatenate() |> Callback({ (args:BehaviorArgs) in
-                let s:String = args[0]
+                let s:String = args.get(0)
                 XCTAssertEqual(s.count, 50000, "load balancing did not contain the expected number of characters")
                 expectation.fulfill()
             })
@@ -107,7 +107,7 @@ class FlynnTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Memory overhead in calling behaviors")
         
         let pipeline = Passthrough() |> Array(count: 128) { Passthrough() } |> Passthrough() |> Callback({ (args:BehaviorArgs) in
-            //let s:String = args[0]
+            //let s:String = args.get(0)
             //XCTAssertEqual(s.count, 22250000, "load balancing did not contain the expected number of characters")
             if args.isEmpty {
                 expectation.fulfill()
