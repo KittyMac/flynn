@@ -14,6 +14,17 @@
 #include "alloc.h"
 #include "ponyrt.h"
 
+#if !USE_CUSTOM_BLOCK_COPY
+
+void Block_release_pony(PonyCallback p) {
+    Block_release(p);
+}
+
+PonyCallback Block_copy_pony(PonyCallback p) {
+    return Block_copy(p);
+}
+
+#else
 
 enum {
     BLOCK_DEALLOCATING =      (0x0001),  // runtime
@@ -110,3 +121,5 @@ PonyCallback Block_copy_pony(PonyCallback p) {
     _Block_call_copy_helper(result, aBlock);
     return (PonyCallback)result;
 }
+
+#endif
