@@ -50,6 +50,7 @@ open class Actor {
     internal let _uuid:String
     
     internal var _num_targets:Int = 0
+    internal var _target:Actor?
     internal var _targets:[Actor]
     internal var _pony_actor_targets:[UnsafeMutableRawPointer]
     internal let _pony_actor:UnsafeMutableRawPointer
@@ -83,7 +84,7 @@ open class Actor {
                 case 0:
                     return
                 case 1:
-                    self._targets.first?.chainCall(withArguments: new_args)
+                    self._target?.chainCall(withArguments: new_args)
                 default:
                     if args.isEmpty {
                         var pony_actors = self._pony_actor_targets
@@ -143,6 +144,7 @@ open class Actor {
     
     @discardableResult func target(_ target:Actor) -> Actor {
         send {
+            self._target = target
             self._targets.append(target)
             self._pony_actor_targets.append(target._pony_actor)
             self._num_targets = self._targets.count
@@ -152,6 +154,7 @@ open class Actor {
     
     @discardableResult func targets(_ targets:[Actor]) -> Actor {
         send {
+            self._target = targets.first
             self._targets.append(contentsOf: targets)
             for target in targets {
                 self._pony_actor_targets.append(target._pony_actor)
@@ -169,6 +172,7 @@ open class Actor {
         _pony_actor = pony_actor_create()
         
         _uuid = UUID().uuidString
+        _target = nil
         _targets = []
         _pony_actor_targets = []
     }

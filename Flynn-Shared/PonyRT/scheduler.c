@@ -31,6 +31,9 @@ static PONY_ATOMIC(uint32_t) active_scheduler_count_check;
 static scheduler_t* scheduler;
 static mpmcq_t inject;
 static __pony_thread_local scheduler_t* this_scheduler;
+static __pony_thread_local void* autorelease_pool;
+static __pony_thread_local bool autorelease_pool_is_dirty;
+
 
 static pthread_mutex_t sched_mut;
 
@@ -85,7 +88,7 @@ static pony_actor_t* pop_global(scheduler_t* sched)
 static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
 {
     // we have work to do or the global inject does, we can return right away
-    if(sched->last_victim->q.num_messages > 0 || inject.num_messages > 0) {
+    if(sched->last_victim->q.num_messages > 0) {
         *total_messages = 1;
         return sched->last_victim;
     }
@@ -163,7 +166,13 @@ static pony_actor_t* steal(scheduler_t* sched)
                 scaling_sleep = scaling_sleep_max;
             }
             if(scaling_sleep >= scaling_sleep_min) {
-                ponyint_cpu_sleep(scaling_sleep);
+                if (autorelease_pool_is_dirty) {
+                    objc_autoreleasePoolPop(autorelease_pool);
+                    autorelease_pool = objc_autoreleasePoolPush();
+                    autorelease_pool_is_dirty = false;
+                }else{
+                    ponyint_cpu_sleep(scaling_sleep);
+                }
             }
         }else{
             scaling_sleep = 0;
@@ -182,6 +191,8 @@ static void run(scheduler_t* sched)
         last_cd_tsc = 0;
     
     pony_actor_t* actor = pop_global(sched);
+    
+    autorelease_pool = objc_autoreleasePoolPush();
     
     while(sched->terminate == false) {
         
@@ -205,6 +216,8 @@ static void run(scheduler_t* sched)
             bool reschedule = ponyint_actor_run(&sched->ctx, actor);
             pony_actor_t* next = pop_global(sched);
             
+            autorelease_pool_is_dirty = true;
+            
             if(reschedule) {
                 if(next != NULL) {
                     // If we have a next actor, we go on the back of the queue. Otherwise,
@@ -213,9 +226,11 @@ static void run(scheduler_t* sched)
                     actor = next;
                 }
             } else {
-                // We aren't rescheduling, so run the next actor. This may be NULL if our
-                // queue was empty.
-                actor = next;
+                // If we're rescheduling and this is the only actor, instead of just running it
+                // again we put it in the inject queue. This allows the actor to be spread out
+                // among other schedulers, distributing the load more evenly.
+                ponyint_mpmcq_push(&inject, next);
+                actor = NULL;
             }
         }
     }

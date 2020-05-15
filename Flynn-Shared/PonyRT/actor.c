@@ -43,7 +43,6 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
 {
     pony_msg_t* msg;
     
-    // If we have been scheduled, the head will not be marked as empty.
     while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&actor->q)) != NULL) {
         
         if (msg->msgId == kMessageBlock) {
