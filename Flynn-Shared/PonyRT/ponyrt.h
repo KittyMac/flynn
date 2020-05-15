@@ -29,6 +29,7 @@
 #define id void*
 #endif
 
+void objc_autorelease(id value);
 void objc_release(id value);
 id objc_retain(id value);
 

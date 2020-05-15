@@ -17,9 +17,12 @@ typedef void (^FastBlockCallback)(id);
 bool pony_startup(void);
 void pony_shutdown(void);
 
+void * pony_register_fast_block(FastBlockCallback callback);
+void pony_unregister_fast_block(void * callback);
+
 void * pony_actor_create();
 void pony_actor_dispatch(void * actor, BlockCallback callback);
-void pony_actor_fast_dispatch(void * actor, id argsPtr, FastBlockCallback callback);
+void pony_actor_fast_dispatch(void * actor, id argsPtr, void * callback);
 int pony_actor_num_messages(void * actor);
 void pony_actor_destroy(void * actor);
 

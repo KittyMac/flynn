@@ -53,11 +53,8 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
         } else if (msg->msgId == kMessageFastBlock) {
             pony_msgfb_t * msgfb = (pony_msgfb_t *)msg;
             msgfb->p(msgfb->a);
-            objc_release(msgfb->a);
-            FastBlock_release_pony(msgfb->p);
+            objc_autorelease(msgfb->a);
         }
-        
-        
         
         ponyint_actor_messageq_pop_mark_done(&actor->q);
     }
@@ -200,7 +197,7 @@ void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, BlockCallback p)
 void pony_send_fast_block(pony_ctx_t* ctx, pony_actor_t* to, void * args, FastBlockCallback p)
 {
     pony_msgfb_t* m = (pony_msgfb_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgb_t)), kMessageFastBlock);
-    m->p = FastBlock_copy_pony(p);
+    m->p = p;
     m->a = args;
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }

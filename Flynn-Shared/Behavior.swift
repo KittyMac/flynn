@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Flynn.Pony
 
 func bridge(_ obj : AnyObject) -> UnsafeMutableRawPointer {
     return UnsafeMutableRawPointer(Unmanaged.passRetained(obj).toOpaque())
@@ -45,24 +46,28 @@ public extension Array {
 
 
 
+public typealias FastDispatchBlock = (@convention(block) (Any) -> Void )
 public typealias BehaviorBlock = ((BehaviorArgs) -> Void)
 
 @dynamicCallable
 public struct Behavior<T:Actor> {
     let _actor:T
     let _block:BehaviorBlock
+    var _fast_block:UnsafeMutableRawPointer
+    
+    // Note: _fast_block will leak because structs in swift do not have deinit!
     public init(_ actor:T, _ block:@escaping BehaviorBlock) {
         self._actor = actor
         self._block = block
-    }
-    @discardableResult public func dynamicallyCall(withArguments local_args:BehaviorArgs) -> T {
-        let local_block = _block
-
-        pony_actor_fast_dispatch(_actor._pony_actor, local_args, { (remote_args) in
+        self._fast_block = pony_register_fast_block({ (remote_args) in
             if let remote_args = remote_args {
-                local_block(remote_args as! BehaviorArgs)
+                block(remote_args as! BehaviorArgs)
             }
         })
+    }
+    
+    @discardableResult public func dynamicallyCall(withArguments local_args:BehaviorArgs) -> T {
+        pony_actor_fast_dispatch(_actor._pony_actor, local_args, _fast_block)
         return _actor
     }
 }

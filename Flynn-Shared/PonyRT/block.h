@@ -13,9 +13,6 @@
 
 #define USE_CUSTOM_BLOCK_COPY 1
 
-void FastBlock_release_pony(FastBlockCallback p);
-FastBlockCallback FastBlock_copy_pony(FastBlockCallback p);
-
 void Block_release_pony(BlockCallback p);
 BlockCallback Block_copy_pony(BlockCallback p);
 

@@ -26,6 +26,17 @@ typedef struct {
     uint64_t renderFrameNumber;
 } PonyActor;
 
+void * pony_register_fast_block(FastBlockCallback callback) {
+    return Block_copy(callback);
+    //fprintf(stderr, "> %d\n", (int)p2);
+    //return p2;
+}
+
+void pony_unregister_fast_block(void * callback) {
+    FastBlockCallback * p = (FastBlockCallback *)callback;
+    Block_release(*p);
+}
+
 bool pony_startup() {
     if (pony_is_inited) { return true; }
     
@@ -56,7 +67,7 @@ void pony_actor_dispatch(void * actor, BlockCallback callback) {
     pony_send_block(pony_ctx(), actor, callback);
 }
 
-void pony_actor_fast_dispatch(void * actor, void * argsPtr, FastBlockCallback callback) {
+void pony_actor_fast_dispatch(void * actor, void * argsPtr, void * callback) {
     objc_retain(argsPtr);
     pony_send_fast_block(pony_ctx(), actor, argsPtr, callback);
 }

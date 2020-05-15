@@ -14,14 +14,6 @@
 #include "alloc.h"
 #include "ponyrt.h"
 
-void FastBlock_release_pony(FastBlockCallback p) {
-    Block_release(p);
-}
-
-FastBlockCallback FastBlock_copy_pony(FastBlockCallback p) {
-    return Block_copy(p);
-}
-
 #if !USE_CUSTOM_BLOCK_COPY
 
 void Block_release_pony(BlockCallback p) {
