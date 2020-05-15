@@ -8,6 +8,13 @@
 
 import Foundation
 
+
+// TODO: switch BehaviorArgs to dynamicallyCall(withArguments:). This has several benefits
+// 1. it sends an Array (I think), and not a struct.
+// 2. If its an Array, it can be passed to C and back as a pointer without copying
+// 3. we know how to do blocks without copying (store in bahavior, store pointer to block, send pointer to block).
+// 4. given 1-3, if we do them all we might be able to have fast, copy-less behavior calling!
+
 public typealias BehaviorArgs = KeyValuePairs<String, Any>
 
 public extension KeyValuePairs {
