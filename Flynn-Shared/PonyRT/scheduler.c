@@ -184,6 +184,16 @@ static void run(scheduler_t* sched)
     pony_actor_t* actor = pop_global(sched);
     
     while(sched->terminate == false) {
+        
+        if(sched->index == 0)
+        {
+          static int not_all_the_time = 0;
+          not_all_the_time++;
+          if((not_all_the_time % 100 == 0)) {
+            ponyint_update_memory_usage();
+          }
+        }
+        
         if(actor == NULL) {
             actor = pop_global(sched);
         }
@@ -253,6 +263,8 @@ static void ponyint_sched_shutdown()
     atomic_store_explicit(&active_scheduler_count, 0, memory_order_relaxed);
     
     ponyint_mpmcq_destroy(&inject);
+    
+    fprintf(stderr, "max memory usage: %0.2f MB\n", ponyint_max_memory() / (1024.0f * 1024.0f));
 }
 
 pony_ctx_t* ponyint_sched_init()

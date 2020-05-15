@@ -12,30 +12,28 @@
 #include <mach/vm_statistics.h>
 
 static size_t total_memory_allocated = 0;
-static bool has_requested_total_memory = false;
+static size_t max_memory_allocated = 0;
 
 void ponyint_update_memory_usage() {
-    // as getting the total OS memory usage is expensive, don't collect it
-    // unless someone has asked for it before.
-    if (has_requested_total_memory == false) {
-        return;
-    }
     struct rusage usage;
     if(0 == getrusage(RUSAGE_SELF, &usage)) {
         total_memory_allocated = usage.ru_maxrss; // bytes
     } else {
         total_memory_allocated = 0;
     }
+    if(total_memory_allocated > max_memory_allocated) {
+        max_memory_allocated = total_memory_allocated;
+    }
 }
 
 size_t ponyint_total_memory()
 {
-    if (has_requested_total_memory == false) {
-        has_requested_total_memory = true;
-        ponyint_update_memory_usage();
-    }
-    
     return total_memory_allocated;
+}
+
+size_t ponyint_max_memory()
+{
+    return max_memory_allocated;
 }
 
 void* ponyint_virt_alloc(size_t bytes)

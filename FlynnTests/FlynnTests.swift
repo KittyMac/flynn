@@ -115,28 +115,26 @@ class FlynnTests: XCTestCase {
         
         print("BEGIN")
         
-        self.measure {
-            let expectation = XCTestExpectation(description: "No data copy inherent in message passing")
-            
-            let pipeline = Passthrough() |> Array(count: 128) { Passthrough() } |> Passthrough() |> Callback({ (args:BehaviorArgs) in
-                //let s:String = args[0]
-                //XCTAssertEqual(s.count, 22250000, "load balancing did not contain the expected number of characters")
-                if args.isEmpty {
-                    expectation.fulfill()
-                }
-            })
-            
-            for i in 0..<5000000 {
-                if i % 2 == 0 {
-                    pipeline.chain(stringA)
-                } else {
-                    pipeline.chain(stringB)
-                }
+        let expectation = XCTestExpectation(description: "No data copy inherent in message passing")
+        
+        let pipeline = Passthrough() |> Array(count: 128) { Passthrough() } |> Passthrough() |> Callback({ (args:BehaviorArgs) in
+            //let s:String = args[0]
+            //XCTAssertEqual(s.count, 22250000, "load balancing did not contain the expected number of characters")
+            if args.isEmpty {
+                expectation.fulfill()
             }
-            
-            pipeline.chain()
-            wait(for: [expectation], timeout: 30.0)
+        })
+        
+        for i in 0..<5000000 {
+            if i % 2 == 0 {
+                pipeline.chain(stringA)
+            } else {
+                pipeline.chain(stringB)
+            }
         }
+        
+        pipeline.chain()
+        wait(for: [expectation], timeout: 30.0)
     }
     
 }
