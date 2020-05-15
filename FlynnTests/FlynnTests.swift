@@ -102,20 +102,9 @@ class FlynnTests: XCTestCase {
         }
     }
     
-    func testNoDataCopyMessagePassing() {
+    func testMemoryBloatFromMessagePassing() {
         
-        var stringA = String()
-        var stringB = String()
-        let tenMB:Int = 1024 * 1024 * 100
-        
-        for _ in 0..<tenMB {
-            stringA.append("x")
-            stringB.append("o")
-        }
-        
-        print("BEGIN")
-        
-        let expectation = XCTestExpectation(description: "No data copy inherent in message passing")
+        let expectation = XCTestExpectation(description: "Memory overhead in calling behaviors")
         
         let pipeline = Passthrough() |> Array(count: 128) { Passthrough() } |> Passthrough() |> Callback({ (args:BehaviorArgs) in
             //let s:String = args[0]
@@ -127,14 +116,23 @@ class FlynnTests: XCTestCase {
         
         for i in 0..<5000000 {
             if i % 2 == 0 {
-                pipeline.chain(stringA)
+                pipeline.chain(1)
             } else {
-                pipeline.chain(stringB)
+                pipeline.chain(2)
             }
+            pipeline.wait(10)
         }
         
         pipeline.chain()
         wait(for: [expectation], timeout: 30.0)
+    }
+    
+    func testMemoryBloatFromMessagePassing2() {
+        let c = Counter()
+        for _ in 0..<5000000 {
+            c.inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1)
+            c.wait(100)
+        }
     }
     
 }

@@ -62,12 +62,12 @@ open class Actor {
         pony_is_started = false
     }
     
-    internal let _uuid:String!
+    internal let _uuid:String
     
     internal var _num_targets:Int = 0
     internal var _targets:[Actor]
     internal var _pony_actor_targets:[UnsafeMutableRawPointer]
-    internal let _pony_actor:UnsafeMutableRawPointer!
+    internal let _pony_actor:UnsafeMutableRawPointer
     
     internal var _poolIdx:Int = 0
     internal var _loadBalance:LoadBalance = .RoundRobin
@@ -117,8 +117,12 @@ open class Actor {
                         minTarget.chainCall(withKeywordArguments: new_args)
                         break
                     case .Random:
-                        let target = self._targets.randomElement()
-                        target!.chainCall(withKeywordArguments: new_args)
+                        if let target = self._targets.randomElement() {
+                            target.chainCall(withKeywordArguments: new_args)
+                        } else {
+                            let minTarget = self._targets[0]
+                            minTarget.chainCall(withKeywordArguments: new_args)
+                        }
                         break
                     case .RoundRobin:
                         self._poolIdx = (self._poolIdx + 1) % num_targets

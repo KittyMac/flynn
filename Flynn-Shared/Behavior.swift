@@ -27,7 +27,7 @@ public typealias BehaviorBlock = ((BehaviorArgs) -> Void)
 
 @dynamicCallable
 public struct Behavior<T:Actor> {
-    let _actor:T!
+    let _actor:T
     let _block:BehaviorBlock
     public init(_ actor:T, _ block:@escaping BehaviorBlock) {
         self._actor = actor

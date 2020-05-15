@@ -74,6 +74,7 @@ void pony_actors_wait(int min_msgs, void * actorArray, int num_actors) {
     // we hard wait until all actors we have been given have no messages waiting
     pony_actor_t ** actorsPtr = (pony_actor_t**)actorArray;
     int scaling_sleep = 10;
+    int max_scaling_sleep = 500;
     while (true) {
         int32_t n = 0;
         for (int i = 0; i < num_actors; i++) {
@@ -83,7 +84,10 @@ void pony_actors_wait(int min_msgs, void * actorArray, int num_actors) {
             break;
         }
         ponyint_cpu_sleep(scaling_sleep);
-        scaling_sleep += 10;
+        scaling_sleep += 1;
+        if (scaling_sleep > max_scaling_sleep) {
+            scaling_sleep = max_scaling_sleep;
+        }
     }
 }
 
