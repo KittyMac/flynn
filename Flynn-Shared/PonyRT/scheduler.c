@@ -19,7 +19,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#define PONY_SCHED_BLOCK_THRESHOLD 1000000
+
+
+#define SCHED_FAVOR_MORE_CORES 1
 
 static DECLARE_THREAD_FN(run_thread);
 
@@ -93,25 +95,7 @@ static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
         return sched->last_victim;
     }
 
-#if 0
-    // Start with a quick scan of all schedulers to check their num_messages and see if any
-    // have waiting work.  If they do we can end quickly with a better guess as a victim.
-    scheduler_t* max_victim = scheduler;
-    scheduler_t* last_victim = scheduler + scheduler_count;
-    scheduler_t* scan_victim = scheduler + 1;
-    
-    while (scan_victim < last_victim) {
-        if(scan_victim->q.num_messages > max_victim->q.num_messages) {
-            max_victim = scan_victim;
-        }
-        scan_victim++;
-    }
-    *total_messages = scan_victim->q.num_messages;
-    
-    sched->last_victim = max_victim;
-    
-    return max_victim;
-#else
+#if (SCHED_FAVOR_MORE_CORES == 1)
     scheduler_t* victim = sched->last_victim;
     while(true)
     {
@@ -132,7 +116,24 @@ static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
     }
 
     return NULL;
+#else
+    // Start with a quick scan of all schedulers to check their num_messages and see if any
+    // have waiting work.  If they do we can end quickly with a better guess as a victim.
+    scheduler_t* max_victim = scheduler;
+    scheduler_t* last_victim = scheduler + scheduler_count;
+    scheduler_t* scan_victim = scheduler + 1;
     
+    while (scan_victim < last_victim) {
+        if(scan_victim->q.num_messages > max_victim->q.num_messages) {
+            max_victim = scan_victim;
+        }
+        scan_victim++;
+    }
+    *total_messages = scan_victim->q.num_messages;
+    
+    sched->last_victim = max_victim;
+    
+    return max_victim;
 #endif
 }
 
@@ -166,12 +167,11 @@ static pony_actor_t* steal(scheduler_t* sched)
                 scaling_sleep = scaling_sleep_max;
             }
             if(scaling_sleep >= scaling_sleep_min) {
+                ponyint_cpu_sleep(scaling_sleep);
                 if (autorelease_pool_is_dirty) {
                     objc_autoreleasePoolPop(autorelease_pool);
                     autorelease_pool = objc_autoreleasePoolPush();
                     autorelease_pool_is_dirty = false;
-                }else{
-                    ponyint_cpu_sleep(scaling_sleep);
                 }
             }
         }else{
@@ -226,11 +226,18 @@ static void run(scheduler_t* sched)
                     actor = next;
                 }
             } else {
+
+#if (SCHED_FAVOR_MORE_CORES == 1)
+                // We aren't rescheduling, so run the next actor. This may be NULL if our
+                // queue was empty.
+                actor = next;
+#else
                 // If we're rescheduling and this is the only actor, instead of just running it
                 // again we put it in the inject queue. This allows the actor to be spread out
                 // among other schedulers, distributing the load more evenly.
                 ponyint_mpmcq_push(&inject, next);
                 actor = NULL;
+#endif
             }
         }
     }

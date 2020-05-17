@@ -40,6 +40,12 @@
 		46229695246DF50600A3ED6D /* FlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C1720724687811004242E1 /* FlynnTests.swift */; };
 		46229696246DF50600A3ED6D /* PonyRTTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B9306F246B9DDD004C54F7 /* PonyRTTests.swift */; };
 		462DA3A12468FEAB00D48470 /* Behavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462DA3A02468FEAB00D48470 /* Behavior.swift */; };
+		46324ABE247175BD00377BA6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46324ABD247175BD00377BA6 /* AppDelegate.swift */; };
+		46324AC4247175BE00377BA6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 46324AC3247175BE00377BA6 /* Assets.xcassets */; };
+		46324AC7247175BE00377BA6 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 46324AC6247175BE00377BA6 /* Preview Assets.xcassets */; };
+		46324ACA247175BE00377BA6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 46324AC8247175BE00377BA6 /* LaunchScreen.storyboard */; };
+		46324AD2247176AB00377BA6 /* Flynn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4622965F246DF19800A3ED6D /* Flynn.framework */; };
+		46324AD3247176AB00377BA6 /* Flynn.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4622965F246DF19800A3ED6D /* Flynn.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		46530F122469A1330046BAC5 /* Counter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46530F102469A1330046BAC5 /* Counter.swift */; };
 		46530F132469A1330046BAC5 /* StringBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46530F112469A1330046BAC5 /* StringBuilder.swift */; };
 		46530F172469B32B0046BAC5 /* Flowable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46530F162469B32B0046BAC5 /* Flowable.swift */; };
@@ -81,6 +87,20 @@
 			remoteGlobalIDString = 4622965E246DF19800A3ED6D;
 			remoteInfo = "Flynn-iOS";
 		};
+		46324ACF247175CB00377BA6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46C171F024687811004242E1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 46324ABA247175BD00377BA6;
+			remoteInfo = TestHost;
+		};
+		46324AD4247176AB00377BA6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46C171F024687811004242E1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4622965E246DF19800A3ED6D;
+			remoteInfo = "Flynn-iOS";
+		};
 		46C1720424687811004242E1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46C171F024687811004242E1 /* Project object */;
@@ -90,12 +110,32 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		46324AD6247176AC00377BA6 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				46324AD3247176AB00377BA6 /* Flynn.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		4622965F246DF19800A3ED6D /* Flynn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		46229662246DF19800A3ED6D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		46229667246DF19900A3ED6D /* Flynn-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Flynn-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		46229677246DF23300A3ED6D /* PonySwift.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = PonySwift.modulemap; sourceTree = "<group>"; };
 		462DA3A02468FEAB00D48470 /* Behavior.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Behavior.swift; sourceTree = "<group>"; };
+		46324ABB247175BD00377BA6 /* TestHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		46324ABD247175BD00377BA6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		46324AC3247175BE00377BA6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		46324AC6247175BE00377BA6 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		46324AC9247175BE00377BA6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		46324ACB247175BE00377BA6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		46530F102469A1330046BAC5 /* Counter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Counter.swift; sourceTree = "<group>"; };
 		46530F112469A1330046BAC5 /* StringBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringBuilder.swift; sourceTree = "<group>"; };
 		46530F162469B32B0046BAC5 /* Flowable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Flowable.swift; sourceTree = "<group>"; };
@@ -148,6 +188,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		46324AB8247175BD00377BA6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46324AD2247176AB00377BA6 /* Flynn.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		46C171F624687811004242E1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -184,6 +232,33 @@
 				46DD01D924687871000A926A /* Actor.swift */,
 			);
 			path = "Flynn-Shared";
+			sourceTree = "<group>";
+		};
+		46324ABC247175BD00377BA6 /* TestHost */ = {
+			isa = PBXGroup;
+			children = (
+				46324ABD247175BD00377BA6 /* AppDelegate.swift */,
+				46324AC3247175BE00377BA6 /* Assets.xcassets */,
+				46324AC8247175BE00377BA6 /* LaunchScreen.storyboard */,
+				46324ACB247175BE00377BA6 /* Info.plist */,
+				46324AC5247175BE00377BA6 /* Preview Content */,
+			);
+			path = TestHost;
+			sourceTree = "<group>";
+		};
+		46324AC5247175BE00377BA6 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				46324AC6247175BE00377BA6 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		46324AD1247176AB00377BA6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		46530F0F2469A0ED0046BAC5 /* Support Files */ = {
@@ -241,7 +316,9 @@
 				46C171FB24687811004242E1 /* Flynn-macOS */,
 				46229660246DF19800A3ED6D /* Flynn-iOS */,
 				46C1720624687811004242E1 /* FlynnTests */,
+				46324ABC247175BD00377BA6 /* TestHost */,
 				46C171FA24687811004242E1 /* Products */,
+				46324AD1247176AB00377BA6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -252,6 +329,7 @@
 				46C1720224687811004242E1 /* Flynn-macOSTests.xctest */,
 				4622965F246DF19800A3ED6D /* Flynn.framework */,
 				46229667246DF19900A3ED6D /* Flynn-iOSTests.xctest */,
+				46324ABB247175BD00377BA6 /* TestHost.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -351,11 +429,31 @@
 			);
 			dependencies = (
 				4622966A246DF19900A3ED6D /* PBXTargetDependency */,
+				46324AD0247175CB00377BA6 /* PBXTargetDependency */,
 			);
 			name = "Flynn-iOSTests";
 			productName = "Flynn-iOSTests";
 			productReference = 46229667246DF19900A3ED6D /* Flynn-iOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		46324ABA247175BD00377BA6 /* TestHost */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 46324ACC247175BE00377BA6 /* Build configuration list for PBXNativeTarget "TestHost" */;
+			buildPhases = (
+				46324AB7247175BD00377BA6 /* Sources */,
+				46324AB8247175BD00377BA6 /* Frameworks */,
+				46324AB9247175BD00377BA6 /* Resources */,
+				46324AD6247176AC00377BA6 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				46324AD5247176AB00377BA6 /* PBXTargetDependency */,
+			);
+			name = TestHost;
+			productName = TestHost;
+			productReference = 46324ABB247175BD00377BA6 /* TestHost.app */;
+			productType = "com.apple.product-type.application";
 		};
 		46C171F824687811004242E1 /* Flynn-macOS */ = {
 			isa = PBXNativeTarget;
@@ -399,7 +497,7 @@
 		46C171F024687811004242E1 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1130;
+				LastSwiftUpdateCheck = 1140;
 				LastUpgradeCheck = 1120;
 				ORGANIZATIONNAME = "Rocco Bowling";
 				TargetAttributes = {
@@ -408,6 +506,10 @@
 					};
 					46229666246DF19900A3ED6D = {
 						CreatedOnToolsVersion = 11.3.1;
+						TestTargetID = 46324ABA247175BD00377BA6;
+					};
+					46324ABA247175BD00377BA6 = {
+						CreatedOnToolsVersion = 11.4.1;
 					};
 					46C171F824687811004242E1 = {
 						CreatedOnToolsVersion = 11.2.1;
@@ -435,6 +537,7 @@
 				46C1720124687811004242E1 /* Flynn-macOSTests */,
 				4622965E246DF19800A3ED6D /* Flynn-iOS */,
 				46229666246DF19900A3ED6D /* Flynn-iOSTests */,
+				46324ABA247175BD00377BA6 /* TestHost */,
 			);
 		};
 /* End PBXProject section */
@@ -451,6 +554,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46324AB9247175BD00377BA6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46324ACA247175BE00377BA6 /* LaunchScreen.storyboard in Resources */,
+				46324AC7247175BE00377BA6 /* Preview Assets.xcassets in Resources */,
+				46324AC4247175BE00377BA6 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -503,6 +616,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		46324AB7247175BD00377BA6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46324ABE247175BD00377BA6 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		46C171F524687811004242E1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -543,6 +664,16 @@
 			target = 4622965E246DF19800A3ED6D /* Flynn-iOS */;
 			targetProxy = 46229669246DF19900A3ED6D /* PBXContainerItemProxy */;
 		};
+		46324AD0247175CB00377BA6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 46324ABA247175BD00377BA6 /* TestHost */;
+			targetProxy = 46324ACF247175CB00377BA6 /* PBXContainerItemProxy */;
+		};
+		46324AD5247176AB00377BA6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4622965E246DF19800A3ED6D /* Flynn-iOS */;
+			targetProxy = 46324AD4247176AB00377BA6 /* PBXContainerItemProxy */;
+		};
 		46C1720524687811004242E1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 46C171F824687811004242E1 /* Flynn-macOS */;
@@ -550,11 +681,23 @@
 		};
 /* End PBXTargetDependency section */
 
+/* Begin PBXVariantGroup section */
+		46324AC8247175BE00377BA6 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				46324AC9247175BE00377BA6 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		46229670246DF19900A3ED6D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = A3LA43YQN5;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -613,6 +756,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = A3LA43YQN5;
 				INFOPLIST_FILE = FlynnTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
@@ -624,8 +768,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.chimerasw.Flynn-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestHost.app/TestHost";
 			};
 			name = Debug;
 		};
@@ -643,6 +789,54 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.chimerasw.Flynn-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestHost.app/TestHost";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		46324ACD247175BE00377BA6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_ASSET_PATHS = "\"TestHost/Preview Content\"";
+				DEVELOPMENT_TEAM = A3LA43YQN5;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = TestHost/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.TestHost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		46324ACE247175BE00377BA6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"TestHost/Preview Content\"";
+				DEVELOPMENT_TEAM = A3LA43YQN5;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = TestHost/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.TestHost;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -776,6 +970,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = A3LA43YQN5;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -829,6 +1024,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = A3LA43YQN5;
 				INFOPLIST_FILE = FlynnTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -878,6 +1074,15 @@
 			buildConfigurations = (
 				46229672246DF19900A3ED6D /* Debug */,
 				46229673246DF19900A3ED6D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		46324ACC247175BE00377BA6 /* Build configuration list for PBXNativeTarget "TestHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46324ACD247175BE00377BA6 /* Debug */,
+				46324ACE247175BE00377BA6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
