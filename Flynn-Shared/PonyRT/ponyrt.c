@@ -66,16 +66,18 @@ void pony_actor_dispatch(void * actor, BlockCallback callback) {
 }
 
 void pony_actor_fast_dispatch(void * actor, int numArgs, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, void * callback) {
-    objc_retain(arg0);
-    objc_retain(arg1);
-    objc_retain(arg2);
-    objc_retain(arg3);
-    objc_retain(arg4);
-    objc_retain(arg5);
-    objc_retain(arg6);
-    objc_retain(arg7);
-    objc_retain(arg8);
-    objc_retain(arg9);
+    switch (numArgs) {
+        case 1: objc_retain(arg0); break;
+        case 2: objc_retain(arg0); objc_retain(arg1); break;
+        case 3: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); break;
+        case 4: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); break;
+        case 5: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); break;
+        case 6: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); break;
+        case 7: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); break;
+        case 8: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7); break;
+        case 9: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7); objc_retain(arg8); break;
+        case 10: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7); objc_retain(arg8); objc_retain(arg9); break;
+    }
     pony_send_fast_block(pony_ctx(), actor, numArgs, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, callback);
 }
 

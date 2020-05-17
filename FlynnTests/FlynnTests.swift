@@ -79,7 +79,7 @@ class FlynnTests: XCTestCase {
                 } else {
                     pipeline.chain("o")
                 }
-                pipeline.wait(100)
+                //pipeline.wait(100)
             }
             
             pipeline.chain()

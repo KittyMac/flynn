@@ -21,7 +21,7 @@
 
 
 
-#define SCHED_FAVOR_MORE_CORES 1
+#define SCHED_FAVOR_MORE_CORES 0
 
 static DECLARE_THREAD_FN(run_thread);
 
@@ -87,15 +87,13 @@ static pony_actor_t* pop_global(scheduler_t* sched)
     return NULL;
 }
 
-static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
+static scheduler_t* choose_victim(scheduler_t* sched)
 {
     // we have work to do or the global inject does, we can return right away
     if(sched->last_victim->q.num_messages > 0) {
-        *total_messages = 1;
         return sched->last_victim;
     }
 
-#if (SCHED_FAVOR_MORE_CORES == 1)
     scheduler_t* victim = sched->last_victim;
     while(true)
     {
@@ -116,25 +114,6 @@ static scheduler_t* choose_victim(scheduler_t* sched, int64_t* total_messages)
     }
 
     return NULL;
-#else
-    // Start with a quick scan of all schedulers to check their num_messages and see if any
-    // have waiting work.  If they do we can end quickly with a better guess as a victim.
-    scheduler_t* max_victim = scheduler;
-    scheduler_t* last_victim = scheduler + scheduler_count;
-    scheduler_t* scan_victim = scheduler + 1;
-    
-    while (scan_victim < last_victim) {
-        if(scan_victim->q.num_messages > max_victim->q.num_messages) {
-            max_victim = scan_victim;
-        }
-        scan_victim++;
-    }
-    *total_messages = scan_victim->q.num_messages;
-    
-    sched->last_victim = max_victim;
-    
-    return max_victim;
-#endif
 }
 
 /**
@@ -147,36 +126,31 @@ static pony_actor_t* steal(scheduler_t* sched)
     scheduler_t* victim = NULL;
     
     int scaling_sleep = 0;
-    int scaling_sleep_delta = 50;
+    int scaling_sleep_delta = 20;
     int scaling_sleep_min = 50;      // The minimum value we start actually sleeping at
     int scaling_sleep_max = 5000;     // The maximimum amount of time we are allowed to sleep at any single call
-    int64_t total_actors_waiting = 0;
     
     while(sched->terminate == false)
     {
         // Choose the victim with the most work to do
-        victim = choose_victim(sched, &total_actors_waiting);
+        victim = choose_victim(sched);
         
         actor = pop_global(victim);
         if(actor != NULL)
             break;
         
-        if(total_actors_waiting == 0) {
-            scaling_sleep += scaling_sleep_delta;
-            if (scaling_sleep > scaling_sleep_max) {
-                scaling_sleep = scaling_sleep_max;
+        scaling_sleep += scaling_sleep_delta;
+        if (scaling_sleep > scaling_sleep_max) {
+            scaling_sleep = scaling_sleep_max;
+        }
+        if(scaling_sleep >= scaling_sleep_min) {
+            ponyint_cpu_sleep(scaling_sleep);
+            if (autorelease_pool_is_dirty) {
+                //_objc_autoreleasePoolPrint();
+                objc_autoreleasePoolPop(autorelease_pool);
+                autorelease_pool = objc_autoreleasePoolPush();
+                autorelease_pool_is_dirty = false;
             }
-            if(scaling_sleep >= scaling_sleep_min) {
-                ponyint_cpu_sleep(scaling_sleep);
-                if (autorelease_pool_is_dirty) {
-                    //_objc_autoreleasePoolPrint();
-                    objc_autoreleasePoolPop(autorelease_pool);
-                    autorelease_pool = objc_autoreleasePoolPush();
-                    autorelease_pool_is_dirty = false;
-                }
-            }
-        }else{
-            scaling_sleep = 0;
         }
     }
     

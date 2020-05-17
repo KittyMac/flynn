@@ -51,16 +51,18 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
         } else if (msg->msgId == kMessageFastBlock) {
             pony_msgfb_t * m = (pony_msgfb_t *)msg;
             m->p(m->numArgs, m->a0, m->a1, m->a2, m->a3, m->a4, m->a5, m->a6, m->a7, m->a8, m->a9);
-            objc_autorelease(m->a0);
-            objc_autorelease(m->a1);
-            objc_autorelease(m->a2);
-            objc_autorelease(m->a3);
-            objc_autorelease(m->a4);
-            objc_autorelease(m->a5);
-            objc_autorelease(m->a6);
-            objc_autorelease(m->a7);
-            objc_autorelease(m->a8);
-            objc_autorelease(m->a9);
+            switch(m->numArgs) {
+                case 1: objc_autorelease(m->a0); break;
+                case 2: objc_autorelease(m->a0); objc_autorelease(m->a1); break;
+                case 3: objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); break;
+                case 4: objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); break;
+                case 5: objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); break;
+                case 6: objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5); break;
+                case 7: objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5); objc_autorelease(m->a6); break;
+                case 8: objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5); objc_autorelease(m->a6); objc_autorelease(m->a7); break;
+                case 9: objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5); objc_autorelease(m->a6); objc_autorelease(m->a7); objc_autorelease(m->a8); break;
+                case 10: objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5); objc_autorelease(m->a6); objc_autorelease(m->a7); objc_autorelease(m->a8); objc_autorelease(m->a9); break;
+            }
         }
         
         ponyint_actor_messageq_pop_mark_done(&actor->q);
