@@ -16,7 +16,7 @@
 #include <stdalign.h>
 
 typedef void (^BlockCallback)(void);
-typedef void (^FastBlockCallback)(void *);
+typedef void (^FastBlockCallback)(int, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 
 typedef struct pony_actor_t
 {
@@ -47,7 +47,7 @@ size_t ponyint_actor_num_messages(pony_actor_t* actor);
 
 void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, BlockCallback p);
 
-void pony_send_fast_block(pony_ctx_t* ctx, pony_actor_t* to, void * args, FastBlockCallback p);
+void pony_send_fast_block(pony_ctx_t* ctx, pony_actor_t* to, int numArgs, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, FastBlockCallback p);
 
 void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p);
 

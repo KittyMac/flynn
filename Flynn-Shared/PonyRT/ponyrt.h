@@ -29,6 +29,7 @@
 #define id void*
 #endif
 
+void _objc_autoreleasePoolPrint(void);
 void objc_autoreleasePoolPop(void *pool);
 void *objc_autoreleasePoolPush(void);
 void objc_autorelease(id value);
@@ -36,7 +37,7 @@ void objc_release(id value);
 id objc_retain(id value);
 
 typedef void (^BlockCallback)(void);
-typedef void (^FastBlockCallback)(void *);
+typedef void (^FastBlockCallback)(int, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 
 typedef struct pony_actor_t pony_actor_t;
 
@@ -89,7 +90,17 @@ typedef struct pony_msgfb_t
 {
     pony_msg_t msg;
     FastBlockCallback p;
-    void * a;
+    int numArgs;
+    void * a0;
+    void * a1;
+    void * a2;
+    void * a3;
+    void * a4;
+    void * a5;
+    void * a6;
+    void * a7;
+    void * a8;
+    void * a9;
 } pony_msgfb_t;
 
 #endif /* ponyrt_h */

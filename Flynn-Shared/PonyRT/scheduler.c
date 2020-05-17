@@ -169,6 +169,7 @@ static pony_actor_t* steal(scheduler_t* sched)
             if(scaling_sleep >= scaling_sleep_min) {
                 ponyint_cpu_sleep(scaling_sleep);
                 if (autorelease_pool_is_dirty) {
+                    //_objc_autoreleasePoolPrint();
                     objc_autoreleasePoolPop(autorelease_pool);
                     autorelease_pool = objc_autoreleasePoolPush();
                     autorelease_pool_is_dirty = false;
@@ -228,15 +229,15 @@ static void run(scheduler_t* sched)
             } else {
 
 #if (SCHED_FAVOR_MORE_CORES == 1)
-                // We aren't rescheduling, so run the next actor. This may be NULL if our
-                // queue was empty.
-                actor = next;
-#else
                 // If we're rescheduling and this is the only actor, instead of just running it
                 // again we put it in the inject queue. This allows the actor to be spread out
                 // among other schedulers, distributing the load more evenly.
                 ponyint_mpmcq_push(&inject, next);
                 actor = NULL;
+#else
+                // We aren't rescheduling, so run the next actor. This may be NULL if our
+                // queue was empty.
+                actor = next;
 #endif
             }
         }

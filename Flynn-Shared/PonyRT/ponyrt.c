@@ -65,9 +65,18 @@ void pony_actor_dispatch(void * actor, BlockCallback callback) {
     pony_send_block(pony_ctx(), actor, callback);
 }
 
-void pony_actor_fast_dispatch(void * actor, void * argsPtr, void * callback) {
-    objc_retain(argsPtr);
-    pony_send_fast_block(pony_ctx(), actor, argsPtr, callback);
+void pony_actor_fast_dispatch(void * actor, int numArgs, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, void * callback) {
+    objc_retain(arg0);
+    objc_retain(arg1);
+    objc_retain(arg2);
+    objc_retain(arg3);
+    objc_retain(arg4);
+    objc_retain(arg5);
+    objc_retain(arg6);
+    objc_retain(arg7);
+    objc_retain(arg8);
+    objc_retain(arg9);
+    pony_send_fast_block(pony_ctx(), actor, numArgs, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, callback);
 }
 
 int pony_actors_load_balance(void * actorArray, int num_actors) {
