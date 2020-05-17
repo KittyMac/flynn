@@ -23,7 +23,17 @@
 #endif
 
 #define kMessageBlock 1
-#define kMessageFastBlock 2
+#define kMessageFastBlock0 2
+#define kMessageFastBlock1 3
+#define kMessageFastBlock2 4
+#define kMessageFastBlock3 5
+#define kMessageFastBlock4 6
+#define kMessageFastBlock5 7
+#define kMessageFastBlock6 8
+#define kMessageFastBlock7 9
+#define kMessageFastBlock8 10
+#define kMessageFastBlock9 11
+#define kMessageFastBlock10 12
 
 #ifndef id
 #define id void*
@@ -37,7 +47,17 @@ void objc_release(id value);
 id objc_retain(id value);
 
 typedef void (^BlockCallback)(void);
-typedef void (^FastBlockCallback)(int, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
+typedef void (^FastBlockCallback0)(void);
+typedef void (^FastBlockCallback1)(id);
+typedef void (^FastBlockCallback2)(id, id);
+typedef void (^FastBlockCallback3)(id, id, id);
+typedef void (^FastBlockCallback4)(id, id, id, id);
+typedef void (^FastBlockCallback5)(id, id, id, id, id);
+typedef void (^FastBlockCallback6)(id, id, id, id, id, id);
+typedef void (^FastBlockCallback7)(id, id, id, id, id, id, id);
+typedef void (^FastBlockCallback8)(id, id, id, id, id, id, id, id);
+typedef void (^FastBlockCallback9)(id, id, id, id, id, id, id, id, id);
+typedef void (^FastBlockCallback10)(id, id, id, id, id, id, id, id, id, id);
 
 typedef struct pony_actor_t pony_actor_t;
 
@@ -86,21 +106,80 @@ typedef struct pony_msgb_t
     BlockCallback p;
 } pony_msgb_t;
 
-typedef struct pony_msgfb_t
+typedef struct pony_msgfb0_t
 {
     pony_msg_t msg;
-    FastBlockCallback p;
-    int numArgs;
+    FastBlockCallback0 p;
+} pony_msgfb0_t;
+
+typedef struct pony_msgfb1_t
+{
+    pony_msg_t msg;
+    FastBlockCallback1 p;
     void * a0;
-    void * a1;
-    void * a2;
-    void * a3;
-    void * a4;
-    void * a5;
-    void * a6;
-    void * a7;
-    void * a8;
-    void * a9;
-} pony_msgfb_t;
+} pony_msgfb1_t;
+
+typedef struct pony_msgfb2_t
+{
+    pony_msg_t msg;
+    FastBlockCallback2 p;
+    void * a0; void * a1;
+} pony_msgfb2_t;
+
+typedef struct pony_msgfb3_t
+{
+    pony_msg_t msg;
+    FastBlockCallback3 p;
+    void * a0; void * a1; void * a2;
+} pony_msgfb3_t;
+
+typedef struct pony_msgfb4_t
+{
+    pony_msg_t msg;
+    FastBlockCallback4 p;
+    void * a0; void * a1; void * a2; void * a3;
+} pony_msgfb4_t;
+
+typedef struct pony_msgfb5_t
+{
+    pony_msg_t msg;
+    FastBlockCallback5 p;
+    void * a0; void * a1; void * a2; void * a3; void * a4;
+} pony_msgfb5_t;
+
+typedef struct pony_msgfb6_t
+{
+    pony_msg_t msg;
+    FastBlockCallback6 p;
+    void * a0; void * a1; void * a2; void * a3; void * a4; void * a5;
+} pony_msgfb6_t;
+
+typedef struct pony_msgfb7_t
+{
+    pony_msg_t msg;
+    FastBlockCallback7 p;
+    void * a0; void * a1; void * a2; void * a3; void * a4; void * a5; void * a6;
+} pony_msgfb7_t;
+
+typedef struct pony_msgfb8_t
+{
+    pony_msg_t msg;
+    FastBlockCallback8 p;
+    void * a0; void * a1; void * a2; void * a3; void * a4; void * a5; void * a6; void * a7;
+} pony_msgfb8_t;
+
+typedef struct pony_msgfb9_t
+{
+    pony_msg_t msg;
+    FastBlockCallback9 p;
+    void * a0; void * a1; void * a2; void * a3; void * a4; void * a5; void * a6; void * a7; void * a8;
+} pony_msgfb9_t;
+
+typedef struct pony_msgfb10_t
+{
+    pony_msg_t msg;
+    FastBlockCallback10 p;
+    void * a0; void * a1; void * a2; void * a3; void * a4; void * a5; void * a6; void * a7; void * a8; void * a9;
+} pony_msgfb10_t;
 
 #endif /* ponyrt_h */

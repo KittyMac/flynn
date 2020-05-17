@@ -26,14 +26,29 @@ typedef struct {
     uint64_t renderFrameNumber;
 } PonyActor;
 
-void * pony_register_fast_block(FastBlockCallback callback) {
-    return objc_retain(callback);
-}
+void * pony_register_fast_block0(FastBlockCallback0 callback) { return objc_retain(callback); }
+void * pony_register_fast_block1(FastBlockCallback1 callback) { return objc_retain(callback); }
+void * pony_register_fast_block2(FastBlockCallback2 callback) { return objc_retain(callback); }
+void * pony_register_fast_block3(FastBlockCallback3 callback) { return objc_retain(callback); }
+void * pony_register_fast_block4(FastBlockCallback4 callback) { return objc_retain(callback); }
+void * pony_register_fast_block5(FastBlockCallback5 callback) { return objc_retain(callback); }
+void * pony_register_fast_block6(FastBlockCallback6 callback) { return objc_retain(callback); }
+void * pony_register_fast_block7(FastBlockCallback7 callback) { return objc_retain(callback); }
+void * pony_register_fast_block8(FastBlockCallback8 callback) { return objc_retain(callback); }
+void * pony_register_fast_block9(FastBlockCallback9 callback) { return objc_retain(callback); }
+void * pony_register_fast_block10(FastBlockCallback10 callback) { return objc_retain(callback); }
 
-void pony_unregister_fast_block(void * callback) {
-    FastBlockCallback * p = (FastBlockCallback *)callback;
-    objc_autorelease(*p);
-}
+void pony_unregister_fast_block0(void * p) { objc_autorelease(*((FastBlockCallback0 *)p)); }
+void pony_unregister_fast_block1(void * p) { objc_autorelease(*((FastBlockCallback1 *)p)); }
+void pony_unregister_fast_block2(void * p) { objc_autorelease(*((FastBlockCallback2 *)p)); }
+void pony_unregister_fast_block3(void * p) { objc_autorelease(*((FastBlockCallback3 *)p)); }
+void pony_unregister_fast_block4(void * p) { objc_autorelease(*((FastBlockCallback4 *)p)); }
+void pony_unregister_fast_block5(void * p) { objc_autorelease(*((FastBlockCallback5 *)p)); }
+void pony_unregister_fast_block6(void * p) { objc_autorelease(*((FastBlockCallback6 *)p)); }
+void pony_unregister_fast_block7(void * p) { objc_autorelease(*((FastBlockCallback7 *)p)); }
+void pony_unregister_fast_block8(void * p) { objc_autorelease(*((FastBlockCallback8 *)p)); }
+void pony_unregister_fast_block9(void * p) { objc_autorelease(*((FastBlockCallback9 *)p)); }
+void pony_unregister_fast_block10(void * p) { objc_autorelease(*((FastBlockCallback10 *)p)); }
 
 bool pony_startup() {
     if (pony_is_inited) { return true; }
@@ -65,20 +80,46 @@ void pony_actor_dispatch(void * actor, BlockCallback callback) {
     pony_send_block(pony_ctx(), actor, callback);
 }
 
-void pony_actor_fast_dispatch(void * actor, int numArgs, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, void * callback) {
-    switch (numArgs) {
-        case 1: objc_retain(arg0); break;
-        case 2: objc_retain(arg0); objc_retain(arg1); break;
-        case 3: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); break;
-        case 4: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); break;
-        case 5: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); break;
-        case 6: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); break;
-        case 7: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); break;
-        case 8: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7); break;
-        case 9: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7); objc_retain(arg8); break;
-        case 10: objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7); objc_retain(arg8); objc_retain(arg9); break;
-    }
-    pony_send_fast_block(pony_ctx(), actor, numArgs, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, callback);
+void pony_actor_fast_dispatch0(void * actor, void * callback) { pony_send_fast_block0(pony_ctx(), actor, callback); }
+void pony_actor_fast_dispatch1(void * actor, id arg0, void * callback) {
+    objc_retain(arg0);
+    pony_send_fast_block1(pony_ctx(), actor, arg0, callback);
+}
+void pony_actor_fast_dispatch2(void * actor, id arg0, id arg1, void * callback) {
+    objc_retain(arg0); objc_retain(arg1);
+    pony_send_fast_block2(pony_ctx(), actor, arg0, arg1, callback);
+}
+void pony_actor_fast_dispatch3(void * actor, id arg0, id arg1, id arg2, void * callback) {
+    objc_retain(arg0); objc_retain(arg1); objc_retain(arg2);
+    pony_send_fast_block3(pony_ctx(), actor, arg0, arg1, arg2, callback);
+}
+void pony_actor_fast_dispatch4(void * actor, id arg0, id arg1, id arg2, id arg3, void * callback) {
+    objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3);
+    pony_send_fast_block4(pony_ctx(), actor, arg0, arg1, arg2, arg3, callback);
+}
+void pony_actor_fast_dispatch5(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, void * callback) {
+    objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4);
+    pony_send_fast_block5(pony_ctx(), actor, arg0, arg1, arg2, arg3, arg4, callback);
+}
+void pony_actor_fast_dispatch6(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, void * callback) {
+    objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5);
+    pony_send_fast_block6(pony_ctx(), actor, arg0, arg1, arg2, arg3, arg4, arg5, callback);
+}
+void pony_actor_fast_dispatch7(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, void * callback) {
+    objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6);
+    pony_send_fast_block7(pony_ctx(), actor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, callback);
+}
+void pony_actor_fast_dispatch8(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, void * callback) {
+    objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7);
+    pony_send_fast_block8(pony_ctx(), actor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, callback);
+}
+void pony_actor_fast_dispatch9(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, void * callback) {
+    objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7); objc_retain(arg8);
+    pony_send_fast_block9(pony_ctx(), actor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, callback);
+}
+void pony_actor_fast_dispatch10(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, void * callback) {
+    objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7); objc_retain(arg8); objc_retain(arg9);
+    pony_send_fast_block10(pony_ctx(), actor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, callback);
 }
 
 int pony_actors_load_balance(void * actorArray, int num_actors) {

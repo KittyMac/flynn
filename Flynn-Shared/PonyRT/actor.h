@@ -11,12 +11,10 @@
 #define actor_h
 
 #include "messageq.h"
+#include "ponyrt.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdalign.h>
-
-typedef void (^BlockCallback)(void);
-typedef void (^FastBlockCallback)(int, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 
 typedef struct pony_actor_t
 {
@@ -47,7 +45,17 @@ size_t ponyint_actor_num_messages(pony_actor_t* actor);
 
 void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, BlockCallback p);
 
-void pony_send_fast_block(pony_ctx_t* ctx, pony_actor_t* to, int numArgs, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, FastBlockCallback p);
+void pony_send_fast_block0(pony_ctx_t* ctx, pony_actor_t* to, FastBlockCallback0 p);
+void pony_send_fast_block1(pony_ctx_t* ctx, pony_actor_t* to, id arg0, FastBlockCallback1 p);
+void pony_send_fast_block2(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, FastBlockCallback2 p);
+void pony_send_fast_block3(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, FastBlockCallback3 p);
+void pony_send_fast_block4(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, FastBlockCallback4 p);
+void pony_send_fast_block5(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, FastBlockCallback5 p);
+void pony_send_fast_block6(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, FastBlockCallback6 p);
+void pony_send_fast_block7(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, FastBlockCallback7 p);
+void pony_send_fast_block8(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, FastBlockCallback8 p);
+void pony_send_fast_block9(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, FastBlockCallback9 p);
+void pony_send_fast_block10(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, FastBlockCallback10 p);
 
 void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p);
 
