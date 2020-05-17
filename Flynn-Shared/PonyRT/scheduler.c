@@ -21,7 +21,7 @@
 
 
 
-#define SCHED_FAVOR_MORE_CORES 0
+#define SCHED_FAVOR_MORE_CORES 1
 
 static DECLARE_THREAD_FN(run_thread);
 

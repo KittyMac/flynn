@@ -69,11 +69,11 @@ class FlynnTests: XCTestCase {
             
             let pipeline = Passthrough() |> Array(count: 128) { Uppercase() } |> Concatenate() |> Callback({ (args:BehaviorArgs) in
                 let s:String = args.get(0)
-                XCTAssertEqual(s.count, 500000, "load balancing did not contain the expected number of characters")
+                XCTAssertEqual(s.count, 50000, "load balancing did not contain the expected number of characters")
                 expectation.fulfill()
             })
             
-            for i in 0..<500000 {
+            for i in 0..<50000 {
                 if i % 2 == 0 {
                     pipeline.chain("x")
                 } else {
