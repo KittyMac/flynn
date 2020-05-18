@@ -13,13 +13,13 @@ Which leads us to Flynn, an attempt to replicate the better parts of the actor/m
 ## Key Features
 
 • **Actor-Model Programming**  
-In Pony you have classes and actors.  Classes are synchronous, Actors are asynchronous.  Generally, you may only interact with actors by calling behaviours on them. Behaviours are messages which get stored in the actor's mailbox and processing synchronously. Thankfully, there is direct correlation to Swift here.  Actors are classes, and actors have a serial OperationQueue.
+In Pony you have classes and actors.  Classes are synchronous, Actors are asynchronous.  You may only interact with actors by calling behaviours. Behaviours are messages which are stored in the actor's message queue and are processed sequentially. You can think of actors as classes whose method calls are automatically added to a serial dispath queue.
 
-• **Reference Capabilities**  
-Increased capacity for concurrency without additional safe-guards will only lead to increased capacity for headaches. It is insanely easy to introduce data races and other nasty problems. Swift has copy-on-write protection and other mechanisms, but none of them come close to the compile time garauntees that Pony's reference capabilities system provides. We will have to settle for "making it safer" as opposed to making it "100% safe".
+• **Safety First**  
+Increased capacity for concurrency without additional safe-guards will only lead to increased capacity for headaches. Pony has reference capabilities built into the language, which can gaurantee at compile time that you don't access the same variable from multiple threads concurrently. Alas, we are not going to be adding that to Swift. However, if you adhere to the programming strictures Flynn puts in place you will be programming concurrently with ease.
 
 • **Pony Runtime**  
-The Pony runtime is an amazing piece of software. Flynn uses a stripped down version of the Pony runtime to schedule and execute actors in a predictable and super performant manner.
+The Pony runtime is an amazing piece of software. Originally we implemented flynn on dispatch queues, but they are not optimized for this level of piecemeal concurrency. Flynn is now backed by an custom, mobile optimized version of the Pony runtime.  In our simple initial tests, Flynn backed by the Pony runtime is 5x - 31x more performant than Flynn backed by dispatch queues.
 
 
 ## License
