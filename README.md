@@ -1,4 +1,4 @@
-# flynn
+# Flynn
 
 <img align="left" src="meta/flynn.png">
 
@@ -19,7 +19,7 @@ In Pony you have classes and actors.  Classes are synchronous, Actors are asynch
 Increased capacity for concurrency without additional safe-guards will only lead to increased capacity for headaches. Pony has reference capabilities built into the language, which can gaurantee at compile time that you don't access the same variable from multiple threads concurrently. Alas, we are not going to be adding that to Swift. However, if you adhere to the programming strictures Flynn puts in place you will be programming concurrently with ease.
 
 • **Pony Runtime**  
-The Pony runtime is an amazing piece of software. Originally we implemented flynn on dispatch queues, but they are not optimized for this level of piecemeal concurrency. Flynn is now backed by an custom, mobile optimized version of the Pony runtime.  In our simple initial tests, Flynn backed by the Pony runtime is 5x - 31x more performant than Flynn backed by dispatch queues.
+The Pony runtime is an amazing piece of software. Originally we implemented Flynn on dispatch queues, but they are not optimized for this level of piecemeal concurrency. Flynn is now backed by an custom, mobile optimized version of the Pony runtime.  In our simple initial tests, Flynn backed by the Pony runtime is 5x - 31x more performant than Flynn backed by dispatch queues.
 
 
 ## License
