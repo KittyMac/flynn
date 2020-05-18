@@ -86,7 +86,7 @@ open class Actor {
     }
         
     lazy var target = Behavior(self) { (args:BehaviorArgs) in
-        let local_target:Actor = args.get(0)
+        let local_target:Actor = args•0
         self._target = local_target
         self._targets.append(local_target)
         self._pony_actor_targets.append(local_target._pony_actor)
@@ -94,7 +94,7 @@ open class Actor {
     }
     
     lazy var targets = Behavior(self) { (args:BehaviorArgs) in
-        let local_targets:[Actor] = args.get(0)
+        let local_targets:[Actor] = args•0
         self._target = local_targets.first
         self._targets.append(contentsOf: local_targets)
         for target in local_targets {

@@ -9,26 +9,11 @@
 import Foundation
 import Flynn.Pony
 
-func bridge(_ obj : AnyObject) -> UnsafeMutableRawPointer {
-    return UnsafeMutableRawPointer(Unmanaged.passRetained(obj).toOpaque())
+infix operator • : BitwiseShiftPrecedence
+public func •<T> (left: BehaviorArgs, right: Int) -> T {
+    return left.get(right)
 }
 
-func bridge<T:AnyObject>(_ ptr : UnsafeMutableRawPointer?) -> T? {
-    if let ptr = ptr {
-        return Unmanaged.fromOpaque(ptr).takeRetainedValue()
-    }
-    return nil
-}
-
-func bridge<T:AnyObject>(_ ptr : UnsafeMutableRawPointer) -> T? {
-    return Unmanaged.fromOpaque(ptr).takeRetainedValue()
-}
-
-// TODO: switch BehaviorArgs to dynamicallyCall(withArguments:). This has several benefits
-// 1. it sends an Array (I think), and not a struct.
-// 2. If its an Array, it can be passed to C and back as a pointer without copying
-// 3. we know how to do blocks without copying (store in bahavior, store pointer to block, send pointer to block).
-// 4. given 1-3, if we do them all we might be able to have fast, copy-less behavior calling!
 public typealias BehaviorArgs = [Any]
 
 public extension Array {
