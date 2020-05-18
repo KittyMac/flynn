@@ -27,7 +27,7 @@ import XCTest
 // code and visa-versa. To implement a behavior, declare a closure
 // to a lazy var of type Behavior, like this:
 //
-// lazy var hello = Behavior(self) { (args:BehaviorArgs) in print("hello world from " + args•0) }
+// lazy var hello = Behavior(self) { (args:BehaviorArgs) in print("hello world from " + args[x:0]) }
 //
 // Then other code can call that behavior as you would a method:
 //
@@ -45,16 +45,16 @@ class Counter: Actor {
         counter += i
     }
     
-    lazy var hello = Behavior(self) { (args:BehaviorArgs) in print("hello world from " + args•0) }
+    lazy var hello = Behavior(self) { (args:BehaviorArgs) in print("hello world from " + args[x:0]) }
     
     lazy var inc = Behavior(self) { (args:BehaviorArgs) in
-        self.apply(args•0)
+        self.apply(args[x:0])
     }
     lazy var dec = Behavior(self) { (args:BehaviorArgs) in
-        self.apply(-(args•0))
+        self.apply(-(args[x:0]))
     }
     lazy var equals = Behavior(self) { (args:BehaviorArgs) in
-        let callback:((Int) -> Void) = args•0
+        let callback:((Int) -> Void) = args[x:0]
         callback(self.counter)
     }
 }

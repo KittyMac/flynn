@@ -9,11 +9,6 @@
 import Foundation
 import Flynn.Pony
 
-infix operator • : BitwiseShiftPrecedence
-public func •<T> (left: BehaviorArgs, right: Int) -> T {
-    return left.get(right)
-}
-
 public typealias BehaviorArgs = [Any]
 
 public extension Array {
@@ -21,6 +16,9 @@ public extension Array {
     // support for checking parameters with behaviors, I am leaning towards crashing
     // in order to help identify buggy code faster.
     func get<T>(_ idx: Int) -> T {
+        return self[idx] as! T
+    }
+    subscript<T>(x idx: Int) -> T {
         return self[idx] as! T
     }
     

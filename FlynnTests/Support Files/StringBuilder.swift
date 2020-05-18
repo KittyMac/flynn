@@ -13,14 +13,14 @@ import XCTest
 class StringBuilder: Actor {
     var string:String = ""
     lazy var append = Behavior(self) { (args:BehaviorArgs) in
-        let a:String = args•0
+        let a:String = args[x:0]
         self.string.append(a)
     }
     lazy var space = Behavior(self) { (args:BehaviorArgs) in
         self.string.append(" ")
     }
     lazy var result = Behavior(self) { (args:BehaviorArgs) in
-        let callback:((String) -> Void) = args•0
+        let callback:((String) -> Void) = args[x:0]
         callback(self.string)
     }
 }
