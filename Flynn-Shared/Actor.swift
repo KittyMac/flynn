@@ -59,20 +59,25 @@ open class Actor {
     // MARK: - Behaviors
     private func shared_chain(_ args:BehaviorArgs) {
         let (should_chain,new_args) = chainProcess(args: args)
-        if should_chain && _num_targets > 0 {
-            if _num_targets == 1 {
-                _target?.chain.dynamicallyCall(withArguments: new_args)
-                return
+        if should_chain {
+            let num_targets = _num_targets
+            switch num_targets {
+                case 0:
+                    return
+                case 1:
+                    _target?.chain.dynamicallyCall(withArguments: new_args)
+                default:
+                    if new_args.isEmpty {
+                        var pony_actors = _pony_actor_targets
+                        // If we're sending the "end of chain" item, and we have more than one target, then we
+                        // need to delay sending this item until all of the targets have finished processing
+                        // all of their messages.  Otherwise we can have a race condition.
+                        pony_actors_wait(0, &pony_actors, Int32(num_targets))
+                    }
+                    
+                    _poolIdx = (_poolIdx + 1) % num_targets
+                    _targets[_poolIdx].chain.dynamicallyCall(withArguments: new_args)
             }
-            if new_args.isEmpty {
-                var pony_actors = _pony_actor_targets
-                // If we're sending the "end of chain" item, and we have more than one target, then we
-                // need to delay sending this item until all of the targets have finished processing
-                // all of their messages.  Otherwise we can have a race condition.
-                pony_actors_wait(0, &pony_actors, Int32(_num_targets))
-            }
-            _poolIdx = (_poolIdx + 1) % _num_targets
-            _targets[_poolIdx].chain.dynamicallyCall(withArguments: new_args)
         }
     }
     
