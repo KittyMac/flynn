@@ -72,11 +72,11 @@ class FlynnTests: XCTestCase {
             
             let pipeline = Passthrough() |> Array(count: 128) { Uppercase() } |> Concatenate() |> Callback({ (args:BehaviorArgs) in
                 let s:String = args.get(0)
-                XCTAssertEqual(s.count, 500000, "load balancing did not contain the expected number of characters")
+                XCTAssertEqual(s.count, 50000, "load balancing did not contain the expected number of characters")
                 expectation.fulfill()
             })
             
-            for i in 0..<500000 {
+            for i in 0..<50000 {
                 if i % 2 == 0 {
                     pipeline.chain("x")
                 } else {
@@ -94,12 +94,14 @@ class FlynnTests: XCTestCase {
         // What we are attempting to determine is, in this "worst case scenario", how much overhead
         // is there in our actor/model system.
         self.measure {
+            let stringX = "x"
+            let stringO = "o"
             var combined:String = ""
             for i in 0..<50000 {
                 if i % 2 == 0 {
-                    combined.append("x".uppercased())
+                    combined.append(stringX.uppercased())
                 } else {
-                    combined.append("o".uppercased())
+                    combined.append(stringO.uppercased())
                 }
             }
         }
