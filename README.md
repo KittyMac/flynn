@@ -1,6 +1,6 @@
 # flynn
 
-<img style="float: left;" src="meta/flynn.png">
+<img align="left" src="meta/flynn.png">
 
 An actor-model programming implementation for Swift.
 
