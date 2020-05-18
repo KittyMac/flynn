@@ -90,11 +90,6 @@ bool ponyint_thread_messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* 
     return messageq_push(q, first, last);
 }
 
-bool ponyint_actor_messageq_push_single(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
-{
-    return messageq_push_single(q, first, last);
-}
-
 bool ponyint_thread_messageq_push_single(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
 {
     return messageq_push_single(q, first, last);

@@ -20,9 +20,6 @@
 #include <stdio.h>
 
 
-
-#define SCHED_FAVOR_MORE_CORES 1
-
 static DECLARE_THREAD_FN(run_thread);
 
 // Scheduler global data.
@@ -77,11 +74,9 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
  */
 static pony_actor_t* pop_global(scheduler_t* sched)
 {
-    if (inject.num_messages > 0) {
-        pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
-        if(actor != NULL)
-            return actor;
-    }
+    pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
+    if(actor != NULL)
+        return actor;
     if (sched != NULL)
         return pop(sched);
     return NULL;
@@ -201,18 +196,9 @@ static void run(scheduler_t* sched)
                     actor = next;
                 }
             } else {
-
-#if (SCHED_FAVOR_MORE_CORES == 1)
-                // If we're rescheduling and this is the only actor, instead of just running it
-                // again we put it in the inject queue. This allows the actor to be spread out
-                // among other schedulers, distributing the load more evenly.
-                ponyint_mpmcq_push(&inject, next);
-                actor = NULL;
-#else
                 // We aren't rescheduling, so run the next actor. This may be NULL if our
                 // queue was empty.
                 actor = next;
-#endif
             }
         }
     }

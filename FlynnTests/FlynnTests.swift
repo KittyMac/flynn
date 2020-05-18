@@ -63,17 +63,20 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    @available(OSX 10.15, *)
     func testLoadBalancing() {
-        self.measure {
+        let options = XCTMeasureOptions()
+        options.iterationCount = 10
+        self.measure(options: options) {
             let expectation = XCTestExpectation(description: "Load balancing")
             
             let pipeline = Passthrough() |> Array(count: 128) { Uppercase() } |> Concatenate() |> Callback({ (args:BehaviorArgs) in
                 let s:String = args.get(0)
-                XCTAssertEqual(s.count, 50000, "load balancing did not contain the expected number of characters")
+                XCTAssertEqual(s.count, 500000, "load balancing did not contain the expected number of characters")
                 expectation.fulfill()
             })
             
-            for i in 0..<50000 {
+            for i in 0..<500000 {
                 if i % 2 == 0 {
                     pipeline.chain("x")
                 } else {

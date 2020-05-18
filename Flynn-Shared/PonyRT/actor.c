@@ -224,18 +224,6 @@ void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t
     }
 }
 
-void pony_sendv_single(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)
-{
-    // The function takes a prebuilt chain instead of varargs because the latter
-    // is expensive and very hard to optimise.
-    if(ponyint_actor_messageq_push_single(&to->q, first, last))
-    {
-        // if the receiving actor is currently not unscheduled AND it's not
-        // muted, schedule it.
-        ponyint_sched_add(ctx, to);
-    }
-}
-
 void pony_chain(pony_msg_t* prev, pony_msg_t* next)
 {
     assert(atomic_load_explicit(&prev->next, memory_order_relaxed) == NULL);

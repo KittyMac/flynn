@@ -27,12 +27,6 @@ public func |> (left: [Actor], right: Actor) -> [Actor] {
     return left
 }
 
-enum LoadBalance {
-  case Minimum
-  case Random
-  case RoundRobin
-}
-
 open class Actor {
     
     internal static var pony_is_started:Bool = false
@@ -56,67 +50,56 @@ open class Actor {
     internal let _pony_actor:UnsafeMutableRawPointer
     
     internal var _poolIdx:Int = 0
-    internal var _loadBalance:LoadBalance = .RoundRobin
-    
-    lazy var chain = Behavior(self) { (args:BehaviorArgs) in
-        let (should_chain,new_args) = self.chainProcess(args: args)
-        if should_chain {
-            let num_targets = self._num_targets
-            switch num_targets {
-            case 0:
-                return
-            case 1:
-                self._target?.chainCall(withArguments: new_args)
-            default:
-                if new_args.isEmpty {
-                    var pony_actors = self._pony_actor_targets
-                    // If we're sending the "end of chain" item, and we have more than one target, then we
-                    // need to delay sending this item until all of the targets have finished processing
-                    // all of their messages.  Otherwise we can have a race condition.
-                    pony_actors_wait(0, &pony_actors, Int32(num_targets))
-                }
-                
-                switch self._loadBalance {
-                case .Minimum:
-                    // automatic load balancing, find the target with the least amout of work queued up
-                    var pony_actors = self._pony_actor_targets
-                    let minIdx = Int(pony_actors_load_balance(&pony_actors, Int32(num_targets)))
-                    let minTarget = self._targets[minIdx]
-                    minTarget.chainCall(withArguments: new_args)
-                    break
-                case .Random:
-                    if let target = self._targets.randomElement() {
-                        target.chainCall(withArguments: new_args)
-                    } else {
-                        let minTarget = self._targets[0]
-                        minTarget.chainCall(withArguments: new_args)
-                    }
-                    break
-                case .RoundRobin:
-                    self._poolIdx = (self._poolIdx + 1) % num_targets
-                    let minTarget = self._targets[self._poolIdx]
-                    minTarget.chainCall(withArguments: new_args)
-                    break
-                }
-            }
-        }
-    }
-    
-    internal func send(_ block: @escaping ActorBlock) {
-        // we need to be careful here: multiple other threads can
-        // call this asynchronously. So we must not access any shared state.
-        pony_actor_dispatch(_pony_actor, block)
-    }
-    
-    internal func chainCall(withArguments args:BehaviorArgs) {
-        chain.dynamicallyCall(withArguments: args)
-    }
-        
+            
     func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
         // overridden by subclasses to handle processing chained requests
         return (true,args)
     }
     
+    // MARK: - Behaviors
+    private func shared_chain(_ args:BehaviorArgs) {
+        let (should_chain,new_args) = chainProcess(args: args)
+        if should_chain && _num_targets > 0 {
+            if _num_targets == 1 {
+                _target?.chain.dynamicallyCall(withArguments: new_args)
+                return
+            }
+            if new_args.isEmpty {
+                var pony_actors = _pony_actor_targets
+                // If we're sending the "end of chain" item, and we have more than one target, then we
+                // need to delay sending this item until all of the targets have finished processing
+                // all of their messages.  Otherwise we can have a race condition.
+                pony_actors_wait(0, &pony_actors, Int32(_num_targets))
+            }
+            _poolIdx = (_poolIdx + 1) % _num_targets
+            _targets[_poolIdx].chain.dynamicallyCall(withArguments: new_args)
+        }
+    }
+    
+    lazy var chain = Behavior(self) { (args:BehaviorArgs) in
+        self.shared_chain(args)
+    }
+        
+    lazy var target = Behavior(self) { (args:BehaviorArgs) in
+        let local_target:Actor = args.get(0)
+        self._target = local_target
+        self._targets.append(local_target)
+        self._pony_actor_targets.append(local_target._pony_actor)
+        self._num_targets = self._targets.count
+    }
+    
+    lazy var targets = Behavior(self) { (args:BehaviorArgs) in
+        let local_targets:[Actor] = args.get(0)
+        self._target = local_targets.first
+        self._targets.append(contentsOf: local_targets)
+        for target in local_targets {
+            self._pony_actor_targets.append(target._pony_actor)
+        }
+        self._num_targets = self._targets.count
+    }
+    
+    
+    // MARK: - Functions
     func wait(_ min_msgs:Int32) {
         // Pause while waiting for this actor's message queue to reach 0
         var my_pony_actor = _pony_actor
@@ -130,36 +113,7 @@ open class Actor {
             return pony_actor_num_messages(_pony_actor)
         }
     }
-    
-    @discardableResult func balanced(_ loadBalance:LoadBalance) -> Actor {
-        send {
-            self._loadBalance = loadBalance
-        }
-        return self
-    }
-    
-    @discardableResult func target(_ target:Actor) -> Actor {
-        send {
-            self._target = target
-            self._targets.append(target)
-            self._pony_actor_targets.append(target._pony_actor)
-            self._num_targets = self._targets.count
-        }
-        return self
-    }
-    
-    @discardableResult func targets(_ targets:[Actor]) -> Actor {
-        send {
-            self._target = targets.first
-            self._targets.append(contentsOf: targets)
-            for target in targets {
-                self._pony_actor_targets.append(target._pony_actor)
-            }
-            self._num_targets = self._targets.count
-        }
-        return self
-    }
-            
+                
     public init() {
         if Actor.pony_is_started == false {
             Actor.startup()
