@@ -22,15 +22,19 @@ class FlynnTests: XCTestCase {
 
     func test1() {
         let expectation = XCTestExpectation(description: "Wait for counter to finish")
+        
+        print("start")
         Counter()
             .inc(1)
             .inc(10)
             .inc(20)
             .dec(1)
             .equals() { (x:Int) in
+                print("x: \(x)")
                 XCTAssertEqual(x, 30, "Counter did not add up to 30")
                 expectation.fulfill()
-            }.wait(0)
+            }
+        print("end")
         wait(for: [expectation], timeout: 10.0)
     }
     

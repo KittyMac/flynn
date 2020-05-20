@@ -57,7 +57,7 @@ open class Actor {
     }
     
     // MARK: - Behaviors
-    private func shared_chain(_ args:BehaviorArgs) {
+    private func sharedChain(_ args:BehaviorArgs) {
         let (should_chain,new_args) = chainProcess(args: args)
         if should_chain {
             let num_targets = _num_targets
@@ -82,7 +82,7 @@ open class Actor {
     }
     
     lazy var chain = Behavior(self) { (args:BehaviorArgs) in
-        self.shared_chain(args)
+        self.sharedChain(args)
     }
         
     lazy var target = Behavior(self) { (args:BehaviorArgs) in

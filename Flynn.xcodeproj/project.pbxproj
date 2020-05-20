@@ -6,6 +6,23 @@
 	objectVersion = 50;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		4628104724759D0A009F04B3 /* Flynn */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 4628104A24759D0A009F04B3 /* Build configuration list for PBXAggregateTarget "Flynn" */;
+			buildPhases = (
+				4628105024759DC8009F04B3 /* Mac and iPhone Build Device and Simulator */,
+				4628104B24759D14009F04B3 /* Framework Releases */,
+			);
+			dependencies = (
+				4628104D24759D1D009F04B3 /* PBXTargetDependency */,
+				4628104F24759D1D009F04B3 /* PBXTargetDependency */,
+			);
+			name = Flynn;
+			productName = "Flynn-Release";
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		46229668246DF19900A3ED6D /* Flynn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4622965F246DF19800A3ED6D /* Flynn.framework */; };
 		46229678246DF2E600A3ED6D /* Flynn.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C171FC24687811004242E1 /* Flynn.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -86,6 +103,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4622965E246DF19800A3ED6D;
 			remoteInfo = "Flynn-iOS";
+		};
+		4628104C24759D1D009F04B3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46C171F024687811004242E1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4622965E246DF19800A3ED6D;
+			remoteInfo = "Flynn-iOS";
+		};
+		4628104E24759D1D009F04B3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46C171F024687811004242E1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 46C171F824687811004242E1;
+			remoteInfo = "Flynn-macOS";
 		};
 		46324ACF247175CB00377BA6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -508,6 +539,9 @@
 						CreatedOnToolsVersion = 11.3.1;
 						TestTargetID = 46324ABA247175BD00377BA6;
 					};
+					4628104724759D0A009F04B3 = {
+						CreatedOnToolsVersion = 11.4.1;
+					};
 					46324ABA247175BD00377BA6 = {
 						CreatedOnToolsVersion = 11.4.1;
 					};
@@ -538,6 +572,7 @@
 				4622965E246DF19800A3ED6D /* Flynn-iOS */,
 				46229666246DF19900A3ED6D /* Flynn-iOSTests */,
 				46324ABA247175BD00377BA6 /* TestHost */,
+				4628104724759D0A009F04B3 /* Flynn */,
 			);
 		};
 /* End PBXProject section */
@@ -582,6 +617,45 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4628104B24759D14009F04B3 /* Framework Releases */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Framework Releases";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "RELEASE_LIBRARY_DIR=\"${BUILD_DIR}/${PROJECT_NAME}-releases\" &&\nRELEASE_MACOSX_LIBRARY_DIR=\"${RELEASE_LIBRARY_DIR}/macOS\" &&\nRELEASE_IOS_LIBRARY_DIR=\"${RELEASE_LIBRARY_DIR}/iOS\" &&\n\n# Remove any existing builds and setup platform folders\nrm -rf \"${RELEASE_LIBRARY_DIR}\" &&\nmkdir -p \"${RELEASE_MACOSX_LIBRARY_DIR}\" &&\nmkdir -p \"${RELEASE_IOS_LIBRARY_DIR}\" &&\n\nMACOSX_FRAMEWORK_PATH=\"${BUILD_DIR}/${CONFIGURATION}-macosx/${PROJECT_NAME}.framework\" &&\nMACOSX_LIBRARY_PATH=\"${MACOSX_FRAMEWORK_PATH}/${PROJECT_NAME}\" &&\nMACOSX_FRAMEWORK=\"${RELEASE_MACOSX_LIBRARY_DIR}/${PRODUCT_NAME}.framework\" &&\n\nSIMULATOR_LIBRARY_PATH=\"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${PROJECT_NAME}.framework/${PROJECT_NAME}\" &&\nDEVICE_FRAMEWORK_PATH=\"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${PROJECT_NAME}.framework\" &&\nDEVICE_LIBRARY_PATH=\"${DEVICE_FRAMEWORK_PATH}/${PROJECT_NAME}\" &&\n\nIOS_FRAMEWORK=\"${RELEASE_IOS_LIBRARY_DIR}/${PRODUCT_NAME}.framework\" &&\nIOS_LIBRARY_PATH=\"${IOS_FRAMEWORK}/${PRODUCT_NAME}\" &&\n\n\n# Create a copy of the framework for macOS\ncp -R \"${MACOSX_FRAMEWORK_PATH}\" \"${MACOSX_FRAMEWORK}\" &&\nrm -rf \"${MACOSX_FRAMEWORK}/_CodeSignature\"\n\n# Create a copy of the device framework for iOS\ncp -R \"${DEVICE_FRAMEWORK_PATH}\" \"${IOS_FRAMEWORK}\" &&\nrm -rf \"${IOS_FRAMEWORK}/_CodeSignature\"\n\n# Generate universal binary for the device and simulator.\nlipo \"${SIMULATOR_LIBRARY_PATH}\" \"${DEVICE_LIBRARY_PATH}\" -create -output \"${IOS_LIBRARY_PATH}\"\n";
+		};
+		4628105024759DC8009F04B3 /* Mac and iPhone Build Device and Simulator */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Mac and iPhone Build Device and Simulator";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "xcodebuild -project ${PROJECT_NAME}.xcodeproj -sdk iphonesimulator -target ${PROJECT_NAME}-iOS -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphonesimulator\n \nxcodebuild -project ${PROJECT_NAME}.xcodeproj -sdk iphoneos -target ${PROJECT_NAME}-iOS -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphoneos\n\nxcodebuild -project ${PROJECT_NAME}.xcodeproj -sdk macosx -target ${PROJECT_NAME}-macOS -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-macosx\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		4622965B246DF19800A3ED6D /* Sources */ = {
@@ -664,6 +738,16 @@
 			target = 4622965E246DF19800A3ED6D /* Flynn-iOS */;
 			targetProxy = 46229669246DF19900A3ED6D /* PBXContainerItemProxy */;
 		};
+		4628104D24759D1D009F04B3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4622965E246DF19800A3ED6D /* Flynn-iOS */;
+			targetProxy = 4628104C24759D1D009F04B3 /* PBXContainerItemProxy */;
+		};
+		4628104F24759D1D009F04B3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 46C171F824687811004242E1 /* Flynn-macOS */;
+			targetProxy = 4628104E24759D1D009F04B3 /* PBXContainerItemProxy */;
+		};
 		46324AD0247175CB00377BA6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 46324ABA247175BD00377BA6 /* TestHost */;
@@ -705,7 +789,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "Flynn-iOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -733,7 +817,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "Flynn-iOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -796,6 +880,24 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestHost.app/TestHost";
 				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		4628104824759D0A009F04B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A3LA43YQN5;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		4628104924759D0A009F04B3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A3LA43YQN5;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -983,6 +1085,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MODULEMAP_FILE = "${SRCROOT}/PonySwift.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.Flynn;
 				PRODUCT_NAME = "${PROJECT_NAME}";
@@ -1010,6 +1113,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MODULEMAP_FILE = "${SRCROOT}/PonySwift.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.Flynn;
 				PRODUCT_NAME = "${PROJECT_NAME}";
@@ -1074,6 +1178,15 @@
 			buildConfigurations = (
 				46229672246DF19900A3ED6D /* Debug */,
 				46229673246DF19900A3ED6D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4628104A24759D0A009F04B3 /* Build configuration list for PBXAggregateTarget "Flynn" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4628104824759D0A009F04B3 /* Debug */,
+				4628104924759D0A009F04B3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
