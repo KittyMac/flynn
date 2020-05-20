@@ -51,6 +51,12 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    func testColor() {
+        let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
+        Color().render(CGRect.zero)
+        expectation.fulfill()
+    }
+    
     func testFlowable() {
         let expectation = XCTestExpectation(description: "Flowable actors")
                 

@@ -94,6 +94,10 @@
 		46C1720824687811004242E1 /* FlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C1720724687811004242E1 /* FlynnTests.swift */; };
 		46C1720A24687811004242E1 /* Flynn.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C171FC24687811004242E1 /* Flynn.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		46DD01DA24687871000A926A /* Actor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DD01D924687871000A926A /* Actor.swift */; };
+		46E85CC12475D0DF0030E7CD /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E85CBC2475CD690030E7CD /* Color.swift */; };
+		46E85CC22475D0DF0030E7CD /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E85CBB2475CD690030E7CD /* View.swift */; };
+		46E85CC32475D0E00030E7CD /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E85CBC2475CD690030E7CD /* Color.swift */; };
+		46E85CC42475D0E00030E7CD /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E85CBB2475CD690030E7CD /* View.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -201,6 +205,8 @@
 		46C1720724687811004242E1 /* FlynnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlynnTests.swift; sourceTree = "<group>"; };
 		46C1720924687811004242E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		46DD01D924687871000A926A /* Actor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actor.swift; sourceTree = "<group>"; };
+		46E85CBB2475CD690030E7CD /* View.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
+		46E85CBC2475CD690030E7CD /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -295,6 +301,8 @@
 		46530F0F2469A0ED0046BAC5 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				46E85CBC2475CD690030E7CD /* Color.swift */,
+				46E85CBB2475CD690030E7CD /* View.swift */,
 				46530F162469B32B0046BAC5 /* Flowable.swift */,
 				46530F102469A1330046BAC5 /* Counter.swift */,
 				46530F112469A1330046BAC5 /* StringBuilder.swift */,
@@ -687,6 +695,8 @@
 				46229694246DF50600A3ED6D /* StringBuilder.swift in Sources */,
 				46229695246DF50600A3ED6D /* FlynnTests.swift in Sources */,
 				46229696246DF50600A3ED6D /* PonyRTTests.swift in Sources */,
+				46E85CC42475D0E00030E7CD /* View.swift in Sources */,
+				46E85CC32475D0E00030E7CD /* Color.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -727,6 +737,8 @@
 				46C1720824687811004242E1 /* FlynnTests.swift in Sources */,
 				46530F132469A1330046BAC5 /* StringBuilder.swift in Sources */,
 				46B93070246B9DDD004C54F7 /* PonyRTTests.swift in Sources */,
+				46E85CC22475D0DF0030E7CD /* View.swift in Sources */,
+				46E85CC12475D0DF0030E7CD /* Color.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
