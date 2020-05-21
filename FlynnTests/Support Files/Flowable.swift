@@ -12,14 +12,14 @@ import XCTest
 
 // Pass through all arguments
 class Passthrough: Actor {
-    override func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
+    override func flowProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
         return (true,args)
     }
 }
 
 // Print description of arguments to file
 class Print: Actor {
-    override func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
+    override func flowProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
         print(args.description)
         return (true,args)
     }
@@ -27,7 +27,7 @@ class Print: Actor {
 
 // Takes a string as the first argument, passes along the uppercased version of it
 class Uppercase: Actor {
-    override func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
+    override func flowProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
         if args.isEmpty == false {
             let s:String = args[x:0]
             return (true,[s.uppercased()])
@@ -41,7 +41,7 @@ class Uppercase: Actor {
 // that to be "done", and sends the concatenated string to the target
 class Concatenate: Actor {
     var combined:String = ""
-    override func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
+    override func flowProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
         if args.isEmpty == false {
             let s:String = args[x:0]
             combined.append(s)
@@ -59,7 +59,7 @@ class Callback: Actor {
         super.init()
     }
     
-    override func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
+    override func flowProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
         _callback(args)
         return (true,args)
     }

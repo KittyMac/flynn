@@ -57,6 +57,15 @@ class FlynnTests: XCTestCase {
         expectation.fulfill()
     }
     
+    func testArrayOfColors() {
+        let expectation = XCTestExpectation(description: "Array of actors by protocol")
+        let views:[Viewable] = Array(count: 128) { Color() }
+        for view in views {
+            view.render(CGRect.zero)
+        }
+        expectation.fulfill()
+    }
+    
     func testFlowable() {
         let expectation = XCTestExpectation(description: "Flowable actors")
                 
@@ -66,10 +75,10 @@ class FlynnTests: XCTestCase {
             expectation.fulfill()
         })
         
-        pipeline.chain("hello")
-        pipeline.chain(" ")
-        pipeline.chain("world")
-        pipeline.chain()
+        pipeline.flow("hello")
+        pipeline.flow(" ")
+        pipeline.flow("world")
+        pipeline.flow()
         wait(for: [expectation], timeout: 10.0)
     }
     
@@ -88,14 +97,14 @@ class FlynnTests: XCTestCase {
             
             for i in 0..<50000 {
                 if i % 2 == 0 {
-                    pipeline.chain("x")
+                    pipeline.flow("x")
                 } else {
-                    pipeline.chain("o")
+                    pipeline.flow("o")
                 }
                 //pipeline.wait(100)
             }
             
-            pipeline.chain()
+            pipeline.flow()
             wait(for: [expectation], timeout: 30.0)
         }
     }
@@ -131,14 +140,14 @@ class FlynnTests: XCTestCase {
         
         for i in 0..<5000000 {
             if i % 2 == 0 {
-                pipeline.chain(1)
+                pipeline.flow(1)
             } else {
-                pipeline.chain(2)
+                pipeline.flow(2)
             }
             pipeline.wait(10)
         }
         
-        pipeline.chain()
+        pipeline.flow()
         wait(for: [expectation], timeout: 30.0)
     }
     

@@ -51,41 +51,41 @@ open class Actor {
     
     internal var _poolIdx:Int = 0
             
-    func chainProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
-        // overridden by subclasses to handle processing chained requests
+    func flowProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
+        // overridden by subclasses to handle processing flowed requests
         return (true,args)
     }
     
     // MARK: - Behaviors
-    private func sharedChain(_ args:BehaviorArgs) {
-        let (should_chain,new_args) = chainProcess(args: args)
-        if should_chain {
+    private func sharedFlow(_ args:BehaviorArgs) {
+        let (should_flow,new_args) = flowProcess(args: args)
+        if should_flow {
             let num_targets = _num_targets
             switch num_targets {
                 case 0:
                     return
                 case 1:
-                    _target?.chain.dynamicallyCall(withArguments: new_args)
+                    _target?.flow.dynamicallyCall(withArguments: new_args)
                 default:
                     if new_args.isEmpty {
                         var pony_actors = _pony_actor_targets
-                        // If we're sending the "end of chain" item, and we have more than one target, then we
+                        // If we're sending the "end of flow" item, and we have more than one target, then we
                         // need to delay sending this item until all of the targets have finished processing
                         // all of their messages.  Otherwise we can have a race condition.
                         pony_actors_wait(0, &pony_actors, Int32(num_targets))
                     }
                     
                     _poolIdx = (_poolIdx + 1) % num_targets
-                    _targets[_poolIdx].chain.dynamicallyCall(withArguments: new_args)
+                    _targets[_poolIdx].flow.dynamicallyCall(withArguments: new_args)
             }
         }
     }
     
-    lazy var chain = Behavior(self) { (args:BehaviorArgs) in
-        self.sharedChain(args)
+    lazy var flow = ChainableBehavior(self) { (args:BehaviorArgs) in
+        self.sharedFlow(args)
     }
         
-    lazy var target = Behavior(self) { (args:BehaviorArgs) in
+    lazy var target = ChainableBehavior(self) { (args:BehaviorArgs) in
         let local_target:Actor = args[x:0]
         self._target = local_target
         self._targets.append(local_target)
@@ -93,7 +93,7 @@ open class Actor {
         self._num_targets = self._targets.count
     }
     
-    lazy var targets = Behavior(self) { (args:BehaviorArgs) in
+    lazy var targets = ChainableBehavior(self) { (args:BehaviorArgs) in
         let local_targets:[Actor] = args[x:0]
         self._target = local_targets.first
         self._targets.append(contentsOf: local_targets)

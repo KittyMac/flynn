@@ -10,7 +10,7 @@ import XCTest
 @testable import Flynn
 
 protocol Viewable : Actor {
-    var render:Behavior<Self> { get }
+    var render:Behavior { get }
 }
 
 extension Viewable {

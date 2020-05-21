@@ -224,12 +224,6 @@ void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t
     }
 }
 
-void pony_chain(pony_msg_t* prev, pony_msg_t* next)
-{
-    assert(atomic_load_explicit(&prev->next, memory_order_relaxed) == NULL);
-    atomic_store_explicit(&prev->next, next, memory_order_relaxed);
-}
-
 void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId)
 {
     pony_msg_t* m = pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_t)), msgId);
