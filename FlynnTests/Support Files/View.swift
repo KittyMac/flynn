@@ -9,14 +9,12 @@
 import XCTest
 @testable import Flynn
 
-protocol Viewable : Actor {
-    var render:Behavior { get }
+protocol Viewable: Actor {
+    var render: Behavior { get }
 }
 
 extension Viewable {
-    func _viewable_render(_ bounds:CGRect) {
+    func protected_viewable_render(_ bounds: CGRect) {
         print("Viewable bounds \(bounds)")
     }
 }
-
-

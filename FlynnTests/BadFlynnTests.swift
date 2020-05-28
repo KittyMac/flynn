@@ -12,40 +12,35 @@ import XCTest
 
 @testable import Flynn
 
-
 class OffToTheRacesData {
     var counter = 0
-    
+
     func inc() {
-        counter = counter + 1
+        counter +=  1
     }
 }
 
-class OffToTheRacesActor : Actor {
-    
-    let _data:OffToTheRacesData
-    
-    init(_ data:OffToTheRacesData) {
-        _data = data
+class OffToTheRacesActor: Actor {
+    let data: OffToTheRacesData
+
+    init(_ data: OffToTheRacesData) {
+        self.data = data
     }
-        
-    lazy var inc = ChainableBehavior(self) { (args:BehaviorArgs) in
-        self._data.inc()
+
+    lazy var inc = ChainableBehavior(self) { (_: BehaviorArgs) in
+        self.data.inc()
     }
 }
 
-class WhoseCallWasThisAnyway : Actor {
-    
-    lazy var printFoo = ChainableBehavior(self) { (args:BehaviorArgs) in
+class WhoseCallWasThisAnyway: Actor {
+    lazy var printFoo = ChainableBehavior(self) { (_: BehaviorArgs) in
         print("foo")
     }
-    
+
     func printBar() {
         print("bar")
     }
-    
 }
-
 
 class BadFlynnTests: XCTestCase {
 
@@ -65,52 +60,52 @@ class BadFlynnTests: XCTestCase {
         let actor2 = OffToTheRacesActor(sharedData)
         let actor3 = OffToTheRacesActor(sharedData)
         let actor4 = OffToTheRacesActor(sharedData)
-        let n = 100000
-        
-        for _ in 0..<n {
+        let num = 100000
+
+        for _ in 0..<num {
             actor0.inc()
             actor1.inc()
             actor2.inc()
             actor3.inc()
             actor4.inc()
         }
-        
+
         actor0.wait(0)
         actor1.wait(0)
         actor2.wait(0)
         actor3.wait(0)
         actor4.wait(0)
-        
-        print("got \(sharedData.counter) when I expected to get \(n*5)")
-        
-        XCTAssert(sharedData.counter == (n*5))
+
+        print("got \(sharedData.counter) when I expected to get \(num * 5)")
+
+        XCTAssert(sharedData.counter == (num * 5))
     }
-    
+
     func testCallSiteUncertainty() {
         // https://github.com/KittyMac/flynn/issues/8
-        
-        let a = WhoseCallWasThisAnyway()
-        
+
+        let actor = WhoseCallWasThisAnyway()
+
         // Since calls to functions and calls to behaviors are visually similar,
         // and we cannot enforce developers NOT to have non-private functions,
         // someone reading this would think it would print a bunch of "foo"
         // followed by a bunch of "bar".  Oh, they'd be so wrong.
-        a.printFoo()
-        a.printFoo()
-        a.printFoo()
-        a.printFoo()
-        a.printFoo()
-        a.printFoo()
-        a.printFoo()
-        a.printBar()
-        a.printBar()
-        a.printBar()
-        a.printBar()
-        a.printBar()
-        a.printBar()
-        a.printBar()
-        a.printBar()
-        
+        actor.printFoo()
+        actor.printFoo()
+        actor.printFoo()
+        actor.printFoo()
+        actor.printFoo()
+        actor.printFoo()
+        actor.printFoo()
+        actor.printBar()
+        actor.printBar()
+        actor.printBar()
+        actor.printBar()
+        actor.printBar()
+        actor.printBar()
+        actor.printBar()
+        actor.printBar()
+
+        actor.wait(0)
     }
-        
 }

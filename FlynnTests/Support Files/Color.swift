@@ -10,11 +10,9 @@ import XCTest
 @testable import Flynn
 
 final class Color: Actor, Viewable {
-    lazy var render = Behavior(self) { (args:BehaviorArgs) in
-        let bounds:CGRect = args[x:0]
-        self._viewable_render(bounds)
+    lazy var render = Behavior(self) { (args: BehaviorArgs) in
+        let bounds: CGRect = args[x: 0]
+        self.protected_viewable_render(bounds)
         print("Color bounds \(bounds)")
     }
 }
-
-

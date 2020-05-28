@@ -28,112 +28,106 @@ public func |> (left: [Actor], right: Actor) -> [Actor] {
 }
 
 open class Actor {
-    
-    internal static var pony_is_started:Bool = false
-    
+    internal static var ponyIsStarted: Bool = false
+
     open class func startup() {
         pony_startup()
-        pony_is_started = true
+        ponyIsStarted = true
     }
-    
+
     open class func shutdown() {
         pony_shutdown()
-        pony_is_started = false
+        ponyIsStarted = false
     }
-    
-    internal let _uuid:String
-    
-    internal var _num_targets:Int = 0
-    internal var _target:Actor?
-    internal var _targets:[Actor]
-    internal var _pony_actor_targets:[UnsafeMutableRawPointer]
-    internal let _pony_actor:UnsafeMutableRawPointer
-    
-    internal var _poolIdx:Int = 0
-            
-    func flowProcess(args:BehaviorArgs) -> (Bool,BehaviorArgs) {
+
+    internal let uuid: String
+
+    internal var numTargets: Int = 0
+    internal var flowTarget: Actor?
+    internal var flowTargets: [Actor]
+    internal var ponyActorTargets: [UnsafeMutableRawPointer]
+    internal let ponyActor: UnsafeMutableRawPointer
+
+    internal var poolIdx: Int = 0
+
+    func flowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
         // overridden by subclasses to handle processing flowed requests
-        return (true,args)
+        return (true, args)
     }
-    
+
     // MARK: - Behaviors
-    private func sharedFlow(_ args:BehaviorArgs) {
-        let (should_flow,new_args) = flowProcess(args: args)
-        if should_flow {
-            let num_targets = _num_targets
-            switch num_targets {
-                case 0:
-                    return
-                case 1:
-                    _target?.flow.dynamicallyCall(withArguments: new_args)
-                default:
-                    if new_args.isEmpty {
-                        var pony_actors = _pony_actor_targets
-                        // If we're sending the "end of flow" item, and we have more than one target, then we
-                        // need to delay sending this item until all of the targets have finished processing
-                        // all of their messages.  Otherwise we can have a race condition.
-                        pony_actors_wait(0, &pony_actors, Int32(num_targets))
-                    }
-                    
-                    _poolIdx = (_poolIdx + 1) % num_targets
-                    _targets[_poolIdx].flow.dynamicallyCall(withArguments: new_args)
+    private func sharedFlow(_ args: BehaviorArgs) {
+        let (shouldFlow, newArgs) = flowProcess(args: args)
+        if shouldFlow {
+            switch numTargets {
+            case 0:
+                return
+            case 1:
+                flowTarget?.flow.dynamicallyCall(withArguments: newArgs)
+            default:
+                if newArgs.isEmpty {
+                    var ponyActors = ponyActorTargets
+                    // If we're sending the "end of flow" item, and we have more than one target, then we
+                    // need to delay sending this item until all of the targets have finished processing
+                    // all of their messages.  Otherwise we can have a race condition.
+                    pony_actors_wait(0, &ponyActors, Int32(numTargets))
+                }
+
+                poolIdx = (poolIdx + 1) % numTargets
+                flowTargets[poolIdx].flow.dynamicallyCall(withArguments: newArgs)
             }
         }
     }
-    
-    lazy var flow = ChainableBehavior(self) { (args:BehaviorArgs) in
+
+    lazy var flow = ChainableBehavior(self) { (args: BehaviorArgs) in
         self.sharedFlow(args)
     }
-        
-    lazy var target = ChainableBehavior(self) { (args:BehaviorArgs) in
-        let local_target:Actor = args[x:0]
-        self._target = local_target
-        self._targets.append(local_target)
-        self._pony_actor_targets.append(local_target._pony_actor)
-        self._num_targets = self._targets.count
+
+    lazy var target = ChainableBehavior(self) { (args: BehaviorArgs) in
+        let localTarget: Actor = args[x: 0]
+        self.flowTarget = localTarget
+        self.flowTargets.append(localTarget)
+        self.ponyActorTargets.append(localTarget.ponyActor)
+        self.numTargets = self.flowTargets.count
     }
-    
-    lazy var targets = ChainableBehavior(self) { (args:BehaviorArgs) in
-        let local_targets:[Actor] = args[x:0]
-        self._target = local_targets.first
-        self._targets.append(contentsOf: local_targets)
-        for target in local_targets {
-            self._pony_actor_targets.append(target._pony_actor)
+
+    lazy var targets = ChainableBehavior(self) { (args: BehaviorArgs) in
+        let localTargets: [Actor] = args[x: 0]
+        self.flowTarget = localTargets.first
+        self.flowTargets.append(contentsOf: localTargets)
+        for target in localTargets {
+            self.ponyActorTargets.append(target.ponyActor)
         }
-        self._num_targets = self._targets.count
+        self.numTargets = self.flowTargets.count
     }
-    
-    
+
     // MARK: - Functions
-    func wait(_ min_msgs:Int32) {
+    func wait(_ minMsgs: Int32) {
         // Pause while waiting for this actor's message queue to reach 0
-        var my_pony_actor = _pony_actor
-        pony_actors_wait(min_msgs, &my_pony_actor, 1)
+        var myPonyActor = ponyActor
+        pony_actors_wait(minMsgs, &myPonyActor, 1)
     }
-    
+
     // While not 100% accurate, it can be helpful to know how large the
     // actor's mailbox size is in order to perform lite load balancing
-    var messagesCount:Int32 {
-        get {
-            return pony_actor_num_messages(_pony_actor)
-        }
+    var messagesCount: Int32 {
+        return pony_actor_num_messages(ponyActor)
     }
-                
+
     public init() {
-        if Actor.pony_is_started == false {
+        if Actor.ponyIsStarted == false {
             Actor.startup()
         }
-        
-        _pony_actor = pony_actor_create()
-        
-        _uuid = UUID().uuidString
-        _target = nil
-        _targets = []
-        _pony_actor_targets = []
+
+        ponyActor = pony_actor_create()
+
+        uuid = UUID().uuidString
+        flowTarget = nil
+        flowTargets = []
+        ponyActorTargets = []
     }
-    
+
     deinit {
-        pony_actor_destroy(_pony_actor)
+        pony_actor_destroy(ponyActor)
     }
 }
-

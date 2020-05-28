@@ -39,22 +39,22 @@ import XCTest
 // to be executed sequentially and concurrently to other actors.
 
 class Counter: Actor {
-    private var counter:Int = 0
-    
-    private func apply(_ i:Int) {
-        counter += i
+    private var counter: Int = 0
+
+    private func apply(_ value: Int) {
+        counter += value
     }
-    
-    lazy var hello = ChainableBehavior(self) { (args:BehaviorArgs) in print("hello world from " + args[x:0]) }
-    
-    lazy var inc = ChainableBehavior(self) { (args:BehaviorArgs) in
-        self.apply(args[x:0])
+
+    lazy var hello = ChainableBehavior(self) { (args: BehaviorArgs) in print("hello world from " + args[x:0]) }
+
+    lazy var inc = ChainableBehavior(self) { (args: BehaviorArgs) in
+        self.apply(args[x: 0])
     }
-    lazy var dec = ChainableBehavior(self) { (args:BehaviorArgs) in
-        self.apply(-(args[x:0]))
+    lazy var dec = ChainableBehavior(self) { (args: BehaviorArgs) in
+        self.apply(-(args[x: 0]))
     }
-    lazy var equals = ChainableBehavior(self) { (args:BehaviorArgs) in
-        let callback:((Int) -> Void) = args[x:0]
+    lazy var equals = ChainableBehavior(self) { (args: BehaviorArgs) in
+        let callback: ((Int) -> Void) = args[x:0]
         callback(self.counter)
     }
 }

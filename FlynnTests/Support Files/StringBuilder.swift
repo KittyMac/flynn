@@ -11,16 +11,16 @@ import XCTest
 @testable import Flynn
 
 class StringBuilder: Actor {
-    var string:String = ""
-    lazy var append = ChainableBehavior(self) { (args:BehaviorArgs) in
-        let a:String = args[x:0]
-        self.string.append(a)
+    var string: String = ""
+    lazy var append = ChainableBehavior(self) { (args: BehaviorArgs) in
+        let value: String = args[x: 0]
+        self.string.append(value)
     }
-    lazy var space = ChainableBehavior(self) { (args:BehaviorArgs) in
+    lazy var space = ChainableBehavior(self) { (_: BehaviorArgs) in
         self.string.append(" ")
     }
-    lazy var result = ChainableBehavior(self) { (args:BehaviorArgs) in
-        let callback:((String) -> Void) = args[x:0]
+    lazy var result = ChainableBehavior(self) { (args: BehaviorArgs) in
+        let callback: ((String) -> Void) = args[x:0]
         callback(self.string)
     }
 }

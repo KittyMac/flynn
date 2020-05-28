@@ -446,6 +446,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 46229674246DF19900A3ED6D /* Build configuration list for PBXNativeTarget "Flynn-iOS" */;
 			buildPhases = (
+				46F7BFD724803E2800D63DA5 /* SwiftLint */,
 				4622965A246DF19800A3ED6D /* Headers */,
 				4622965B246DF19800A3ED6D /* Sources */,
 				4622965C246DF19800A3ED6D /* Frameworks */,
@@ -502,6 +503,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 46C1720D24687811004242E1 /* Build configuration list for PBXNativeTarget "Flynn-macOS" */;
 			buildPhases = (
+				46F7BFD824803E3800D63DA5 /* SwiftLint */,
 				46C171F424687811004242E1 /* Headers */,
 				46C171F524687811004242E1 /* Sources */,
 				46C171F624687811004242E1 /* Frameworks */,
@@ -666,6 +668,42 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "xcodebuild -project ${PROJECT_NAME}.xcodeproj -sdk iphonesimulator -target ${PROJECT_NAME}-iOS -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphonesimulator\n \nxcodebuild -project ${PROJECT_NAME}.xcodeproj -sdk iphoneos -target ${PROJECT_NAME}-iOS -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphoneos\n\nxcodebuild -project ${PROJECT_NAME}.xcodeproj -sdk macosx -target ${PROJECT_NAME}-macOS -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-macosx\n";
+		};
+		46F7BFD724803E2800D63DA5 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+		46F7BFD824803E3800D63DA5 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

@@ -23,12 +23,10 @@ class PonyRTTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Wait for counter to finish")
         Counter().hello("Rocco")
             .inc(1)
-            .equals() { (x:Int) in
-                XCTAssertEqual(x, 1, "Counter did not add up to 1")
+            .equals { (value: Int) in
+                XCTAssertEqual(value, 1, "Counter did not add up to 1")
                 expectation.fulfill()
             }
         wait(for: [expectation], timeout: 10.0)
     }
-
-
 }
