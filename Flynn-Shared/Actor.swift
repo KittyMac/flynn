@@ -50,14 +50,14 @@ open class Actor {
 
     internal var poolIdx: Int = 0
 
-    func flowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
+    func protected_flowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
         // overridden by subclasses to handle processing flowed requests
         return (true, args)
     }
 
     // MARK: - Behaviors
     private func sharedFlow(_ args: BehaviorArgs) {
-        let (shouldFlow, newArgs) = flowProcess(args: args)
+        let (shouldFlow, newArgs) = protected_flowProcess(args: args)
         if shouldFlow {
             switch numTargets {
             case 0:
