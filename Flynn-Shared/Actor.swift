@@ -79,11 +79,11 @@ open class Actor {
         }
     }
 
-    lazy var flow = ChainableBehavior(self) { (args: BehaviorArgs) in
+    public lazy var flow = ChainableBehavior(self) { (args: BehaviorArgs) in
         self.sharedFlow(args)
     }
 
-    lazy var target = ChainableBehavior(self) { (args: BehaviorArgs) in
+    public lazy var target = ChainableBehavior(self) { (args: BehaviorArgs) in
         let localTarget: Actor = args[x: 0]
         self.flowTarget = localTarget
         self.flowTargets.append(localTarget)
@@ -91,7 +91,7 @@ open class Actor {
         self.numTargets = self.flowTargets.count
     }
 
-    lazy var targets = ChainableBehavior(self) { (args: BehaviorArgs) in
+    public lazy var targets = ChainableBehavior(self) { (args: BehaviorArgs) in
         let localTargets: [Actor] = args[x: 0]
         self.flowTarget = localTargets.first
         self.flowTargets.append(contentsOf: localTargets)
