@@ -30,12 +30,12 @@ public func |> (left: [Actor], right: Actor) -> [Actor] {
 open class Actor {
     internal static var ponyIsStarted: Bool = false
 
-    open class func startup() {
+    public class func startup() {
         pony_startup()
         ponyIsStarted = true
     }
 
-    open class func shutdown() {
+    public class func shutdown() {
         pony_shutdown()
         ponyIsStarted = false
     }
@@ -50,7 +50,7 @@ open class Actor {
 
     internal var poolIdx: Int = 0
 
-    func protected_flowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
+    open func protected_flowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
         // overridden by subclasses to handle processing flowed requests
         return (true, args)
     }
@@ -102,7 +102,7 @@ open class Actor {
     }
 
     // MARK: - Functions
-    func wait(_ minMsgs: Int32) {
+    public func wait(_ minMsgs: Int32) {
         // Pause while waiting for this actor's message queue to reach 0
         var myPonyActor = ponyActor
         pony_actors_wait(minMsgs, &myPonyActor, 1)
@@ -110,7 +110,7 @@ open class Actor {
 
     // While not 100% accurate, it can be helpful to know how large the
     // actor's mailbox size is in order to perform lite load balancing
-    var messagesCount: Int32 {
+    public var messagesCount: Int32 {
         return pony_actor_num_messages(ponyActor)
     }
 
