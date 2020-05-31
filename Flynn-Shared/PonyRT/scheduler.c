@@ -125,7 +125,7 @@ static pony_actor_t* steal(scheduler_t* sched)
     int scaling_sleep_min = 500;      // The minimum value we start actually sleeping at
     int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
     
-    while(sched->terminate == false)
+    while(true)
     {
         // Choose the victim with the most work to do
         victim = choose_victim(sched);
@@ -147,6 +147,10 @@ static pony_actor_t* steal(scheduler_t* sched)
                 autorelease_pool_is_dirty = false;
             }
         }
+        
+        if (sched->terminate) {
+            return NULL;
+        }
     }
     
     return actor;
@@ -164,7 +168,7 @@ static void run(scheduler_t* sched)
     
     autorelease_pool = objc_autoreleasePoolPush();
     
-    while(sched->terminate == false) {
+    while(true) {
         
         if(sched->index == 0)
         {
@@ -200,6 +204,8 @@ static void run(scheduler_t* sched)
                 // queue was empty.
                 actor = next;
             }
+        } else if(sched->terminate) {
+            break;
         }
     }
 }
