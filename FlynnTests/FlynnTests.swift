@@ -15,11 +15,11 @@ import XCTest
 class FlynnTests: XCTestCase {
 
     override func setUp() {
-        Actor.startup()
+        Flynn.startup()
     }
 
     override func tearDown() {
-        Actor.shutdown()
+        Flynn.shutdown()
     }
 
     func test1() {
@@ -140,7 +140,7 @@ class FlynnTests: XCTestCase {
             }
         })
 
-        for num in 0..<5000000 {
+        for num in 0..<50000 {
             if num % 2 == 0 {
                 pipeline.flow(1)
             } else {
@@ -155,7 +155,7 @@ class FlynnTests: XCTestCase {
 
     func testMemoryBloatFromMessagePassing2() {
         let counter = Counter()
-        for _ in 0..<5000000 {
+        for _ in 0..<50000 {
             counter.inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1)
             counter.wait(100)
         }

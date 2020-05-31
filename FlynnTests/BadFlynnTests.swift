@@ -45,11 +45,11 @@ class WhoseCallWasThisAnyway: Actor {
 class BadFlynnTests: XCTestCase {
 
     override func setUp() {
-        Actor.startup()
+        Flynn.startup()
     }
 
     override func tearDown() {
-        Actor.shutdown()
+        Flynn.shutdown()
     }
 
     func testDataRace() {

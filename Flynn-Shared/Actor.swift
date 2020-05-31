@@ -27,7 +27,7 @@ public func |> (left: [Actor], right: Actor) -> [Actor] {
     return left
 }
 
-open class Actor {
+open class Flynn {
     internal static var ponyIsStarted: Bool = false
 
     public class func startup() {
@@ -38,6 +38,16 @@ open class Actor {
     public class func shutdown() {
         pony_shutdown()
         ponyIsStarted = false
+    }
+}
+
+open class Actor {
+    private class func startup() {
+        Flynn.startup()
+    }
+
+    private class func shutdown() {
+        Flynn.shutdown()
     }
 
     internal let uuid: String
@@ -55,32 +65,38 @@ open class Actor {
         return (true, args)
     }
 
+    public func protected_nextTarget() -> Actor? {
+        switch numTargets {
+        case 0:
+            return nil
+        case 1:
+            return flowTarget
+        default:
+            poolIdx = (poolIdx + 1) % numTargets
+            return flowTargets[poolIdx]
+        }
+    }
+
     // MARK: - Behaviors
-    private func sharedFlow(_ args: BehaviorArgs) {
+    private func _flow(_ args: BehaviorArgs) {
         let (shouldFlow, newArgs) = protected_flowProcess(args: args)
         if shouldFlow {
-            switch numTargets {
-            case 0:
-                return
-            case 1:
-                flowTarget?.flow.dynamicallyCall(withArguments: newArgs)
-            default:
-                if newArgs.isEmpty {
-                    var ponyActors = ponyActorTargets
-                    // If we're sending the "end of flow" item, and we have more than one target, then we
-                    // need to delay sending this item until all of the targets have finished processing
-                    // all of their messages.  Otherwise we can have a race condition.
-                    pony_actors_wait(0, &ponyActors, Int32(numTargets))
-                }
+            if numTargets > 1 && newArgs.isEmpty {
+                var ponyActors = ponyActorTargets
+                // If we're sending the "end of flow" item, and we have more than one target, then we
+                // need to delay sending this item until all of the targets have finished processing
+                // all of their messages.  Otherwise we can have a race condition.
+                pony_actors_wait(0, &ponyActors, Int32(numTargets))
+            }
 
-                poolIdx = (poolIdx + 1) % numTargets
-                flowTargets[poolIdx].flow.dynamicallyCall(withArguments: newArgs)
+            if let target = protected_nextTarget() {
+                target.flow.dynamicallyCall(withArguments: newArgs)
             }
         }
     }
 
     public lazy var flow = ChainableBehavior(self) { (args: BehaviorArgs) in
-        self.sharedFlow(args)
+        self._flow(args)
     }
 
     public lazy var target = ChainableBehavior(self) { (args: BehaviorArgs) in
@@ -115,8 +131,8 @@ open class Actor {
     }
 
     public init() {
-        if Actor.ponyIsStarted == false {
-            Actor.startup()
+        if Flynn.ponyIsStarted == false {
+            Flynn.startup()
         }
 
         ponyActor = pony_actor_create()

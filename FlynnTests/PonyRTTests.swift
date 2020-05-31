@@ -12,11 +12,11 @@ import Flynn
 class PonyRTTests: XCTestCase {
 
     override func setUp() {
-        Actor.startup()
+        Flynn.startup()
     }
 
     override func tearDown() {
-        Actor.shutdown()
+        Flynn.shutdown()
     }
 
     func testScheduleActor1() {
