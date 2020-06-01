@@ -36,10 +36,6 @@ class WhoseCallWasThisAnyway: Actor {
     lazy var printFoo = ChainableBehavior(self) { (_: BehaviorArgs) in
         print("foo")
     }
-
-    func protected_printBar() {
-        print("bar")
-    }
 }
 
 class BadFlynnTests: XCTestCase {
@@ -97,15 +93,6 @@ class BadFlynnTests: XCTestCase {
         actor.printFoo()
         actor.printFoo()
         actor.printFoo()
-        // TODO: flynnlint should flag these as errors
-        actor.protected_printBar()
-        actor.protected_printBar()
-        actor.protected_printBar()
-        actor.protected_printBar()
-        actor.protected_printBar()
-        actor.protected_printBar()
-        actor.protected_printBar()
-        actor.protected_printBar()
 
         actor.wait(0)
     }
