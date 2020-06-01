@@ -37,7 +37,7 @@ class WhoseCallWasThisAnyway: Actor {
         print("foo")
     }
 
-    func printBar() {
+    func protected_printBar() {
         print("bar")
     }
 }
@@ -97,14 +97,15 @@ class BadFlynnTests: XCTestCase {
         actor.printFoo()
         actor.printFoo()
         actor.printFoo()
-        actor.printBar()
-        actor.printBar()
-        actor.printBar()
-        actor.printBar()
-        actor.printBar()
-        actor.printBar()
-        actor.printBar()
-        actor.printBar()
+        // TODO: flynnlint should flag these as errors
+        actor.protected_printBar()
+        actor.protected_printBar()
+        actor.protected_printBar()
+        actor.protected_printBar()
+        actor.protected_printBar()
+        actor.protected_printBar()
+        actor.protected_printBar()
+        actor.protected_printBar()
 
         actor.wait(0)
     }
