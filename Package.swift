@@ -28,7 +28,7 @@ let package = Package(
 				"Pony"
             ],
             exclude: [
-                "Resources",
+                "Resources"
             ]
         )
     ]

@@ -1,4 +1,0 @@
-framework module FlynnLintFramework {
-  header "FlynnLintFramework-Swift.h"
-  requires objc
-}

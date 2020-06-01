@@ -1,0 +1,818 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		"Flynn::FlynnPackageTests::ProductTarget" /* FlynnPackageTests */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = OBJ_77 /* Build configuration list for PBXAggregateTarget "FlynnPackageTests" */;
+			buildPhases = (
+			);
+			dependencies = (
+				OBJ_80 /* PBXTargetDependency */,
+			);
+			name = FlynnPackageTests;
+			productName = FlynnPackageTests;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		OBJ_103 /* actor.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_25 /* actor.c */; };
+		OBJ_104 /* alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_26 /* alloc.c */; };
+		OBJ_105 /* cpu.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_27 /* cpu.c */; };
+		OBJ_106 /* messageq.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_28 /* messageq.c */; };
+		OBJ_107 /* mpmcq.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_29 /* mpmcq.c */; };
+		OBJ_108 /* pagemap.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_30 /* pagemap.c */; };
+		OBJ_109 /* ponyrt.m in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_31 /* ponyrt.m */; };
+		OBJ_110 /* pool.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_32 /* pool.c */; };
+		OBJ_111 /* scheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_33 /* scheduler.c */; };
+		OBJ_112 /* threads.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_34 /* threads.c */; };
+		OBJ_63 /* Actor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* Actor.swift */; };
+		OBJ_64 /* Behavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Behavior.swift */; };
+		OBJ_65 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* Extensions.swift */; };
+		OBJ_67 /* Pony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Flynn::Pony::Product" /* Pony.framework */; };
+		OBJ_75 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
+		OBJ_86 /* BadFlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_41 /* BadFlynnTests.swift */; };
+		OBJ_87 /* FlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_42 /* FlynnTests.swift */; };
+		OBJ_88 /* PonyRTTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_43 /* PonyRTTests.swift */; };
+		OBJ_89 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_45 /* Color.swift */; };
+		OBJ_90 /* Counter.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_46 /* Counter.swift */; };
+		OBJ_91 /* Flowable.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_47 /* Flowable.swift */; };
+		OBJ_92 /* StringBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_48 /* StringBuilder.swift */; };
+		OBJ_93 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_49 /* View.swift */; };
+		OBJ_95 /* Flynn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Flynn::Flynn::Product" /* Flynn.framework */; };
+		OBJ_96 /* Pony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Flynn::Pony::Product" /* Pony.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4626AC812484996C0029D278 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "Flynn::Pony";
+			remoteInfo = Pony;
+		};
+		4626AC822484996D0029D278 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "Flynn::Flynn";
+			remoteInfo = Flynn;
+		};
+		4626AC832484996D0029D278 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "Flynn::Pony";
+			remoteInfo = Pony;
+		};
+		4626AC842484996E0029D278 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "Flynn::FlynnTests";
+			remoteInfo = FlynnTests;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		"Flynn::Pony::Product" /* Pony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Pony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		OBJ_10 /* Actor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actor.swift; sourceTree = "<group>"; };
+		OBJ_11 /* Behavior.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Behavior.swift; sourceTree = "<group>"; };
+		OBJ_12 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		OBJ_14 /* actor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = actor.h; sourceTree = "<group>"; };
+		OBJ_15 /* alloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = alloc.h; sourceTree = "<group>"; };
+		OBJ_16 /* atomics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = atomics.h; sourceTree = "<group>"; };
+		OBJ_17 /* cpu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cpu.h; sourceTree = "<group>"; };
+		OBJ_18 /* messageq.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = messageq.h; sourceTree = "<group>"; };
+		OBJ_19 /* mpmcq.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mpmcq.h; sourceTree = "<group>"; };
+		OBJ_20 /* pagemap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pagemap.h; sourceTree = "<group>"; };
+		OBJ_21 /* ponyrt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ponyrt.h; sourceTree = "<group>"; };
+		OBJ_22 /* pool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pool.h; sourceTree = "<group>"; };
+		OBJ_23 /* scheduler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = scheduler.h; sourceTree = "<group>"; };
+		OBJ_24 /* threads.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = threads.h; sourceTree = "<group>"; };
+		OBJ_25 /* actor.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = actor.c; sourceTree = "<group>"; };
+		OBJ_26 /* alloc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = alloc.c; sourceTree = "<group>"; };
+		OBJ_27 /* cpu.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cpu.c; sourceTree = "<group>"; };
+		OBJ_28 /* messageq.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = messageq.c; sourceTree = "<group>"; };
+		OBJ_29 /* mpmcq.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = mpmcq.c; sourceTree = "<group>"; };
+		OBJ_30 /* pagemap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pagemap.c; sourceTree = "<group>"; };
+		OBJ_31 /* ponyrt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ponyrt.m; sourceTree = "<group>"; };
+		OBJ_32 /* pool.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pool.c; sourceTree = "<group>"; };
+		OBJ_33 /* scheduler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = scheduler.c; sourceTree = "<group>"; };
+		OBJ_34 /* threads.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = threads.c; sourceTree = "<group>"; };
+		OBJ_36 /* pony.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pony.h; sourceTree = "<group>"; };
+		OBJ_37 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = module.modulemap; path = /Volumes/Development/Development/chimerasw2/flynn/Flynn.xcodeproj/GeneratedModuleMap/Pony/module.modulemap; sourceTree = "<group>"; };
+		OBJ_40 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		OBJ_41 /* BadFlynnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadFlynnTests.swift; sourceTree = "<group>"; };
+		OBJ_42 /* FlynnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlynnTests.swift; sourceTree = "<group>"; };
+		OBJ_43 /* PonyRTTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PonyRTTests.swift; sourceTree = "<group>"; };
+		OBJ_45 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		OBJ_46 /* Counter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Counter.swift; sourceTree = "<group>"; };
+		OBJ_47 /* Flowable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flowable.swift; sourceTree = "<group>"; };
+		OBJ_48 /* StringBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringBuilder.swift; sourceTree = "<group>"; };
+		OBJ_49 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
+		OBJ_54 /* meta */ = {isa = PBXFileReference; lastKnownFileType = folder; path = meta; sourceTree = SOURCE_ROOT; };
+		OBJ_55 /* TestHost */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestHost; sourceTree = SOURCE_ROOT; };
+		OBJ_56 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		OBJ_57 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		OBJ_9 /* Flynn.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Flynn.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		OBJ_113 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_66 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_67 /* Pony.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_94 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_95 /* Flynn.framework in Frameworks */,
+				OBJ_96 /* Pony.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		OBJ_13 /* Pony */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_14 /* actor.h */,
+				OBJ_15 /* alloc.h */,
+				OBJ_16 /* atomics.h */,
+				OBJ_17 /* cpu.h */,
+				OBJ_18 /* messageq.h */,
+				OBJ_19 /* mpmcq.h */,
+				OBJ_20 /* pagemap.h */,
+				OBJ_21 /* ponyrt.h */,
+				OBJ_22 /* pool.h */,
+				OBJ_23 /* scheduler.h */,
+				OBJ_24 /* threads.h */,
+				OBJ_25 /* actor.c */,
+				OBJ_26 /* alloc.c */,
+				OBJ_27 /* cpu.c */,
+				OBJ_28 /* messageq.c */,
+				OBJ_29 /* mpmcq.c */,
+				OBJ_30 /* pagemap.c */,
+				OBJ_31 /* ponyrt.m */,
+				OBJ_32 /* pool.c */,
+				OBJ_33 /* scheduler.c */,
+				OBJ_34 /* threads.c */,
+				OBJ_35 /* include */,
+			);
+			name = Pony;
+			path = Sources/Pony;
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_35 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_36 /* pony.h */,
+				OBJ_37 /* module.modulemap */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		OBJ_38 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_39 /* FlynnTests */,
+			);
+			name = Tests;
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_39 /* FlynnTests */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_40 /* Info.plist */,
+				OBJ_41 /* BadFlynnTests.swift */,
+				OBJ_42 /* FlynnTests.swift */,
+				OBJ_43 /* PonyRTTests.swift */,
+				OBJ_44 /* Support Files */,
+			);
+			name = FlynnTests;
+			path = Tests/FlynnTests;
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_44 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_45 /* Color.swift */,
+				OBJ_46 /* Counter.swift */,
+				OBJ_47 /* Flowable.swift */,
+				OBJ_48 /* StringBuilder.swift */,
+				OBJ_49 /* View.swift */,
+			);
+			path = "Support Files";
+			sourceTree = "<group>";
+		};
+		OBJ_5 /*  */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_6 /* Package.swift */,
+				OBJ_7 /* Sources */,
+				OBJ_38 /* Tests */,
+				OBJ_50 /* Products */,
+				OBJ_54 /* meta */,
+				OBJ_55 /* TestHost */,
+				OBJ_56 /* Makefile */,
+				OBJ_57 /* README.md */,
+			);
+			name = "";
+			sourceTree = "<group>";
+		};
+		OBJ_50 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				"Flynn::Flynn::Product" /* Flynn.framework */,
+				"Flynn::Pony::Product" /* Pony.framework */,
+				"Flynn::FlynnTests::Product" /* FlynnTests.xctest */,
+			);
+			name = Products;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		OBJ_7 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_8 /* Flynn */,
+				OBJ_13 /* Pony */,
+			);
+			name = Sources;
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_8 /* Flynn */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_9 /* Flynn.h */,
+				OBJ_10 /* Actor.swift */,
+				OBJ_11 /* Behavior.swift */,
+				OBJ_12 /* Extensions.swift */,
+			);
+			name = Flynn;
+			path = Sources/Flynn;
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		"Flynn::Flynn" /* Flynn */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_59 /* Build configuration list for PBXNativeTarget "Flynn" */;
+			buildPhases = (
+				4626AC85248499A10029D278 /* SwiftLint */,
+				4626AC86248499A70029D278 /* FlynnLint */,
+				OBJ_62 /* Sources */,
+				OBJ_66 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				OBJ_68 /* PBXTargetDependency */,
+			);
+			name = Flynn;
+			productName = Flynn;
+			productReference = "Flynn::Flynn::Product" /* Flynn.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		"Flynn::FlynnTests" /* FlynnTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_82 /* Build configuration list for PBXNativeTarget "FlynnTests" */;
+			buildPhases = (
+				OBJ_85 /* Sources */,
+				OBJ_94 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				OBJ_97 /* PBXTargetDependency */,
+				OBJ_98 /* PBXTargetDependency */,
+			);
+			name = FlynnTests;
+			productName = FlynnTests;
+			productReference = "Flynn::FlynnTests::Product" /* FlynnTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		"Flynn::Pony" /* Pony */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_99 /* Build configuration list for PBXNativeTarget "Pony" */;
+			buildPhases = (
+				OBJ_102 /* Sources */,
+				OBJ_113 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Pony;
+			productName = Pony;
+			productReference = "Flynn::Pony::Product" /* Pony.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		"Flynn::SwiftPMPackageDescription" /* FlynnPackageDescription */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_71 /* Build configuration list for PBXNativeTarget "FlynnPackageDescription" */;
+			buildPhases = (
+				OBJ_74 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FlynnPackageDescription;
+			productName = FlynnPackageDescription;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		OBJ_1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftMigration = 9999;
+				LastUpgradeCheck = 9999;
+			};
+			buildConfigurationList = OBJ_2 /* Build configuration list for PBXProject "Flynn" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = OBJ_5 /*  */;
+			productRefGroup = OBJ_50 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				"Flynn::Flynn" /* Flynn */,
+				"Flynn::SwiftPMPackageDescription" /* FlynnPackageDescription */,
+				"Flynn::FlynnPackageTests::ProductTarget" /* FlynnPackageTests */,
+				"Flynn::FlynnTests" /* FlynnTests */,
+				"Flynn::Pony" /* Pony */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4626AC85248499A10029D278 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+		4626AC86248499A70029D278 /* FlynnLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = FlynnLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${SRCROOT}/meta/flynnlint ${SRCROOT}/Sources ${SRCROOT}/Tests\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		OBJ_102 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_103 /* actor.c in Sources */,
+				OBJ_104 /* alloc.c in Sources */,
+				OBJ_105 /* cpu.c in Sources */,
+				OBJ_106 /* messageq.c in Sources */,
+				OBJ_107 /* mpmcq.c in Sources */,
+				OBJ_108 /* pagemap.c in Sources */,
+				OBJ_109 /* ponyrt.m in Sources */,
+				OBJ_110 /* pool.c in Sources */,
+				OBJ_111 /* scheduler.c in Sources */,
+				OBJ_112 /* threads.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_62 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_63 /* Actor.swift in Sources */,
+				OBJ_64 /* Behavior.swift in Sources */,
+				OBJ_65 /* Extensions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_74 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_75 /* Package.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_85 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_86 /* BadFlynnTests.swift in Sources */,
+				OBJ_87 /* FlynnTests.swift in Sources */,
+				OBJ_88 /* PonyRTTests.swift in Sources */,
+				OBJ_89 /* Color.swift in Sources */,
+				OBJ_90 /* Counter.swift in Sources */,
+				OBJ_91 /* Flowable.swift in Sources */,
+				OBJ_92 /* StringBuilder.swift in Sources */,
+				OBJ_93 /* View.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		OBJ_68 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "Flynn::Pony" /* Pony */;
+			targetProxy = 4626AC812484996C0029D278 /* PBXContainerItemProxy */;
+		};
+		OBJ_80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "Flynn::FlynnTests" /* FlynnTests */;
+			targetProxy = 4626AC842484996E0029D278 /* PBXContainerItemProxy */;
+		};
+		OBJ_97 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "Flynn::Flynn" /* Flynn */;
+			targetProxy = 4626AC822484996D0029D278 /* PBXContainerItemProxy */;
+		};
+		OBJ_98 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "Flynn::Pony" /* Pony */;
+			targetProxy = 4626AC832484996D0029D278 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		OBJ_100 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = NO;
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Sources/Pony/include",
+					Sources/PonyRT,
+				);
+				INFOPLIST_FILE = Flynn.xcodeproj/Pony_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = Pony;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				TARGET_NAME = Pony;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		OBJ_101 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = NO;
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Sources/Pony/include",
+					Sources/PonyRT,
+				);
+				INFOPLIST_FILE = Flynn.xcodeproj/Pony_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = Pony;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				TARGET_NAME = Pony;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+		OBJ_3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_NS_ASSERTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"SWIFT_PACKAGE=1",
+					"DEBUG=1",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_SWIFT_FLAGS = "$(inherited) -DXcode";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator watchos watchsimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) SWIFT_PACKAGE DEBUG";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				USE_HEADERMAP = NO;
+			};
+			name = Debug;
+		};
+		OBJ_4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"SWIFT_PACKAGE=1",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_SWIFT_FLAGS = "$(inherited) -DXcode";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator watchos watchsimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) SWIFT_PACKAGE";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				USE_HEADERMAP = NO;
+			};
+			name = Release;
+		};
+		OBJ_60 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Sources/Pony/include",
+					"$(SRCROOT)/Flynn.xcodeproj/GeneratedModuleMap/Pony",
+				);
+				INFOPLIST_FILE = Flynn.xcodeproj/Flynn_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -fmodule-map-file=$(SRCROOT)/Flynn.xcodeproj/GeneratedModuleMap/Pony/module.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = Flynn;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = Flynn;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		OBJ_61 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Sources/Pony/include",
+					"$(SRCROOT)/Flynn.xcodeproj/GeneratedModuleMap/Pony",
+				);
+				INFOPLIST_FILE = Flynn.xcodeproj/Flynn_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -fmodule-map-file=$(SRCROOT)/Flynn.xcodeproj/GeneratedModuleMap/Pony/module.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = Flynn;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = Flynn;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+		OBJ_72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD = /usr/bin/true;
+				OTHER_SWIFT_FLAGS = "-swift-version 5 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4_2 -target x86_64-apple-macosx10.10 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk -package-description-version 5.0.0";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		OBJ_73 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD = /usr/bin/true;
+				OTHER_SWIFT_FLAGS = "-swift-version 5 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4_2 -target x86_64-apple-macosx10.10 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk -package-description-version 5.0.0";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		OBJ_78 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		OBJ_79 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		OBJ_83 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Sources/Pony/include",
+					"$(SRCROOT)/Flynn.xcodeproj/GeneratedModuleMap/Pony",
+				);
+				INFOPLIST_FILE = Flynn.xcodeproj/FlynnTests_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -fmodule-map-file=$(SRCROOT)/Flynn.xcodeproj/GeneratedModuleMap/Pony/module.modulemap";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = FlynnTests;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		OBJ_84 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Sources/Pony/include",
+					"$(SRCROOT)/Flynn.xcodeproj/GeneratedModuleMap/Pony",
+				);
+				INFOPLIST_FILE = Flynn.xcodeproj/FlynnTests_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -fmodule-map-file=$(SRCROOT)/Flynn.xcodeproj/GeneratedModuleMap/Pony/module.modulemap";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = FlynnTests;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		OBJ_2 /* Build configuration list for PBXProject "Flynn" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_3 /* Debug */,
+				OBJ_4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_59 /* Build configuration list for PBXNativeTarget "Flynn" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_60 /* Debug */,
+				OBJ_61 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_71 /* Build configuration list for PBXNativeTarget "FlynnPackageDescription" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_72 /* Debug */,
+				OBJ_73 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_77 /* Build configuration list for PBXAggregateTarget "FlynnPackageTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_78 /* Debug */,
+				OBJ_79 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_82 /* Build configuration list for PBXNativeTarget "FlynnTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_83 /* Debug */,
+				OBJ_84 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_99 /* Build configuration list for PBXNativeTarget "Pony" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_100 /* Debug */,
+				OBJ_101 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = OBJ_1 /* Project object */;
+}
