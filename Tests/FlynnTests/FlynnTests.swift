@@ -86,9 +86,7 @@ class FlynnTests: XCTestCase {
 
     @available(OSX 10.15, *)
     func testLoadBalancing() {
-        let options = XCTMeasureOptions()
-        options.iterationCount = 10
-        self.measure(options: options) {
+        self.measure {
             let expectation = XCTestExpectation(description: "Load balancing")
 
             let pipeline = Passthrough() |> Array(count: Flynn.cores) { Uppercase() } |> Concatenate() |> Callback({ (args: BehaviorArgs) in
