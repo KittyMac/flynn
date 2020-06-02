@@ -195,13 +195,17 @@ static void run(scheduler_t* sched)
         if(actor != NULL) {
             // Run the current actor and get the next actor.
             bool reschedule = ponyint_actor_run(&sched->ctx, actor, 5000);
+            
+            bool actor_did_yield = actor->yield;
+            actor->yield = false;
+            
             pony_actor_t* next = pop_global(sched);
             
             autorelease_pool_is_dirty = true;
             
             if(reschedule) {
                 if(next != NULL) {
-                    if (actor->priority > next->priority) {
+                    if (actor_did_yield == false || actor->priority > next->priority) {
                         // our current actor has a higher priority than the next actor, so put
                         // the next actor back at the end of our queue.  Hopefully someone
                         // else will pick him up

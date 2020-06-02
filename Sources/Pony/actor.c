@@ -126,8 +126,6 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
         }
     }
     
-    actor->yield = false;
-    
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
     return !ponyint_messageq_markempty(&actor->q);
 }
