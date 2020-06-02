@@ -26,11 +26,18 @@ static uint32_t property(const char* key)
     return value;
 }
 
+static uint32_t hw_core_count;
 static uint32_t hw_cpu_count;
 
 void ponyint_cpu_init()
 {
-    hw_cpu_count = property("hw.physicalcpu");
+    hw_core_count = property("hw.physicalcpu");
+    hw_cpu_count = hw_core_count / property("machdep.cpu.core_count");
+}
+
+uint32_t ponyint_core_count()
+{
+    return hw_core_count;
 }
 
 uint32_t ponyint_cpu_count()

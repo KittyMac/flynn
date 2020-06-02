@@ -73,9 +73,14 @@ void pony_shutdown() {
     pony_is_inited = false;
 }
 
+int pony_core_count() {
+    return ponyint_core_count();
+}
+
 int pony_cpu_count() {
     return ponyint_cpu_count();
 }
+
 
 void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());

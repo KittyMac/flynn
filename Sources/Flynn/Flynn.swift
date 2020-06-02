@@ -22,7 +22,12 @@ open class Flynn {
         ponyIsStarted = false
     }
 
-    public class func coreCount() -> Int {
+    public static var cores: Int {
+        return Int(pony_core_count())
+    }
+
+    public static var cpus: Int {
         return Int(pony_cpu_count())
     }
+
 }

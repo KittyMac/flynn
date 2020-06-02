@@ -267,7 +267,7 @@ pony_ctx_t* ponyint_sched_init()
 {
     pony_register_thread();
     
-    uint32_t threads = ponyint_cpu_count();
+    uint32_t threads = ponyint_core_count();
             
     scheduler_count = threads;
     

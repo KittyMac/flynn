@@ -16,6 +16,8 @@
 
 void ponyint_cpu_init(void);
 
+uint32_t ponyint_core_count(void);
+
 uint32_t ponyint_cpu_count(void);
 
 void ponyint_cpu_sleep(int ns);
