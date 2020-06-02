@@ -11,7 +11,7 @@ import XCTest
 @testable import Flynn
 
 class StringBuilder: Actor {
-    var string: String = ""
+    private var string: String = ""
     lazy var append = ChainableBehavior(self) { (args: BehaviorArgs) in
         let value: String = args[x: 0]
         self.string.append(value)

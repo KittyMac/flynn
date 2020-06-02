@@ -40,7 +40,7 @@ class Uppercase: Actor {
 // received.  When it receives an empty argument list it considers
 // that to be "done", and sends the concatenated string to the target
 class Concatenate: Actor {
-    var combined: String = ""
+    private var combined: String = ""
 
     override init() {
         super.init()
@@ -58,7 +58,7 @@ class Concatenate: Actor {
 }
 
 class Callback: Actor {
-    let callback: ((BehaviorArgs) -> Void)!
+    private let callback: ((BehaviorArgs) -> Void)!
 
     init(_ callback:@escaping ((BehaviorArgs) -> Void)) {
         self.callback = callback

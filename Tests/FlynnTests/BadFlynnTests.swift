@@ -21,7 +21,7 @@ class OffToTheRacesData {
 }
 
 class OffToTheRacesActor: Actor {
-    let data: OffToTheRacesData
+    private let data: OffToTheRacesData
 
     init(_ data: OffToTheRacesData) {
         self.data = data
@@ -34,7 +34,7 @@ class OffToTheRacesActor: Actor {
 
 class PublicVariablesAreAlsoBad: Actor {
 
-    var shouldBeError: Int = 0
+    private var shouldBeError: Int = 0
 
     lazy var shouldNotBeError = ChainableBehavior(self) { (_: BehaviorArgs) in
         print("bar")
