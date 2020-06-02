@@ -31,6 +31,7 @@ typedef void (^FastBlockCallback10)(id, id, id, id, id, id, id, id, id, id);
 
 bool pony_startup(void);
 void pony_shutdown(void);
+int pony_cpu_count();
 
 void * pony_register_fast_block0(FastBlockCallback0 callback);
 void * pony_register_fast_block1(FastBlockCallback1 callback);

@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		464471EE2485E895001ACB4E /* Flynn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 464471ED2485E895001ACB4E /* Flynn.swift */; };
 		OBJ_103 /* actor.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_25 /* actor.c */; };
 		OBJ_104 /* alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_26 /* alloc.c */; };
 		OBJ_105 /* cpu.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_27 /* cpu.c */; };
@@ -80,6 +81,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		464471ED2485E895001ACB4E /* Flynn.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Flynn.swift; sourceTree = "<group>"; };
 		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::Pony::Product" /* Pony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Pony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -263,6 +265,7 @@
 			isa = PBXGroup;
 			children = (
 				OBJ_9 /* Flynn.h */,
+				464471ED2485E895001ACB4E /* Flynn.swift */,
 				OBJ_10 /* Actor.swift */,
 				OBJ_11 /* Behavior.swift */,
 				OBJ_12 /* Extensions.swift */,
@@ -433,6 +436,7 @@
 			buildActionMask = 0;
 			files = (
 				OBJ_63 /* Actor.swift in Sources */,
+				464471EE2485E895001ACB4E /* Flynn.swift in Sources */,
 				OBJ_64 /* Behavior.swift in Sources */,
 				OBJ_65 /* Extensions.swift in Sources */,
 			);

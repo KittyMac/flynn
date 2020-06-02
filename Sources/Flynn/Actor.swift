@@ -27,20 +27,6 @@ public func |> (left: [Actor], right: Actor) -> [Actor] {
     return left
 }
 
-open class Flynn {
-    internal static var ponyIsStarted: Bool = false
-
-    public class func startup() {
-        pony_startup()
-        ponyIsStarted = true
-    }
-
-    public class func shutdown() {
-        pony_shutdown()
-        ponyIsStarted = false
-    }
-}
-
 open class Actor {
     private class func startup() {
         Flynn.startup()

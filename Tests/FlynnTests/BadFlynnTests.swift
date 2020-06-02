@@ -32,6 +32,15 @@ class OffToTheRacesActor: Actor {
     }
 }
 
+class PublicVariablesAreAlsoBad: Actor {
+
+    var shouldBeError: Int = 0
+
+    lazy var shouldNotBeError = ChainableBehavior(self) { (_: BehaviorArgs) in
+        print("bar")
+    }
+}
+
 class WhoseCallWasThisAnyway: Actor {
     lazy var printFoo = ChainableBehavior(self) { (_: BehaviorArgs) in
         print("foo")

@@ -61,7 +61,7 @@ class FlynnTests: XCTestCase {
 
     func testArrayOfColors() {
         let expectation = XCTestExpectation(description: "Array of actors by protocol")
-        let views: [Viewable] = Array(count: 128) { Color() }
+        let views: [Viewable] = Array(count: Flynn.coreCount()) { Color() }
         for view in views {
             view.render(CGRect.zero)
         }
@@ -91,7 +91,7 @@ class FlynnTests: XCTestCase {
         self.measure(options: options) {
             let expectation = XCTestExpectation(description: "Load balancing")
 
-            let pipeline = Passthrough() |> Array(count: 128) { Uppercase() } |> Concatenate() |> Callback({ (args: BehaviorArgs) in
+            let pipeline = Passthrough() |> Array(count: Flynn.coreCount()) { Uppercase() } |> Concatenate() |> Callback({ (args: BehaviorArgs) in
                 let value: String = args[x:0]
                 XCTAssertEqual(value.count, 50000, "load balancing did not contain the expected number of characters")
                 expectation.fulfill()
@@ -132,7 +132,7 @@ class FlynnTests: XCTestCase {
 
         let expectation = XCTestExpectation(description: "Memory overhead in calling behaviors")
 
-        let pipeline = Passthrough() |> Array(count: 128) { Passthrough() } |> Passthrough() |> Callback({ (args: BehaviorArgs) in
+        let pipeline = Passthrough() |> Array(count: Flynn.coreCount()) { Passthrough() } |> Passthrough() |> Callback({ (args: BehaviorArgs) in
             //let s:String = args[x:0]
             //XCTAssertEqual(s.count, 22250000, "load balancing did not contain the expected number of characters")
             if args.isEmpty {
