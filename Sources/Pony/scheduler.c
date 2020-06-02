@@ -194,7 +194,7 @@ static void run(scheduler_t* sched)
         }
         if(actor != NULL) {
             // Run the current actor and get the next actor.
-            bool reschedule = ponyint_actor_run(&sched->ctx, actor);
+            bool reschedule = ponyint_actor_run(&sched->ctx, actor, 5000);
             pony_actor_t* next = pop_global(sched);
             
             autorelease_pool_is_dirty = true;

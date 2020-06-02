@@ -38,9 +38,10 @@ static void unset_flag(pony_actor_t* actor, uint8_t flag)
                           memory_order_relaxed);
 }
 */
-bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
+bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
 {
     pony_msg_t* msg;
+    int n = 0;
     
     while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&actor->q)) != NULL) {
         
@@ -118,10 +119,22 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor)
         }
         
         ponyint_actor_messageq_pop_mark_done(&actor->q);
+        
+        n++;
+        if (n > max_msgs || actor->yield) {
+            break;
+        }
     }
+    
+    actor->yield = false;
     
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
     return !ponyint_messageq_markempty(&actor->q);
+}
+
+void ponyint_yield_actor(pony_actor_t* actor)
+{
+    actor->yield = true;
 }
 
 void ponyint_actor_destroy(pony_actor_t* actor)

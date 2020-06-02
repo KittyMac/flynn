@@ -77,16 +77,36 @@ open class Actor {
         }
     }
 
+    private func _retryEndFlow(_ args: BehaviorArgs) {
+        if numTargets > 1 && args.isEmpty {
+            var ponyActors = ponyActorTargets
+            if pony_actors_should_wait(0, &ponyActors, Int32(numTargets)) {
+                retryEndFlow()
+                yield()
+                return
+            }
+        }
+
+        if let target = protected_nextTarget() {
+            target.flow.dynamicallyCall(withArguments: args)
+        }
+    }
+
+    private lazy var retryEndFlow = ChainableBehavior(self) { (args: BehaviorArgs) in
+        self._retryEndFlow(args)
+    }
+
     // MARK: - Behaviors
     private func _flow(_ args: BehaviorArgs) {
         let (shouldFlow, newArgs) = protected_flowProcess(args: args)
         if shouldFlow {
             if numTargets > 1 && newArgs.isEmpty {
                 var ponyActors = ponyActorTargets
-                // If we're sending the "end of flow" item, and we have more than one target, then we
-                // need to delay sending this item until all of the targets have finished processing
-                // all of their messages.  Otherwise we can have a race condition.
-                pony_actors_wait(0, &ponyActors, Int32(numTargets))
+                if pony_actors_should_wait(0, &ponyActors, Int32(numTargets)) {
+                    retryEndFlow()
+                    yield()
+                    return
+                }
             }
 
             if let target = protected_nextTarget() {
@@ -120,8 +140,12 @@ open class Actor {
     // MARK: - Functions
     public func wait(_ minMsgs: Int32) {
         // Pause while waiting for this actor's message queue to reach 0
-        var myPonyActor = ponyActor
-        pony_actors_wait(minMsgs, &myPonyActor, 1)
+        pony_actor_wait(minMsgs, ponyActor)
+    }
+
+    public func yield() {
+        // Flag this actor yield the scheduler after this message
+        pony_actor_yield(ponyActor)
     }
 
     // While not 100% accurate, it can be helpful to know how large the
