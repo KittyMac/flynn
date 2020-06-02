@@ -132,6 +132,15 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     return !ponyint_messageq_markempty(&actor->q);
 }
 
+int32_t ponyint_actor_getpriority(pony_actor_t* actor) {
+    return actor->priority;
+}
+
+void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority)
+{
+    actor->priority = priority;
+}
+
 void ponyint_yield_actor(pony_actor_t* actor)
 {
     actor->yield = true;

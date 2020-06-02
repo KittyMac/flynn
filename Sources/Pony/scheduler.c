@@ -201,10 +201,17 @@ static void run(scheduler_t* sched)
             
             if(reschedule) {
                 if(next != NULL) {
-                    // If we have a next actor, we go on the back of the queue. Otherwise,
-                    // we continue to run this actor.
-                    push(sched, actor);
-                    actor = next;
+                    if (actor->priority > next->priority) {
+                        // our current actor has a higher priority than the next actor, so put
+                        // the next actor back at the end of our queue.  Hopefully someone
+                        // else will pick him up
+                        push(sched, next);
+                    }else{
+                        // If we have a next actor, we go on the back of the queue. Otherwise,
+                        // we continue to run this actor.
+                        push(sched, actor);
+                        actor = next;
+                    }
                 }
             } else {
                 // We aren't rescheduling, so run the next actor. This may be NULL if our

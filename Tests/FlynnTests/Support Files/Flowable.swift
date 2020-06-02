@@ -41,6 +41,12 @@ class Uppercase: Actor {
 // that to be "done", and sends the concatenated string to the target
 class Concatenate: Actor {
     var combined: String = ""
+
+    override init() {
+        super.init()
+        priority = 1
+    }
+
     override func protected_flowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
         if args.isEmpty == false {
             let value: String = args[x: 0]

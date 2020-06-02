@@ -132,6 +132,15 @@ void pony_actor_fast_dispatch10(void * actor, id arg0, id arg1, id arg2, id arg3
     pony_send_fast_block10(pony_ctx(), actor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, (__bridge FastBlockCallback10)(callback));
 }
 
+
+void pony_actor_setpriority(void * actor, int priority) {
+    ponyint_actor_setpriority(actor, priority);
+}
+
+int pony_actor_getpriority(void * actor) {
+    return ponyint_actor_getpriority(actor);
+}
+
 void pony_actor_yield(void * actor) {
     ponyint_yield_actor(actor);
 }

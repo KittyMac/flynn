@@ -46,6 +46,11 @@ open class Actor {
 
     internal var poolIdx: Int = 0
 
+    public var priority: Int32 {
+        set { pony_actor_setpriority(ponyActor, newValue) }
+        get { return pony_actor_getpriority(ponyActor) }
+    }
+
     open func protected_flowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
         // overridden by subclasses to handle processing flowed requests
         return (true, args)

@@ -64,6 +64,9 @@ void pony_actor_fast_dispatch8(void * actor, id arg0, id arg1, id arg2, id arg3,
 void pony_actor_fast_dispatch9(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, void * callback);
 void pony_actor_fast_dispatch10(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, void * callback);
 
+void pony_actor_setpriority(void * actor, int priority);
+int pony_actor_getpriority(void * actor);
+
 void pony_actor_yield(void * actor);
 
 int pony_actor_num_messages(void * actor);
