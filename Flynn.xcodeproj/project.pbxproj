@@ -228,7 +228,7 @@
 			path = "Support Files";
 			sourceTree = "<group>";
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -240,7 +240,6 @@
 				OBJ_57 /* Makefile */,
 				OBJ_58 /* README.md */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_51 /* Products */ = {
@@ -283,6 +282,7 @@
 			buildConfigurationList = OBJ_60 /* Build configuration list for PBXNativeTarget "Flynn" */;
 			buildPhases = (
 				46627BDC2486D26A00A2A610 /* SwiftLint */,
+				464CCCA324876B760044F75B /* FlynnLint */,
 				OBJ_63 /* Sources */,
 				OBJ_68 /* Frameworks */,
 			);
@@ -360,7 +360,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_51 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -375,6 +375,24 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		464CCCA324876B760044F75B /* FlynnLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = FlynnLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${SRCROOT}/meta/flynnlint ${SRCROOT}/Sources ${SRCROOT}/Tests\n";
+		};
 		46627BDC2486D26A00A2A610 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
