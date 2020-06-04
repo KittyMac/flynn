@@ -70,8 +70,7 @@ open class Actor {
 
     private func _retryEndFlow(_ args: BehaviorArgs) {
         if numTargets > 1 && args.isEmpty {
-            var ponyActors = ponyActorTargets
-            if pony_actors_should_wait(0, &ponyActors, Int32(numTargets)) {
+            if pony_actors_should_wait(0, &ponyActorTargets, Int32(numTargets)) {
                 retryEndFlow()
                 yield()
                 return
@@ -92,8 +91,7 @@ open class Actor {
         let (shouldFlow, newArgs) = protected_flowProcess(args: args)
         if shouldFlow {
             if numTargets > 1 && newArgs.isEmpty {
-                var ponyActors = ponyActorTargets
-                if pony_actors_should_wait(0, &ponyActors, Int32(numTargets)) {
+                if pony_actors_should_wait(0, &ponyActorTargets, Int32(numTargets)) {
                     retryEndFlow()
                     yield()
                     return
