@@ -28,6 +28,7 @@ class OffToTheRacesActor: Actor {
     }
 
     lazy var inc = ChainableBehavior(self) { (_: BehaviorArgs) in
+        // flynnlint:parameter None
         self.data.inc()
     }
 }
@@ -37,12 +38,14 @@ class PublicVariablesAreAlsoBad: Actor {
     private var shouldBeError: Int = 0
 
     lazy var shouldNotBeError = ChainableBehavior(self) { (_: BehaviorArgs) in
+        // flynnlint:parameter None
         print("bar")
     }
 }
 
 class WhoseCallWasThisAnyway: Actor {
     lazy var printFoo = ChainableBehavior(self) { (_: BehaviorArgs) in
+        // flynnlint:parameter None
         print("foo")
     }
 }

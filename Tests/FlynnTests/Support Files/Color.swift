@@ -45,6 +45,7 @@ public final class Color: Actor, Viewable, Colorable {
     public lazy var protected_colorable = ColorableState(self)
 
     public lazy var render = Behavior(self) { (_: BehaviorArgs) in
+        // flynnlint:parameter None
         print("render!")
     }
 }
