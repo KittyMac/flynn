@@ -27,11 +27,11 @@ class FlynnTests: XCTestCase {
 
         print("start")
         Counter()
-            .inc(1)
-            .inc(10)
-            .inc(20)
-            .dec(1)
-            .equals { (value: Int) in
+            .beInc(1)
+            .beInc(10)
+            .beInc(20)
+            .beDec(1)
+            .beEquals { (value: Int) in
                 print("value: \(value)")
                 XCTAssertEqual(value, 30, "Counter did not add up to 30")
                 expectation.fulfill()
@@ -43,10 +43,10 @@ class FlynnTests: XCTestCase {
     func test2() {
         let expectation = XCTestExpectation(description: "Wait for string builder to finish")
         StringBuilder()
-            .append("hello")
-            .space()
-            .append("world")
-            .result { (value: String) in
+            .beAppend("hello")
+            .beSpace()
+            .beAppend("world")
+            .beResult { (value: String) in
                 XCTAssertEqual(value, "hello world", "string did not append in the correct order")
                 expectation.fulfill()
             }
@@ -56,7 +56,7 @@ class FlynnTests: XCTestCase {
     func testColor() {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
         let color = Color()
-        color.render(CGRect.zero)
+        color.beRender(CGRect.zero)
         color.unsafeFoo()
         print(color.unsafeColorable._color)
         expectation.fulfill()
@@ -66,7 +66,7 @@ class FlynnTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Array of actors by protocol")
         let views: [Viewable] = Array(count: Flynn.cores) { Color() }
         for view in views {
-            view.render(CGRect.zero)
+            view.beRender(CGRect.zero)
         }
         expectation.fulfill()
     }
@@ -157,7 +157,7 @@ class FlynnTests: XCTestCase {
     func testMemoryBloatFromMessagePassing2() {
         let counter = Counter()
         for _ in 0..<50000 {
-            counter.inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1).inc(1)
+            counter.beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1)
             counter.wait(100)
         }
     }

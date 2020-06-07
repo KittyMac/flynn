@@ -27,7 +27,7 @@ class OffToTheRacesActor: Actor {
         self.data = data
     }
 
-    lazy var inc = ChainableBehavior(self) { (_: BehaviorArgs) in
+    lazy var beInc = ChainableBehavior(self) { (_: BehaviorArgs) in
         // flynnlint:parameter None
         self.data.inc()
     }
@@ -37,14 +37,14 @@ class PublicVariablesAreAlsoBad: Actor {
 
     private var shouldBeError: Int = 0
 
-    lazy var shouldNotBeError = ChainableBehavior(self) { (_: BehaviorArgs) in
+    lazy var beShouldNotBeError = ChainableBehavior(self) { (_: BehaviorArgs) in
         // flynnlint:parameter None
         print("bar")
     }
 }
 
 class WhoseCallWasThisAnyway: Actor {
-    lazy var printFoo = ChainableBehavior(self) { (_: BehaviorArgs) in
+    lazy var bePrintFoo = ChainableBehavior(self) { (_: BehaviorArgs) in
         // flynnlint:parameter None
         print("foo")
     }
@@ -71,11 +71,11 @@ class BadFlynnTests: XCTestCase {
         let num = 100000
 
         for _ in 0..<num {
-            actor0.inc()
-            actor1.inc()
-            actor2.inc()
-            actor3.inc()
-            actor4.inc()
+            actor0.beInc()
+            actor1.beInc()
+            actor2.beInc()
+            actor3.beInc()
+            actor4.beInc()
         }
 
         actor0.wait(0)
@@ -98,13 +98,13 @@ class BadFlynnTests: XCTestCase {
         // and we cannot enforce developers NOT to have non-private functions,
         // someone reading this would think it would print a bunch of "foo"
         // followed by a bunch of "bar".  Oh, they'd be so wrong.
-        actor.printFoo()
-        actor.printFoo()
-        actor.printFoo()
-        actor.printFoo()
-        actor.printFoo()
-        actor.printFoo()
-        actor.printFoo()
+        actor.bePrintFoo()
+        actor.bePrintFoo()
+        actor.bePrintFoo()
+        actor.bePrintFoo()
+        actor.bePrintFoo()
+        actor.bePrintFoo()
+        actor.bePrintFoo()
 
         actor.wait(0)
     }

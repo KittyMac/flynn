@@ -45,20 +45,20 @@ class Counter: Actor {
         counter += value
     }
 
-    lazy var hello = ChainableBehavior(self) { (args: BehaviorArgs) in
+    lazy var beHello = ChainableBehavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter String - who is saying hello!
         print("hello world from " + args[x:0])
     }
 
-    lazy var inc = ChainableBehavior(self) { (params: BehaviorArgs) in
+    lazy var beInc = ChainableBehavior(self) { (params: BehaviorArgs) in
          // flynnlint:parameter Int - amount to increment by
         self.apply(params[x: 0])
     }
-    lazy var dec = ChainableBehavior(self) { (args: BehaviorArgs) in
+    lazy var beDec = ChainableBehavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter Int - amount to decrement
         self.apply(-(args[x: 0]))
     }
-    lazy var equals = ChainableBehavior(self) { (args: BehaviorArgs) in
+    lazy var beEquals = ChainableBehavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter ((Int) -> Void) - on complete closure
         let callback: ((Int) -> Void) = args[x:0]
         callback(self.counter)

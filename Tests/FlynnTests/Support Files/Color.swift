@@ -44,7 +44,7 @@ public extension Colorable {
 public final class Color: Actor, Viewable, Colorable {
     public lazy var unsafeColorable = ColorableState(self)
 
-    public lazy var render = Behavior(self) { (_: BehaviorArgs) in
+    public lazy var beRender = Behavior(self) { (_: BehaviorArgs) in
         // flynnlint:parameter None
         print("render!")
     }
