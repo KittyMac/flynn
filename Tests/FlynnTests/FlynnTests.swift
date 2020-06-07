@@ -57,7 +57,8 @@ class FlynnTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
         let color = Color()
         color.render(CGRect.zero)
-        //print(color.safeColorable._color)
+        color.unsafeFoo()
+        print(color.unsafeColorable._color)
         expectation.fulfill()
     }
 

@@ -29,23 +29,27 @@ public class ColorableState {
 }
 
 public protocol Colorable: Actor {
-    var safeColorable: ColorableState { get set }
+    var unsafeColorable: ColorableState { get set }
 }
 
 public extension Colorable {
 
     func red() -> Self {
-        safeColorable.color!(GLKVector4Make(1, 0, 0, 1))
+        unsafeColorable.color!(GLKVector4Make(1, 0, 0, 1))
         return self
     }
 
 }
 
 public final class Color: Actor, Viewable, Colorable {
-    public lazy var safeColorable = ColorableState(self)
+    public lazy var unsafeColorable = ColorableState(self)
 
     public lazy var render = Behavior(self) { (_: BehaviorArgs) in
         // flynnlint:parameter None
         print("render!")
+    }
+
+    public func unsafeFoo() {
+        print("this is an unsafe function")
     }
 }
