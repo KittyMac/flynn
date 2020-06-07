@@ -391,7 +391,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/meta/flynnlint ${SRCROOT}/Sources ${SRCROOT}/Tests\n";
+			shellScript = "#${SRCROOT}/meta/flynnlint ${SRCROOT}/Sources ${SRCROOT}/Tests\n";
 		};
 		46627BDC2486D26A00A2A610 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;

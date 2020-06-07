@@ -51,12 +51,12 @@ open class Actor {
         get { return pony_actor_getpriority(ponyActor) }
     }
 
-    open func protected_flowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
+    open func safeFlowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
         // overridden by subclasses to handle processing flowed requests
         return (true, args)
     }
 
-    public func protected_nextTarget() -> Actor? {
+    public func safeNextTarget() -> Actor? {
         switch numTargets {
         case 0:
             return nil
@@ -77,7 +77,7 @@ open class Actor {
             }
         }
 
-        if let target = protected_nextTarget() {
+        if let target = safeNextTarget() {
             target.flow.dynamicallyCall(withArguments: args)
         }
     }
@@ -88,7 +88,7 @@ open class Actor {
 
     // MARK: - Behaviors
     private func _flow(_ args: BehaviorArgs) {
-        let (shouldFlow, newArgs) = protected_flowProcess(args: args)
+        let (shouldFlow, newArgs) = safeFlowProcess(args: args)
         if shouldFlow {
             if numTargets > 1 && newArgs.isEmpty {
                 if pony_actors_should_wait(0, &ponyActorTargets, Int32(numTargets)) {
@@ -98,7 +98,7 @@ open class Actor {
                 }
             }
 
-            if let target = protected_nextTarget() {
+            if let target = safeNextTarget() {
                 target.flow.dynamicallyCall(withArguments: newArgs)
             }
         }
