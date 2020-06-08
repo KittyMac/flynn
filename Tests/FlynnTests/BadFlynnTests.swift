@@ -78,11 +78,11 @@ class BadFlynnTests: XCTestCase {
             actor4.beInc()
         }
 
-        actor0.wait(0)
-        actor1.wait(0)
-        actor2.wait(0)
-        actor3.wait(0)
-        actor4.wait(0)
+        actor0.unsafeWait(0)
+        actor1.unsafeWait(0)
+        actor2.unsafeWait(0)
+        actor3.unsafeWait(0)
+        actor4.unsafeWait(0)
 
         print("got \(sharedData.counter) when I expected to get \(num * 5)")
 
@@ -106,6 +106,6 @@ class BadFlynnTests: XCTestCase {
         actor.bePrintFoo()
         actor.bePrintFoo()
 
-        actor.wait(0)
+        actor.unsafeWait(0)
     }
 }

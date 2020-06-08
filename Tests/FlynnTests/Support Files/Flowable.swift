@@ -44,7 +44,7 @@ class Concatenate: Actor {
 
     override init() {
         super.init()
-        priority = 1
+        safePriority = 1
     }
 
     override func safeFlowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {

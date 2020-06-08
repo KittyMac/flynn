@@ -14,7 +14,7 @@ protocol Viewable: Actor {
 }
 
 extension Viewable {
-    func safeViewable_render(_ bounds: CGRect) {
+    func safeViewableRender(_ bounds: CGRect) {
         print("Viewable bounds \(bounds)")
     }
 }

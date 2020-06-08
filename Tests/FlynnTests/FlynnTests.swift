@@ -55,13 +55,21 @@ class FlynnTests: XCTestCase {
 
     func testColor() {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
-        let color = Color()
-        color.beRender(CGRect.zero)
-        color.unsafeFoo()
-        print(color.unsafeColorable._color)
+        Color()
+            .beAlpha()
+            .beColor()
+            .beAlpha()
+            .beColor()
+            .beAlpha()
+            .beColor()
+            .beAlpha()
+            .beColor()
+            .beRender(CGRect.zero)
+        //print(color.safeColorable._color)
         expectation.fulfill()
     }
 
+    /*
     func testArrayOfColors() {
         let expectation = XCTestExpectation(description: "Array of actors by protocol")
         let views: [Viewable] = Array(count: Flynn.cores) { Color() }
@@ -69,7 +77,7 @@ class FlynnTests: XCTestCase {
             view.beRender(CGRect.zero)
         }
         expectation.fulfill()
-    }
+    }*/
 
     func testFlowable() {
         let expectation = XCTestExpectation(description: "Flowable actors")
@@ -80,10 +88,10 @@ class FlynnTests: XCTestCase {
             expectation.fulfill()
         })
 
-        pipeline.flow("hello")
-        pipeline.flow(" ")
-        pipeline.flow("world")
-        pipeline.flow()
+        pipeline.beFlow("hello")
+        pipeline.beFlow(" ")
+        pipeline.beFlow("world")
+        pipeline.beFlow()
         wait(for: [expectation], timeout: 10.0)
     }
 
@@ -100,14 +108,14 @@ class FlynnTests: XCTestCase {
 
             for num in 0..<50000 {
                 if num % 2 == 0 {
-                    pipeline.flow("x")
+                    pipeline.beFlow("x")
                 } else {
-                    pipeline.flow("o")
+                    pipeline.beFlow("o")
                 }
                 //pipeline.wait(100)
             }
 
-            pipeline.flow()
+            pipeline.beFlow()
             wait(for: [expectation], timeout: 30.0)
         }
     }
@@ -143,14 +151,14 @@ class FlynnTests: XCTestCase {
 
         for num in 0..<50000 {
             if num % 2 == 0 {
-                pipeline.flow(1)
+                pipeline.beFlow(1)
             } else {
-                pipeline.flow(2)
+                pipeline.beFlow(2)
             }
-            pipeline.wait(10)
+            pipeline.unsafeWait(10)
         }
 
-        pipeline.flow()
+        pipeline.beFlow()
         wait(for: [expectation], timeout: 30.0)
     }
 
@@ -158,7 +166,7 @@ class FlynnTests: XCTestCase {
         let counter = Counter()
         for _ in 0..<50000 {
             counter.beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1)
-            counter.wait(100)
+            counter.unsafeWait(100)
         }
     }
 }

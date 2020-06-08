@@ -10,46 +10,38 @@ import XCTest
 @testable import Flynn
 import GLKit
 
-// swiftlint:disable identifier_name
+public class ColorableState<T> {
+    private var internalColor: GLKVector4 = GLKVector4Make(1, 1, 1, 1)
 
-public class ColorableState {
-    var _color: GLKVector4 = GLKVector4Make(1, 1, 1, 1)
+    var beColor: ChainableBehavior<T>?
+    var beAlpha: ChainableBehavior<T>?
 
-    var color: Behavior?
-    var alpha: Behavior?
-
-    init (_ actor: Actor) {
-        color = Behavior(actor) { (args: BehaviorArgs) in
-            self._color = args[x:0]
+    init (_ actor: T) {
+        beColor = ChainableBehavior(actor) { (_: BehaviorArgs) in
+            print("Colorable.color from \(self)")
         }
-        alpha = Behavior(actor) { (args: BehaviorArgs) in
-            self._color.a = args[x:0]
+        beAlpha = ChainableBehavior(actor) { (_: BehaviorArgs) in
+            print("Colorable.alpha from \(self)")
         }
     }
 }
 
-public protocol Colorable: Actor {
-    var unsafeColorable: ColorableState { get set }
+protocol Colorable: Actor {
+    var safeColorable: ColorableState<Self> { get set }
+    var beColor: ChainableBehavior<Self> { get }
+    var beAlpha: ChainableBehavior<Self> { get }
 }
 
-public extension Colorable {
-
-    func red() -> Self {
-        unsafeColorable.color!(GLKVector4Make(1, 0, 0, 1))
-        return self
-    }
-
+extension Colorable {
+    var beColor: ChainableBehavior<Self> { return safeColorable.beColor! }
+    var beAlpha: ChainableBehavior<Self> { return safeColorable.beAlpha! }
 }
 
-public final class Color: Actor, Viewable, Colorable {
-    public lazy var unsafeColorable = ColorableState(self)
+public final class Color: Actor, Colorable, Viewable {
+    public lazy var safeColorable = ColorableState(self)
 
-    public lazy var beRender = Behavior(self) { (_: BehaviorArgs) in
-        // flynnlint:parameter None
-        print("render!")
-    }
-
-    public func unsafeFoo() {
-        print("this is an unsafe function")
+    public lazy var beRender = Behavior(self) { (args: BehaviorArgs) in
+        // flynnlint:parameter CGRect - The bounds in which to render the view
+        self.safeViewableRender(args[x:0])
     }
 }
