@@ -9,6 +9,7 @@
 // swiftlint:disable line_length
 
 import XCTest
+import GLKit
 
 @testable import Flynn
 
@@ -55,7 +56,7 @@ class FlynnTests: XCTestCase {
 
     func testColor() {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
-        Color()
+        let color = Color()
             .beAlpha()
             .beColor()
             .beAlpha()
@@ -64,7 +65,14 @@ class FlynnTests: XCTestCase {
             .beColor()
             .beAlpha()
             .beColor()
-            .beRender(CGRect.zero)
+
+        color.beGetColor(Behavior(color) { (args: BehaviorArgs) in
+            let color: GLKVector4 = args[x:0]
+            print("color is \(color)")
+        })        
+        color.beGetColor(color.beSetColor)
+        color.beRender(CGRect.zero)
+
         //print(color.safeColorable._color)
         expectation.fulfill()
     }
