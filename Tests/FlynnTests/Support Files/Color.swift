@@ -13,16 +13,17 @@ import GLKit
 public class ColorableState<T> {
     private var internalColor: GLKVector4 = GLKVector4Make(1, 1, 1, 1)
 
-    var beColor: ChainableBehavior<T>?
-    var beAlpha: ChainableBehavior<T>?
+    lazy var beColor: ChainableBehavior<T> = ChainableBehavior { (_: BehaviorArgs) in
+        print("Colorable.color from \(self)")
+    }
+
+    lazy var beAlpha: ChainableBehavior<T> = ChainableBehavior { (_: BehaviorArgs) in
+        print("Colorable.alpha from \(self)")
+    }
 
     init (_ actor: T) {
-        beColor = ChainableBehavior(actor) { (_: BehaviorArgs) in
-            print("Colorable.color from \(self)")
-        }
-        beAlpha = ChainableBehavior(actor) { (_: BehaviorArgs) in
-            print("Colorable.alpha from \(self)")
-        }
+        beColor.setActor(actor)
+        beAlpha.setActor(actor)
     }
 }
 
@@ -33,8 +34,8 @@ protocol Colorable: Actor {
 }
 
 extension Colorable {
-    var beColor: ChainableBehavior<Self> { return safeColorable.beColor! }
-    var beAlpha: ChainableBehavior<Self> { return safeColorable.beAlpha! }
+    var beColor: ChainableBehavior<Self> { return safeColorable.beColor }
+    var beAlpha: ChainableBehavior<Self> { return safeColorable.beAlpha }
 }
 
 public final class Color: Actor, Colorable, Viewable {

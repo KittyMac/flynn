@@ -69,6 +69,17 @@ class FlynnTests: XCTestCase {
         expectation.fulfill()
     }
 
+    func testImage() {
+        let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
+        Image()
+            .beAlpha()
+            .beColor()
+            .beAlpha()
+            .bePath("bundle://image.png")
+        //print(color.safeColorable._color)
+        expectation.fulfill()
+    }
+
     /*
     func testArrayOfColors() {
         let expectation = XCTestExpectation(description: "Array of actors by protocol")
