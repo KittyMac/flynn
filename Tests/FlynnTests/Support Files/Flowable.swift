@@ -11,35 +11,44 @@ import XCTest
 @testable import Flynn
 
 // Pass through all arguments
-class Passthrough: Actor {
-    override func safeFlowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
-        return (true, args)
+final class Passthrough: Actor, Flowable {
+    lazy var safeFlowable = FlowableState(self)
+
+    lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
+        // flynnlint:parameter Any
+        self.safeFlowToNext(args)
     }
 }
 
 // Print description of arguments to file
-class Print: Actor {
-    override func safeFlowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
+class Print: Actor, Flowable {
+    lazy var safeFlowable = FlowableState(self)
+
+    lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
+        // flynnlint:parameter Any
         print(args.description)
-        return (true, args)
+        self.safeFlowToNext(args)
     }
 }
 
 // Takes a string as the first argument, passes along the uppercased version of it
-class Uppercase: Actor {
-    override func safeFlowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
-        if args.isEmpty == false {
-            let value: String = args[x: 0]
-            return (true, [value.uppercased()])
-        }
-        return (true, args)
+class Uppercase: Actor, Flowable {
+    lazy var safeFlowable = FlowableState(self)
+
+    lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
+        // flynnlint:parameter Any
+        guard !args.isEmpty else { return self.safeFlowToNext(args) }
+
+        let value: String = args[x: 0]
+        self.safeFlowToNext([value.uppercased()])
     }
 }
 
 // Takes a string as the first argument, concatenates all strings
 // received.  When it receives an empty argument list it considers
 // that to be "done", and sends the concatenated string to the target
-class Concatenate: Actor {
+class Concatenate: Actor, Flowable {
+    lazy var safeFlowable = FlowableState(self)
     private var combined: String = ""
 
     override init() {
@@ -47,17 +56,17 @@ class Concatenate: Actor {
         safePriority = 1
     }
 
-    override func safeFlowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
-        if args.isEmpty == false {
-            let value: String = args[x: 0]
-            combined.append(value)
-            return (false, args)
-        }
-        return (true, [combined])
+    lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
+        // flynnlint:parameter Any
+        guard !args.isEmpty else { return self.safeFlowToNext([self.combined]) }
+
+        let value: String = args[x: 0]
+        self.combined.append(value)
     }
 }
 
-class Callback: Actor {
+class Callback: Actor, Flowable {
+    lazy var safeFlowable = FlowableState(self)
     private let callback: ((BehaviorArgs) -> Void)!
 
     init(_ callback:@escaping ((BehaviorArgs) -> Void)) {
@@ -65,8 +74,9 @@ class Callback: Actor {
         super.init()
     }
 
-    override func safeFlowProcess(args: BehaviorArgs) -> (Bool, BehaviorArgs) {
-        callback(args)
-        return (true, args)
+    lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
+        // flynnlint:parameter Any
+        self.callback(args)
+        self.safeFlowToNext(args)
     }
 }

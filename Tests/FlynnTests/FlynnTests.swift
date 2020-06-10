@@ -106,6 +106,7 @@ class FlynnTests: XCTestCase {
 
         let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args: BehaviorArgs) in
             let value: String = args[x:0]
+            print(value)
             XCTAssertEqual(value, "HELLO WORLD", "chaining actors did not work as intended")
             expectation.fulfill()
         })
