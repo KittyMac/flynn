@@ -26,11 +26,33 @@ public func |> (left: [Flowable], right: Flowable) -> [Flowable] {
 }
 
 public class FlowableState {
+    private var actor: Actor
     fileprivate var numTargets: Int = 0
     fileprivate var flowTarget: Flowable?
     fileprivate var flowTargets: [Flowable] = []
     fileprivate var ponyActorTargets: [UnsafeMutableRawPointer] = []
     fileprivate var poolIdx: Int = 0
+
+    private func _retryEndFlowToNextTarget() {
+        switch self.numTargets {
+        case 0:
+            return
+        case 1:
+            flowTarget?.beFlow.dynamicallyCall(withArguments: [])
+        default:
+            if pony_actors_should_wait(0, &ponyActorTargets, Int32(numTargets)) {
+                beRetryEndFlowToNextTarget()
+                pony_actor_yield(actor.unsafePonyActor)
+                return
+            }
+            poolIdx = (poolIdx + 1) % numTargets
+            flowTargets[poolIdx].beFlow.dynamicallyCall(withArguments: [])
+        }
+    }
+
+    fileprivate lazy var beRetryEndFlowToNextTarget = Behavior { (_: BehaviorArgs) in
+        self._retryEndFlowToNextTarget()
+    }
 
     public lazy var beTarget = Behavior { (args: BehaviorArgs) in
         // flynnlint:parameter Flowable - Flowable actor to receive flow messages
@@ -53,8 +75,10 @@ public class FlowableState {
     }
 
     public init (_ actor: Actor) {
+        self.actor = actor
         beTarget.setActor(actor)
         beTargets.setActor(actor)
+        beRetryEndFlowToNextTarget.setActor(actor)
     }
 }
 
@@ -89,7 +113,7 @@ public extension Flowable {
         default:
             if args.isEmpty {
                 if pony_actors_should_wait(0, &safeFlowable.ponyActorTargets, Int32(safeFlowable.numTargets)) {
-                    safeFlowToNextTarget(args)
+                    safeFlowable.beRetryEndFlowToNextTarget()
                     safeYield()
                     return
                 }
