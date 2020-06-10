@@ -16,7 +16,7 @@ final class Passthrough: Actor, Flowable {
 
     lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter Any
-        self.safeFlowToNext(args)
+        self.safeFlowToNextTarget(args)
     }
 }
 
@@ -27,7 +27,7 @@ class Print: Actor, Flowable {
     lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter Any
         print(args.description)
-        self.safeFlowToNext(args)
+        self.safeFlowToNextTarget(args)
     }
 }
 
@@ -37,10 +37,10 @@ class Uppercase: Actor, Flowable {
 
     lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter Any
-        guard !args.isEmpty else { return self.safeFlowToNext(args) }
+        guard !args.isEmpty else { return self.safeFlowToNextTarget(args) }
 
         let value: String = args[x: 0]
-        self.safeFlowToNext([value.uppercased()])
+        self.safeFlowToNextTarget([value.uppercased()])
     }
 }
 
@@ -58,7 +58,7 @@ class Concatenate: Actor, Flowable {
 
     lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter Any
-        guard !args.isEmpty else { return self.safeFlowToNext([self.combined]) }
+        guard !args.isEmpty else { return self.safeFlowToNextTarget([self.combined]) }
 
         let value: String = args[x: 0]
         self.combined.append(value)
@@ -77,6 +77,6 @@ class Callback: Actor, Flowable {
     lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter Any
         self.callback(args)
-        self.safeFlowToNext(args)
+        self.safeFlowToNextTarget(args)
     }
 }

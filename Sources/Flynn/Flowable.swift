@@ -68,7 +68,19 @@ public extension Flowable {
     var beTarget: Behavior { return safeFlowable.beTarget }
     var beTargets: Behavior { return safeFlowable.beTargets }
 
-    func safeFlowToNext(_ args: BehaviorArgs) {
+    func safeNextTarget() -> Flowable? {
+        switch safeFlowable.numTargets {
+        case 0:
+            return nil
+        case 1:
+            return safeFlowable.flowTarget
+        default:
+            safeFlowable.poolIdx = (safeFlowable.poolIdx + 1) % safeFlowable.numTargets
+            return safeFlowable.flowTargets[safeFlowable.poolIdx]
+        }
+    }
+
+    func safeFlowToNextTarget(_ args: BehaviorArgs) {
         switch safeFlowable.numTargets {
         case 0:
             return
@@ -77,7 +89,7 @@ public extension Flowable {
         default:
             if args.isEmpty {
                 if pony_actors_should_wait(0, &safeFlowable.ponyActorTargets, Int32(safeFlowable.numTargets)) {
-                    safeFlowToNext(args)
+                    safeFlowToNextTarget(args)
                     safeYield()
                     return
                 }
