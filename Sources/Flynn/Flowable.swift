@@ -52,7 +52,7 @@ public class FlowableState {
         self.numTargets = self.flowTargets.count
     }
 
-    init (_ actor: Actor) {
+    public init (_ actor: Actor) {
         beTarget.setActor(actor)
         beTargets.setActor(actor)
     }
