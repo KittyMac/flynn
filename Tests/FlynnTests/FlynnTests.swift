@@ -43,8 +43,11 @@ class FlynnTests: XCTestCase {
 
     func test2() {
         let expectation = XCTestExpectation(description: "Wait for string builder to finish")
+
+        let hello = "hello"
+
         StringBuilder()
-            .beAppend("hello")
+            .beAppend(hello)
             .beSpace()
             .beAppend("world")
             .beResult { (value: String) in
@@ -66,10 +69,10 @@ class FlynnTests: XCTestCase {
             .beAlpha()
             .beColor()
 
-        color.beGetColor(Behavior(color) { (args: BehaviorArgs) in
+        color.beGetColor( Behavior(color) { (args: BehaviorArgs) in
             let color: GLKVector4 = args[x:0]
             print("color is \(color)")
-        })        
+        })
         color.beGetColor(color.beSetColor)
         color.beRender(CGRect.zero)
 

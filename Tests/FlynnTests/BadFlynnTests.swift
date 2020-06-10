@@ -27,7 +27,7 @@ class OffToTheRacesActor: Actor {
         self.data = data
     }
 
-    lazy var beInc = ChainableBehavior(self) { (_: BehaviorArgs) in
+    lazy var beCount = ChainableBehavior(self) { (_: BehaviorArgs) in
         // flynnlint:parameter None
         self.data.inc()
     }
@@ -71,11 +71,11 @@ class BadFlynnTests: XCTestCase {
         let num = 100000
 
         for _ in 0..<num {
-            actor0.beInc()
-            actor1.beInc()
-            actor2.beInc()
-            actor3.beInc()
-            actor4.beInc()
+            actor0.beCount()
+            actor1.beCount()
+            actor2.beCount()
+            actor3.beCount()
+            actor4.beCount()
         }
 
         actor0.unsafeWait(0)
