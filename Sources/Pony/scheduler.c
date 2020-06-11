@@ -318,6 +318,11 @@ bool ponyint_sched_start()
     pony_register_thread();
         
     uint32_t start = 0;
+    uint32_t highPerformanceCores = 0;
+    
+#if TARGET_OS_IPHONE
+    highPerformanceCores = 2;
+#endif
     
     for(uint32_t i = start; i < scheduler_count; i++)
     {
@@ -325,7 +330,12 @@ bool ponyint_sched_start()
         if(scheduler[i].sleep_object == NULL)
             return false;
         
-        if(!ponyint_thread_create(&scheduler[i].tid, run_thread, &scheduler[i]))
+        int qos = QOS_CLASS_USER_INTERACTIVE;
+        if (i < scheduler_count - highPerformanceCores) {
+            qos = QOS_CLASS_BACKGROUND;
+        }
+        
+        if(!ponyint_thread_create(&scheduler[i].tid, run_thread, qos, &scheduler[i]))
             return false;
     }
         
