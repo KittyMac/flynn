@@ -75,7 +75,7 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
         } else {
             ponyint_mpmcq_push(&injectHighEfficiency, actor);
         }
-    } else if (actor->qualityOfService == kQosAny) {
+    } else if (actor->qualityOfService == kQosAny && actor->qualityOfService == actor->qualityOfService == kQosHighPerformance) {
         // "any" QoS should favor high efficiency if it can
         ponyint_mpmcq_push(&injectHighEfficiency, actor);
     } else {
@@ -86,22 +86,22 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
 /**
  * Handles the global queue and then pops from the local queue
  */
-static pony_actor_t* pop_global(scheduler_t* sched)
+static pony_actor_t* pop_global(scheduler_t* my_sched, scheduler_t* other_sched)
 {
     pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
     if(actor != NULL)
         return actor;
-    if (sched->qualityOfService == kQosHighPerformance && injectHighPerformance.num_messages > 0) {
+    if (my_sched->qualityOfService == kQosHighPerformance) {
         actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
         if(actor != NULL)
             return actor;
-    } else if (sched->qualityOfService == kQosHighEfficiency && injectHighEfficiency.num_messages > 0) {
+    } else if (my_sched->qualityOfService == kQosHighEfficiency) {
         actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
         if(actor != NULL)
             return actor;
     }
-    if (sched != NULL)
-        return pop(sched);
+    if (other_sched != NULL)
+        return pop(other_sched);
     return NULL;
 }
 
@@ -161,7 +161,7 @@ static pony_actor_t* steal(scheduler_t* sched)
         victim = choose_victim(sched);
         
         if (victim != NULL) {
-            actor = pop_global(victim);
+            actor = pop_global(sched, victim);
             
             // If we stole the wrong actor, throw it back in the sea
             if (actor != NULL && actor->qualityOfService != kQosAny && actor->qualityOfService != sched->qualityOfService) {
@@ -203,7 +203,7 @@ static void run(scheduler_t* sched)
     if(sched->index == 0)
         last_cd_tsc = 0;
     
-    pony_actor_t* actor = pop_global(sched);
+    pony_actor_t* actor = pop_global(sched, sched);
     
     autorelease_pool = objc_autoreleasePoolPush();
     
@@ -219,7 +219,7 @@ static void run(scheduler_t* sched)
         }
         
         if(actor == NULL) {
-            actor = pop_global(sched);
+            actor = pop_global(sched, sched);
         }
         if(actor == NULL) {
             actor = steal(sched);
@@ -238,7 +238,7 @@ static void run(scheduler_t* sched)
             bool actor_did_yield = actor->yield;
             actor->yield = false;
             
-            pony_actor_t* next = pop_global(sched);
+            pony_actor_t* next = pop_global(sched, sched);
             
             autorelease_pool_is_dirty = true;
             
