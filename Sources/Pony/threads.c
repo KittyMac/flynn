@@ -32,9 +32,18 @@ bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, void* arg)
         attr_p = NULL;
     }
     
-#if __QOS_CLASS_AVAILABLE
+    // TODO: By setting QOS_CLASS_BACKGROUND, our scheduler threads will ONLY run on the
+    // high efficiency cores. In which case, it does not make sense to have 6 scheduler threads
+    // for four cores (in the example of 4 high efficiency cores and 2 high performance cores).
+    // So, eventually we probably want to be able to detect that split, and label the schedulers
+    // of QOS_CLASS_BACKGROUND to match the number of high efficiency cores and QOS_CLASS_USER_INITIATED
+    // to match the number of high performance cores. Then we should have the scheduler favor the
+    // high efficiency schedulers?
+    // QOS_CLASS_BACKGROUND - limited to high efficiency cores, runs at slower speed
+    // QOS_CLASS_UTILITY - limited to high efficiency cores, runs at faster speed
+    // QOS_CLASS_USER_INITIATED - limited to high performance cores???
+    // QOS_CLASS_USER_INTERACTIVE - limited to high performance cores???
     pthread_attr_set_qos_class_np(&attr, QOS_CLASS_BACKGROUND, 0);
-#endif
     
     if(pthread_create(thread, attr_p, start, arg))
         ret = false;
