@@ -18,11 +18,16 @@ class Counter: Actor {
     public var unsafeSleepAmount: UInt32 = 0
 
     private var done: Bool = false
-    private let batchCount: Int = 100000
+    private let batchCount: Int = 1000
 
-    init(_ sleepAmount: UInt32) {
-        self.unsafeSleepAmount = sleepAmount
+    init(_ sleepAmount: UInt32, _ qos: Int32) {
         super.init()
+
+        if let qos = QualityOfService(rawValue: qos) {
+            safeQualityOfService = qos
+        }
+
+        unsafeSleepAmount = sleepAmount
 
         beCount()
     }
@@ -46,6 +51,13 @@ class Counter: Actor {
     lazy var beStop = Behavior(self) { (_ : BehaviorArgs) in
         self.done = true
     }
+
+    lazy var beSetQualityOfService = Behavior(self) { (args: BehaviorArgs) in
+        // flynnlint:parameter Int32 - quality of service
+        if let qos = QualityOfService(rawValue: args[x:0]) {
+            self.safeQualityOfService = qos
+        }
+    }
 }
 
 class ViewController: PlanetViewController {
@@ -54,8 +66,9 @@ class ViewController: PlanetViewController {
 
     func adjustCounters(_ num: Int) {
         let sleepAmount = UInt32(self.sleepSlider.localSlider.value)
+        let qos = Int32(self.qualityOfService.segmentedControl.selectedSegmentIndex)
         while counters.count < num {
-            counters.append(Counter(sleepAmount))
+            counters.append(Counter(sleepAmount, qos))
         }
         while counters.count > num {
             counters.removeFirst().beStop()
@@ -86,7 +99,8 @@ class ViewController: PlanetViewController {
             view.widthAnchor == parent.widthAnchor - 80
 
             if  name == "actorLabel" ||
-                name == "sleepLabel" {
+                name == "sleepLabel" ||
+                name == "qualityOfService" {
                 view.topAnchor == prev!.bottomAnchor + 80
             }
             if  name == "countPerTimeUnit" ||
@@ -115,6 +129,17 @@ class ViewController: PlanetViewController {
                 countsPerTime = total
                 countPerTimeTimer -= 1.0
             }
+        }
+
+        qualityOfService.segmentedControl.insertSegment(withTitle: "Any", at: 0, animated: false)
+        qualityOfService.segmentedControl.insertSegment(withTitle: "Efficiency", at: 1, animated: false)
+        qualityOfService.segmentedControl.insertSegment(withTitle: "Performance", at: 2, animated: false)
+        qualityOfService.segmentedControl.selectedSegmentIndex = 0
+
+        qualityOfService.segmentedControl.add(for: .valueChanged) { [weak self] in
+            guard let self = self else { return }
+            let qos = Int(self.qualityOfService.segmentedControl.selectedSegmentIndex)
+            _ = self.counters.map { $0.beSetQualityOfService(qos) }
         }
 
         actorSlider.localSlider.add(for: .valueChanged) { [weak self] in
@@ -155,4 +180,9 @@ class ViewController: PlanetViewController {
     fileprivate var sleepSlider: Slider {
         return mainXmlView!.elementForId("sleepSlider")!.asSlider!
     }
+
+    fileprivate var qualityOfService: SegmentedControl {
+        return mainXmlView!.elementForId("qualityOfService")!.asSegmentedControl!
+    }
+
 }

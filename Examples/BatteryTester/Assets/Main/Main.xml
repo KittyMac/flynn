@@ -12,5 +12,7 @@
     <Label id="sleepLabel" styleId="LabelStd1" text="0 µs sleep" textAlignment="center" numberOfLines="1" textColor="#000000FF" />
     <Slider id="sleepSlider" minValue="0" maxValue="200" />
     
+    <SegmentedControl id="qualityOfService" />
+    
 </Scene>
 
