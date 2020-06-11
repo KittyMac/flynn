@@ -160,9 +160,18 @@ static pony_actor_t* steal(scheduler_t* sched)
         // Choose the victim with the most work to do
         victim = choose_victim(sched);
         
-        actor = pop_global(victim);
-        if(actor != NULL)
-            break;
+        if (victim != NULL) {
+            actor = pop_global(victim);
+            
+            // If we stole the wrong actor, throw it back in the sea
+            if (actor != NULL && actor->qualityOfService != kQosAny && actor->qualityOfService != sched->qualityOfService) {
+                push(sched, actor);
+                actor = NULL;
+            }
+            
+            if(actor != NULL)
+                break;
+        }
         
         scaling_sleep += scaling_sleep_delta;
         if (scaling_sleep > scaling_sleep_max) {
@@ -235,7 +244,7 @@ static void run(scheduler_t* sched)
             
             if(reschedule) {
                 if(next != NULL) {
-                    if (actor_did_yield == false || actor->priority > next->priority) {
+                    if (actor_did_yield == false && actor->priority > next->priority) {
                         // our current actor has a higher priority than the next actor, so put
                         // the next actor back at the end of our queue.  Hopefully someone
                         // else will pick him up
