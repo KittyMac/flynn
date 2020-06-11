@@ -75,7 +75,7 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
         } else {
             ponyint_mpmcq_push(&injectHighEfficiency, actor);
         }
-    } else if (actor->qualityOfService == kQosAny && actor->qualityOfService == actor->qualityOfService == kQosHighPerformance) {
+    } else if (actor->qualityOfService == kQosAny && sched->qualityOfService == kQosHighPerformance) {
         // "any" QoS should favor high efficiency if it can
         ponyint_mpmcq_push(&injectHighEfficiency, actor);
     } else {
@@ -155,6 +155,8 @@ static pony_actor_t* steal(scheduler_t* sched)
     int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
 #endif
     
+    sched->idle = true;
+    
     while(true)
     {
         // Choose the victim with the most work to do
@@ -191,6 +193,8 @@ static pony_actor_t* steal(scheduler_t* sched)
             return NULL;
         }
     }
+    
+    sched->idle = false;
     
     return actor;
 }
@@ -256,10 +260,14 @@ static void run(scheduler_t* sched)
                         actor = next;
                     }
                 } else {
-                    if (actor->qualityOfService != sched->qualityOfService) {
-                        push(sched, actor);
-                        actor = NULL;
-                        continue;
+                    if (actor->qualityOfService == kQosAny && sched->qualityOfService == kQosHighPerformance) {
+                        for (int i = 0; i < scheduler_count; i++){
+                            if (scheduler[i].idle == true && scheduler[i].qualityOfService == kQosHighEfficiency) {
+                                push(sched, actor);
+                                actor = NULL;
+                                break;
+                            }
+                        }
                     }
                 }
             } else {
