@@ -11,46 +11,50 @@
 
 bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, void* arg)
 {
-  bool ret = true;
-
-  bool setstack_called = false;
-  struct rlimit limit;
-  pthread_attr_t attr;
-  pthread_attr_t* attr_p = &attr;
-  pthread_attr_init(attr_p);
-
-  // Some systems, e.g., macOS, hav a different default default
-  // stack size than the typical system's RLIMIT_STACK.
-  // Let's use RLIMIT_STACK's current limit if it is sane.
-  if(getrlimit(RLIMIT_STACK, &limit) == 0 &&
-    limit.rlim_cur != RLIM_INFINITY &&
-    limit.rlim_cur >= PTHREAD_STACK_MIN)
-  {
-    if(! setstack_called)
-      pthread_attr_setstacksize(&attr, (size_t)limit.rlim_cur);
-  } else {
-    attr_p = NULL;
-  }
-
-  if(pthread_create(thread, attr_p, start, arg))
-    ret = false;
-  pthread_attr_destroy(&attr);
-  return ret;
+    bool ret = true;
+    
+    bool setstack_called = false;
+    struct rlimit limit;
+    pthread_attr_t attr;
+    pthread_attr_t* attr_p = &attr;
+    pthread_attr_init(attr_p);
+    
+    // Some systems, e.g., macOS, hav a different default default
+    // stack size than the typical system's RLIMIT_STACK.
+    // Let's use RLIMIT_STACK's current limit if it is sane.
+    if(getrlimit(RLIMIT_STACK, &limit) == 0 &&
+       limit.rlim_cur != RLIM_INFINITY &&
+       limit.rlim_cur >= PTHREAD_STACK_MIN)
+    {
+        if(! setstack_called)
+            pthread_attr_setstacksize(&attr, (size_t)limit.rlim_cur);
+    } else {
+        attr_p = NULL;
+    }
+    
+#if __QOS_CLASS_AVAILABLE
+    pthread_attr_set_qos_class_np(&attr, QOS_CLASS_BACKGROUND, 0);
+#endif
+    
+    if(pthread_create(thread, attr_p, start, arg))
+        ret = false;
+    pthread_attr_destroy(&attr);
+    return ret;
 }
 
 bool ponyint_thread_join(pony_thread_id_t thread)
 {
-  if(pthread_join(thread, NULL))
-    return false;
-  return true;
+    if(pthread_join(thread, NULL))
+        return false;
+    return true;
 }
 
 void ponyint_thread_detach(pony_thread_id_t thread)
 {
-  pthread_detach(thread);
+    pthread_detach(thread);
 }
 
 pony_thread_id_t ponyint_thread_self()
 {
-  return pthread_self();
+    return pthread_self();
 }

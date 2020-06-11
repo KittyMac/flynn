@@ -30,11 +30,11 @@ class Counter: Actor {
     private func count() {
         for _ in 0..<batchCount {
             unsafeCount += 1
+        }
+        if done == false {
             if unsafeSleepAmount > 0 {
                 usleep(unsafeSleepAmount)
             }
-        }
-        if done == false {
             self.beCount()
         }
     }
