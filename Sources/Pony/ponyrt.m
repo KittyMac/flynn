@@ -141,6 +141,14 @@ int pony_actor_getpriority(void * actor) {
     return ponyint_actor_getpriority(actor);
 }
 
+void pony_actor_setqualityOfService(void * actor, int qualityOfService) {
+    ponyint_actor_setqualityOfService(actor, qualityOfService);
+}
+
+int pony_actor_getqualityOfService(void * actor) {
+    return ponyint_actor_getqualityOfService(actor);
+}
+
 void pony_actor_yield(void * actor) {
     ponyint_yield_actor(actor);
 }

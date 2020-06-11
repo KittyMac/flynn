@@ -22,6 +22,11 @@
 #  define PLATFORM_IS_ILP32
 #endif
 
+#define kQosAny 0
+#define kQosHighEfficiency 1
+#define kQosHighPerformance 2
+
+
 #define kMessageBlock 1
 #define kMessageFastBlock0 2
 #define kMessageFastBlock1 3

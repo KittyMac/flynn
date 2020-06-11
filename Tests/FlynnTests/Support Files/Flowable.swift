@@ -35,6 +35,11 @@ class Print: Actor, Flowable {
 class Uppercase: Actor, Flowable {
     lazy var safeFlowable = FlowableState(self)
 
+    override init() {
+        super.init()
+        safeQualityOfService = .performance
+    }
+
     lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter Any
         guard !args.isEmpty else { return self.safeFlowToNextTarget(args) }

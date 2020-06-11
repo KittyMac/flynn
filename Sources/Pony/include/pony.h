@@ -67,6 +67,9 @@ void pony_actor_fast_dispatch10(void * actor, id arg0, id arg1, id arg2, id arg3
 void pony_actor_setpriority(void * actor, int priority);
 int pony_actor_getpriority(void * actor);
 
+void pony_actor_setqualityOfService(void * actor, int qualityOfService);
+int pony_actor_getqualityOfService(void * actor);
+
 void pony_actor_yield(void * actor);
 
 int pony_actor_num_messages(void * actor);

@@ -139,6 +139,15 @@ void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority)
     actor->priority = priority;
 }
 
+int32_t ponyint_actor_getqualityOfService(pony_actor_t* actor) {
+    return actor->qualityOfService;
+}
+
+void ponyint_actor_setqualityOfService(pony_actor_t* actor, int32_t qualityOfService)
+{
+    actor->qualityOfService = qualityOfService;
+}
+
 void ponyint_yield_actor(pony_actor_t* actor)
 {
     actor->yield = true;

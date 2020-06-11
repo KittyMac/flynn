@@ -102,18 +102,18 @@ class ViewController: PlanetViewController {
         let countPerTimeUnitLabel = countPerTimeUnit.label
 
         var countsPerTime: Int = 0
-        var counterPerMinuteTime: Double = 0
+        var countPerTimeTimer: Double = 0
 
         Timer.scheduledTimer(withTimeInterval: updateFrequency, repeats: true) { (_) in
             let total = self.counters.reduce(0) { result, counter in result + counter.unsafeCount }
             countTotalLabel.text = String(total)
 
-            counterPerMinuteTime += updateFrequency
-            if counterPerMinuteTime > 1.0 {
+            countPerTimeTimer += updateFrequency
+            if countPerTimeTimer > 1.0 {
                 countPerTimeUnitLabel.text = "\( (total - countsPerTime)) per second"
 
                 countsPerTime = total
-                counterPerMinuteTime -= 1.0
+                countPerTimeTimer -= 1.0
             }
         }
 

@@ -36,6 +36,7 @@ struct scheduler_t
     // These are rarely changed.
     pony_thread_id_t tid;
     int32_t index;
+    int32_t qualityOfService;
     bool terminate;
     pony_signal_event_t sleep_object;
     

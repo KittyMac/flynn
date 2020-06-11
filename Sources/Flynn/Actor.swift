@@ -10,6 +10,13 @@ import Foundation
 import Pony
 
 open class Actor {
+
+    public enum QualityOfService: Int32 {
+        case any = 0
+        case efficiency = 1
+        case performance = 2
+    }
+
     private class func startup() {
         Flynn.startup()
     }
@@ -24,6 +31,11 @@ open class Actor {
     public var safePriority: Int32 {
         set { pony_actor_setpriority(unsafePonyActor, newValue) }
         get { return pony_actor_getpriority(unsafePonyActor) }
+    }
+
+    public var safeQualityOfService: QualityOfService {
+        set { pony_actor_setqualityOfService(unsafePonyActor, newValue.rawValue) }
+        get { return QualityOfService(rawValue: pony_actor_getqualityOfService(unsafePonyActor))! }
     }
 
     // MARK: - Functions

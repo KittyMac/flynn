@@ -29,6 +29,8 @@ static PONY_ATOMIC(uint32_t) active_scheduler_count;
 static PONY_ATOMIC(uint32_t) active_scheduler_count_check;
 static scheduler_t* scheduler;
 static mpmcq_t inject;
+static mpmcq_t injectHighPerformance;
+static mpmcq_t injectHighEfficiency;
 static __pony_thread_local scheduler_t* this_scheduler;
 static __pony_thread_local void* autorelease_pool;
 static __pony_thread_local bool autorelease_pool_is_dirty;
@@ -66,7 +68,15 @@ static pony_actor_t* pop(scheduler_t* sched)
  */
 static void push(scheduler_t* sched, pony_actor_t* actor)
 {
-    ponyint_mpmcq_push_single(&sched->q, actor);
+    if (actor->qualityOfService != kQosAny && actor->qualityOfService != sched->qualityOfService) {
+        if (actor->qualityOfService == kQosHighPerformance) {
+            ponyint_mpmcq_push_single(&injectHighPerformance, actor);
+        } else {
+            ponyint_mpmcq_push_single(&injectHighEfficiency, actor);
+        }
+    } else {
+        ponyint_mpmcq_push_single(&sched->q, actor);
+    }
 }
 
 /**
@@ -77,6 +87,15 @@ static pony_actor_t* pop_global(scheduler_t* sched)
     pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
     if(actor != NULL)
         return actor;
+    if (sched->qualityOfService == kQosHighPerformance) {
+        actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
+        if(actor != NULL)
+            return actor;
+    } else if (sched->qualityOfService == kQosHighEfficiency) {
+        actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
+        if(actor != NULL)
+            return actor;
+    }
     if (sched != NULL)
         return pop(sched);
     return NULL;
@@ -193,6 +212,7 @@ static void run(scheduler_t* sched)
             actor = steal(sched);
         }
         if(actor != NULL) {
+
             // Run the current actor and get the next actor.
             bool reschedule = ponyint_actor_run(&sched->ctx, actor, 5000);
             
@@ -270,6 +290,8 @@ static void ponyint_sched_shutdown()
     atomic_store_explicit(&active_scheduler_count, 0, memory_order_relaxed);
     
     ponyint_mpmcq_destroy(&inject);
+    ponyint_mpmcq_destroy(&injectHighEfficiency);
+    ponyint_mpmcq_destroy(&injectHighPerformance);
     
     fprintf(stderr, "max memory usage: %0.2f MB\n", ponyint_max_memory() / (1024.0f * 1024.0f));
 }
@@ -309,6 +331,8 @@ pony_ctx_t* ponyint_sched_init()
     }
     
     ponyint_mpmcq_init(&inject);
+    ponyint_mpmcq_init(&injectHighEfficiency);
+    ponyint_mpmcq_init(&injectHighPerformance);
     
     return pony_ctx();
 }
@@ -331,10 +355,12 @@ bool ponyint_sched_start()
             return false;
         
         int qos = QOS_CLASS_USER_INTERACTIVE;
+        scheduler[i].qualityOfService = kQosHighPerformance;
         
 #if TARGET_OS_IPHONE
         if (i < scheduler_count - highPerformanceCores) {
             qos = QOS_CLASS_BACKGROUND;
+            scheduler[i].qualityOfService = kQosHighEfficiency;
         }
 #endif
         
