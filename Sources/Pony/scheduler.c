@@ -319,7 +319,7 @@ bool ponyint_sched_start()
         
     uint32_t start = 0;
     
-    for(uint32_t i = start; i < scheduler_count-1; i++)
+    for(uint32_t i = start; i < scheduler_count; i++)
     {
         // there was an error creating a wait event or a pthread condition object
         if(scheduler[i].sleep_object == NULL)
