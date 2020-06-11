@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Object id="styles" xmlns="http://schema.smallplanet.com/PlanetUI">
+
+    <Button styleId="ButtonStd" backgroundColor="#eddeb7FF" backgroundColorHighlighted="#d9ad7bFF" cornerRadius="5"/>
+
+
+    <Label styleId="LabelStd0" fontName="Avenir-Medium" fontSize="14" textColor="@config(Color.text)" />
+    <Label styleId="LabelBld0" fontName="Avenir-Black" fontSize="14" textColor="@config(Color.text)" />
+    
+    <Label styleId="LabelStd1" fontName="Avenir-Medium" fontSize="18" textColor="@config(Color.text)" />
+    <Label styleId="LabelBld1" fontName="Avenir-Black" fontSize="18" textColor="@config(Color.text)" />
+    
+    <Label styleId="LabelStd2" fontName="Avenir-Medium" fontSize="24" textColor="@config(Color.text)" />
+    <Label styleId="LabelBld2" fontName="Avenir-Black" fontSize="24" textColor="@config(Color.text)" />
+    
+    <Label styleId="MonoStd0" fontName="Menlo-Regular" fontSize="10" textColor="@config(Color.text)" />
+    <Label styleId="MonoBld0" fontName="Menlo-Bold" fontSize="10" textColor="@config(Color.text)" />
+    
+    <Label styleId="MonoStd1" fontName="Menlo-Regular" fontSize="12" textColor="@config(Color.text)" />
+    <Label styleId="MonoBld1" fontName="Menlo-Bold" fontSize="12" textColor="@config(Color.text)" />
+    
+    <Label styleId="MonoStd2" fontName="Menlo-Regular" fontSize="16" textColor="@config(Color.text)" />
+    <Label styleId="MonoBld2" fontName="Menlo-Bold" fontSize="16" textColor="@config(Color.text)" />
+    
+    <Label styleId="MonoStd3" fontName="Menlo-Regular" fontSize="20" textColor="@config(Color.text)" />
+    <Label styleId="MonoBld3" fontName="Menlo-Bold" fontSize="20" textColor="@config(Color.text)" />
+
+</Object>

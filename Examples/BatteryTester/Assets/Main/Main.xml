@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scene id="root" xmlns="http://schema.smallplanet.com/PlanetUI">
+    
+    <View id="background" backgroundColor="#FFFFFFFF" />
+    
+    <Label id="countTotal" styleId="LabelStd2" text="0" textAlignment="center" numberOfLines="1" textColor="#000000FF" />
+    <Label id="countPerTimeUnit" styleId="LabelStd2" text="0" textAlignment="center" numberOfLines="1" textColor="#000000FF" />
+    
+    <Label id="actorLabel" styleId="LabelStd1" text="0 Actors" textAlignment="center" numberOfLines="1" textColor="#000000FF" />
+    <Slider id="actorSlider" minValue="0" maxValue="10" />
+    
+    <Label id="sleepLabel" styleId="LabelStd1" text="0 µs sleep" textAlignment="center" numberOfLines="1" textColor="#000000FF" />
+    <Slider id="sleepSlider" minValue="0" maxValue="20" />
+    
+</Scene>
+

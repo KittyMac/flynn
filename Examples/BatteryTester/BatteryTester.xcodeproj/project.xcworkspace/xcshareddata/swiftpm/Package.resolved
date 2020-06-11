@@ -1,0 +1,43 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "AEXML",
+        "repositoryURL": "https://github.com/SmallPlanetSporks/AEXML.git",
+        "state": {
+          "branch": "spmaster",
+          "revision": "67663d951a325b6132be757b5979c2a032f82fc9",
+          "version": null
+        }
+      },
+      {
+        "package": "Anchorage",
+        "repositoryURL": "https://github.com/Rightpoint/Anchorage",
+        "state": {
+          "branch": null,
+          "revision": "18fed38e95db3200aecbd5b7101b981f91656084",
+          "version": "4.4.0"
+        }
+      },
+      {
+        "package": "Flynn",
+        "repositoryURL": "https://github.com/KittyMac/flynn",
+        "state": {
+          "branch": null,
+          "revision": "cf24f2f743a8af0a6f63075acadfc23a3c2ab465",
+          "version": "0.0.2"
+        }
+      },
+      {
+        "package": "PlanetSwift",
+        "repositoryURL": "https://github.com/SmallPlanet/PlanetSwift",
+        "state": {
+          "branch": "modernize",
+          "revision": "f696713f45ec7c6bad32b802bad7567a2c0b4d90",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

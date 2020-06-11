@@ -1,0 +1,586 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 52;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4630CE2E2491ECAB00ECB1FB /* UIControl+Closures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4630CE2D2491ECAB00ECB1FB /* UIControl+Closures.swift */; };
+		4669ED8B2491D02600E42ECB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4669ED8A2491D02600E42ECB /* AppDelegate.swift */; };
+		4669ED8D2491D02600E42ECB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4669ED8C2491D02600E42ECB /* SceneDelegate.swift */; };
+		4669ED8F2491D02600E42ECB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4669ED8E2491D02600E42ECB /* ViewController.swift */; };
+		4669ED922491D02600E42ECB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4669ED902491D02600E42ECB /* Main.storyboard */; };
+		4669ED942491D02600E42ECB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4669ED932491D02600E42ECB /* Assets.xcassets */; };
+		4669ED972491D02600E42ECB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4669ED952491D02600E42ECB /* LaunchScreen.storyboard */; };
+		4669EDA22491D02700E42ECB /* BatteryTesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4669EDA12491D02700E42ECB /* BatteryTesterTests.swift */; };
+		4669EDAE2491D0BD00E42ECB /* PlanetSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 4669EDAD2491D0BD00E42ECB /* PlanetSwift */; };
+		4669EDB12491D17000E42ECB /* Anchorage in Frameworks */ = {isa = PBXBuildFile; productRef = 4669EDB02491D17000E42ECB /* Anchorage */; };
+		4669EDB32491D1C400E42ECB /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 4669EDB22491D1C400E42ECB /* Assets */; };
+		4669EDB72491D41800E42ECB /* Flynn in Frameworks */ = {isa = PBXBuildFile; productRef = 4669EDB62491D41800E42ECB /* Flynn */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4669ED9E2491D02700E42ECB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4669ED7F2491D02600E42ECB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4669ED862491D02600E42ECB;
+			remoteInfo = BatteryTester;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		4630CE2D2491ECAB00ECB1FB /* UIControl+Closures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIControl+Closures.swift"; sourceTree = "<group>"; };
+		4669ED872491D02600E42ECB /* BatteryTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BatteryTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4669ED8A2491D02600E42ECB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		4669ED8C2491D02600E42ECB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		4669ED8E2491D02600E42ECB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		4669ED912491D02600E42ECB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		4669ED932491D02600E42ECB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		4669ED962491D02600E42ECB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		4669ED982491D02600E42ECB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4669ED9D2491D02700E42ECB /* BatteryTesterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BatteryTesterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4669EDA12491D02700E42ECB /* BatteryTesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryTesterTests.swift; sourceTree = "<group>"; };
+		4669EDA32491D02700E42ECB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4669EDB22491D1C400E42ECB /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Assets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4669ED842491D02600E42ECB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4669EDB72491D41800E42ECB /* Flynn in Frameworks */,
+				4669EDAE2491D0BD00E42ECB /* PlanetSwift in Frameworks */,
+				4669EDB12491D17000E42ECB /* Anchorage in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4669ED9A2491D02700E42ECB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4669ED7E2491D02600E42ECB = {
+			isa = PBXGroup;
+			children = (
+				4669EDB22491D1C400E42ECB /* Assets */,
+				4669ED892491D02600E42ECB /* BatteryTester */,
+				4669EDA02491D02700E42ECB /* BatteryTesterTests */,
+				4669ED882491D02600E42ECB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4669ED882491D02600E42ECB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4669ED872491D02600E42ECB /* BatteryTester.app */,
+				4669ED9D2491D02700E42ECB /* BatteryTesterTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4669ED892491D02600E42ECB /* BatteryTester */ = {
+			isa = PBXGroup;
+			children = (
+				4630CE2D2491ECAB00ECB1FB /* UIControl+Closures.swift */,
+				4669ED8A2491D02600E42ECB /* AppDelegate.swift */,
+				4669ED8C2491D02600E42ECB /* SceneDelegate.swift */,
+				4669ED8E2491D02600E42ECB /* ViewController.swift */,
+				4669ED902491D02600E42ECB /* Main.storyboard */,
+				4669ED932491D02600E42ECB /* Assets.xcassets */,
+				4669ED952491D02600E42ECB /* LaunchScreen.storyboard */,
+				4669ED982491D02600E42ECB /* Info.plist */,
+			);
+			path = BatteryTester;
+			sourceTree = "<group>";
+		};
+		4669EDA02491D02700E42ECB /* BatteryTesterTests */ = {
+			isa = PBXGroup;
+			children = (
+				4669EDA12491D02700E42ECB /* BatteryTesterTests.swift */,
+				4669EDA32491D02700E42ECB /* Info.plist */,
+			);
+			path = BatteryTesterTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4669ED862491D02600E42ECB /* BatteryTester */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4669EDA62491D02700E42ECB /* Build configuration list for PBXNativeTarget "BatteryTester" */;
+			buildPhases = (
+				4669EDB42491D31400E42ECB /* SwiftLint */,
+				4669EDB82491D42000E42ECB /* FlynnLint */,
+				4669ED832491D02600E42ECB /* Sources */,
+				4669ED842491D02600E42ECB /* Frameworks */,
+				4669ED852491D02600E42ECB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BatteryTester;
+			packageProductDependencies = (
+				4669EDAD2491D0BD00E42ECB /* PlanetSwift */,
+				4669EDB02491D17000E42ECB /* Anchorage */,
+				4669EDB62491D41800E42ECB /* Flynn */,
+			);
+			productName = BatteryTester;
+			productReference = 4669ED872491D02600E42ECB /* BatteryTester.app */;
+			productType = "com.apple.product-type.application";
+		};
+		4669ED9C2491D02700E42ECB /* BatteryTesterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4669EDA92491D02700E42ECB /* Build configuration list for PBXNativeTarget "BatteryTesterTests" */;
+			buildPhases = (
+				4669ED992491D02700E42ECB /* Sources */,
+				4669ED9A2491D02700E42ECB /* Frameworks */,
+				4669ED9B2491D02700E42ECB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4669ED9F2491D02700E42ECB /* PBXTargetDependency */,
+			);
+			name = BatteryTesterTests;
+			productName = BatteryTesterTests;
+			productReference = 4669ED9D2491D02700E42ECB /* BatteryTesterTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4669ED7F2491D02600E42ECB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1140;
+				LastUpgradeCheck = 1140;
+				ORGANIZATIONNAME = "Rocco Bowling";
+				TargetAttributes = {
+					4669ED862491D02600E42ECB = {
+						CreatedOnToolsVersion = 11.4.1;
+					};
+					4669ED9C2491D02700E42ECB = {
+						CreatedOnToolsVersion = 11.4.1;
+						TestTargetID = 4669ED862491D02600E42ECB;
+					};
+				};
+			};
+			buildConfigurationList = 4669ED822491D02600E42ECB /* Build configuration list for PBXProject "BatteryTester" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4669ED7E2491D02600E42ECB;
+			packageReferences = (
+				4669EDAC2491D0BD00E42ECB /* XCRemoteSwiftPackageReference "PlanetSwift" */,
+				4669EDAF2491D17000E42ECB /* XCRemoteSwiftPackageReference "Anchorage" */,
+				4669EDB52491D41800E42ECB /* XCRemoteSwiftPackageReference "flynn" */,
+			);
+			productRefGroup = 4669ED882491D02600E42ECB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4669ED862491D02600E42ECB /* BatteryTester */,
+				4669ED9C2491D02700E42ECB /* BatteryTesterTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4669ED852491D02600E42ECB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4669ED972491D02600E42ECB /* LaunchScreen.storyboard in Resources */,
+				4669EDB32491D1C400E42ECB /* Assets in Resources */,
+				4669ED942491D02600E42ECB /* Assets.xcassets in Resources */,
+				4669ED922491D02600E42ECB /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4669ED9B2491D02700E42ECB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4669EDB42491D31400E42ECB /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+		4669EDB82491D42000E42ECB /* FlynnLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = FlynnLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${BUILD_ROOT}/../../SourcePackages/checkouts/flynn/meta/FlynnLint ${SRCROOT}\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4669ED832491D02600E42ECB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4669ED8F2491D02600E42ECB /* ViewController.swift in Sources */,
+				4630CE2E2491ECAB00ECB1FB /* UIControl+Closures.swift in Sources */,
+				4669ED8B2491D02600E42ECB /* AppDelegate.swift in Sources */,
+				4669ED8D2491D02600E42ECB /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4669ED992491D02700E42ECB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4669EDA22491D02700E42ECB /* BatteryTesterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4669ED9F2491D02700E42ECB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4669ED862491D02600E42ECB /* BatteryTester */;
+			targetProxy = 4669ED9E2491D02700E42ECB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		4669ED902491D02600E42ECB /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4669ED912491D02600E42ECB /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		4669ED952491D02600E42ECB /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4669ED962491D02600E42ECB /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		4669EDA42491D02700E42ECB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		4669EDA52491D02700E42ECB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		4669EDA72491D02700E42ECB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A3LA43YQN5;
+				INFOPLIST_FILE = BatteryTester/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.BatteryTester;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4669EDA82491D02700E42ECB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A3LA43YQN5;
+				INFOPLIST_FILE = BatteryTester/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.BatteryTester;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4669EDAA2491D02700E42ECB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A3LA43YQN5;
+				INFOPLIST_FILE = BatteryTesterTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.BatteryTesterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BatteryTester.app/BatteryTester";
+			};
+			name = Debug;
+		};
+		4669EDAB2491D02700E42ECB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A3LA43YQN5;
+				INFOPLIST_FILE = BatteryTesterTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimerasw.BatteryTesterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BatteryTester.app/BatteryTester";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4669ED822491D02600E42ECB /* Build configuration list for PBXProject "BatteryTester" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4669EDA42491D02700E42ECB /* Debug */,
+				4669EDA52491D02700E42ECB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4669EDA62491D02700E42ECB /* Build configuration list for PBXNativeTarget "BatteryTester" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4669EDA72491D02700E42ECB /* Debug */,
+				4669EDA82491D02700E42ECB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4669EDA92491D02700E42ECB /* Build configuration list for PBXNativeTarget "BatteryTesterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4669EDAA2491D02700E42ECB /* Debug */,
+				4669EDAB2491D02700E42ECB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4669EDAC2491D0BD00E42ECB /* XCRemoteSwiftPackageReference "PlanetSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SmallPlanet/PlanetSwift";
+			requirement = {
+				branch = modernize;
+				kind = branch;
+			};
+		};
+		4669EDAF2491D17000E42ECB /* XCRemoteSwiftPackageReference "Anchorage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Rightpoint/Anchorage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.4.0;
+			};
+		};
+		4669EDB52491D41800E42ECB /* XCRemoteSwiftPackageReference "flynn" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/KittyMac/flynn";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4669EDAD2491D0BD00E42ECB /* PlanetSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4669EDAC2491D0BD00E42ECB /* XCRemoteSwiftPackageReference "PlanetSwift" */;
+			productName = PlanetSwift;
+		};
+		4669EDB02491D17000E42ECB /* Anchorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4669EDAF2491D17000E42ECB /* XCRemoteSwiftPackageReference "Anchorage" */;
+			productName = Anchorage;
+		};
+		4669EDB62491D41800E42ECB /* Flynn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4669EDB52491D41800E42ECB /* XCRemoteSwiftPackageReference "flynn" */;
+			productName = Flynn;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 4669ED7F2491D02600E42ECB /* Project object */;
+}
