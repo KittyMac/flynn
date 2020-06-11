@@ -17,8 +17,8 @@
 		4669EDA22491D02700E42ECB /* BatteryTesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4669EDA12491D02700E42ECB /* BatteryTesterTests.swift */; };
 		4669EDB12491D17000E42ECB /* Anchorage in Frameworks */ = {isa = PBXBuildFile; productRef = 4669EDB02491D17000E42ECB /* Anchorage */; };
 		4669EDB32491D1C400E42ECB /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 4669EDB22491D1C400E42ECB /* Assets */; };
-		4669EDB72491D41800E42ECB /* Flynn in Frameworks */ = {isa = PBXBuildFile; productRef = 4669EDB62491D41800E42ECB /* Flynn */; };
 		4690D615249286F8003DEE15 /* PlanetSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 4690D614249286F8003DEE15 /* PlanetSwift */; };
+		46B3C3902492B7DE00FB81E5 /* Flynn in Frameworks */ = {isa = PBXBuildFile; productRef = 46B3C38F2492B7DE00FB81E5 /* Flynn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,7 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4669EDB72491D41800E42ECB /* Flynn in Frameworks */,
+				46B3C3902492B7DE00FB81E5 /* Flynn in Frameworks */,
 				4690D615249286F8003DEE15 /* PlanetSwift in Frameworks */,
 				4669EDB12491D17000E42ECB /* Anchorage in Frameworks */,
 			);
@@ -131,8 +131,8 @@
 			name = BatteryTester;
 			packageProductDependencies = (
 				4669EDB02491D17000E42ECB /* Anchorage */,
-				4669EDB62491D41800E42ECB /* Flynn */,
 				4690D614249286F8003DEE15 /* PlanetSwift */,
+				46B3C38F2492B7DE00FB81E5 /* Flynn */,
 			);
 			productName = BatteryTester;
 			productReference = 4669ED872491D02600E42ECB /* BatteryTester.app */;
@@ -186,8 +186,8 @@
 			mainGroup = 4669ED7E2491D02600E42ECB;
 			packageReferences = (
 				4669EDAF2491D17000E42ECB /* XCRemoteSwiftPackageReference "Anchorage" */,
-				4669EDB52491D41800E42ECB /* XCRemoteSwiftPackageReference "flynn" */,
 				4690D613249286F8003DEE15 /* XCRemoteSwiftPackageReference "PlanetSwift" */,
+				46B3C38E2492B7DE00FB81E5 /* XCRemoteSwiftPackageReference "flynn" */,
 			);
 			productRefGroup = 4669ED882491D02600E42ECB /* Products */;
 			projectDirPath = "";
@@ -546,17 +546,17 @@
 				minimumVersion = 4.4.0;
 			};
 		};
-		4669EDB52491D41800E42ECB /* XCRemoteSwiftPackageReference "flynn" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/KittyMac/flynn";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.2;
-			};
-		};
 		4690D613249286F8003DEE15 /* XCRemoteSwiftPackageReference "PlanetSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SmallPlanet/PlanetSwift";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		46B3C38E2492B7DE00FB81E5 /* XCRemoteSwiftPackageReference "flynn" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/KittyMac/flynn";
 			requirement = {
 				branch = master;
 				kind = branch;
@@ -570,15 +570,15 @@
 			package = 4669EDAF2491D17000E42ECB /* XCRemoteSwiftPackageReference "Anchorage" */;
 			productName = Anchorage;
 		};
-		4669EDB62491D41800E42ECB /* Flynn */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4669EDB52491D41800E42ECB /* XCRemoteSwiftPackageReference "flynn" */;
-			productName = Flynn;
-		};
 		4690D614249286F8003DEE15 /* PlanetSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4690D613249286F8003DEE15 /* XCRemoteSwiftPackageReference "PlanetSwift" */;
 			productName = PlanetSwift;
+		};
+		46B3C38F2492B7DE00FB81E5 /* Flynn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 46B3C38E2492B7DE00FB81E5 /* XCRemoteSwiftPackageReference "flynn" */;
+			productName = Flynn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

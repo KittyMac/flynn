@@ -331,9 +331,12 @@ bool ponyint_sched_start()
             return false;
         
         int qos = QOS_CLASS_USER_INTERACTIVE;
+        
+#if TARGET_OS_IPHONE
         if (i < scheduler_count - highPerformanceCores) {
             qos = QOS_CLASS_BACKGROUND;
         }
+#endif
         
         if(!ponyint_thread_create(&scheduler[i].tid, run_thread, qos, &scheduler[i]))
             return false;

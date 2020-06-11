@@ -32,7 +32,7 @@ bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, v
         attr_p = NULL;
     }
     
-    pthread_attr_set_qos_class_np(&attr, QOS_CLASS_BACKGROUND, 0);
+    pthread_attr_set_qos_class_np(&attr, qos, 0);
     
     if(pthread_create(thread, attr_p, start, arg))
         ret = false;
