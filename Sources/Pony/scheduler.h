@@ -37,6 +37,7 @@ struct scheduler_t
     pony_thread_id_t tid;
     int32_t index;
     int32_t qualityOfService;
+    bool idle;
     bool terminate;
     pony_signal_event_t sleep_object;
     
