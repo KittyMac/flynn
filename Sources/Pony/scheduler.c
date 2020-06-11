@@ -18,6 +18,7 @@
 #include "actor.h"
 #include <string.h>
 #include <stdio.h>
+#include "TargetConditionals.h"
 
 
 static DECLARE_THREAD_FN(run_thread);
@@ -70,10 +71,13 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
 {
     if (actor->qualityOfService != kQosAny && actor->qualityOfService != sched->qualityOfService) {
         if (actor->qualityOfService == kQosHighPerformance) {
-            ponyint_mpmcq_push_single(&injectHighPerformance, actor);
+            ponyint_mpmcq_push(&injectHighPerformance, actor);
         } else {
-            ponyint_mpmcq_push_single(&injectHighEfficiency, actor);
+            ponyint_mpmcq_push(&injectHighEfficiency, actor);
         }
+    } else if (actor->qualityOfService == kQosAny) {
+        // "any" QoS should favor high efficiency if it can
+        ponyint_mpmcq_push(&injectHighEfficiency, actor);
     } else {
         ponyint_mpmcq_push_single(&sched->q, actor);
     }
@@ -87,11 +91,11 @@ static pony_actor_t* pop_global(scheduler_t* sched)
     pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
     if(actor != NULL)
         return actor;
-    if (sched->qualityOfService == kQosHighPerformance) {
+    if (sched->qualityOfService == kQosHighPerformance && injectHighPerformance.num_messages > 0) {
         actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
         if(actor != NULL)
             return actor;
-    } else if (sched->qualityOfService == kQosHighEfficiency) {
+    } else if (sched->qualityOfService == kQosHighEfficiency && injectHighEfficiency.num_messages > 0) {
         actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
         if(actor != NULL)
             return actor;
@@ -212,9 +216,15 @@ static void run(scheduler_t* sched)
             actor = steal(sched);
         }
         if(actor != NULL) {
+            
+            if (actor->qualityOfService != kQosAny && actor->qualityOfService != sched->qualityOfService) {
+                push(sched, actor);
+                actor = NULL;
+                continue;
+            }
 
             // Run the current actor and get the next actor.
-            bool reschedule = ponyint_actor_run(&sched->ctx, actor, 5000);
+            bool reschedule = ponyint_actor_run(&sched->ctx, actor, 1000);
             
             bool actor_did_yield = actor->yield;
             actor->yield = false;
@@ -235,6 +245,12 @@ static void run(scheduler_t* sched)
                         // we continue to run this actor.
                         push(sched, actor);
                         actor = next;
+                    }
+                } else {
+                    if (actor->qualityOfService != sched->qualityOfService) {
+                        push(sched, actor);
+                        actor = NULL;
+                        continue;
                     }
                 }
             } else {
@@ -342,7 +358,7 @@ bool ponyint_sched_start()
     pony_register_thread();
         
     uint32_t start = 0;
-    uint32_t highPerformanceCores = 0;
+    uint32_t highPerformanceCores = scheduler_count / 2;
     
 #if TARGET_OS_IPHONE
     highPerformanceCores = 2;
@@ -354,15 +370,13 @@ bool ponyint_sched_start()
         if(scheduler[i].sleep_object == NULL)
             return false;
         
-        int qos = QOS_CLASS_USER_INTERACTIVE;
+        int qos = QOS_CLASS_USER_INITIATED;
         scheduler[i].qualityOfService = kQosHighPerformance;
         
-#if TARGET_OS_IPHONE
         if (i < scheduler_count - highPerformanceCores) {
             qos = QOS_CLASS_BACKGROUND;
             scheduler[i].qualityOfService = kQosHighEfficiency;
         }
-#endif
         
         if(!ponyint_thread_create(&scheduler[i].tid, run_thread, qos, &scheduler[i]))
             return false;
