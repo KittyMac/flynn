@@ -32,7 +32,7 @@
         "package": "PlanetSwift",
         "repositoryURL": "https://github.com/SmallPlanet/PlanetSwift",
         "state": {
-          "branch": "modernize",
+          "branch": "master",
           "revision": "f696713f45ec7c6bad32b802bad7567a2c0b4d90",
           "version": null
         }
