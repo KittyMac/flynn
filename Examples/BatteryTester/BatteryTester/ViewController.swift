@@ -18,7 +18,7 @@ class Counter: Actor {
     public var unsafeSleepAmount: UInt32 = 0
 
     private var done: Bool = false
-    private let batchCount: Int = 1000
+    private let batchCount: Int = 100000
 
     init(_ sleepAmount: UInt32, _ qos: Int32) {
         super.init()
@@ -82,7 +82,6 @@ class ViewController: PlanetViewController {
 
         persistentViews = false
         navigationBarHidden = true
-        statusBarStyle = .darkContent
         mainBundlePath = "bundle://Assets/Main/Main.xml"
 
         loadPlanetViews { (name, view, parent, prev, _, _) in

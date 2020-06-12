@@ -10,7 +10,7 @@
     <Slider id="actorSlider" minValue="0" maxValue="10" />
     
     <Label id="sleepLabel" styleId="LabelStd1" text="0 µs sleep" textAlignment="center" numberOfLines="1" textColor="#000000FF" />
-    <Slider id="sleepSlider" minValue="0" maxValue="200" />
+    <Slider id="sleepSlider" minValue="0" maxValue="100" />
     
     <SegmentedControl id="coreAffinity" />
     
