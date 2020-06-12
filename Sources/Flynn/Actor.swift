@@ -12,9 +12,10 @@ import Pony
 open class Actor {
 
     public enum CoreAffinity: Int32 {
-        case any = 0
-        case efficiency = 1
-        case performance = 2
+        case preferEfficiency = 0
+        case preferPerformance = 1
+        case onlyEfficiency = 2
+        case onlyPerformance = 3
     }
 
     private class func startup() {

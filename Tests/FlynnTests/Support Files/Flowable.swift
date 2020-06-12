@@ -37,7 +37,7 @@ class Uppercase: Actor, Flowable {
 
     override init() {
         super.init()
-        safeCoreAffinity = .performance
+        safeCoreAffinity = .onlyPerformance
     }
 
     lazy var beFlow = Behavior(self) { (args: BehaviorArgs) in

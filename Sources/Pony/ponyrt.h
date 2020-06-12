@@ -22,9 +22,14 @@
 #  define PLATFORM_IS_ILP32
 #endif
 
-#define kQosAny 0
-#define kQosHighEfficiency 1
-#define kQosHighPerformance 2
+#define kCoreAffinity_PreferEfficiency 0
+#define kCoreAffinity_PreferPerformance 1
+#define kCoreAffinity_OnlyEfficiency 2
+#define kCoreAffinity_OnlyPerformance 3
+
+#define kCoreAffinity_OnlyThreshold 2
+
+#define COREAFFINITY_PREFER_TO_ONLY(x) (x + kCoreAffinity_OnlyThreshold)
 
 
 #define kMessageBlock 1

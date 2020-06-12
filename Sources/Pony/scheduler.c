@@ -69,18 +69,33 @@ static pony_actor_t* pop(scheduler_t* sched)
  */
 static void push(scheduler_t* sched, pony_actor_t* actor)
 {
-    if (actor->coreAffinity != kQosAny && actor->coreAffinity != sched->coreAffinity) {
-        if (actor->coreAffinity == kQosHighPerformance) {
-            ponyint_mpmcq_push(&injectHighPerformance, actor);
-        } else {
-            ponyint_mpmcq_push(&injectHighEfficiency, actor);
+    switch (actor->coreAffinity) {
+    case kCoreAffinity_OnlyPerformance:
+    case kCoreAffinity_OnlyEfficiency:
+        if (actor->coreAffinity != sched->coreAffinity) {
+            if (actor->coreAffinity == kCoreAffinity_OnlyPerformance) {
+                ponyint_mpmcq_push(&injectHighPerformance, actor);
+            } else {
+                ponyint_mpmcq_push(&injectHighEfficiency, actor);
+            }
+            return;
         }
-    } else if (actor->coreAffinity == kQosAny && sched->coreAffinity == kQosHighPerformance) {
-        // "any" QoS should favor high efficiency if it can
-        ponyint_mpmcq_push(&injectHighEfficiency, actor);
-    } else {
-        ponyint_mpmcq_push_single(&sched->q, actor);
+        break;
+    case kCoreAffinity_PreferEfficiency:
+        if (sched->coreAffinity == kCoreAffinity_OnlyPerformance) {
+            ponyint_mpmcq_push(&injectHighEfficiency, actor);
+            return;
+        }
+        break;
+    case kCoreAffinity_PreferPerformance:
+        if (sched->coreAffinity == kCoreAffinity_OnlyEfficiency) {
+            ponyint_mpmcq_push(&injectHighPerformance, actor);
+            return;
+        }
+        break;
     }
+    
+    ponyint_mpmcq_push_single(&sched->q, actor);
 }
 
 /**
@@ -91,15 +106,18 @@ static pony_actor_t* pop_global(scheduler_t* my_sched, scheduler_t* other_sched)
     pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
     if(actor != NULL)
         return actor;
-    if (my_sched->coreAffinity == kQosHighPerformance) {
-        actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
-        if(actor != NULL)
-            return actor;
-    } else if (my_sched->coreAffinity == kQosHighEfficiency) {
-        actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
-        if(actor != NULL)
-            return actor;
+    
+    switch (my_sched->coreAffinity) {
+        case kCoreAffinity_OnlyPerformance:
+            actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
+            break;
+        case kCoreAffinity_OnlyEfficiency:
+            actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
+            break;
     }
+    if(actor != NULL)
+        return actor;
+    
     if (other_sched != NULL)
         return pop(other_sched);
     return NULL;
@@ -166,7 +184,7 @@ static pony_actor_t* steal(scheduler_t* sched)
             actor = pop_global(sched, victim);
             
             // If we stole the wrong actor, throw it back in the sea
-            if (actor != NULL && actor->coreAffinity != kQosAny && actor->coreAffinity != sched->coreAffinity) {
+            if (actor != NULL && actor->coreAffinity >= kCoreAffinity_OnlyThreshold && actor->coreAffinity != sched->coreAffinity) {
                 push(sched, actor);
                 actor = NULL;
             }
@@ -230,7 +248,7 @@ static void run(scheduler_t* sched)
         }
         if(actor != NULL) {
             
-            if (actor->coreAffinity != kQosAny && actor->coreAffinity != sched->coreAffinity) {
+            if (actor->coreAffinity >= kCoreAffinity_OnlyThreshold && actor->coreAffinity != sched->coreAffinity) {
                 push(sched, actor);
                 actor = NULL;
                 continue;
@@ -260,12 +278,17 @@ static void run(scheduler_t* sched)
                         actor = next;
                     }
                 } else {
-                    if (actor->coreAffinity == kQosAny && sched->coreAffinity == kQosHighPerformance) {
-                        for (int i = 0; i < scheduler_count; i++){
-                            if (scheduler[i].idle == true && scheduler[i].coreAffinity == kQosHighEfficiency) {
-                                push(sched, actor);
-                                actor = NULL;
-                                break;
+                    if (actor->coreAffinity <= kCoreAffinity_OnlyThreshold) {
+                        // If we prefer a different affinity, check to see if one of those schedulers
+                        // is idle, if it is send this actor over to them
+                        int targetAffinity = COREAFFINITY_PREFER_TO_ONLY(actor->coreAffinity);
+                        if (targetAffinity != sched->coreAffinity) {
+                            for (int i = 0; i < scheduler_count; i++){
+                                if (scheduler[i].idle == true && scheduler[i].coreAffinity == targetAffinity) {
+                                    push(sched, actor);
+                                    actor = NULL;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -378,6 +401,9 @@ bool ponyint_sched_start()
     uint32_t highPerformanceCores = scheduler_count / 2;
     
 #if TARGET_OS_IPHONE
+    // Note: the A10-A13 chips have 2 high performance cores and the rest are
+    // high efficiency cores. AFAICT, there is no API to get this information
+    // so its hard coded here.
     highPerformanceCores = 2;
 #endif
     
@@ -388,11 +414,11 @@ bool ponyint_sched_start()
             return false;
         
         int qos = QOS_CLASS_USER_INITIATED;
-        scheduler[i].coreAffinity = kQosHighPerformance;
+        scheduler[i].coreAffinity = kCoreAffinity_OnlyPerformance;
         
         if (i < scheduler_count - highPerformanceCores) {
             qos = QOS_CLASS_BACKGROUND;
-            scheduler[i].coreAffinity = kQosHighEfficiency;
+            scheduler[i].coreAffinity = kCoreAffinity_OnlyEfficiency;
         }
         
         if(!ponyint_thread_create(&scheduler[i].tid, run_thread, qos, &scheduler[i]))
