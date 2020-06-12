@@ -417,7 +417,7 @@ bool ponyint_sched_start()
         scheduler[i].coreAffinity = kCoreAffinity_OnlyPerformance;
         
         if (i < scheduler_count - highPerformanceCores) {
-            qos = QOS_CLASS_BACKGROUND;
+            qos = QOS_CLASS_UTILITY;
             scheduler[i].coreAffinity = kCoreAffinity_OnlyEfficiency;
         }
         
