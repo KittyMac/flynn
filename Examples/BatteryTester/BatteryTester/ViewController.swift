@@ -23,8 +23,8 @@ class Counter: Actor {
     init(_ sleepAmount: UInt32, _ qos: Int32) {
         super.init()
 
-        if let qos = QualityOfService(rawValue: qos) {
-            safeQualityOfService = qos
+        if let qos = CoreAffinity(rawValue: qos) {
+            safeCoreAffinity = qos
         }
 
         unsafeSleepAmount = sleepAmount
@@ -52,10 +52,10 @@ class Counter: Actor {
         self.done = true
     }
 
-    lazy var beSetQualityOfService = Behavior(self) { (args: BehaviorArgs) in
+    lazy var beSetCoreAffinity = Behavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter Int32 - quality of service
-        if let qos = QualityOfService(rawValue: args[x:0]) {
-            self.safeQualityOfService = qos
+        if let qos = CoreAffinity(rawValue: args[x:0]) {
+            self.safeCoreAffinity = qos
         }
     }
 }
@@ -66,7 +66,7 @@ class ViewController: PlanetViewController {
 
     func adjustCounters(_ num: Int) {
         let sleepAmount = UInt32(self.sleepSlider.localSlider.value)
-        let qos = Int32(self.qualityOfService.segmentedControl.selectedSegmentIndex)
+        let qos = Int32(self.coreAffinity.segmentedControl.selectedSegmentIndex)
         while counters.count < num {
             counters.append(Counter(sleepAmount, qos))
         }
@@ -91,6 +91,14 @@ class ViewController: PlanetViewController {
                 return
             }
 
+            if name == "coreAffinity" {
+                view.centerXAnchor == parent.centerXAnchor
+                view.widthAnchor == parent.widthAnchor - 40
+                view.topAnchor == prev!.bottomAnchor + 80
+                view.heightAnchor == 60
+                return
+            }
+
             if name == "countTotal" {
                 view.topAnchor == parent.topAnchor + 80
             }
@@ -99,8 +107,7 @@ class ViewController: PlanetViewController {
             view.widthAnchor == parent.widthAnchor - 80
 
             if  name == "actorLabel" ||
-                name == "sleepLabel" ||
-                name == "qualityOfService" {
+                name == "sleepLabel" {
                 view.topAnchor == prev!.bottomAnchor + 80
             }
             if  name == "countPerTimeUnit" ||
@@ -131,15 +138,17 @@ class ViewController: PlanetViewController {
             }
         }
 
-        qualityOfService.segmentedControl.insertSegment(withTitle: "Any", at: 0, animated: false)
-        qualityOfService.segmentedControl.insertSegment(withTitle: "Efficiency", at: 1, animated: false)
-        qualityOfService.segmentedControl.insertSegment(withTitle: "Performance", at: 2, animated: false)
-        qualityOfService.segmentedControl.selectedSegmentIndex = 0
+        UILabel.appearance(whenContainedInInstancesOf: [UISegmentedControl.self]).numberOfLines = 0
+        coreAffinity.segmentedControl.insertSegment(withTitle: "Prefer Efficiency", at: 0, animated: false)
+        coreAffinity.segmentedControl.insertSegment(withTitle: "Prefer Performance", at: 1, animated: false)
+        coreAffinity.segmentedControl.insertSegment(withTitle: "Only Efficiency", at: 2, animated: false)
+        coreAffinity.segmentedControl.insertSegment(withTitle: "Only Performance", at: 3, animated: false)
+        coreAffinity.segmentedControl.selectedSegmentIndex = 0
 
-        qualityOfService.segmentedControl.add(for: .valueChanged) { [weak self] in
+        coreAffinity.segmentedControl.add(for: .valueChanged) { [weak self] in
             guard let self = self else { return }
-            let qos = Int(self.qualityOfService.segmentedControl.selectedSegmentIndex)
-            _ = self.counters.map { $0.beSetQualityOfService(qos) }
+            let qos = Int(self.coreAffinity.segmentedControl.selectedSegmentIndex)
+            _ = self.counters.map { $0.beSetCoreAffinity(qos) }
         }
 
         actorSlider.localSlider.add(for: .valueChanged) { [weak self] in
@@ -181,8 +190,8 @@ class ViewController: PlanetViewController {
         return mainXmlView!.elementForId("sleepSlider")!.asSlider!
     }
 
-    fileprivate var qualityOfService: SegmentedControl {
-        return mainXmlView!.elementForId("qualityOfService")!.asSegmentedControl!
+    fileprivate var coreAffinity: SegmentedControl {
+        return mainXmlView!.elementForId("coreAffinity")!.asSegmentedControl!
     }
 
 }
