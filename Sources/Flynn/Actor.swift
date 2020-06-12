@@ -11,7 +11,7 @@ import Pony
 
 open class Actor {
 
-    public enum QualityOfService: Int32 {
+    public enum CoreAffinity: Int32 {
         case any = 0
         case efficiency = 1
         case performance = 2
@@ -33,9 +33,9 @@ open class Actor {
         get { return pony_actor_getpriority(unsafePonyActor) }
     }
 
-    public var safeQualityOfService: QualityOfService {
-        set { pony_actor_setqualityOfService(unsafePonyActor, newValue.rawValue) }
-        get { return QualityOfService(rawValue: pony_actor_getqualityOfService(unsafePonyActor))! }
+    public var safeCoreAffinity: CoreAffinity {
+        set { pony_actor_setcoreAffinity(unsafePonyActor, newValue.rawValue) }
+        get { return CoreAffinity(rawValue: pony_actor_getcoreAffinity(unsafePonyActor))! }
     }
 
     // MARK: - Functions

@@ -139,13 +139,13 @@ void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority)
     actor->priority = priority;
 }
 
-int32_t ponyint_actor_getqualityOfService(pony_actor_t* actor) {
-    return actor->qualityOfService;
+int32_t ponyint_actor_getcoreAffinity(pony_actor_t* actor) {
+    return actor->coreAffinity;
 }
 
-void ponyint_actor_setqualityOfService(pony_actor_t* actor, int32_t qualityOfService)
+void ponyint_actor_setcoreAffinity(pony_actor_t* actor, int32_t coreAffinity)
 {
-    actor->qualityOfService = qualityOfService;
+    actor->coreAffinity = coreAffinity;
 }
 
 void ponyint_yield_actor(pony_actor_t* actor)

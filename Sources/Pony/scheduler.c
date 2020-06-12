@@ -69,13 +69,13 @@ static pony_actor_t* pop(scheduler_t* sched)
  */
 static void push(scheduler_t* sched, pony_actor_t* actor)
 {
-    if (actor->qualityOfService != kQosAny && actor->qualityOfService != sched->qualityOfService) {
-        if (actor->qualityOfService == kQosHighPerformance) {
+    if (actor->coreAffinity != kQosAny && actor->coreAffinity != sched->coreAffinity) {
+        if (actor->coreAffinity == kQosHighPerformance) {
             ponyint_mpmcq_push(&injectHighPerformance, actor);
         } else {
             ponyint_mpmcq_push(&injectHighEfficiency, actor);
         }
-    } else if (actor->qualityOfService == kQosAny && sched->qualityOfService == kQosHighPerformance) {
+    } else if (actor->coreAffinity == kQosAny && sched->coreAffinity == kQosHighPerformance) {
         // "any" QoS should favor high efficiency if it can
         ponyint_mpmcq_push(&injectHighEfficiency, actor);
     } else {
@@ -91,11 +91,11 @@ static pony_actor_t* pop_global(scheduler_t* my_sched, scheduler_t* other_sched)
     pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
     if(actor != NULL)
         return actor;
-    if (my_sched->qualityOfService == kQosHighPerformance) {
+    if (my_sched->coreAffinity == kQosHighPerformance) {
         actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
         if(actor != NULL)
             return actor;
-    } else if (my_sched->qualityOfService == kQosHighEfficiency) {
+    } else if (my_sched->coreAffinity == kQosHighEfficiency) {
         actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
         if(actor != NULL)
             return actor;
@@ -166,7 +166,7 @@ static pony_actor_t* steal(scheduler_t* sched)
             actor = pop_global(sched, victim);
             
             // If we stole the wrong actor, throw it back in the sea
-            if (actor != NULL && actor->qualityOfService != kQosAny && actor->qualityOfService != sched->qualityOfService) {
+            if (actor != NULL && actor->coreAffinity != kQosAny && actor->coreAffinity != sched->coreAffinity) {
                 push(sched, actor);
                 actor = NULL;
             }
@@ -230,7 +230,7 @@ static void run(scheduler_t* sched)
         }
         if(actor != NULL) {
             
-            if (actor->qualityOfService != kQosAny && actor->qualityOfService != sched->qualityOfService) {
+            if (actor->coreAffinity != kQosAny && actor->coreAffinity != sched->coreAffinity) {
                 push(sched, actor);
                 actor = NULL;
                 continue;
@@ -260,9 +260,9 @@ static void run(scheduler_t* sched)
                         actor = next;
                     }
                 } else {
-                    if (actor->qualityOfService == kQosAny && sched->qualityOfService == kQosHighPerformance) {
+                    if (actor->coreAffinity == kQosAny && sched->coreAffinity == kQosHighPerformance) {
                         for (int i = 0; i < scheduler_count; i++){
-                            if (scheduler[i].idle == true && scheduler[i].qualityOfService == kQosHighEfficiency) {
+                            if (scheduler[i].idle == true && scheduler[i].coreAffinity == kQosHighEfficiency) {
                                 push(sched, actor);
                                 actor = NULL;
                                 break;
@@ -388,11 +388,11 @@ bool ponyint_sched_start()
             return false;
         
         int qos = QOS_CLASS_USER_INITIATED;
-        scheduler[i].qualityOfService = kQosHighPerformance;
+        scheduler[i].coreAffinity = kQosHighPerformance;
         
         if (i < scheduler_count - highPerformanceCores) {
             qos = QOS_CLASS_BACKGROUND;
-            scheduler[i].qualityOfService = kQosHighEfficiency;
+            scheduler[i].coreAffinity = kQosHighEfficiency;
         }
         
         if(!ponyint_thread_create(&scheduler[i].tid, run_thread, qos, &scheduler[i]))

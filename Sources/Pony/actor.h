@@ -22,7 +22,7 @@ typedef struct pony_actor_t
     PONY_ATOMIC(uint8_t) flags;
     int32_t uid;
     int32_t priority;
-    int32_t qualityOfService;
+    int32_t coreAffinity;
     bool yield;
 } pony_actor_t;
 
@@ -43,8 +43,8 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs);
 int32_t ponyint_actor_getpriority(pony_actor_t* actor);
 void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority);
 
-int32_t ponyint_actor_getqualityOfService(pony_actor_t* actor);
-void ponyint_actor_setqualityOfService(pony_actor_t* actor, int32_t qualityOfService);
+int32_t ponyint_actor_getcoreAffinity(pony_actor_t* actor);
+void ponyint_actor_setcoreAffinity(pony_actor_t* actor, int32_t coreAffinity);
 
 void ponyint_yield_actor(pony_actor_t* actor);
 
