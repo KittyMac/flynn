@@ -7,6 +7,7 @@
 //
 
 // swiftlint:disable function_body_length
+// swiftlint:disable cyclomatic_complexity
 
 import UIKit
 import PlanetSwift
@@ -62,11 +63,22 @@ class Counter: Actor {
 
 class ViewController: PlanetViewController {
 
+    @objc dynamic var countTotal: UILabel?
+    @objc dynamic var countPerTimeUnit: UILabel?
+    @objc dynamic var actorLabel: UILabel?
+    @objc dynamic var sleepLabel: UILabel?
+    @objc dynamic var actorSlider: UISlider?
+    @objc dynamic var sleepSlider: UISlider?
+    @objc dynamic var coreAffinity: UISegmentedControl?
+
     var counters: [Counter] = []
 
     func adjustCounters(_ num: Int) {
-        let sleepAmount = UInt32(self.sleepSlider.localSlider.value)
-        let qos = Int32(self.coreAffinity.segmentedControl.selectedSegmentIndex)
+        guard let sleepSlider = sleepSlider else { return }
+        guard let coreAffinity = coreAffinity else { return }
+
+        let sleepAmount = UInt32(sleepSlider.value)
+        let qos = Int32(coreAffinity.selectedSegmentIndex)
         while counters.count < num {
             counters.append(Counter(sleepAmount, qos))
         }
@@ -84,53 +96,55 @@ class ViewController: PlanetViewController {
         navigationBarHidden = true
         mainBundlePath = "bundle://Assets/Main/Main.xml"
 
-        loadPlanetViews { (name, view, parent, prev, _, _) in
-            if name == "root" || name == "background" {
-                view.sizeAnchors == parent.sizeAnchors
-                return
-            }
+        loadPlanetViews { (_, view, parent, prev, _, _) in
 
-            if name == "coreAffinity" {
+            view.centerXAnchor == parent.centerXAnchor
+
+            switch view {
+            case self.coreAffinity:
                 view.centerXAnchor == parent.centerXAnchor
                 view.widthAnchor == parent.widthAnchor - 40
                 view.topAnchor == prev!.bottomAnchor + 80
                 view.heightAnchor == 60
-                return
-            }
 
-            if name == "countTotal" {
+            case self.countTotal:
                 view.topAnchor == parent.topAnchor + 80
-            }
+                view.widthAnchor == parent.widthAnchor - 80
 
-            view.centerXAnchor == parent.centerXAnchor
-            view.widthAnchor == parent.widthAnchor - 80
-
-            if  name == "actorLabel" ||
-                name == "sleepLabel" {
+            case self.actorLabel, self.sleepLabel:
                 view.topAnchor == prev!.bottomAnchor + 80
-            }
-            if  name == "countPerTimeUnit" ||
-                name == "actorSlider" ||
-                name == "sleepSlider" {
+                view.widthAnchor == parent.widthAnchor - 80
+
+            case self.countPerTimeUnit, self.actorSlider, self.sleepSlider:
                 view.topAnchor == prev!.bottomAnchor + 10
+                view.widthAnchor == parent.widthAnchor - 80
+
+            default:
+                view.sizeAnchors == parent.sizeAnchors
+                return
             }
         }
 
-        let updateFrequency = 1.0 / 60.0
+        guard let countTotal = countTotal else { return }
+        guard let countPerTimeUnit = countPerTimeUnit else { return }
+        guard let coreAffinity = coreAffinity else { return }
+        guard let actorSlider = actorSlider else { return }
+        guard let sleepSlider = sleepSlider else { return }
+        guard let actorLabel = actorLabel else { return }
+        guard let sleepLabel = sleepLabel else { return }
 
-        let countTotalLabel = countTotal.label
-        let countPerTimeUnitLabel = countPerTimeUnit.label
+        let updateFrequency = 1.0 / 60.0
 
         var countsPerTime: Int = 0
         var countPerTimeTimer: Double = 0
 
         Timer.scheduledTimer(withTimeInterval: updateFrequency, repeats: true) { (_) in
             let total = self.counters.reduce(0) { result, counter in result + counter.unsafeCount }
-            countTotalLabel.text = String(total)
+            countTotal.text = String(total)
 
             countPerTimeTimer += updateFrequency
             if countPerTimeTimer > 1.0 {
-                countPerTimeUnitLabel.text = "\( (total - countsPerTime)) per second"
+                countPerTimeUnit.text = "\( (total - countsPerTime)) per second"
 
                 countsPerTime = total
                 countPerTimeTimer -= 1.0
@@ -138,59 +152,31 @@ class ViewController: PlanetViewController {
         }
 
         UILabel.appearance(whenContainedInInstancesOf: [UISegmentedControl.self]).numberOfLines = 0
-        coreAffinity.segmentedControl.insertSegment(withTitle: "Prefer Efficiency", at: 0, animated: false)
-        coreAffinity.segmentedControl.insertSegment(withTitle: "Prefer Performance", at: 1, animated: false)
-        coreAffinity.segmentedControl.insertSegment(withTitle: "Only Efficiency", at: 2, animated: false)
-        coreAffinity.segmentedControl.insertSegment(withTitle: "Only Performance", at: 3, animated: false)
-        coreAffinity.segmentedControl.selectedSegmentIndex = 0
+        coreAffinity.insertSegment(withTitle: "Prefer Efficiency", at: 0, animated: false)
+        coreAffinity.insertSegment(withTitle: "Prefer Performance", at: 1, animated: false)
+        coreAffinity.insertSegment(withTitle: "Only Efficiency", at: 2, animated: false)
+        coreAffinity.insertSegment(withTitle: "Only Performance", at: 3, animated: false)
+        coreAffinity.selectedSegmentIndex = 0
 
-        coreAffinity.segmentedControl.add(for: .valueChanged) { [weak self] in
+        coreAffinity.add(for: .valueChanged) { [weak self] in
             guard let self = self else { return }
-            let qos = Int(self.coreAffinity.segmentedControl.selectedSegmentIndex)
+            let qos = Int(coreAffinity.selectedSegmentIndex)
             _ = self.counters.map { $0.beSetCoreAffinity(qos) }
         }
 
-        actorSlider.localSlider.add(for: .valueChanged) { [weak self] in
+        actorSlider.add(for: .valueChanged) { [weak self] in
             guard let self = self else { return }
-            let numActors = Int(self.actorSlider.localSlider.value)
+            let numActors = Int(actorSlider.value)
             self.adjustCounters(numActors)
-            self.actorLabel.label.text = "\(numActors) actors"
+            actorLabel.text = "\(numActors) actors"
         }
 
-        sleepSlider.localSlider.add(for: .valueChanged) { [weak self] in
+        sleepSlider.add(for: .valueChanged) { [weak self] in
             guard let self = self else { return }
-            let sleepAmount = UInt32(self.sleepSlider.localSlider.value)
+            let sleepAmount = UInt32(sleepSlider.value)
             _ = self.counters.map { $0.unsafeSleepAmount = sleepAmount }
-            self.sleepLabel.label.text = "\(sleepAmount) µs sleep"
+            sleepLabel.text = "\(sleepAmount) µs sleep"
         }
-    }
-
-    fileprivate var countTotal: Label {
-        return mainXmlView!.elementForId("countTotal")!.asLabel!
-    }
-
-    fileprivate var countPerTimeUnit: Label {
-        return mainXmlView!.elementForId("countPerTimeUnit")!.asLabel!
-    }
-
-    fileprivate var actorLabel: Label {
-        return mainXmlView!.elementForId("actorLabel")!.asLabel!
-    }
-
-    fileprivate var sleepLabel: Label {
-        return mainXmlView!.elementForId("sleepLabel")!.asLabel!
-    }
-
-    fileprivate var actorSlider: Slider {
-        return mainXmlView!.elementForId("actorSlider")!.asSlider!
-    }
-
-    fileprivate var sleepSlider: Slider {
-        return mainXmlView!.elementForId("sleepSlider")!.asSlider!
-    }
-
-    fileprivate var coreAffinity: SegmentedControl {
-        return mainXmlView!.elementForId("coreAffinity")!.asSegmentedControl!
     }
 
 }
