@@ -9,7 +9,7 @@
 #include <sys/mman.h>
 #include <limits.h>
 
-bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, void* arg)
+bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int schedID, int qos, void* arg)
 {
     bool ret = true;
     
@@ -33,6 +33,11 @@ bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, v
     }
     
     pthread_attr_set_qos_class_np(&attr, qos, 0);
+    
+    
+    char thread_name[128] = {0};
+    snprintf(thread_name, sizeof(thread_name), "Flynn #%d, QoS %d", schedID, qos);
+    pthread_setname_np(thread_name);
     
     if(pthread_create(thread, attr_p, start, arg))
         ret = false;

@@ -19,7 +19,7 @@ typedef void* (*thread_fn) (void* arg);
 
 #define __pony_thread_local __thread
 
-bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, void* arg);
+bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int schedID, int qos, void* arg);
 
 bool ponyint_thread_join(pony_thread_id_t thread);
 

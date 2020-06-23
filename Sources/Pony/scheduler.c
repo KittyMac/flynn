@@ -421,7 +421,7 @@ bool ponyint_sched_start()
             scheduler[i].coreAffinity = kCoreAffinity_OnlyEfficiency;
         }
         
-        if(!ponyint_thread_create(&scheduler[i].tid, run_thread, qos, &scheduler[i]))
+        if(!ponyint_thread_create(&scheduler[i].tid, run_thread, i, qos, &scheduler[i]))
             return false;
     }
         
