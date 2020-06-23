@@ -32,7 +32,7 @@
 		OBJ_111 /* ponyrt.m in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_32 /* ponyrt.m */; };
 		OBJ_112 /* pool.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_33 /* pool.c */; };
 		OBJ_113 /* scheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_34 /* scheduler.c */; };
-		OBJ_114 /* threads.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_35 /* threads.c */; };
+		OBJ_114 /* threads.m in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_35 /* threads.m */; };
 		OBJ_64 /* Actor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* Actor.swift */; };
 		OBJ_65 /* Behavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Behavior.swift */; };
 		OBJ_66 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* Extensions.swift */; };
@@ -112,7 +112,7 @@
 		OBJ_32 /* ponyrt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ponyrt.m; sourceTree = "<group>"; };
 		OBJ_33 /* pool.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pool.c; sourceTree = "<group>"; };
 		OBJ_34 /* scheduler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = scheduler.c; sourceTree = "<group>"; };
-		OBJ_35 /* threads.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = threads.c; sourceTree = "<group>"; };
+		OBJ_35 /* threads.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = threads.m; sourceTree = "<group>"; };
 		OBJ_37 /* pony.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pony.h; sourceTree = "<group>"; };
 		OBJ_38 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = module.modulemap; path = /Volumes/Development/Development/chimerasw2/flynn/Flynn.xcodeproj/GeneratedModuleMap/Pony/module.modulemap; sourceTree = "<group>"; };
 		OBJ_41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -183,7 +183,7 @@
 				OBJ_32 /* ponyrt.m */,
 				OBJ_33 /* pool.c */,
 				OBJ_34 /* scheduler.c */,
-				OBJ_35 /* threads.c */,
+				OBJ_35 /* threads.m */,
 				OBJ_36 /* include */,
 			);
 			name = Pony;
@@ -433,7 +433,7 @@
 				OBJ_111 /* ponyrt.m in Sources */,
 				OBJ_112 /* pool.c in Sources */,
 				OBJ_113 /* scheduler.c in Sources */,
-				OBJ_114 /* threads.c in Sources */,
+				OBJ_114 /* threads.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
