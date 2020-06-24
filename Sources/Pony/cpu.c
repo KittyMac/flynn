@@ -19,9 +19,9 @@
 #include <sys/sysctl.h>
 #include <errno.h>
 
-static uint32_t get_sys_info(int type_specifier, const char* name) {
+static uint32_t get_sys_info(int type_specifier, const char* name, uint32_t default_value) {
     size_t size = 0;
-    uint32_t result = 0;
+    uint32_t result = default_value;
     int mib[2] = { CTL_HW, type_specifier };
     if (sysctl(mib, 2, NULL, &size, NULL, 0) != 0) {
         fprintf(stderr, "sysctl(\"%s\") failed: %s\n", name, strerror(errno));
@@ -34,9 +34,9 @@ static uint32_t get_sys_info(int type_specifier, const char* name) {
     return result;
 }
 
-static uint32_t get_sys_info_by_name(const char* type_specifier) {
+static uint32_t get_sys_info_by_name(const char* type_specifier, uint32_t default_value) {
     size_t size = 0;
-    uint32_t result = 0;
+    uint32_t result = default_value;
     if (sysctlbyname(type_specifier, NULL, &size, NULL, 0) != 0) {
         fprintf(stderr, "sysctlbyname(\"%s\") failed: %s\n", type_specifier, strerror(errno));
     } else if (size == sizeof(uint32_t)) {
@@ -56,10 +56,10 @@ static uint32_t hw_p_core_count = 0;
 
 void ponyint_cpu_init()
 {
-    hw_core_count = get_sys_info_by_name("hw.physicalcpu");
-    hw_cpu_count = hw_core_count / get_sys_info_by_name("machdep.cpu.core_count");
+    hw_core_count = get_sys_info_by_name("hw.physicalcpu", 1);
+    hw_cpu_count = hw_core_count / get_sys_info_by_name("machdep.cpu.core_count", 1);
     
-    const uint32_t cpu_family = get_sys_info_by_name("hw.cpufamily");
+    const uint32_t cpu_family = get_sys_info_by_name("hw.cpufamily", 0);
     switch (cpu_family) {
         case CPUFAMILY_ARM_MONSOON_MISTRAL:
             /* 2x Monsoon + 4x Mistral cores */
