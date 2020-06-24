@@ -13,9 +13,9 @@ open class Flynn {
     internal static var ponyIsStarted: Bool = false
 
 #if DEBUG
-    static var checkForUnsafeArguments: Bool = true
+    public static var checkForUnsafeArguments: Bool = true
 #else
-    static var checkForUnsafeArguments: Bool = false
+    public static var checkForUnsafeArguments: Bool = false
 #endif
 
     public class func startup() {
