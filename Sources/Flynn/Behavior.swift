@@ -66,6 +66,7 @@ public class ChainableBehavior<T> {
     private var fastBlock8: UnsafeMutableRawPointer
     private var fastBlock9: UnsafeMutableRawPointer
     private var fastBlock10: UnsafeMutableRawPointer
+    private let checkForUnsafeArguments = Flynn.checkForUnsafeArguments
 
     // Note: fastBlock will leak because structs in swift do not have deinit!
     public init(_ actor: T, _ block: @escaping BehaviorBlock) {
@@ -122,9 +123,9 @@ public class ChainableBehavior<T> {
     }
 
     @discardableResult public func dynamicallyCall(withArguments args: BehaviorArgs) -> T {
-        #if DEBUG
-        checkReferenceTypesToBehavior(args)
-        #endif
+        if checkForUnsafeArguments {
+            checkReferenceTypesToBehavior(args)
+        }
 
         switch args.count {
         case 1: pony_actor_fast_dispatch1(actorAsActor!.unsafePonyActor, args[0], fastBlock1)
@@ -177,6 +178,7 @@ public class Behavior {
     private var fastBlock8: UnsafeMutableRawPointer
     private var fastBlock9: UnsafeMutableRawPointer
     private var fastBlock10: UnsafeMutableRawPointer
+    private let checkForUnsafeArguments = Flynn.checkForUnsafeArguments
 
     // Note: _fastBlock will leak because structs in swift do not have deinit!
     public init(_ actor: Actor, _ block: @escaping BehaviorBlock) {
@@ -230,9 +232,9 @@ public class Behavior {
     }
 
     public func dynamicallyCall(withArguments args: BehaviorArgs) {
-        #if DEBUG
-        checkReferenceTypesToBehavior(args)
-        #endif
+        if checkForUnsafeArguments {
+            checkReferenceTypesToBehavior(args)
+        }
 
         switch args.count {
         case 1: pony_actor_fast_dispatch1(actor!.unsafePonyActor, args[0], fastBlock1)
