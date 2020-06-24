@@ -37,7 +37,7 @@ public typealias BehaviorBlock = ((BehaviorArgs) -> Void)
 // Note: Ideally, we could use ChainableBehavior<T: Actor>, but there appears to
 // be a bug in Swift which causes Actor to not be recognized when used with a protocol
 @dynamicCallable
-public struct ChainableBehavior<T> {
+public class ChainableBehavior<T> {
     private let block: BehaviorBlock
     private var actor: T?
     private var actorAsActor: Actor?
@@ -56,39 +56,53 @@ public struct ChainableBehavior<T> {
     // Note: fastBlock will leak because structs in swift do not have deinit!
     public init(_ actor: T, _ block: @escaping BehaviorBlock) {
         self.actor = actor
-        self.actorAsActor = actor as? Actor
+        actorAsActor = actor as? Actor
         self.block = block
-        self.fastBlock0 = pony_register_fast_block0({ () in block([]) })
-        self.fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
-        self.fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
-        self.fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
-        self.fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
-        self.fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
-        self.fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
-        self.fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
-        self.fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
-        self.fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
-        self.fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
+        fastBlock0 = pony_register_fast_block0({ () in block([]) })
+        fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
+        fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
+        fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
+        fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
+        fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
+        fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
+        fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
+        fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
+        fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
+        fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
     }
 
     public init(_ block: @escaping BehaviorBlock) {
         self.actor = nil
-        self.actorAsActor = nil
+        actorAsActor = nil
         self.block = block
-        self.fastBlock0 = pony_register_fast_block0({ () in block([]) })
-        self.fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
-        self.fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
-        self.fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
-        self.fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
-        self.fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
-        self.fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
-        self.fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
-        self.fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
-        self.fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
-        self.fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
+        fastBlock0 = pony_register_fast_block0({ () in block([]) })
+        fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
+        fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
+        fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
+        fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
+        fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
+        fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
+        fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
+        fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
+        fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
+        fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
     }
 
-    public mutating func setActor(_ actor: T) {
+    deinit {
+        pony_unregister_fast_block(fastBlock0)
+        pony_unregister_fast_block(fastBlock1)
+        pony_unregister_fast_block(fastBlock2)
+        pony_unregister_fast_block(fastBlock3)
+        pony_unregister_fast_block(fastBlock4)
+        pony_unregister_fast_block(fastBlock5)
+        pony_unregister_fast_block(fastBlock6)
+        pony_unregister_fast_block(fastBlock7)
+        pony_unregister_fast_block(fastBlock8)
+        pony_unregister_fast_block(fastBlock9)
+        pony_unregister_fast_block(fastBlock10)
+    }
+
+    public func setActor(_ actor: T) {
         self.actor = actor
         self.actorAsActor = actor as? Actor
     }
@@ -113,7 +127,7 @@ public struct ChainableBehavior<T> {
 }
 
 @dynamicCallable
-public struct Behavior {
+public class Behavior {
     private let block: BehaviorBlock
     private var actor: Actor?
     private var fastBlock0: UnsafeMutableRawPointer
@@ -132,36 +146,50 @@ public struct Behavior {
     public init(_ actor: Actor, _ block: @escaping BehaviorBlock) {
         self.actor = actor
         self.block = block
-        self.fastBlock0 = pony_register_fast_block0({ () in block([]) })
-        self.fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
-        self.fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
-        self.fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
-        self.fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
-        self.fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
-        self.fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
-        self.fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
-        self.fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
-        self.fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
-        self.fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
+        fastBlock0 = pony_register_fast_block0({ () in block([]) })
+        fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
+        fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
+        fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
+        fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
+        fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
+        fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
+        fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
+        fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
+        fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
+        fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
     }
 
     public init(_ block: @escaping BehaviorBlock) {
         self.actor = nil
         self.block = block
-        self.fastBlock0 = pony_register_fast_block0({ () in block([]) })
-        self.fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
-        self.fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
-        self.fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
-        self.fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
-        self.fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
-        self.fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
-        self.fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
-        self.fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
-        self.fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
-        self.fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
+        fastBlock0 = pony_register_fast_block0({ () in block([]) })
+        fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
+        fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
+        fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
+        fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
+        fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
+        fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
+        fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
+        fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
+        fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
+        fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
     }
 
-    public mutating func setActor(_ actor: Actor) {
+    deinit {
+        pony_unregister_fast_block(fastBlock0)
+        pony_unregister_fast_block(fastBlock1)
+        pony_unregister_fast_block(fastBlock2)
+        pony_unregister_fast_block(fastBlock3)
+        pony_unregister_fast_block(fastBlock4)
+        pony_unregister_fast_block(fastBlock5)
+        pony_unregister_fast_block(fastBlock6)
+        pony_unregister_fast_block(fastBlock7)
+        pony_unregister_fast_block(fastBlock8)
+        pony_unregister_fast_block(fastBlock9)
+        pony_unregister_fast_block(fastBlock10)
+    }
+
+    public func setActor(_ actor: Actor) {
         self.actor = actor
     }
 

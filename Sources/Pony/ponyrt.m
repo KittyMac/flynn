@@ -39,17 +39,7 @@ void * pony_register_fast_block8(FastBlockCallback8 callback) { return objc_reta
 void * pony_register_fast_block9(FastBlockCallback9 callback) { return objc_retain((__bridge void *)callback); }
 void * pony_register_fast_block10(FastBlockCallback10 callback) { return objc_retain((__bridge void *)callback); }
 
-void pony_unregister_fast_block0(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block1(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block2(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block3(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block4(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block5(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block6(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block7(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block8(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block9(void * p) { objc_autorelease(p); }
-void pony_unregister_fast_block10(void * p) { objc_autorelease(p); }
+void pony_unregister_fast_block(void * p) { objc_autorelease(p); }
 
 bool pony_startup() {
     if (pony_is_inited) { return true; }
