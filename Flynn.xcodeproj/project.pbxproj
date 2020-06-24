@@ -22,6 +22,7 @@
 
 /* Begin PBXBuildFile section */
 		46225D1E248E849F007EC366 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46225D1C248E845E007EC366 /* Image.swift */; };
+		462EA9E024A3D39500F153EA /* PassToMe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462EA9DF24A3D38F00F153EA /* PassToMe.swift */; };
 		467794E32491217500118597 /* Flowable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467794E22491217500118597 /* Flowable.swift */; };
 		OBJ_105 /* actor.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_26 /* actor.c */; };
 		OBJ_106 /* alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_27 /* alloc.c */; };
@@ -84,6 +85,7 @@
 
 /* Begin PBXFileReference section */
 		46225D1C248E845E007EC366 /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
+		462EA9DF24A3D38F00F153EA /* PassToMe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassToMe.swift; sourceTree = "<group>"; };
 		467794E22491217500118597 /* Flowable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Flowable.swift; sourceTree = "<group>"; };
 		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -223,6 +225,7 @@
 		OBJ_45 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				462EA9DF24A3D38F00F153EA /* PassToMe.swift */,
 				46225D1C248E845E007EC366 /* Image.swift */,
 				OBJ_46 /* Color.swift */,
 				OBJ_47 /* Counter.swift */,
@@ -466,6 +469,7 @@
 				OBJ_89 /* FlynnTests.swift in Sources */,
 				OBJ_90 /* PonyRTTests.swift in Sources */,
 				OBJ_91 /* Color.swift in Sources */,
+				462EA9E024A3D39500F153EA /* PassToMe.swift in Sources */,
 				OBJ_92 /* Counter.swift in Sources */,
 				OBJ_93 /* Flowable.swift in Sources */,
 				OBJ_94 /* StringBuilder.swift in Sources */,

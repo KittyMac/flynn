@@ -57,6 +57,16 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
 
+    func testPassByReferenceCheck() {
+        let expectation = XCTestExpectation(description: "Warning when passing reference values")
+
+        PassToMe()
+            .beString("Swift String")
+            .beNSString("NSString" as NSString)
+
+        expectation.fulfill()
+    }
+
     func testColor() {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
         let color = Color()

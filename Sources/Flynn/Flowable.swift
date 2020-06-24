@@ -38,7 +38,7 @@ public class FlowableState {
         case 0:
             return
         case 1:
-            flowTarget?.beFlow.dynamicallyCall(withArguments: [])
+            flowTarget?.beFlow.dynamicallyFlow(withArguments: [])
         default:
             if pony_actors_should_wait(0, &ponyActorTargets, Int32(numTargets)) {
                 beRetryEndFlowToNextTarget()
@@ -46,7 +46,7 @@ public class FlowableState {
                 return
             }
             poolIdx = (poolIdx + 1) % numTargets
-            flowTargets[poolIdx].beFlow.dynamicallyCall(withArguments: [])
+            flowTargets[poolIdx].beFlow.dynamicallyFlow(withArguments: [])
         }
     }
 
@@ -109,7 +109,7 @@ public extension Flowable {
         case 0:
             return
         case 1:
-            safeFlowable.flowTarget?.beFlow.dynamicallyCall(withArguments: args)
+            safeFlowable.flowTarget?.beFlow.dynamicallyFlow(withArguments: args)
         default:
             if args.isEmpty {
                 if pony_actors_should_wait(0, &safeFlowable.ponyActorTargets, Int32(safeFlowable.numTargets)) {
@@ -119,7 +119,7 @@ public extension Flowable {
                 }
             }
             safeFlowable.poolIdx = (safeFlowable.poolIdx + 1) % safeFlowable.numTargets
-            safeFlowable.flowTargets[safeFlowable.poolIdx].beFlow.dynamicallyCall(withArguments: args)
+            safeFlowable.flowTargets[safeFlowable.poolIdx].beFlow.dynamicallyFlow(withArguments: args)
         }
     }
 }
