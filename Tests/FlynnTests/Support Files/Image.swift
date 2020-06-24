@@ -37,7 +37,7 @@ public final class Image: Actor, Colorable, Imageable, Viewable {
     public lazy var safeColorable = ColorableState(self)
     public lazy var safeImageable = ImageableState(self)
 
-    public lazy var beRender = Behavior(self) { (args: BehaviorArgs) in
+    public lazy var beRender = Behavior(self) { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter CGRect - The bounds in which to render the view
         self.safeViewableRender(args[x:0])
     }

@@ -45,15 +45,15 @@ class Counter: Actor {
         }
     }
 
-    lazy var beCount = Behavior(self) { (_ : BehaviorArgs) in
+    lazy var beCount = Behavior(self) { [unowned self] (_ : BehaviorArgs) in
         self.count()
     }
 
-    lazy var beStop = Behavior(self) { (_ : BehaviorArgs) in
+    lazy var beStop = Behavior(self) { [unowned self] (_ : BehaviorArgs) in
         self.done = true
     }
 
-    lazy var beSetCoreAffinity = Behavior(self) { (args: BehaviorArgs) in
+    lazy var beSetCoreAffinity = Behavior(self) { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter Int32 - quality of service
         if let qos = CoreAffinity(rawValue: args[x:0]) {
             self.safeCoreAffinity = qos

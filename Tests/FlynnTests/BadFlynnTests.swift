@@ -27,7 +27,7 @@ class OffToTheRacesActor: Actor {
         self.data = data
     }
 
-    lazy var beCount = ChainableBehavior(self) { (_: BehaviorArgs) in
+    lazy var beCount = ChainableBehavior(self) { [unowned self] (_: BehaviorArgs) in
         // flynnlint:parameter None
         self.data.inc()
     }

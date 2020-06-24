@@ -6,8 +6,6 @@
 //  Copyright © 2020 Rocco Bowling. All rights reserved.
 //
 
-// swiftlint:disable force_cast
-
 import XCTest
 @testable import Flynn
 import GLKit
@@ -56,7 +54,7 @@ extension Colorable {
 public final class Color: Actor, Colorable, Viewable {
     public lazy var safeColorable = ColorableState(self)
 
-    public lazy var beRender = Behavior(self) { (args: BehaviorArgs) in
+    public lazy var beRender = Behavior(self) { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter CGRect - The bounds in which to render the view
         self.safeViewableRender(args[x:0])
     }
