@@ -16,6 +16,10 @@
 
 void ponyint_cpu_init(void);
 
+uint32_t ponyint_p_core_count();
+
+uint32_t ponyint_e_core_count();
+
 uint32_t ponyint_core_count(void);
 
 uint32_t ponyint_cpu_count(void);

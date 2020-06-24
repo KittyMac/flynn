@@ -17,22 +17,91 @@
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <errno.h>
 
-static uint32_t property(const char* key)
-{
-    int value;
-    size_t len = sizeof(int);
-    sysctlbyname(key, &value, &len, NULL, 0);
-    return value;
+static uint32_t get_sys_info(int type_specifier, const char* name) {
+    size_t size = 0;
+    uint32_t result = 0;
+    int mib[2] = { CTL_HW, type_specifier };
+    if (sysctl(mib, 2, NULL, &size, NULL, 0) != 0) {
+        fprintf(stderr, "sysctl(\"%s\") failed: %s\n", name, strerror(errno));
+    } else if (size == sizeof(uint32_t)) {
+        sysctl(mib, 2, &result, &size, NULL, 0);
+        //fprintf(stderr, "%s: %u, size = %lu\n", name, result, size);
+    } else {
+        fprintf(stderr, "sysctl does not support non-integer lookup for (\"%s\")\n", name);
+    }
+    return result;
+}
+
+static uint32_t get_sys_info_by_name(const char* type_specifier) {
+    size_t size = 0;
+    uint32_t result = 0;
+    if (sysctlbyname(type_specifier, NULL, &size, NULL, 0) != 0) {
+        fprintf(stderr, "sysctlbyname(\"%s\") failed: %s\n", type_specifier, strerror(errno));
+    } else if (size == sizeof(uint32_t)) {
+        sysctlbyname(type_specifier, &result, &size, NULL, 0);
+        //fprintf(stderr, "%s: %u, size = %lu\n", type_specifier, result, size);
+    } else {
+        fprintf(stderr, "sysctl does not support non-integer lookup for (\"%s\")\n", type_specifier);
+    }
+    return result;
 }
 
 static uint32_t hw_core_count;
 static uint32_t hw_cpu_count;
 
+static uint32_t hw_e_core_count = 0;
+static uint32_t hw_p_core_count = 0;
+
 void ponyint_cpu_init()
 {
-    hw_core_count = property("hw.physicalcpu");
-    hw_cpu_count = hw_core_count / property("machdep.cpu.core_count");
+    hw_core_count = get_sys_info_by_name("hw.physicalcpu");
+    hw_cpu_count = hw_core_count / get_sys_info_by_name("machdep.cpu.core_count");
+    
+    const uint32_t cpu_family = get_sys_info_by_name("hw.cpufamily");
+    switch (cpu_family) {
+        case CPUFAMILY_ARM_MONSOON_MISTRAL:
+            /* 2x Monsoon + 4x Mistral cores */
+            hw_e_core_count = 4;
+            hw_p_core_count = 2;
+        case CPUFAMILY_ARM_VORTEX_TEMPEST:
+        case CPUFAMILY_ARM_LIGHTNING_THUNDER:
+            /* Hexa-core: 2x Vortex + 4x Tempest; Octa-core: 4x Cortex + 4x Tempest */
+            /* Hexa-core: 2x Lightning + 4x Thunder; Octa-core (presumed): 4x Lightning + 4x Thunder */
+            if (hw_core_count == 6) {
+                hw_e_core_count = 4;
+                hw_p_core_count = 2;
+            }
+            if (hw_core_count == 8) {
+                hw_e_core_count = 4;
+                hw_p_core_count = 4;
+            }
+            break;
+    }
+    
+    if (hw_e_core_count == 0 || hw_p_core_count == 0) {
+        hw_e_core_count = hw_core_count / 2;
+        hw_p_core_count = hw_core_count - hw_e_core_count;
+    }
+    
+    if (hw_e_core_count == 0) {
+        hw_e_core_count = 1;
+    }
+    if (hw_p_core_count == 0) {
+        hw_p_core_count = 1;
+    }
+    
+}
+
+uint32_t ponyint_p_core_count()
+{
+    return hw_p_core_count;
+}
+
+uint32_t ponyint_e_core_count()
+{
+    return hw_e_core_count;
 }
 
 uint32_t ponyint_core_count()

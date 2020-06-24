@@ -399,16 +399,7 @@ bool ponyint_sched_start()
 {
     pony_register_thread();
         
-    uint32_t start = 0;
-    uint32_t highPerformanceCores = scheduler_count / 2;
-    
-#if TARGET_OS_IPHONE
-    // Note: the A10-A13 chips have 2 high performance cores and the rest are
-    // high efficiency cores. AFAICT, there is no API to get this information
-    // so its hard coded here.
-    highPerformanceCores = 2;
-#endif
-    
+    uint32_t start = 0;    
     for(uint32_t i = start; i < scheduler_count; i++)
     {
         // there was an error creating a wait event or a pthread condition object
@@ -418,7 +409,7 @@ bool ponyint_sched_start()
         int qos = QOS_CLASS_USER_INITIATED;
         scheduler[i].coreAffinity = kCoreAffinity_OnlyPerformance;
         
-        if (i < scheduler_count - highPerformanceCores) {
+        if (i < ponyint_e_core_count()) {
             qos = QOS_CLASS_UTILITY;
             scheduler[i].coreAffinity = kCoreAffinity_OnlyEfficiency;
         }
