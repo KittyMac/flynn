@@ -103,12 +103,6 @@ typedef struct pony_msgpp_t
     void* p2;
 } pony_msgpp_t;
 
-typedef struct pony_msgb_t
-{
-    pony_msg_t msg;
-    BlockCallback p;
-} pony_msgb_t;
-
 typedef struct pony_msgfb0_t
 {
     pony_msg_t msg;

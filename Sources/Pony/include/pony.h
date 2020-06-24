@@ -50,7 +50,7 @@ void * pony_register_fast_block10(FastBlockCallback10 callback);
 void pony_unregister_fast_block(void * callback);
 
 void * pony_actor_create();
-void pony_actor_dispatch(void * actor, BlockCallback callback);
+void pony_actor_attach(void * actor, id swiftActor);
 
 void pony_actor_fast_dispatch0(void * actor, void * callback);
 void pony_actor_fast_dispatch1(void * actor, id arg0, void * callback);

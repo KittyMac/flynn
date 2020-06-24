@@ -76,9 +76,15 @@ void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
 }
 
-void pony_actor_dispatch(void * actor, BlockCallback callback) {
-    objc_retain((__bridge void *)callback);
-    pony_send_block(pony_ctx(), actor, callback);
+void pony_actor_attach(void * actor, id swiftActor) {
+    pony_actor_t* asActor = actor;
+    asActor->swiftActor = swiftActor;
+    
+    // this is a workaround for swift and dynamicallyCallable(). Calling actors like this
+    // someActor().beSomeBehavior()
+    // the actor will be deinited prior to dynamicallyCallable being called on the behavior
+    objc_retain(swiftActor);
+    objc_autorelease(swiftActor);
 }
 
 void pony_actor_fast_dispatch0(void * actor, void * callback) {

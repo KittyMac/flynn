@@ -12,7 +12,7 @@ import XCTest
 @testable import Flynn
 import GLKit
 
-public class ColorableState<T> {
+public class ColorableState<T: Actor> {
     private var color: GLKVector4 = GLKVector4Make(1, 1, 1, 1)
 
     lazy var beColor = ChainableBehavior<T> { (_: BehaviorArgs) in
@@ -37,8 +37,8 @@ public class ColorableState<T> {
     init (_ actor: T) {
         beColor.setActor(actor)
         beAlpha.setActor(actor)
-        beGetColor.setActor(actor as! Actor)
-        beSetColor.setActor(actor as! Actor)
+        beGetColor.setActor(actor)
+        beSetColor.setActor(actor)
     }
 }
 

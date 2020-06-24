@@ -21,12 +21,13 @@ class PonyRTTests: XCTestCase {
 
     func testScheduleActor1() {
         let expectation = XCTestExpectation(description: "Wait for counter to finish")
-        Counter().beHello("Rocco")
-                 .beInc(1)
-                 .beEquals { (value: Int) in
-                     XCTAssertEqual(value, 1, "Counter did not add up to 1")
-                     expectation.fulfill()
-                 }
+        let counter = Counter()
+        counter.beHello("Rocco")
+               .beInc(1)
+               .beEquals { (value: Int) in
+                    XCTAssertEqual(value, 1, "Counter did not add up to 1")
+                    expectation.fulfill()
+                }
         wait(for: [expectation], timeout: 10.0)
     }
 }

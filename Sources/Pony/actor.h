@@ -24,6 +24,7 @@ typedef struct pony_actor_t
     int32_t priority;
     int32_t coreAffinity;
     bool yield;
+    void * swiftActor;
 } pony_actor_t;
 
 enum
@@ -53,8 +54,6 @@ bool ponyint_actor_pendingdestroy(pony_actor_t* actor);
 void ponyint_actor_setpendingdestroy(pony_actor_t* actor);
 
 size_t ponyint_actor_num_messages(pony_actor_t* actor);
-
-void pony_send_block(pony_ctx_t* ctx, pony_actor_t* to, BlockCallback p);
 
 void pony_send_fast_block0(pony_ctx_t* ctx, pony_actor_t* to, FastBlockCallback0 p);
 void pony_send_fast_block1(pony_ctx_t* ctx, pony_actor_t* to, id arg0, FastBlockCallback1 p);

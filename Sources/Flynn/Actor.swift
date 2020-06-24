@@ -63,6 +63,8 @@ open class Actor {
 
         unsafePonyActor = pony_actor_create()
         uuid = UUID().uuidString
+
+        pony_actor_attach(unsafePonyActor, self)
     }
 
     deinit {
