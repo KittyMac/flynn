@@ -13,7 +13,7 @@ import GLKit
 public class ImageableState {
     private var path: String = ""
 
-    lazy var bePath = Behavior { (args: BehaviorArgs) in
+    lazy var bePath = Behavior { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter String - The path to the image
         print("Imageable.path from \(self)")
         self.path = args[x:0]

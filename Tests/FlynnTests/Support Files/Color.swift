@@ -21,13 +21,13 @@ public class ColorableState<T: Actor> {
         print("Colorable.alpha from \(self)")
     }
 
-    lazy var beGetColor = Behavior { (args: BehaviorArgs) in
+    lazy var beGetColor = Behavior { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter Behavior - The behavior to supply the results to
         let callback: Behavior = args[x:0]
         callback(self.color)
     }
 
-    lazy var beSetColor = Behavior { (args: BehaviorArgs) in
+    lazy var beSetColor = Behavior { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter GLKVector4 - the color array
         self.color = args[x:0]
     }

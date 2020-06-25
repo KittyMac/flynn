@@ -50,11 +50,11 @@ public class FlowableState {
         }
     }
 
-    fileprivate lazy var beRetryEndFlowToNextTarget = Behavior { (_: BehaviorArgs) in
+    fileprivate lazy var beRetryEndFlowToNextTarget = Behavior { [unowned self] (_: BehaviorArgs) in
         self._retryEndFlowToNextTarget()
     }
 
-    public lazy var beTarget = Behavior { (args: BehaviorArgs) in
+    public lazy var beTarget = Behavior { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter Flowable - Flowable actor to receive flow messages
         let localTarget: Flowable = args[x: 0]
         self.flowTarget = localTarget
@@ -63,7 +63,7 @@ public class FlowableState {
         self.numTargets = self.flowTargets.count
     }
 
-    public lazy var beTargets = Behavior { (args: BehaviorArgs) in
+    public lazy var beTargets = Behavior { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter [Flowable] - Pool of flowable actors to receive flow messages
         let localTargets: [Flowable] = args[x: 0]
         self.flowTarget = localTargets.first
