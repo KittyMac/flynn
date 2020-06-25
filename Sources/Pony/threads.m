@@ -7,8 +7,9 @@
 #include <sys/resource.h>
 #include <sys/mman.h>
 #include <limits.h>
+#include <stdio.h>
 
-#include <Foundation/Foundation.h>
+//#include <Foundation/Foundation.h>
 
 bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, void* arg)
 {
@@ -33,7 +34,7 @@ bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, v
         attr_p = NULL;
     }
     
-    pthread_attr_set_qos_class_np(&attr, qos, 0);
+    //pthread_attr_set_qos_class_np(&attr, qos, 0);
     
     if(pthread_create(thread, attr_p, start, arg))
         ret = false;
@@ -70,6 +71,13 @@ void ponyint_thead_setname(int schedID, int schedAffinity) {
             break;
     }
     snprintf(thread_name, sizeof(thread_name), "Flynn #%d %s", schedID, thread_affinity);
+    
+#ifdef PLATFORM_IS_APPLE
     [[NSThread currentThread] setName:[NSString stringWithUTF8String:thread_name]];
     pthread_setname_np(thread_name);
+#endif
+    
+#ifdef PLATFORM_IS_LINUX
+    pthread_setname_np(pthread_self(), thread_name);
+#endif
 }

@@ -400,7 +400,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/meta/flynnlint ${SRCROOT}/Sources ${SRCROOT}/Tests\n";
+			shellScript = "if [-f ${SRCROOT}/meta/FlynnLint]; then\n    ${SRCROOT}/meta/FlynnLint ${SRCROOT}/Sources ${SRCROOT}/Tests\nelse\n    echo \"warning: Unable to find FlynnLint, aborting...\"\nfi\n";
 		};
 		46627BDC2486D26A00A2A610 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;

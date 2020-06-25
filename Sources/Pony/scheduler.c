@@ -18,8 +18,6 @@
 #include "actor.h"
 #include <string.h>
 #include <stdio.h>
-#include "TargetConditionals.h"
-
 
 static DECLARE_THREAD_FN(run_thread);
 
@@ -406,11 +404,11 @@ bool ponyint_sched_start()
         if(scheduler[i].sleep_object == NULL)
             return false;
         
-        int qos = QOS_CLASS_USER_INITIATED;
+        int qos = 0;
         scheduler[i].coreAffinity = kCoreAffinity_OnlyPerformance;
         
         if (i < ponyint_e_core_count()) {
-            qos = QOS_CLASS_UTILITY;
+            qos = 0;
             scheduler[i].coreAffinity = kCoreAffinity_OnlyEfficiency;
         }
         

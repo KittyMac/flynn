@@ -9,8 +9,6 @@
 
 #include <stdlib.h>
 
-#include <CoreFoundation/CoreFoundation.h>
-
 #include "ponyrt.h"
 
 #include "messageq.h"
