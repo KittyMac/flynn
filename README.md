@@ -8,18 +8,15 @@ Write **fast**, **safe**, **efficient**, highly concurrent Swift with **Flynn**.
 import Flynn
 
 class HelloWorld: Actor {
-    lazy var bePrint = ChainableBehavior(self) { (args: BehaviorArgs) in
-        // flynnlint:parameter String - string to print
-        print(args[x:0], terminator: "")
-    }
+  lazy var bePrint = ChainableBehavior(self) { (args: BehaviorArgs) in
+    // flynnlint:parameter String - string to print
+    print(args[x:0], terminator: "")
+  }
 }
 
 HelloWorld().bePrint("hello").bePrint(" ").bePrint("world!\n")
 ```
 
-&nbsp;  
-&nbsp;  
-&nbsp;  
 &nbsp;  
 
 
@@ -52,16 +49,16 @@ import Flynn
 
 // NOTE: THIS IS AN UNSAFE EXAMPLE OF FLYNN (FLYNNLINT WILL PROTECT AGAINST THIS)
 class Counter: Actor {
-    public var count: Int = 0
-    lazy var beInc = ChainableBehavior(self) { (_: BehaviorArgs) in
-        self.count += 1
-    }
+  public var count: Int = 0
+  lazy var beInc = ChainableBehavior(self) { (_: BehaviorArgs) in
+      self.count += 1
+  }
 }
 
 let counter = Counter()
 for _ in 0..<1000000 {
-    counter.beInc()
-    counter.count += 1
+  counter.beInc()
+  counter.count += 1
 }
 
 // prints 1994681, which is incorrect as we have a data race on count
