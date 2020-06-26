@@ -10,12 +10,14 @@ import Foundation
 import Flynn
 
 class HelloWorld: Actor {
-    lazy var bePrint = Behavior(self) { (args: BehaviorArgs) in
+    lazy var bePrint = ChainableBehavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter String - string to print
-        print(args[x:0])
+        print(args[x:0], terminator: "")
     }
 }
 
-HelloWorld().bePrint("hello!")
+print("synchronous - before")
+HelloWorld().bePrint("asynchronous - ").bePrint("hello").bePrint(" ").bePrint("world!\n")
+print("synchronous - after")
 
 Flynn.shutdown()
