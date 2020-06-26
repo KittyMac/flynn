@@ -49,6 +49,6 @@ Flynn.shutdown()
 
 FlynnLint will protect you from this and numerous other pitfalls by not allowing unsafe code to compile:
 
-![](meta/flynnlint0.png)
+![](../meta/flynnlint0.png)
 
 
