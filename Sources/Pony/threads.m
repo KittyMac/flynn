@@ -1,6 +1,7 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
 #include "threads.h"
+#include "ponyrt.h"
 #include <pthread.h>
 #include <sched.h>
 #include <sys/time.h>
@@ -9,7 +10,10 @@
 #include <limits.h>
 #include <stdio.h>
 
-//#include <Foundation/Foundation.h>
+#ifdef PLATFORM_IS_APPLE
+#undef id
+#include <Foundation/Foundation.h>
+#endif
 
 bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, void* arg)
 {
