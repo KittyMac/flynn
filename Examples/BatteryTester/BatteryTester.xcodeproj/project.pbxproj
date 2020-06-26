@@ -123,8 +123,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4669EDA62491D02700E42ECB /* Build configuration list for PBXNativeTarget "BatteryTester" */;
 			buildPhases = (
-				4669EDB42491D31400E42ECB /* SwiftLint */,
 				4669EDB82491D42000E42ECB /* FlynnLint */,
+				4669EDB42491D31400E42ECB /* SwiftLint */,
 				4669ED832491D02600E42ECB /* Sources */,
 				4669ED842491D02600E42ECB /* Frameworks */,
 				4669ED852491D02600E42ECB /* Resources */,
@@ -242,7 +242,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint autocorrect\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
 		};
 		4669EDB82491D42000E42ECB /* FlynnLint */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -260,7 +260,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${BUILD_ROOT}/../../SourcePackages/checkouts/flynn/meta/FlynnLint ${SRCROOT}\n";
+			shellScript = "FLYNNLINT=${BUILD_ROOT}/../../SourcePackages/checkouts/flynn/meta/FlynnLint\nif [ -f \"${FLYNNLINT}\" ]; then\n    ${FLYNNLINT} ${SRCROOT}\nelse\n    echo \"warning: Unable to find FlynnLint, aborting...\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
