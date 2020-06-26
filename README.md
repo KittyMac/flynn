@@ -12,15 +12,67 @@ Which leads us to Flynn, an attempt to replicate the better parts of the actor/m
 
 ## Key Features
 
-• **Actor-Model Programming**  
-In Pony you have classes and actors.  Classes are synchronous, Actors are asynchronous.  You may only interact with actors by calling behaviours. Behaviours are messages which are stored in the actor's message queue and are processed sequentially. You can think of actors as classes whose method calls are automatically added to a serial dispath queue.
+TODO
 
-• **Safety First**  
-Increased capacity for concurrency without additional safe-guards will only lead to increased capacity for headaches. Pony has reference capabilities built into the language, which can gaurantee at compile time that you don't access the same variable from multiple threads concurrently. Alas, we are not going to be adding that to Swift. However, if you adhere to the programming strictures Flynn puts in place you will be programming concurrently with ease.
+## Installation
 
-• **Pony Runtime**  
-The Pony runtime is an amazing piece of software. Originally we implemented Flynn on dispatch queues, but they are not optimized for this level of piecemeal concurrency. Flynn is now backed by an custom, mobile optimized version of the Pony runtime.  In our simple initial tests, Flynn backed by the Pony runtime is 5x - 31x more performant than Flynn backed by dispatch queues.
+Flynn is a fully compatible with the Swift Package Manager.
 
+### Swift Package Manager
+
+If you use swiftpm, you can add Flynn as a dependency directly to your Package.swift file.
+
+```
+dependencies: [
+    .package(url: "https://github.com/KittyMac/Flynn.git", .upToNextMinor(from: "0.0.1")),
+],
+```
+
+### XCode
+
+To integrate with Xcode, simply add it as a package dependency by going to
+
+```
+File -> Swift Packages -> Add Package Dependency
+```
+
+and pasting the url to this repository. Follow the instructions to complete the dependency addition.  [Check the releases](https://github.com/KittyMac/flynn/releases) for different versions, or choose master branch for the bleeding edge.
+
+Flynn is best used with FlynnLint. FlynnLint helps protect you from accidentally introducing data races in your highly concurrent code by enforcing Flynn's best programming practices.  It is **HIGHLY RECOMMENDED** that you use FlynnLint.
+
+FlynnLint is included in the Flynn repository in the meta folder. Just add a new "Run Script Phase" with:
+
+```bash
+FLYNNLINTSWIFTPM=${SRCROOT}/.build/checkouts/flynn/meta/FlynnLint
+FLYNNLINTXCODE=${BUILD_ROOT}/../../SourcePackages/checkouts/flynn/meta/FlynnLint
+
+if [ -f "${FLYNNLINTSWIFTPM}" ]; then
+    ${FLYNNLINTSWIFTPM} ${SRCROOT}
+elif [ -f "${FLYNNLINTXCODE}" ]; then
+    ${FLYNNLINTXCODE} ${SRCROOT}
+else
+    echo "warning: Unable to find FlynnLint, aborting..."
+fi
+```
+
+![](meta/runphase.png)
+
+If you use other linters (such as SwiftLint), it is recommended that FlynnLint runs before all other linters.
+
+FlynnLint processes any and all directories provided as arguments. If you want to restrict it to a subset of directories, simply list each directory after the call to FlynnLint. For example, if you use swiftpm and your source files are in /Sources and /Tests, then the following would lint just those directories:
+
+```bash
+FLYNNLINTSWIFTPM=${SRCROOT}/.build/checkouts/flynn/meta/FlynnLint
+FLYNNLINTXCODE=${BUILD_ROOT}/../../SourcePackages/checkouts/flynn/meta/FlynnLint
+
+if [ -f "${FLYNNLINTSWIFTPM}" ]; then
+    ${FLYNNLINTSWIFTPM} ${SRCROOT}/Sources ${SRCROOT}/Tests
+elif [ -f "${FLYNNLINTXCODE}" ]; then
+    ${FLYNNLINTXCODE} ${SRCROOT}/Sources ${SRCROOT}/Tests
+else
+    echo "warning: Unable to find FlynnLint, aborting..."
+fi
+```
 
 ## License
 
