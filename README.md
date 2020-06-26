@@ -26,50 +26,50 @@ HelloWorld().bePrint("hello").bePrint(" ").bePrint("world!\n")
 
 Flynn grafts Actor-Model programming onto Swift, providing a new level of safety and performance to your concurrent Swift code.  Here's what you need to know:
 
-#### Actors are concurrency safe Swift classes
+#### [Actors are concurrency safe Swift classes](docs/QUICKSTART.md)
 
-An Actor is a protected entity for concurrent computation. Outside code can only interact with the actor by sending it messages (called **behaviors**). Actor behaviors are processed sequentially, removing any concurrency concerns inside of the actor. All state associated with actor should be kept private to that actor.
-
-#### Behaviors are asynchronous method calls
-
-Calling a behavior on an actor will always execute asynchronously from the perspective of the caller. Behaviors will also only execute synchronously from the perspect of the callee. If you follow the Flynn best practices (enforced by FlynnLint), your behaviors will start with "be", making it trivial to know which methods are behaviors and thus asynchronous.
-
-#### Actors run cooperatively
-
-Using Flynn you can easily have millions of actors, all executing concurrently in their safe, synchronous walled enviroments. To accomplish this, Flynn creates a scheduler thread per physical CPU core available on the host device. Actors which have work to do (ie behavior calls to process) will be scheduled and run on the scheduler threads. While an actors is running, no other actor can run on that scheduler until it completes. As such, if you are running on a 6-core A12 CPU, then you will only ever have up to six actors executing in parallel at one time. As such, you should avoid long running or blocking operations in actors.
-
-#### Use FlynnLint
-
-Flynn provides the scaffolding for safe concurrency programming; FlynnLint enforces it. For example, for an Actor to be data race free all of its functions and member variables should be private and inaccessible to outside code. Flynn can't stop you from making public functions. FlynnLint can.
-
-Example of a common mistake using Flynn without FlynnLint:
+Using Actors to separate concurrent logic provides safety, performance, and efficiency.
 
 ```swift
-import Flynn
-
-// NOTE: THIS IS AN UNSAFE EXAMPLE OF FLYNN (FLYNNLINT WILL PROTECT AGAINST THIS)
-class Counter: Actor {
-  public var count: Int = 0
-  lazy var beInc = ChainableBehavior(self) { (_: BehaviorArgs) in
-      self.count += 1
-  }
+class ConcurrentDatastore: Actor {
+    // Everything inside this actor is safe and cannot
+    // be accessed concurrently by any other thread
+    private var storage: [String: String] = [:]
+    
+    ...
 }
-
-let counter = Counter()
-for _ in 0..<1000000 {
-  counter.beInc()
-  counter.count += 1
-}
-
-// prints 1994681, which is incorrect as we have a data race on count
-// since it is accessed by two threads at the same time (this thread
-// and the scheduler thread running the actor's beInc() calls
-print("count: \(counter.count)")
-
-Flynn.shutdown()
 ```
 
-FlynnLint will protect you from this and numerous other pitfalls by not allowing unsafe code to compile:
+#### [Behaviors are asynchronous method calls](docs/QUICKSTART.md)
+
+Actors provide behaviors (which look like normal method calls at the call site) that execute asynchronously from the caller's perspective.
+
+```swift
+let datastore = ConcurrentDatastore()
+datastore.beStore("SomeKey", "SomeValue")
+```
+
+From the Actor's perspective, behaviors execute synchronously (in the same order they are sent for the calling code).
+
+```swift
+class ConcurrentDatastore: Actor {
+	...
+	// Behaviors are called asynchronously but execute synchronously on the Actor
+    lazy var beStore = ChainableBehavior(self) { [unowned self] (args: BehaviorArgs) in
+        // flynnlint:parameter String - key
+        // flynnlint:parameter String - value
+        self.storage[args[x:0]] = args[x:1]
+    }
+}
+```
+
+#### [Actors are exectued cooperatively](docs/QUICKSTART.md)
+
+Flynn uses a modified verion of the [Pony language runtime](https://www.ponylang.io), which has been driving production applications for years. This proven core allows you to create millions of actors while keeping thread counts and resource usage to a minimum.
+
+#### [Use FlynnLint](docs/QUICKSTART.md)
+
+Flynn provides the scaffolding for safer concurrency, but it is the Flynn linter (FlynnLint) who enforces it.  FlynnLint will protect you from numerous concurrency pitfalls by not allowing unsafe code to compile:
 
 ![](meta/flynnlint0.png)
 
@@ -124,16 +124,7 @@ If you use other linters (such as SwiftLint), it is recommended that FlynnLint r
 FlynnLint processes any and all directories provided as arguments. If you want to restrict it to a subset of directories, simply list each directory after the call to FlynnLint. For example, if you use swiftpm and your source files are in /Sources and /Tests, then the following would lint just those directories:
 
 ```bash
-FLYNNLINTSWIFTPM=${SRCROOT}/.build/checkouts/flynn/meta/FlynnLint
-FLYNNLINTXCODE=${BUILD_ROOT}/../../SourcePackages/checkouts/flynn/meta/FlynnLint
-
-if [ -f "${FLYNNLINTSWIFTPM}" ]; then
-    ${FLYNNLINTSWIFTPM} ${SRCROOT}/Sources ${SRCROOT}/Tests
-elif [ -f "${FLYNNLINTXCODE}" ]; then
-    ${FLYNNLINTXCODE} ${SRCROOT}/Sources ${SRCROOT}/Tests
-else
-    echo "warning: Unable to find FlynnLint, aborting..."
-fi
+${FLYNNLINTSWIFTPM} ${SRCROOT}/Sources ${SRCROOT}/Tests
 ```
 
 ## License
