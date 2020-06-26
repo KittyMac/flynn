@@ -42,7 +42,7 @@ void pony_unregister_fast_block(void * p) { objc_autorelease(p); }
 bool pony_startup() {
     if (pony_is_inited) { return true; }
     
-    fprintf(stderr, "pony_startup()\n");
+    //fprintf(stderr, "pony_startup()\n");
     ponyint_cpu_init();
     
     ponyint_sched_init();
@@ -55,7 +55,7 @@ bool pony_startup() {
 void pony_shutdown() {
     if (!pony_is_inited) { return; }
     
-    fprintf(stderr, "pony_shutdown()\n");
+    //fprintf(stderr, "pony_shutdown()\n");
     ponyint_sched_stop();
     
     pony_is_inited = false;

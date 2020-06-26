@@ -2,15 +2,10 @@
 
 <img align="left" src="meta/flynn.png">
 
-An actor-model programming implementation for Swift.
+Write **fast**, **safe**, **efficient**, highly concurrent Swift code using **Flynn**.
 
-I have spent the last eight months learning and dissecting [Pony](https://www.ponylang.io/discover/#what-is-pony), an open-source, object-oriented, actor-model, capabilities-secure, high-performance programming language. I have grown to love many of the garauntees that Pony provides, and I want to have those capabilities while developing iOS applications.
 
-While [it is possible to compile Pony on iOS](https://github.com/KittyMac/ponyc), interoperability from Pony -> C -> Swift is regrettably annoying. In my opinion this is all on the Swift side, as I have not encountered the same hurdles marrying Pony to Objective-C.  However, Objective-C is dead and Swift is the future, and if I can't have Pony play nicely with Swif then I'd rather have a little bit of Pony in Swift.
-
-Which leads us to Flynn, an attempt to replicate the better parts of the actor/model paradigm Pony provides directly in Swift.
-
-## Key Features
+## Why Flynn?
 
 TODO
 
@@ -36,9 +31,11 @@ To integrate with Xcode, simply add it as a package dependency by going to
 File -> Swift Packages -> Add Package Dependency
 ```
 
-and pasting the url to this repository. Follow the instructions to complete the dependency addition.  [Check the releases](https://github.com/KittyMac/flynn/releases) for different versions, or choose master branch for the bleeding edge.
+and pasting the url to this repository. Follow the instructions to complete the dependency addition.  [Check the releases page](https://github.com/KittyMac/flynn/releases) for release versions or choose master branch for the bleeding edge.
 
-Flynn is best used with FlynnLint. FlynnLint helps protect you from accidentally introducing data races in your highly concurrent code by enforcing Flynn's best programming practices.  It is **HIGHLY RECOMMENDED** that you use FlynnLint.
+Flynn is most effective when used with FlynnLint. FlynnLint helps protect you from accidentally introducing data races in your highly concurrent code by enforcing Flynn's best programming practices.  
+
+#### It is HIGHLY RECOMMENDED that you use FlynnLint.
 
 FlynnLint is included in the Flynn repository in the meta folder. Just add a new "Run Script Phase" with:
 
