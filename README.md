@@ -24,7 +24,7 @@ HelloWorld().bePrint("hello").bePrint(" ").bePrint("world!\n")
 
 ### Actor-Model Programming
 
-Flynn grafts Actor-Model programming onto Swift, providing a new level of safety and performance to your concurrent Swift code.  Here's what you need to know:
+Flynn grafts Actor-Model programming onto Swift, providing a new level of safety and performance for your highly concurrent Swift code.  Here's what you need to know:
 
 #### [Actors are concurrency safe Swift classes](docs/QUICKSTART.md)
 
@@ -32,11 +32,11 @@ Using Actors to separate concurrent logic provides safety, performance, and effi
 
 ```swift
 class ConcurrentDatastore: Actor {
-    // Everything inside this actor is safe and cannot
-    // be accessed concurrently by any other thread
-    private var storage: [String: String] = [:]
-    
-    ...
+  // Everything inside this actor is safe and cannot
+  // be accessed concurrently by any other thread
+  private var storage: [String: String] = [:]
+  
+  ...
 }
 ```
 
@@ -53,13 +53,13 @@ From the Actor's perspective, behaviors execute synchronously (in the same order
 
 ```swift
 class ConcurrentDatastore: Actor {
-	...
-	// Behaviors are called asynchronously but execute synchronously on the Actor
-    lazy var beStore = ChainableBehavior(self) { [unowned self] (args: BehaviorArgs) in
-        // flynnlint:parameter String - key
-        // flynnlint:parameter String - value
-        self.storage[args[x:0]] = args[x:1]
-    }
+  ...
+  // Behaviors are called asynchronously but execute synchronously on the Actor
+  lazy var beStore = ChainableBehavior(self) { [unowned self] (args: BehaviorArgs) in
+    // flynnlint:parameter String - key
+    // flynnlint:parameter String - value
+    self.storage[args[x:0]] = args[x:1]
+  }
 }
 ```
 
@@ -69,7 +69,7 @@ Flynn uses a modified verion of the [Pony language runtime](https://www.ponylang
 
 #### [Use FlynnLint](docs/QUICKSTART.md)
 
-Flynn provides the scaffolding for safer concurrency, but it is the Flynn linter (FlynnLint) who enforces it.  FlynnLint will protect you from numerous concurrency pitfalls by not allowing unsafe code to compile:
+Flynn provides the scaffolding for safer concurrency, but FlynnLint enforces it.  FlynnLint will protect you from numerous concurrency pitfalls by not allowing unsafe code to compile:
 
 ![](meta/flynnlint0.png)
 
