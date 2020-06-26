@@ -290,8 +290,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = OBJ_60 /* Build configuration list for PBXNativeTarget "Flynn" */;
 			buildPhases = (
-				46627BDC2486D26A00A2A610 /* SwiftLint */,
 				464CCCA324876B760044F75B /* FlynnLint */,
+				46627BDC2486D26A00A2A610 /* SwiftLint */,
 				OBJ_63 /* Sources */,
 				OBJ_68 /* Frameworks */,
 			);
@@ -400,7 +400,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [-f ${SRCROOT}/meta/FlynnLint]; then\n    ${SRCROOT}/meta/FlynnLint ${SRCROOT}/Sources ${SRCROOT}/Tests\nelse\n    echo \"warning: Unable to find FlynnLint, aborting...\"\nfi\n";
+			shellScript = "if [ -f \"${SRCROOT}/meta/FlynnLint\" ]; then\n    ${SRCROOT}/meta/FlynnLint ${SRCROOT}/Sources ${SRCROOT}/Tests\nelse\n    echo \"warning: Unable to find FlynnLint, aborting...\"\nfi\n";
 		};
 		46627BDC2486D26A00A2A610 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
