@@ -279,7 +279,7 @@ void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId)
 
 void pony_send_fast_block0(pony_ctx_t* ctx, pony_actor_t* to, FastBlockCallback0 p)
 {
-    pony_msgfb0_t* m = (pony_msgfb0_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock0);
+    pony_msgfb0_t* m = (pony_msgfb0_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb0_t)), kMessageFastBlock0);
     m->p = p;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -287,7 +287,7 @@ void pony_send_fast_block0(pony_ctx_t* ctx, pony_actor_t* to, FastBlockCallback0
 
 void pony_send_fast_block1(pony_ctx_t* ctx, pony_actor_t* to, id arg0, FastBlockCallback1 p)
 {
-    pony_msgfb1_t* m = (pony_msgfb1_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock1);
+    pony_msgfb1_t* m = (pony_msgfb1_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb1_t)), kMessageFastBlock1);
     m->p = p; m->a0 = arg0;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -295,7 +295,7 @@ void pony_send_fast_block1(pony_ctx_t* ctx, pony_actor_t* to, id arg0, FastBlock
 
 void pony_send_fast_block2(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, FastBlockCallback2 p)
 {
-    pony_msgfb2_t* m = (pony_msgfb2_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock2);
+    pony_msgfb2_t* m = (pony_msgfb2_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb2_t)), kMessageFastBlock2);
     m->p = p; m->a0 = arg0; m->a1 = arg1;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -303,7 +303,7 @@ void pony_send_fast_block2(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, 
 
 void pony_send_fast_block3(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, FastBlockCallback3 p)
 {
-    pony_msgfb3_t* m = (pony_msgfb3_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock3);
+    pony_msgfb3_t* m = (pony_msgfb3_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb3_t)), kMessageFastBlock3);
     m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -311,7 +311,7 @@ void pony_send_fast_block3(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, 
 
 void pony_send_fast_block4(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, FastBlockCallback4 p)
 {
-    pony_msgfb4_t* m = (pony_msgfb4_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock4);
+    pony_msgfb4_t* m = (pony_msgfb4_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb4_t)), kMessageFastBlock4);
     m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -319,7 +319,7 @@ void pony_send_fast_block4(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, 
 
 void pony_send_fast_block5(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, FastBlockCallback5 p)
 {
-    pony_msgfb5_t* m = (pony_msgfb5_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock5);
+    pony_msgfb5_t* m = (pony_msgfb5_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb5_t)), kMessageFastBlock5);
     m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -327,7 +327,7 @@ void pony_send_fast_block5(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, 
 
 void pony_send_fast_block6(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, FastBlockCallback6 p)
 {
-    pony_msgfb6_t* m = (pony_msgfb6_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock6);
+    pony_msgfb6_t* m = (pony_msgfb6_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb6_t)), kMessageFastBlock6);
     m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4; m->a5 = arg5;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -335,7 +335,7 @@ void pony_send_fast_block6(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, 
 
 void pony_send_fast_block7(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, FastBlockCallback7 p)
 {
-    pony_msgfb7_t* m = (pony_msgfb7_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock7);
+    pony_msgfb7_t* m = (pony_msgfb7_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb7_t)), kMessageFastBlock7);
     m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4; m->a5 = arg5; m->a6 = arg6;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -343,7 +343,7 @@ void pony_send_fast_block7(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, 
 
 void pony_send_fast_block8(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, FastBlockCallback8 p)
 {
-    pony_msgfb8_t* m = (pony_msgfb8_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock8);
+    pony_msgfb8_t* m = (pony_msgfb8_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb8_t)), kMessageFastBlock8);
     m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4; m->a5 = arg5; m->a6 = arg6; m->a7 = arg7;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -351,7 +351,7 @@ void pony_send_fast_block8(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, 
 
 void pony_send_fast_block9(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, FastBlockCallback9 p)
 {
-    pony_msgfb9_t* m = (pony_msgfb9_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock9);
+    pony_msgfb9_t* m = (pony_msgfb9_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb9_t)), kMessageFastBlock9);
     m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4; m->a5 = arg5; m->a6 = arg6; m->a7 = arg7; m->a8 = arg8;
     objc_retain(to->swiftActor);
     pony_sendv(ctx, to, &m->msg, &m->msg);

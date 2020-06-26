@@ -24,7 +24,7 @@ HelloWorld().bePrint("hello").bePrint(" ").bePrint("world!\n")
 
 ### Actor-Model Programming
 
-Flynn grafts Actor-Model programming onto Swift, providing a new level of safety and performance to your Swift code.  Here's what you need to know:
+Flynn grafts Actor-Model programming onto Swift, providing a new level of safety and performance to your concurrent Swift code.  Here's what you need to know:
 
 #### Actors are concurrency safe Swift classes
 
@@ -36,7 +36,7 @@ Calling a behavior on an actor will always execute asynchronously from the persp
 
 #### Actors run cooperatively
 
-Using Flynn you can easily have millions of actors, all executing concurrently in their safe, synchronous walled enviroments. To accomplish this, Flynn creates a scheduler thread per physical CPU core available on the host device. Actors which have work to do (ie behavior calls to process) will be scheduled and run on the scheduler threads. While an actors is running, no other actor can run on that scheduler until it completes. As such, if you are running on a 6-core A12 CPU, then you will only ever have up to six actors running in parallel at one time. As such, you should avoid **blocking operations** in actors.
+Using Flynn you can easily have millions of actors, all executing concurrently in their safe, synchronous walled enviroments. To accomplish this, Flynn creates a scheduler thread per physical CPU core available on the host device. Actors which have work to do (ie behavior calls to process) will be scheduled and run on the scheduler threads. While an actors is running, no other actor can run on that scheduler until it completes. As such, if you are running on a 6-core A12 CPU, then you will only ever have up to six actors executing in parallel at one time. As such, you should avoid long running or blocking operations in actors.
 
 #### Use FlynnLint
 
