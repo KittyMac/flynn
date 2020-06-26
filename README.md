@@ -1,6 +1,6 @@
 # Flynn
 
-<img align="left" src="meta/flynn.png">
+<img align="left" src="meta/flynn.png" width="180" >
 
 Write **fast**, **safe**, **efficient**, highly concurrent Swift with **Flynn**.
 
