@@ -7,6 +7,7 @@ let package = Package(
         .iOS(.v9)
     ],
     products: [
+		.library(name: "Pony", targets: ["Pony"]),
         .library(name: "Flynn", targets: ["Flynn"])
     ],
     dependencies: [
@@ -22,16 +23,6 @@ let package = Package(
             name: "Flynn",
             dependencies: [
 				"Pony"
-            ]
-        ),
-        .testTarget(
-            name: "FlynnTests",
-            dependencies: [
-                "Flynn",
-				"Pony"
-            ],
-            exclude: [
-                "Resources"
             ]
         )
     ]

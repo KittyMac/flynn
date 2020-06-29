@@ -7,17 +7,19 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "ponyrt.h"
+
+#ifdef PLATFORM_IS_APPLE
+
 #include <unistd.h>
 
 #include "cpu.h"
 #include "pool.h"
 
-#ifdef PLATFORM_IS_APPLE
 #undef id
 #include <mach/mach.h>
 #include <mach/thread_policy.h>
 #include <mach/mach_time.h>
-#endif
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
@@ -38,7 +40,6 @@
 	#define CTL_HW 6 
 #endif
 
-#ifdef PLATFORM_IS_APPLE
 static uint32_t get_sys_info(int type_specifier, const char* name, uint32_t default_value) {
     size_t size = 0;
     uint32_t result = default_value;
@@ -67,7 +68,6 @@ static uint32_t get_sys_info_by_name(const char* type_specifier, uint32_t defaul
     }
     return result;
 }
-#endif
 
 static uint32_t hw_core_count;
 static uint32_t hw_cpu_count;
@@ -77,21 +77,6 @@ static uint32_t hw_p_core_count = 0;
 
 void ponyint_cpu_init()
 {
-#ifdef PLATFORM_IS_LINUX
-    unsigned int eax=11,ebx=0,ecx=1,edx=0;
-
-    asm volatile("cpuid"
-            : "=a" (eax),
-              "=b" (ebx),
-              "=c" (ecx),
-              "=d" (edx)
-            : "0" (eax), "2" (ecx)
-            : );
-
-    printf("Cores: %d\nThreads: %d\nActual thread: %d\n",eax,ebx,edx);
-#endif
-    
-#ifdef PLATFORM_IS_APPLE
     hw_core_count = get_sys_info_by_name("hw.physicalcpu", 1);
     hw_cpu_count = hw_core_count / get_sys_info_by_name("machdep.cpu.core_count", 1);
     
@@ -120,7 +105,6 @@ void ponyint_cpu_init()
         hw_e_core_count = hw_core_count / 2;
         hw_p_core_count = hw_core_count - hw_e_core_count;
     }
-#endif
     
     if (hw_e_core_count == 0) {
         hw_e_core_count = 1;
@@ -164,7 +148,6 @@ void ponyint_cpu_relax()
 
 uint64_t ponyint_cpu_tick()
 {
-#ifdef PLATFORM_IS_APPLE
     static mach_timebase_info_data_t info;
     static bool mach_timebase_init = false;
     
@@ -174,10 +157,6 @@ uint64_t ponyint_cpu_tick()
     }
     
     return mach_absolute_time () * info.numer / info.denom;
-#endif
-
-#ifdef PLATFORM_IS_LINUX
-	// TODO: linux
-    return 0;
-#endif
 }
+
+#endif

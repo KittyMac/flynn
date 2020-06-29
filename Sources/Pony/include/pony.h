@@ -10,6 +10,7 @@
 #ifndef pony_h
 #define pony_h
 
+#include <Foundation/Foundation.h>
 #include <stdbool.h>
 
 // This header should contain only the minimum needed to communicate with Swift

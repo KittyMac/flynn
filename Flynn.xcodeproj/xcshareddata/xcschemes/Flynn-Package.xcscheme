@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Flynn::Flynn"
-               BuildableName = "Flynn.framework"
-               BlueprintName = "Flynn"
+               BlueprintIdentifier = "Flynn::Pony"
+               BuildableName = "Pony.framework"
+               BlueprintName = "Pony"
                ReferencedContainer = "container:Flynn.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,16 +28,16 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Flynn::Pony"
-               BuildableName = "Pony.framework"
-               BlueprintName = "Pony"
+               BlueprintIdentifier = "Flynn::Flynn"
+               BuildableName = "Flynn.framework"
+               BlueprintName = "Flynn"
                ReferencedContainer = "container:Flynn.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -55,7 +55,7 @@
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
