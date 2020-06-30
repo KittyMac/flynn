@@ -30,14 +30,7 @@ static void set_flag(pony_actor_t* actor, uint8_t flag)
     uint8_t flags = atomic_load_explicit(&actor->flags, memory_order_relaxed);
     atomic_store_explicit(&actor->flags, flags | flag, memory_order_relaxed);
 }
-/*
-static void unset_flag(pony_actor_t* actor, uint8_t flag)
-{
-    uint8_t flags = atomic_load_explicit(&actor->flags, memory_order_relaxed);
-    atomic_store_explicit(&actor->flags, flags & (uint8_t)~flag,
-                          memory_order_relaxed);
-}
-*/
+
 bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
 {
     pony_msg_t* msg;
@@ -188,14 +181,6 @@ void ponyint_actor_destroy(pony_actor_t* actor)
     ponyint_messageq_destroy(&actor->q);
     
     int32_t typeSize = sizeof(actor);
-    
-    // Note: While the memset to 0 is not strictly necessary, there were quite
-    // a few "access the actor after it was deleted" bugs going by
-    // undetected because the contents of the memory just hadn't been
-    // changed yet.  Leaving this code in as a reminder to help hunt
-    // down such crash bugs in the future.
-    //memset(actor, 0, typeSize);
-    
     ponyint_pool_free_size(typeSize, actor);
 }
 
@@ -254,11 +239,6 @@ pony_msg_t* pony_alloc_msg(uint32_t index, uint32_t msgId)
     return msg;
 }
 
-pony_msg_t* pony_alloc_msg_size(size_t size, uint32_t msgId)
-{
-    return pony_alloc_msg((uint32_t)ponyint_pool_index(size), msgId);
-}
-
 void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)
 {
     // The function takes a prebuilt chain instead of varargs because the latter
@@ -268,13 +248,6 @@ void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t
         ponyint_sched_add(ctx, to);
     }
 }
-
-void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId)
-{
-    pony_msg_t* m = pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_t)), msgId);
-    pony_sendv(ctx, to, m, m);
-}
-
 
 
 void pony_send_fast_block0(pony_ctx_t* ctx, pony_actor_t* to, FastBlockCallback0 p)
@@ -365,27 +338,3 @@ void pony_send_fast_block10(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1,
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
-void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p)
-{
-    pony_msgp_t* m = (pony_msgp_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgp_t)), msgId);
-    m->p = p;
-    
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_sendpp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p1, void* p2)
-{
-    pony_msgpp_t* m = (pony_msgpp_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgpp_t)), msgId);
-    m->p1 = p1;
-    m->p2 = p2;
-    
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_sendi(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, intptr_t i)
-{
-    pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgi_t)), msgId);
-    m->i = i;
-    
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}

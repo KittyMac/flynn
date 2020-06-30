@@ -67,12 +67,4 @@ void pony_send_fast_block8(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, 
 void pony_send_fast_block9(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, FastBlockCallback9 p);
 void pony_send_fast_block10(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, FastBlockCallback10 p);
 
-void pony_sendp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p);
-
-void pony_send(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId);
-
-void pony_sendpp(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, void* p1, void* p2);
-
-void pony_sendi(pony_ctx_t* ctx, pony_actor_t* to, uint32_t msgId, intptr_t i);
-
 #endif /* actor_h */

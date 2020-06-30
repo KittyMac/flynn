@@ -35,27 +35,6 @@ static bool messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
     return was_empty;
 }
 
-static bool messageq_push_single(messageq_t* q,
-                                 pony_msg_t* first, pony_msg_t* last)
-{
-    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
-    
-    atomic_store_explicit(&last->next, NULL, memory_order_relaxed);
-    
-    // If we have a single producer, the swap of the head need not be atomic RMW.
-    pony_msg_t* prev = atomic_load_explicit(&q->head, memory_order_relaxed);
-    atomic_store_explicit(&q->head, last, memory_order_relaxed);
-    
-    bool was_empty = ((uintptr_t)prev & 1) != 0;
-    prev = (pony_msg_t*)((uintptr_t)prev & ~(uintptr_t)1);
-    
-    // If we have a single producer, the fence can be replaced with a store
-    // release on prev->next.
-    atomic_store_explicit(&prev->next, first, memory_order_release);
-        
-    return was_empty;
-}
-
 void ponyint_messageq_init(messageq_t* q)
 {
     pony_msg_t* stub = POOL_ALLOC(pony_msg_t);
@@ -83,16 +62,6 @@ void ponyint_messageq_destroy(messageq_t* q)
 bool ponyint_actor_messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
 {
     return messageq_push(q, first, last);
-}
-
-bool ponyint_thread_messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
-{
-    return messageq_push(q, first, last);
-}
-
-bool ponyint_thread_messageq_push_single(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
-{
-    return messageq_push_single(q, first, last);
 }
 
 pony_msg_t* ponyint_actor_messageq_pop(messageq_t* q)

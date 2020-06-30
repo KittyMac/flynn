@@ -473,9 +473,3 @@ pony_ctx_t* pony_ctx()
     }
     return &this_scheduler->ctx;
 }
-
-// Return the scheduler's index
-int32_t pony_sched_index(pony_ctx_t* ctx)
-{
-    return ctx->scheduler->index;
-}
