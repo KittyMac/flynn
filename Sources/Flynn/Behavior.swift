@@ -48,70 +48,106 @@ private func checkReferenceTypesToBehavior(_ args: BehaviorArgs) {
     }
 }
 
-// Note: Ideally, we could use ChainableBehavior<T: Actor>, but there appears to
-// be a bug in Swift which causes Actor to not be recognized when used with a protocol
+private struct FastBlockCalls {
+    private var fastBlock0Ptr: UnsafeMutableRawPointer
+    private var fastBlock1Ptr: UnsafeMutableRawPointer
+    private var fastBlock2Ptr: UnsafeMutableRawPointer
+    private var fastBlock3Ptr: UnsafeMutableRawPointer
+    private var fastBlock4Ptr: UnsafeMutableRawPointer
+    private var fastBlock5Ptr: UnsafeMutableRawPointer
+    private var fastBlock6Ptr: UnsafeMutableRawPointer
+    private var fastBlock7Ptr: UnsafeMutableRawPointer
+    private var fastBlock8Ptr: UnsafeMutableRawPointer
+    private var fastBlock9Ptr: UnsafeMutableRawPointer
+    private var fastBlock10Ptr: UnsafeMutableRawPointer
+
+    private var fastBlock0: FastBlockCallback0
+    private var fastBlock1: FastBlockCallback1
+    private var fastBlock2: FastBlockCallback2
+    private var fastBlock3: FastBlockCallback3
+    private var fastBlock4: FastBlockCallback4
+    private var fastBlock5: FastBlockCallback5
+    private var fastBlock6: FastBlockCallback6
+    private var fastBlock7: FastBlockCallback7
+    private var fastBlock8: FastBlockCallback8
+    private var fastBlock9: FastBlockCallback9
+    private var fastBlock10: FastBlockCallback10
+
+    init(_ block: @escaping BehaviorBlock) {
+        fastBlock0 = { () in block([]) }
+        fastBlock1 = { (arg0) in block([arg0!]) }
+        fastBlock2 = { (arg0, arg1) in block([arg0!, arg1!]) }
+        fastBlock3 = { (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) }
+        fastBlock4 = { (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) }
+        fastBlock5 = { (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) }
+        fastBlock6 = { (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) }
+        fastBlock7 = { (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) }
+        fastBlock8 = { (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) }
+        fastBlock9 = { (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) }
+        fastBlock10 = { (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) }
+
+        fastBlock0Ptr = pony_register_fast_block0(fastBlock0)
+        fastBlock1Ptr = pony_register_fast_block1(fastBlock1)
+        fastBlock2Ptr = pony_register_fast_block2(fastBlock2)
+        fastBlock3Ptr = pony_register_fast_block3(fastBlock3)
+        fastBlock4Ptr = pony_register_fast_block4(fastBlock4)
+        fastBlock5Ptr = pony_register_fast_block5(fastBlock5)
+        fastBlock6Ptr = pony_register_fast_block6(fastBlock6)
+        fastBlock7Ptr = pony_register_fast_block7(fastBlock7)
+        fastBlock8Ptr = pony_register_fast_block8(fastBlock8)
+        fastBlock9Ptr = pony_register_fast_block9(fastBlock9)
+        fastBlock10Ptr = pony_register_fast_block10(fastBlock10)
+    }
+
+    func dealloc() {
+        pony_unregister_fast_block(fastBlock0Ptr)
+        pony_unregister_fast_block(fastBlock1Ptr)
+        pony_unregister_fast_block(fastBlock2Ptr)
+        pony_unregister_fast_block(fastBlock3Ptr)
+        pony_unregister_fast_block(fastBlock4Ptr)
+        pony_unregister_fast_block(fastBlock5Ptr)
+        pony_unregister_fast_block(fastBlock6Ptr)
+        pony_unregister_fast_block(fastBlock7Ptr)
+        pony_unregister_fast_block(fastBlock8Ptr)
+        pony_unregister_fast_block(fastBlock9Ptr)
+        pony_unregister_fast_block(fastBlock10Ptr)
+    }
+
+    func call(_ actor: Actor, _ args: BehaviorArgs) {
+        switch args.count {
+        case 1: pony_actor_fast_dispatch1(actor.unsafePonyActor, args[0], fastBlock1Ptr)
+        case 2: pony_actor_fast_dispatch2(actor.unsafePonyActor, args[0], args[1], fastBlock2Ptr)
+        case 3: pony_actor_fast_dispatch3(actor.unsafePonyActor, args[0], args[1], args[2], fastBlock3Ptr)
+        case 4: pony_actor_fast_dispatch4(actor.unsafePonyActor, args[0], args[1], args[2], args[3], fastBlock4Ptr)
+        case 5: pony_actor_fast_dispatch5(actor.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], fastBlock5Ptr)
+        case 6: pony_actor_fast_dispatch6(actor.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], fastBlock6Ptr)
+        case 7: pony_actor_fast_dispatch7(actor.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], fastBlock7Ptr)
+        case 8: pony_actor_fast_dispatch8(actor.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], fastBlock8Ptr)
+        case 9: pony_actor_fast_dispatch9(actor.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], fastBlock9Ptr)
+        case 10: pony_actor_fast_dispatch10(actor.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], fastBlock10Ptr)
+        default: pony_actor_fast_dispatch0(actor.unsafePonyActor, fastBlock0Ptr)
+        }
+    }
+}
+
 @dynamicCallable
 public class ChainableBehavior<T: Actor> {
-    private let block: BehaviorBlock
     private weak var actor: T?
-    private var fastBlock0: UnsafeMutableRawPointer
-    private var fastBlock1: UnsafeMutableRawPointer
-    private var fastBlock2: UnsafeMutableRawPointer
-    private var fastBlock3: UnsafeMutableRawPointer
-    private var fastBlock4: UnsafeMutableRawPointer
-    private var fastBlock5: UnsafeMutableRawPointer
-    private var fastBlock6: UnsafeMutableRawPointer
-    private var fastBlock7: UnsafeMutableRawPointer
-    private var fastBlock8: UnsafeMutableRawPointer
-    private var fastBlock9: UnsafeMutableRawPointer
-    private var fastBlock10: UnsafeMutableRawPointer
+    private let fastBlocks: FastBlockCalls
     private let checkForUnsafeArguments = Flynn.checkForUnsafeArguments
 
-    // Note: fastBlock will leak because structs in swift do not have deinit!
     public init(_ actor: T, _ block: @escaping BehaviorBlock) {
         self.actor = actor
-        self.block = block
-        fastBlock0 = pony_register_fast_block0({ () in block([]) })
-        fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
-        fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
-        fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
-        fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
-        fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
-        fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
-        fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
-        fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
-        fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
-        fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
+        self.fastBlocks = FastBlockCalls(block)
     }
 
     public init(_ block: @escaping BehaviorBlock) {
         self.actor = nil
-        self.block = block
-        fastBlock0 = pony_register_fast_block0({ () in block([]) })
-        fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
-        fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
-        fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
-        fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
-        fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
-        fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
-        fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
-        fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
-        fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
-        fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
+        self.fastBlocks = FastBlockCalls(block)
     }
 
     deinit {
-        pony_unregister_fast_block(fastBlock0)
-        pony_unregister_fast_block(fastBlock1)
-        pony_unregister_fast_block(fastBlock2)
-        pony_unregister_fast_block(fastBlock3)
-        pony_unregister_fast_block(fastBlock4)
-        pony_unregister_fast_block(fastBlock5)
-        pony_unregister_fast_block(fastBlock6)
-        pony_unregister_fast_block(fastBlock7)
-        pony_unregister_fast_block(fastBlock8)
-        pony_unregister_fast_block(fastBlock9)
-        pony_unregister_fast_block(fastBlock10)
+        fastBlocks.dealloc()
     }
 
     public func setActor(_ actor: T) {
@@ -122,105 +158,35 @@ public class ChainableBehavior<T: Actor> {
         if checkForUnsafeArguments {
             checkReferenceTypesToBehavior(args)
         }
-
-        switch args.count {
-        case 1: pony_actor_fast_dispatch1(actor!.unsafePonyActor, args[0], fastBlock1)
-        case 2: pony_actor_fast_dispatch2(actor!.unsafePonyActor, args[0], args[1], fastBlock2)
-        case 3: pony_actor_fast_dispatch3(actor!.unsafePonyActor, args[0], args[1], args[2], fastBlock3)
-        case 4: pony_actor_fast_dispatch4(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], fastBlock4)
-        case 5: pony_actor_fast_dispatch5(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], fastBlock5)
-        case 6: pony_actor_fast_dispatch6(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], fastBlock6)
-        case 7: pony_actor_fast_dispatch7(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], fastBlock7)
-        case 8: pony_actor_fast_dispatch8(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], fastBlock8)
-        case 9: pony_actor_fast_dispatch9(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], fastBlock9)
-        case 10: pony_actor_fast_dispatch10(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], fastBlock10)
-        default: pony_actor_fast_dispatch0(actor!.unsafePonyActor, fastBlock0)
-        }
-
+        fastBlocks.call(actor!, args)
         return actor!
     }
 
     @discardableResult public func dynamicallyFlow(withArguments args: BehaviorArgs) -> T {
-        switch args.count {
-        case 1: pony_actor_fast_dispatch1(actor!.unsafePonyActor, args[0], fastBlock1)
-        case 2: pony_actor_fast_dispatch2(actor!.unsafePonyActor, args[0], args[1], fastBlock2)
-        case 3: pony_actor_fast_dispatch3(actor!.unsafePonyActor, args[0], args[1], args[2], fastBlock3)
-        case 4: pony_actor_fast_dispatch4(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], fastBlock4)
-        case 5: pony_actor_fast_dispatch5(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], fastBlock5)
-        case 6: pony_actor_fast_dispatch6(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], fastBlock6)
-        case 7: pony_actor_fast_dispatch7(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], fastBlock7)
-        case 8: pony_actor_fast_dispatch8(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], fastBlock8)
-        case 9: pony_actor_fast_dispatch9(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], fastBlock9)
-        case 10: pony_actor_fast_dispatch10(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], fastBlock10)
-        default: pony_actor_fast_dispatch0(actor!.unsafePonyActor, fastBlock0)
-        }
-
+        fastBlocks.call(actor!, args)
         return actor!
     }
 }
 
 @dynamicCallable
 public class Behavior {
-    private let block: BehaviorBlock
     private weak var actor: Actor?
-    private var fastBlock0: UnsafeMutableRawPointer
-    private var fastBlock1: UnsafeMutableRawPointer
-    private var fastBlock2: UnsafeMutableRawPointer
-    private var fastBlock3: UnsafeMutableRawPointer
-    private var fastBlock4: UnsafeMutableRawPointer
-    private var fastBlock5: UnsafeMutableRawPointer
-    private var fastBlock6: UnsafeMutableRawPointer
-    private var fastBlock7: UnsafeMutableRawPointer
-    private var fastBlock8: UnsafeMutableRawPointer
-    private var fastBlock9: UnsafeMutableRawPointer
-    private var fastBlock10: UnsafeMutableRawPointer
+    private let fastBlocks: FastBlockCalls
     private let checkForUnsafeArguments = Flynn.checkForUnsafeArguments
 
     // Note: _fastBlock will leak because structs in swift do not have deinit!
     public init(_ actor: Actor, _ block: @escaping BehaviorBlock) {
         self.actor = actor
-        self.block = block
-        fastBlock0 = pony_register_fast_block0({ () in block([]) })
-        fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
-        fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
-        fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
-        fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
-        fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
-        fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
-        fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
-        fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
-        fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
-        fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
+        self.fastBlocks = FastBlockCalls(block)
     }
 
     public init(_ block: @escaping BehaviorBlock) {
         self.actor = nil
-        self.block = block
-        fastBlock0 = pony_register_fast_block0({ () in block([]) })
-        fastBlock1 = pony_register_fast_block1({ (arg0) in block([arg0!]) })
-        fastBlock2 = pony_register_fast_block2({ (arg0, arg1) in block([arg0!, arg1!]) })
-        fastBlock3 = pony_register_fast_block3({ (arg0, arg1, arg2) in block([arg0!, arg1!, arg2!]) })
-        fastBlock4 = pony_register_fast_block4({ (arg0, arg1, arg2, arg3) in block([arg0!, arg1!, arg2!, arg3!]) })
-        fastBlock5 = pony_register_fast_block5({ (arg0, arg1, arg2, arg3, arg4) in block([arg0!, arg1!, arg2!, arg3!, arg4!]) })
-        fastBlock6 = pony_register_fast_block6({ (arg0, arg1, arg2, arg3, arg4, arg5) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!]) })
-        fastBlock7 = pony_register_fast_block7({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!]) })
-        fastBlock8 = pony_register_fast_block8({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!]) })
-        fastBlock9 = pony_register_fast_block9({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!]) })
-        fastBlock10 = pony_register_fast_block10({ (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) in block([arg0!, arg1!, arg2!, arg3!, arg4!, arg5!, arg6!, arg7!, arg8!, arg9!]) })
+        self.fastBlocks = FastBlockCalls(block)
     }
 
     deinit {
-        pony_unregister_fast_block(fastBlock0)
-        pony_unregister_fast_block(fastBlock1)
-        pony_unregister_fast_block(fastBlock2)
-        pony_unregister_fast_block(fastBlock3)
-        pony_unregister_fast_block(fastBlock4)
-        pony_unregister_fast_block(fastBlock5)
-        pony_unregister_fast_block(fastBlock6)
-        pony_unregister_fast_block(fastBlock7)
-        pony_unregister_fast_block(fastBlock8)
-        pony_unregister_fast_block(fastBlock9)
-        pony_unregister_fast_block(fastBlock10)
+        fastBlocks.dealloc()
     }
 
     public func setActor(_ actor: Actor) {
@@ -231,35 +197,10 @@ public class Behavior {
         if checkForUnsafeArguments {
             checkReferenceTypesToBehavior(args)
         }
-
-        switch args.count {
-        case 1: pony_actor_fast_dispatch1(actor!.unsafePonyActor, args[0], fastBlock1)
-        case 2: pony_actor_fast_dispatch2(actor!.unsafePonyActor, args[0], args[1], fastBlock2)
-        case 3: pony_actor_fast_dispatch3(actor!.unsafePonyActor, args[0], args[1], args[2], fastBlock3)
-        case 4: pony_actor_fast_dispatch4(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], fastBlock4)
-        case 5: pony_actor_fast_dispatch5(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], fastBlock5)
-        case 6: pony_actor_fast_dispatch6(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], fastBlock6)
-        case 7: pony_actor_fast_dispatch7(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], fastBlock7)
-        case 8: pony_actor_fast_dispatch8(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], fastBlock8)
-        case 9: pony_actor_fast_dispatch9(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], fastBlock9)
-        case 10: pony_actor_fast_dispatch10(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], fastBlock10)
-        default: pony_actor_fast_dispatch0(actor!.unsafePonyActor, fastBlock0)
-        }
+        fastBlocks.call(actor!, args)
     }
 
     public func dynamicallyFlow(withArguments args: BehaviorArgs) {
-        switch args.count {
-        case 1: pony_actor_fast_dispatch1(actor!.unsafePonyActor, args[0], fastBlock1)
-        case 2: pony_actor_fast_dispatch2(actor!.unsafePonyActor, args[0], args[1], fastBlock2)
-        case 3: pony_actor_fast_dispatch3(actor!.unsafePonyActor, args[0], args[1], args[2], fastBlock3)
-        case 4: pony_actor_fast_dispatch4(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], fastBlock4)
-        case 5: pony_actor_fast_dispatch5(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], fastBlock5)
-        case 6: pony_actor_fast_dispatch6(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], fastBlock6)
-        case 7: pony_actor_fast_dispatch7(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], fastBlock7)
-        case 8: pony_actor_fast_dispatch8(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], fastBlock8)
-        case 9: pony_actor_fast_dispatch9(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], fastBlock9)
-        case 10: pony_actor_fast_dispatch10(actor!.unsafePonyActor, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], fastBlock10)
-        default: pony_actor_fast_dispatch0(actor!.unsafePonyActor, fastBlock0)
-        }
+        fastBlocks.call(actor!, args)
     }
 }
