@@ -1,7 +1,10 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#define _GNU_SOURCE
+
 #include "threads.h"
 #include "ponyrt.h"
+
 #include <pthread.h>
 #include <sched.h>
 #include <sys/time.h>
