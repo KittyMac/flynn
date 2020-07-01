@@ -9,6 +9,8 @@
 import Foundation
 import Pony
 
+#if PLATFORM_SUPPORTS_PONYRT
+
 open class Actor {
 
     public enum CoreAffinity: Int32 {
@@ -40,14 +42,22 @@ open class Actor {
     }
 
     // MARK: - Functions
-    public func unsafeWait(_ minMsgs: Int32) {
+    public func unsafeWait(_ minMsgs: Int32 = 0) {
         // Pause while waiting for this actor's message queue to reach 0
         pony_actor_wait(minMsgs, unsafePonyActor)
     }
 
-    public func safeYield() {
+    public func unsafeYield() {
         // Flag this actor yield the scheduler after this message
         pony_actor_yield(unsafePonyActor)
+    }
+
+    public func unsafeShouldWaitOnActors(_ actors: [Actor]) -> Bool {
+        var ponyActors: [UnsafeMutableRawPointer] = []
+        for actor in actors {
+            ponyActors.append(actor.unsafePonyActor)
+        }
+        return pony_actors_should_wait(0, &ponyActors, Int32(ponyActors.count))
     }
 
     // While not 100% accurate, it can be helpful to know how large the
@@ -69,5 +79,8 @@ open class Actor {
 
     deinit {
         pony_actor_destroy(unsafePonyActor)
+        //print("deinit - Actor")
     }
 }
+
+#endif

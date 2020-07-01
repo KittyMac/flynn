@@ -6,6 +6,10 @@
 //  Copyright © 2020 Rocco Bowling. All rights reserved.
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
+
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #define _GNU_SOURCE
 
 #include "ponyrt.h"
@@ -158,5 +162,7 @@ uint64_t ponyint_cpu_tick()
     // TODO: linux
     return 0;
 }
+
+#endif
 
 #endif

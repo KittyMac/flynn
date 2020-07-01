@@ -1,5 +1,8 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #ifndef PLATFORM_THREADS_H
 #define PLATFORM_THREADS_H
 
@@ -38,5 +41,7 @@ void ponyint_thread_detach(pony_thread_id_t thread);
 pony_thread_id_t ponyint_thread_self(void);
 
 void ponyint_thead_setname(int schedID, int schedAffinity);
+
+#endif
 
 #endif

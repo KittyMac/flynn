@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #include "ponyrt.h"
 #include "messageq.h"
 #include "pool.h"
@@ -122,3 +125,5 @@ bool ponyint_messageq_markempty(messageq_t* q)
     }
     return empty;
 }
+
+#endif

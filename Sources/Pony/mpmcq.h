@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #ifndef mpmcq_h
 #define mpmcq_h
 
@@ -37,3 +40,5 @@ void ponyint_mpmcq_push_single(mpmcq_t* q, void* data);
 void* ponyint_mpmcq_pop(mpmcq_t* q);
 
 #endif /* mpmcq_h */
+
+#endif

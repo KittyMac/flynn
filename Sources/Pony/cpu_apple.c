@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #include "ponyrt.h"
 
 #ifdef PLATFORM_IS_APPLE
@@ -158,5 +161,7 @@ uint64_t ponyint_cpu_tick()
     
     return mach_absolute_time () * info.numer / info.denom;
 }
+
+#endif
 
 #endif

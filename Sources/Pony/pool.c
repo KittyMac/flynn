@@ -1,5 +1,8 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #define PONY_WANT_ATOMIC_DEFS
 
 #include "ponyrt.h"
@@ -916,3 +919,5 @@ size_t ponyint_pool_adjust_size(size_t size)
     
     return size;
 }
+
+#endif

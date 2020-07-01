@@ -30,7 +30,6 @@ public class FlowableState {
     fileprivate var numTargets: Int = 0
     fileprivate var flowTarget: Flowable?
     fileprivate var flowTargets: [Flowable] = []
-    fileprivate var ponyActorTargets: [UnsafeMutableRawPointer] = []
     fileprivate var poolIdx: Int = 0
 
     private func _retryEndFlowToNextTarget() {
@@ -40,9 +39,9 @@ public class FlowableState {
         case 1:
             flowTarget?.beFlow.dynamicallyFlow(withArguments: [])
         default:
-            if pony_actors_should_wait(0, &ponyActorTargets, Int32(numTargets)) {
+            if actor.unsafeShouldWaitOnActors(flowTargets) {
                 beRetryEndFlowToNextTarget()
-                pony_actor_yield(actor.unsafePonyActor)
+                actor.unsafeYield()
                 return
             }
             poolIdx = (poolIdx + 1) % numTargets
@@ -59,7 +58,6 @@ public class FlowableState {
         let localTarget: Flowable = args[x: 0]
         self.flowTarget = localTarget
         self.flowTargets.append(localTarget)
-        self.ponyActorTargets.append(localTarget.unsafePonyActor)
         self.numTargets = self.flowTargets.count
     }
 
@@ -68,9 +66,6 @@ public class FlowableState {
         let localTargets: [Flowable] = args[x: 0]
         self.flowTarget = localTargets.first
         self.flowTargets.append(contentsOf: localTargets)
-        for target in localTargets {
-            self.ponyActorTargets.append(target.unsafePonyActor)
-        }
         self.numTargets = self.flowTargets.count
     }
 
@@ -112,9 +107,9 @@ public extension Flowable {
             safeFlowable.flowTarget?.beFlow.dynamicallyFlow(withArguments: args)
         default:
             if args.isEmpty {
-                if pony_actors_should_wait(0, &safeFlowable.ponyActorTargets, Int32(safeFlowable.numTargets)) {
+                if unsafeShouldWaitOnActors(safeFlowable.flowTargets) {
                     safeFlowable.beRetryEndFlowToNextTarget()
-                    safeYield()
+                    unsafeYield()
                     return
                 }
             }

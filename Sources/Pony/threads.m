@@ -1,5 +1,8 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #define _GNU_SOURCE
 
 #include "threads.h"
@@ -88,3 +91,5 @@ void ponyint_thead_setname(int schedID, int schedAffinity) {
     pthread_setname_np(pthread_self(), thread_name);
 #endif
 }
+
+#endif

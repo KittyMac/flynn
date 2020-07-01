@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #ifndef sched_cpu_h
 #define sched_cpu_h
 
@@ -29,5 +32,7 @@ void ponyint_cpu_sleep(int ns);
 void ponyint_cpu_relax(void);
 
 uint64_t ponyint_cpu_tick(void);
+
+#endif
 
 #endif

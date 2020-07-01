@@ -30,12 +30,11 @@ open class Flynn {
 
     public static var cores: Int {
         startup()
-        return Int(pony_core_count())
-    }
-
-    public static var cpus: Int {
-        startup()
+#if PLATFORM_SUPPORTS_PONYRT
         return Int(pony_cpu_count())
+#else
+        return ProcessInfo.processInfo.processorCount
+#endif
     }
 
 }

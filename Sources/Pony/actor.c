@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #define PONY_WANT_ATOMIC_DEFS
 
 #include "actor.h"
@@ -338,3 +341,4 @@ void pony_send_fast_block10(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1,
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
+#endif

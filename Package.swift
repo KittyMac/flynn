@@ -1,6 +1,8 @@
 // swift-tools-version:5.0
 import PackageDescription
 
+let supportsPonyRT: BuildSettingCondition = .when(platforms: [.iOS, .macOS, .tvOS, .watchOS])
+
 let package = Package(
     name: "Flynn",
     platforms: [
@@ -16,14 +18,37 @@ let package = Package(
         .target(
             name: "Pony",
 			cSettings: [
-			        .headerSearchPath("Sources/PonyRT")
-			    ]
+				.define("PLATFORM_SUPPORTS_PONYRT", supportsPonyRT)
+		    ],
+			cxxSettings: [
+				.define("PLATFORM_SUPPORTS_PONYRT", supportsPonyRT)
+		    ]
         ),
         .target(
             name: "Flynn",
             dependencies: [
 				"Pony"
+            ],
+			cSettings: [
+				.define("PLATFORM_SUPPORTS_PONYRT", supportsPonyRT)
+		    ],
+			cxxSettings: [
+				.define("PLATFORM_SUPPORTS_PONYRT", supportsPonyRT)
+		    ],
+			swiftSettings: [
+				.define("PLATFORM_SUPPORTS_PONYRT", supportsPonyRT)
+			]
+        ),
+        .testTarget(
+            name: "FlynnTests",
+            dependencies: [
+                "Flynn",
+				"Pony"
+            ],
+            exclude: [
+                "Resources"
             ]
         )
+
     ]
 )

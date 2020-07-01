@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #define PONY_WANT_ATOMIC_DEFS
 
 #include "scheduler.h"
@@ -473,3 +476,5 @@ pony_ctx_t* pony_ctx()
     }
     return &this_scheduler->ctx;
 }
+
+#endif

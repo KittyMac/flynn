@@ -7,11 +7,16 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+
 #ifndef pony_h
 #define pony_h
 
-#include <Foundation/Foundation.h>
 #include <stdbool.h>
+
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
+#include <Foundation/Foundation.h>
 
 // This header should contain only the minimum needed to communicate with Swift
 typedef void (^BlockCallback)();
@@ -27,15 +32,6 @@ typedef void (^FastBlockCallback8)(id, id, id, id, id, id, id, id);
 typedef void (^FastBlockCallback9)(id, id, id, id, id, id, id, id, id);
 typedef void (^FastBlockCallback10)(id, id, id, id, id, id, id, id, id, id);
 
-// TODO: should we make this prettier for the swift side?
-// Color ColorCreateWithCMYK(float c, float m, float y, float k) CF_SWIFT_NAME(Color.init(c:m:y:k:));
-
-bool pony_startup(void);
-void pony_shutdown(void);
-
-int pony_core_count();
-int pony_cpu_count();
-
 void * pony_register_fast_block0(FastBlockCallback0 callback);
 void * pony_register_fast_block1(FastBlockCallback1 callback);
 void * pony_register_fast_block2(FastBlockCallback2 callback);
@@ -48,11 +44,6 @@ void * pony_register_fast_block8(FastBlockCallback8 callback);
 void * pony_register_fast_block9(FastBlockCallback9 callback);
 void * pony_register_fast_block10(FastBlockCallback10 callback);
 
-void pony_unregister_fast_block(void * callback);
-
-void * pony_actor_create();
-void pony_actor_attach(void * actor, id swiftActor);
-
 void pony_actor_fast_dispatch0(void * actor, void * callback);
 void pony_actor_fast_dispatch1(void * actor, id arg0, void * callback);
 void pony_actor_fast_dispatch2(void * actor, id arg0, id arg1, void * callback);
@@ -64,6 +55,21 @@ void pony_actor_fast_dispatch7(void * actor, id arg0, id arg1, id arg2, id arg3,
 void pony_actor_fast_dispatch8(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, void * callback);
 void pony_actor_fast_dispatch9(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, void * callback);
 void pony_actor_fast_dispatch10(void * actor, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, void * callback);
+
+#endif
+
+bool pony_startup(void);
+void pony_shutdown(void);
+
+int pony_core_count();
+int pony_cpu_count();
+
+
+
+void pony_unregister_fast_block(void * callback);
+
+void * pony_actor_create();
+void pony_actor_attach(void * actor, id swiftActor);
 
 void pony_actor_setpriority(void * actor, int priority);
 int pony_actor_getpriority(void * actor);

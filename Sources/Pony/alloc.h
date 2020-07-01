@@ -1,5 +1,8 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #ifndef mem_alloc_h
 #define mem_alloc_h
 
@@ -31,5 +34,7 @@ void* ponyint_virt_alloc(size_t bytes);
  * ponyint_virt_alloc.
  */
 void ponyint_virt_free(void* p, size_t bytes);
+
+#endif
 
 #endif

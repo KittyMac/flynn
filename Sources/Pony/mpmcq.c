@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #define PONY_WANT_ATOMIC_DEFS
 
 #include "mpmcq.h"
@@ -156,4 +159,4 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
     return data;
 }
 
-
+#endif

@@ -1,5 +1,8 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #ifndef mem_pool_h
 #define mem_pool_h
 
@@ -68,5 +71,7 @@ ponyint_pool_free(POOL_INDEX(sizeof(TYPE)), VALUE)
 
 #define POOL_SIZE(INDEX) \
 ((size_t)1 << (POOL_MIN_BITS + INDEX))
+
+#endif
 
 #endif

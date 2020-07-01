@@ -1,5 +1,8 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #ifndef PONY_DETAIL_ATOMICS_H
 #define PONY_DETAIL_ATOMICS_H
 
@@ -245,6 +248,8 @@ __atomic_thread_fence(MO)
 
 #    undef PONY_ATOMIC_BUILTINS
 #  endif
+#endif
+
 #endif
 
 #endif

@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #ifndef sched_scheduler_h
 #define sched_scheduler_h
 
@@ -66,5 +69,7 @@ uint32_t ponyint_sched_cores(void);
 // Retrieves the global main thread context for scheduling
 // special actors on the inject queue.
 pony_ctx_t* ponyint_sched_get_inject_context(void);
+
+#endif
 
 #endif

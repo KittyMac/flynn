@@ -153,6 +153,7 @@ class FlynnTests: XCTestCase {
             }
 
             pipeline.beFlow()
+
             wait(for: [expectation], timeout: 30.0)
         }
     }
@@ -192,7 +193,7 @@ class FlynnTests: XCTestCase {
             } else {
                 pipeline.beFlow(2)
             }
-            pipeline.unsafeWait(10)
+            pipeline.unsafeWait(0)
         }
 
         pipeline.beFlow()
@@ -203,7 +204,7 @@ class FlynnTests: XCTestCase {
         let counter = Counter()
         for _ in 0..<50000 {
             counter.beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1)
-            counter.unsafeWait(100)
+            counter.unsafeWait()
         }
     }
 }

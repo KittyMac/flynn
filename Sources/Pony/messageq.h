@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #ifndef messageq_h
 #define messageq_h
 
@@ -37,3 +40,5 @@ pony_msg_t* ponyint_thread_messageq_pop(messageq_t* q);
 bool ponyint_messageq_markempty(messageq_t* q);
 
 #endif /* messageq_h */
+
+#endif

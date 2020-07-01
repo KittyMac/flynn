@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #ifndef actor_h
 #define actor_h
 
@@ -68,3 +71,5 @@ void pony_send_fast_block9(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, 
 void pony_send_fast_block10(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, FastBlockCallback10 p);
 
 #endif /* actor_h */
+
+#endif

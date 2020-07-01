@@ -7,6 +7,9 @@
 //
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
+#include "platform.h"
+#ifdef PLATFORM_SUPPORTS_PONYRT
+
 #include <stdlib.h>
 
 #include "ponyrt.h"
@@ -19,11 +22,6 @@
 #include "pool.h"
 
 static bool pony_is_inited = false;
-
-typedef struct {
-    messageq_t q;
-    uint64_t renderFrameNumber;
-} PonyActor;
 
 void * pony_register_fast_block0(FastBlockCallback0 callback) { return objc_retain((__bridge void *)callback); }
 void * pony_register_fast_block1(FastBlockCallback1 callback) { return objc_retain((__bridge void *)callback); }
@@ -215,3 +213,5 @@ int pony_actor_num_messages(void * actor) {
 void pony_actor_destroy(void * actor) {
     ponyint_destroy_actor(actor);
 }
+
+#endif
