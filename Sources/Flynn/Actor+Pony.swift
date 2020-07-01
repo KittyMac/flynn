@@ -7,9 +7,10 @@
 //
 
 import Foundation
-import Pony
 
 #if PLATFORM_SUPPORTS_PONYRT
+
+import Pony
 
 open class Actor {
 

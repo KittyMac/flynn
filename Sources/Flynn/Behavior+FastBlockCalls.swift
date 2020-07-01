@@ -10,9 +10,10 @@
 // swiftlint:disable line_length
 
 import Foundation
-import Pony
 
 #if PLATFORM_SUPPORTS_PONYRT
+
+import Pony
 
 struct FastBlockCalls {
     private var fastBlock0Ptr: UnsafeMutableRawPointer

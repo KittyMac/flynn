@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Pony
 
 infix operator |> : AssignmentPrecedence
 public func |> (left: Flowable, right: Flowable) -> Flowable {

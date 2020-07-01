@@ -9,7 +9,6 @@
 // swiftlint:disable force_cast
 
 import Foundation
-import Pony
 
 public typealias BehaviorArgs = [Any]
 

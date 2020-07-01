@@ -7,7 +7,10 @@
 //
 
 import Foundation
+
+#if PLATFORM_SUPPORTS_PONYRT
 import Pony
+#endif
 
 open class Flynn {
     internal static var ponyIsStarted: Bool = false
