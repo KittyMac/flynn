@@ -200,12 +200,6 @@ static pony_actor_t* steal(scheduler_t* sched)
         }
         if(scaling_sleep >= scaling_sleep_min) {
             ponyint_cpu_sleep(scaling_sleep);
-            if (autorelease_pool_is_dirty) {
-                //_objc_autoreleasePoolPrint();
-                objc_autoreleasePoolPop(autorelease_pool);
-                autorelease_pool = objc_autoreleasePoolPush();
-                autorelease_pool_is_dirty = false;
-            }
         }
         
         if (sched->terminate) {
@@ -298,6 +292,13 @@ static void run(scheduler_t* sched)
                 // We aren't rescheduling, so run the next actor. This may be NULL if our
                 // queue was empty.
                 actor = next;
+            }
+            
+            if (autorelease_pool_is_dirty) {
+                //_objc_autoreleasePoolPrint();
+                objc_autoreleasePoolPop(autorelease_pool);
+                autorelease_pool = objc_autoreleasePoolPush();
+                autorelease_pool_is_dirty = false;
             }
         } else if(sched->terminate) {
             break;
