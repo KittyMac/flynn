@@ -25,7 +25,11 @@ internal extension Actor {
 
     @discardableResult
     func unsafeAutorelease() -> Self {
+        #if os(Linux)
+        _ = Unmanaged.passUnretained(self).release()
+        #else
         _ = Unmanaged.passUnretained(self).autorelease()
+        #endif
         return self
     }
 }

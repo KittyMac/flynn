@@ -22,12 +22,16 @@ open class Flynn {
 #endif
 
     public class func startup() {
+#if PLATFORM_SUPPORTS_PONYRT
         pony_startup()
+#endif
         ponyIsStarted = true
     }
 
     public class func shutdown() {
+#if PLATFORM_SUPPORTS_PONYRT
         pony_shutdown()
+#endif
         ponyIsStarted = false
     }
 
