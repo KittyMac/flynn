@@ -77,6 +77,13 @@
 			remoteGlobalIDString = "Flynn::Pony";
 			remoteInfo = Pony;
 		};
+		46A73BD024AE4855001430CB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "Flynn::FlynnTests";
+			remoteInfo = FlynnTests;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -225,7 +232,7 @@
 			path = Tests/FlynnTests;
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -238,7 +245,6 @@
 				OBJ_65 /* Makefile */,
 				OBJ_66 /* README.md */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_50 /* Support Files */ = {
@@ -376,7 +382,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_58 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -508,7 +514,7 @@
 		OBJ_93 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Flynn::FlynnTests" /* FlynnTests */;
-			targetProxy = "Flynn::FlynnTests" /* FlynnTests */;
+			targetProxy = 46A73BD024AE4855001430CB /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

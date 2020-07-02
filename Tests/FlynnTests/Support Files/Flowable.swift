@@ -14,9 +14,10 @@ import XCTest
 final class Passthrough: Actor, Flowable {
     lazy var safeFlowable = FlowableState(self)
 
-    lazy var beFlow = Behavior(self) { [unowned self] (args: BehaviorArgs) in
+    lazy var beFlow = Behavior(self, _beFlow)
+    private func _beFlow(args: BehaviorArgs) {
         // flynnlint:parameter Any
-        self.safeFlowToNextTarget(args)
+        safeFlowToNextTarget(args)
     }
 }
 
@@ -24,10 +25,11 @@ final class Passthrough: Actor, Flowable {
 class Print: Actor, Flowable {
     lazy var safeFlowable = FlowableState(self)
 
-    lazy var beFlow = Behavior(self) { [unowned self] (args: BehaviorArgs) in
+    lazy var beFlow = Behavior(self, _beFlow)
+    private func _beFlow(args: BehaviorArgs) {
         // flynnlint:parameter Any
         print(args.description)
-        self.safeFlowToNextTarget(args)
+        safeFlowToNextTarget(args)
     }
 }
 
@@ -39,12 +41,13 @@ class Uppercase: Actor, Flowable {
         super.init()
     }
 
-    lazy var beFlow = Behavior(self) { [unowned self] (args: BehaviorArgs) in
+    lazy var beFlow = Behavior(self, _beFlow)
+    private func _beFlow(args: BehaviorArgs) {
         // flynnlint:parameter Any
-        guard !args.isEmpty else { return self.safeFlowToNextTarget(args) }
+        guard !args.isEmpty else { return safeFlowToNextTarget(args) }
 
         let value: String = args[x: 0]
-        self.safeFlowToNextTarget([value.uppercased()])
+        safeFlowToNextTarget([value.uppercased()])
     }
 }
 
@@ -60,12 +63,13 @@ class Concatenate: Actor, Flowable {
         safePriority = 1
     }
 
-    lazy var beFlow = Behavior(self) { [unowned self] (args: BehaviorArgs) in
+    lazy var beFlow = Behavior(self, _beFlow)
+    private func _beFlow(args: BehaviorArgs) {
         // flynnlint:parameter Any
-        guard !args.isEmpty else { return self.safeFlowToNextTarget([self.combined]) }
+        guard !args.isEmpty else { return safeFlowToNextTarget([combined]) }
 
         let value: String = args[x: 0]
-        self.combined.append(value)
+        combined.append(value)
     }
 }
 
@@ -78,9 +82,10 @@ class Callback: Actor, Flowable {
         super.init()
     }
 
-    lazy var beFlow = Behavior(self) { [unowned self] (args: BehaviorArgs) in
+    lazy var beFlow = Behavior(self, _beFlow)
+    private func _beFlow(args: BehaviorArgs) {
         // flynnlint:parameter Any
-        self.callback(args)
-        self.safeFlowToNextTarget(args)
+        callback(args)
+        safeFlowToNextTarget(args)
     }
 }
