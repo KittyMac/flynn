@@ -8,7 +8,6 @@
 
 import XCTest
 @testable import Flynn
-import GLKit
 
 public class ImageableState {
     private var path: String = ""

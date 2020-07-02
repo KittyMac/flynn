@@ -9,7 +9,6 @@
 // swiftlint:disable line_length
 
 import XCTest
-import GLKit
 
 @testable import Flynn
 
@@ -84,7 +83,7 @@ class FlynnTests: XCTestCase {
             .beColor()
 
         color.beGetColor( Behavior(color) { (args: BehaviorArgs) in
-            let color: GLKVector4 = args[x:0]
+            let color: [Float] = args[x:0]
             print("color is \(color)")
         })
         color.beGetColor(color.beSetColor)
@@ -105,16 +104,6 @@ class FlynnTests: XCTestCase {
         expectation.fulfill()
     }
 
-    /*
-    func testArrayOfColors() {
-        let expectation = XCTestExpectation(description: "Array of actors by protocol")
-        let views: [Viewable] = Array(count: Flynn.cores) { Color() }
-        for view in views {
-            view.beRender(CGRect.zero)
-        }
-        expectation.fulfill()
-    }*/
-
     func testFlowable() {
         let expectation = XCTestExpectation(description: "Flowable actors")
 
@@ -132,7 +121,6 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
 
-    @available(OSX 10.15, *)
     func testLoadBalancing() {
         self.measure {
             let expectation = XCTestExpectation(description: "Load balancing")
@@ -207,4 +195,17 @@ class FlynnTests: XCTestCase {
             counter.unsafeWait()
         }
     }
+
+    static var allTests = [
+        ("test1", test1),
+        ("test2", test2),
+        ("testPassByReferenceCheck", testPassByReferenceCheck),
+        ("testColor", testColor),
+        ("testImage", testImage),
+        ("testFlowable", testFlowable),
+        ("testLoadBalancing", testLoadBalancing),
+        ("testMeasureOverheadAgainstLoadBalancingExample", testMeasureOverheadAgainstLoadBalancingExample),
+        ("testMemoryBloatFromMessagePassing", testMemoryBloatFromMessagePassing),
+        ("testMemoryBloatFromMessagePassing2", testMemoryBloatFromMessagePassing2)
+    ]
 }
