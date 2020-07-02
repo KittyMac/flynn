@@ -23,6 +23,12 @@ public func |> (left: [Flowable], right: Flowable) -> [Flowable] {
     }
     return left
 }
+public func |> (left: [Flowable], right: [Flowable]) -> [Flowable] {
+    for one in left {
+        one.beTargets(right)
+    }
+    return left
+}
 
 public class FlowableState {
     private var actor: Actor
