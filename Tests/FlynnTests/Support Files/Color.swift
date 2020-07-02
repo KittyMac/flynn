@@ -8,10 +8,9 @@
 
 import XCTest
 @testable import Flynn
-import GLKit
 
 public class ColorableState<T: Actor> {
-    private var color: GLKVector4 = GLKVector4Make(1, 1, 1, 1)
+    private var color: [Float] = [1, 1, 1, 1]
 
     lazy var beColor = ChainableBehavior<T> { (_: BehaviorArgs) in
         print("Colorable.color from \(self)")
