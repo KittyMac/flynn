@@ -10,10 +10,10 @@ import Foundation
 
 #if PLATFORM_SUPPORTS_PONYRT
 import Pony
-#endif
 
 open class Flynn {
     internal static var ponyIsStarted: Bool = false
+    internal static var dispatchQueuesTotalMessages: Int = 0
 
 #if DEBUG
     public static var checkForUnsafeArguments: Bool = true
@@ -22,26 +22,23 @@ open class Flynn {
 #endif
 
     public class func startup() {
-#if PLATFORM_SUPPORTS_PONYRT
-        pony_startup()
-#endif
-        ponyIsStarted = true
+        if ponyIsStarted == false {
+            pony_startup()
+            ponyIsStarted = true
+        }
     }
 
     public class func shutdown() {
-#if PLATFORM_SUPPORTS_PONYRT
-        pony_shutdown()
-#endif
-        ponyIsStarted = false
+        if ponyIsStarted == true {
+            pony_shutdown()
+            ponyIsStarted = false
+        }
     }
 
     public static var cores: Int {
         startup()
-#if PLATFORM_SUPPORTS_PONYRT
         return Int(pony_core_count())
-#else
-        return ProcessInfo.processInfo.processorCount
-#endif
     }
-
 }
+
+#endif

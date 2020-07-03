@@ -111,17 +111,14 @@ struct FastBlockCalls {
     func call(_ actor: Actor, _ args: BehaviorArgs) {
         actor.unsafeRetain()
 
-        // TODO: find a non-locking solution for this
-        actor.unsafeLock.lock()
-        actor.unsafeMsgCount += 1
-        actor.unsafeLock.unlock()
+        OSAtomicIncrement32(&actor.unsafeMsgCount)
+        OSAtomicIncrement32(&Flynn.totalMessages)
 
         actor.unsafeDispatchQueue.async {
             self.block(args)
 
-            actor.unsafeLock.lock()
-            actor.unsafeMsgCount -= 1
-            actor.unsafeLock.unlock()
+            OSAtomicDecrement32(&actor.unsafeMsgCount)
+            OSAtomicDecrement32(&Flynn.totalMessages)
 
             actor.unsafeRelease()
         }

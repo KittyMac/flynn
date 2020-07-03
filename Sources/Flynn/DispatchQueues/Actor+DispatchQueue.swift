@@ -43,7 +43,6 @@ open class Actor {
     private let uuid: String
 
     internal lazy var unsafeDispatchQueue = DispatchQueue(label: "actor.\(uuid).queue", qos: dispatchQoS)
-    internal var unsafeLock = NSLock()
     internal var unsafeMsgCount: Int32 = 0
     private var dispatchQoS: DispatchQoS = .userInitiated
 
@@ -90,9 +89,7 @@ open class Actor {
     }
 
     public init() {
-        if Flynn.ponyIsStarted == false {
-            Flynn.startup()
-        }
+        Flynn.startup()
         uuid = UUID().uuidString
 
         // This is required because with programming patterns like

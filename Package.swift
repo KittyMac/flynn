@@ -19,9 +19,6 @@ let package = Package(
             name: "Pony",
 			cSettings: [
 				.define("PLATFORM_SUPPORTS_PONYRT", supportsPonyRT)
-		    ],
-			cxxSettings: [
-				.define("PLATFORM_SUPPORTS_PONYRT", supportsPonyRT)
 		    ]
         ),
         .target(
@@ -30,9 +27,6 @@ let package = Package(
 				"Pony"
             ],
 			cSettings: [
-				.define("PLATFORM_SUPPORTS_PONYRT", supportsPonyRT)
-		    ],
-			cxxSettings: [
 				.define("PLATFORM_SUPPORTS_PONYRT", supportsPonyRT)
 		    ],
 			swiftSettings: [
