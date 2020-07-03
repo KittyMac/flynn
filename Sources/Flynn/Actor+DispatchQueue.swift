@@ -16,20 +16,9 @@ internal extension Actor {
         _ = Unmanaged.passRetained(self)
         return self
     }
-
     @discardableResult
     func unsafeRelease() -> Self {
         _ = Unmanaged.passUnretained(self).release()
-        return self
-    }
-
-    @discardableResult
-    func unsafeAutorelease() -> Self {
-        #if os(Linux)
-        _ = Unmanaged.passUnretained(self).release()
-        #else
-        _ = Unmanaged.passUnretained(self).autorelease()
-        #endif
         return self
     }
 }
@@ -53,16 +42,25 @@ open class Actor {
 
     private let uuid: String
 
-    internal let unsafeDispatchQueue: DispatchQueue
+    internal lazy var unsafeDispatchQueue = DispatchQueue(label: "actor.\(uuid).queue", qos: dispatchQoS)
+    internal var unsafeLock = NSLock()
     internal var unsafeMsgCount: Int32 = 0
+    private var dispatchQoS: DispatchQoS = .userInitiated
 
     public var safePriority: Int32 {
-        set { print("warning: Flynn (using dispatch queues) does not support setting actor priority \(newValue)") }
+        set { withExtendedLifetime(newValue) { } }
         get { return 0 }
     }
 
     public var safeCoreAffinity: CoreAffinity {
-        set { print("warning: Flynn (using dispatch queues) does not support setting core affinity \(newValue)") }
+        set {
+            switch newValue {
+            case .onlyEfficiency, .preferEfficiency:
+                dispatchQoS = .utility
+            case .onlyPerformance, .preferPerformance:
+                dispatchQoS = .userInitiated
+            }
+        }
         get { return CoreAffinity.preferEfficiency }
     }
 
@@ -77,7 +75,6 @@ open class Actor {
 
     public func unsafeYield() {
         // yielding is not supported with DispatchQueues
-        print("warning: Flynn (using dispatch queues) does not support yielding")
     }
 
     public func unsafeShouldWaitOnActors(_ actors: [Actor]) -> Bool {
@@ -97,12 +94,14 @@ open class Actor {
             Flynn.startup()
         }
         uuid = UUID().uuidString
-        unsafeDispatchQueue = DispatchQueue(label: "actor.\(uuid).queue")
 
         // This is required because with programming patterns like
         // Actor().beBehavior() Swift will dealloc the actor prior
         // to the behavior being called.
-        self.unsafeRetain().unsafeAutorelease()
+        self.unsafeRetain()
+        unsafeDispatchQueue.asyncAfter(deadline: .now() + 0.1) {
+            self.unsafeRelease()
+        }
     }
 
     deinit {

@@ -408,11 +408,11 @@ bool ponyint_sched_start()
         if(scheduler[i].sleep_object == NULL)
             return false;
         
-        int qos = 0;
+        int qos = QOS_CLASS_USER_INITIATED;
         scheduler[i].coreAffinity = kCoreAffinity_OnlyPerformance;
         
         if (i < ponyint_e_core_count()) {
-            qos = 0;
+            qos = QOS_CLASS_UTILITY;
             scheduler[i].coreAffinity = kCoreAffinity_OnlyEfficiency;
         }
         

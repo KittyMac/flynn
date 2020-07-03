@@ -61,6 +61,7 @@ class Concatenate: Actor, Flowable {
     override init() {
         super.init()
         safePriority = 1
+        safeCoreAffinity = .onlyPerformance
     }
 
     lazy var beFlow = Behavior(self, _beFlow)

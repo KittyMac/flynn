@@ -44,7 +44,9 @@ bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, v
         attr_p = NULL;
     }
     
-    //pthread_attr_set_qos_class_np(&attr, qos, 0);
+#ifdef PLATFORM_IS_APPLE
+    pthread_attr_set_qos_class_np(&attr, qos, 0);
+#endif
     
     if(pthread_create(thread, attr_p, start, arg))
         ret = false;
