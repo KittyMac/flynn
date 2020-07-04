@@ -8,12 +8,32 @@
 
 import Foundation
 
-import Pony
-
 #if !PLATFORM_SUPPORTS_PONYRT
 
+class AtomicCount {
+    private var _value: Int32 = 0
+    private var lock = NSLock()
+
+    func inc() {
+        lock.lock()
+        _value += 1
+        lock.unlock()
+    }
+
+    func dec() {
+        lock.lock()
+        _value -= 1
+        lock.unlock()
+    }
+
+    var value: Int32 {
+        return _value
+    }
+
+}
+
 open class Flynn {
-    internal static var totalMessages: UnsafeMutableRawPointer?
+    internal static var totalMessages = AtomicCount()
 
 #if DEBUG
     public static var checkForUnsafeArguments: Bool = true
@@ -22,11 +42,11 @@ open class Flynn {
 #endif
 
     public class func startup() {
-        totalMessages = pony_create_atomic_counter()
+
     }
 
     public class func shutdown() {
-        while pony_valueof_atomic_counter(totalMessages) > 0 {
+        while totalMessages.value > 0 {
             usleep(10000)
         }
     }
