@@ -8,6 +8,8 @@
 
 import Foundation
 
+import Pony
+
 #if !PLATFORM_SUPPORTS_PONYRT
 
 internal extension Actor {
@@ -43,7 +45,7 @@ open class Actor {
     private let uuid: String
 
     internal lazy var unsafeDispatchQueue = DispatchQueue(label: "actor.\(uuid).queue", qos: dispatchQoS)
-    internal var unsafeMsgCount: Int32 = 0
+    internal var unsafeMsgCount: UnsafeMutableRawPointer? = pony_create_atomic_counter()
     private var dispatchQoS: DispatchQoS = .userInitiated
 
     public var safePriority: Int32 {
@@ -77,15 +79,15 @@ open class Actor {
     }
 
     public func unsafeShouldWaitOnActors(_ actors: [Actor]) -> Bool {
-        var num: Int32 = 0
+        var num: Int = 0
         for actor in actors {
-            num += actor.unsafeMsgCount
+            num += actor.unsafeMessagesCount
         }
         return num > 0
     }
 
-    public var unsafeMessagesCount: Int32 {
-        return unsafeMsgCount
+    public var unsafeMessagesCount: Int {
+        return pony_valueof_atomic_counter(unsafeMsgCount)
     }
 
     public init() {
@@ -103,6 +105,7 @@ open class Actor {
 
     deinit {
         //print("deinit - Actor")
+        pony_destroy_atomic_counter(unsafeMsgCount)
     }
 }
 

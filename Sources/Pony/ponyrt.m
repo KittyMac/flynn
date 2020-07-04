@@ -8,6 +8,37 @@
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
 #include "platform.h"
+#include <stdatomic.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    long _Atomic value;
+} pony_atomic_long_t;
+
+void * pony_create_atomic_counter() {
+    return (void *)calloc(sizeof(pony_atomic_long_t), 0);
+}
+
+void pony_destroy_atomic_counter(void * ptr) {
+    free(ptr);
+}
+
+void pony_increment_atomic_counter(void * ptr) {
+    atomic_fetch_add_explicit(&((pony_atomic_long_t *)ptr)->value, 1, memory_order_relaxed);
+}
+
+void pony_decrement_atomic_counter(void * ptr) {
+    atomic_fetch_sub_explicit(&((pony_atomic_long_t *)ptr)->value, 1, memory_order_relaxed);
+}
+
+long pony_valueof_atomic_counter(void * ptr) {
+    return ((pony_atomic_long_t *)ptr)->value;
+}
+
+
+
+
 #ifdef PLATFORM_SUPPORTS_PONYRT
 
 #include <stdlib.h>

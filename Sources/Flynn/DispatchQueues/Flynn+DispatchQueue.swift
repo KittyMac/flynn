@@ -8,10 +8,12 @@
 
 import Foundation
 
+import Pony
+
 #if !PLATFORM_SUPPORTS_PONYRT
 
 open class Flynn {
-    internal static var totalMessages: Int32 = 0
+    internal static var totalMessages: UnsafeMutableRawPointer?
 
 #if DEBUG
     public static var checkForUnsafeArguments: Bool = true
@@ -20,11 +22,11 @@ open class Flynn {
 #endif
 
     public class func startup() {
-
+        totalMessages = pony_create_atomic_counter()
     }
 
     public class func shutdown() {
-        while totalMessages > 0 {
+        while pony_valueof_atomic_counter(totalMessages) > 0 {
             usleep(10000)
         }
     }

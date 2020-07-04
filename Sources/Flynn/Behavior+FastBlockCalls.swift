@@ -11,9 +11,9 @@
 
 import Foundation
 
-#if PLATFORM_SUPPORTS_PONYRT
-
 import Pony
+
+#if PLATFORM_SUPPORTS_PONYRT
 
 struct FastBlockCalls {
     private var fastBlock0Ptr: UnsafeMutableRawPointer
@@ -100,10 +100,13 @@ struct FastBlockCalls {
 #else
 
 struct FastBlockCalls {
+
     let block: BehaviorBlock
+    let flynnMsgCounter: UnsafeMutableRawPointer?
 
     init(_ block: @escaping BehaviorBlock) {
         self.block = block
+        flynnMsgCounter = Flynn.totalMessages
     }
 
     func dealloc() { }
@@ -111,14 +114,14 @@ struct FastBlockCalls {
     func call(_ actor: Actor, _ args: BehaviorArgs) {
         actor.unsafeRetain()
 
-        OSAtomicIncrement32(&actor.unsafeMsgCount)
-        OSAtomicIncrement32(&Flynn.totalMessages)
+        pony_increment_atomic_counter(actor.unsafeMsgCount)
+        pony_increment_atomic_counter(flynnMsgCounter)
 
         actor.unsafeDispatchQueue.async {
             self.block(args)
 
-            OSAtomicDecrement32(&actor.unsafeMsgCount)
-            OSAtomicDecrement32(&Flynn.totalMessages)
+            pony_decrement_atomic_counter(actor.unsafeMsgCount)
+            pony_decrement_atomic_counter(self.flynnMsgCounter)
 
             actor.unsafeRelease()
         }

@@ -14,6 +14,13 @@
 
 #include <stdbool.h>
 
+void * pony_create_atomic_counter();
+void pony_destroy_atomic_counter(void * ptr);
+void pony_increment_atomic_counter(void * ptr);
+void pony_decrement_atomic_counter(void * ptr);
+long pony_valueof_atomic_counter(void * ptr);
+
+
 #ifdef PLATFORM_SUPPORTS_PONYRT
 
 #include <Foundation/Foundation.h>
