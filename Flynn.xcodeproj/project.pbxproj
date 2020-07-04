@@ -610,7 +610,7 @@
 					"$(inherited)",
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = PLATFORM_SUPPORTS_PONYRT;
+				GCC_PREPROCESSOR_DEFINITIONS = PLATFORM_SUPPORTS_PONYRT2;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/Sources/Pony/include",
@@ -642,7 +642,7 @@
 					"$(inherited)",
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = PLATFORM_SUPPORTS_PONYRT;
+				GCC_PREPROCESSOR_DEFINITIONS = PLATFORM_SUPPORTS_PONYRT2;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/Sources/Pony/include",
@@ -724,7 +724,7 @@
 					"$(inherited)",
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = PLATFORM_SUPPORTS_PONYRT;
+				GCC_PREPROCESSOR_DEFINITIONS = PLATFORM_SUPPORTS_PONYRT2;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/Sources/Pony/include",
@@ -741,7 +741,7 @@
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) PLATFORM_SUPPORTS_PONYRT";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) PLATFORM_SUPPORTS_PONYRT2";
 				SWIFT_VERSION = 5.0;
 				TARGET_NAME = Flynn;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
@@ -757,7 +757,7 @@
 					"$(inherited)",
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = PLATFORM_SUPPORTS_PONYRT;
+				GCC_PREPROCESSOR_DEFINITIONS = PLATFORM_SUPPORTS_PONYRT2;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/Sources/Pony/include",
@@ -774,7 +774,7 @@
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) PLATFORM_SUPPORTS_PONYRT";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) PLATFORM_SUPPORTS_PONYRT2";
 				SWIFT_VERSION = 5.0;
 				TARGET_NAME = Flynn;
 				TVOS_DEPLOYMENT_TARGET = 9.0;

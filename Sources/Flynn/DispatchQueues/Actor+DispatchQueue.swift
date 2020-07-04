@@ -42,8 +42,7 @@ open class Actor {
 
     private let uuid: String
 
-    internal lazy var unsafeDispatchQueue = DispatchQueue(label: "actor.\(uuid).queue", qos: dispatchQoS)
-    internal var unsafeMsgCount = AtomicCount()
+    private lazy var dispatchQueue = DispatchQueue(label: "actor.\(uuid).queue", qos: dispatchQoS)
     private var dispatchQoS: DispatchQoS = .userInitiated
 
     public var safePriority: Int32 {
@@ -69,7 +68,7 @@ open class Actor {
         if minMsgs > 0 {
             print("warning: Flynn (using dispatch queues) does not support waiting for message counts other than 0")
         }
-        unsafeDispatchQueue.sync { }
+        dispatchQueue.sync { }
     }
 
     public func unsafeYield() {
@@ -85,7 +84,7 @@ open class Actor {
     }
 
     public var unsafeMessagesCount: Int32 {
-        return unsafeMsgCount.value
+        return Int32(messages.count)
     }
 
     public init() {
@@ -96,13 +95,114 @@ open class Actor {
         // Actor().beBehavior() Swift will dealloc the actor prior
         // to the behavior being called.
         self.unsafeRetain()
-        unsafeDispatchQueue.asyncAfter(deadline: .now() + 1.0) {
+        dispatchQueue.asyncAfter(deadline: .now() + 1.0) {
             self.unsafeRelease()
         }
     }
 
     deinit {
-        //print("deinit - Actor")
+        print("deinit - Actor")
+    }
+
+    private var messages = Queue<(BehaviorBlock, BehaviorArgs)>()
+    private var running: Bool = false
+    private lazy var runBlock = DispatchWorkItem { self.run() }
+    internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
+        messages.enqueue((block, args))
+        if !running {
+            running = true
+            dispatchQueue.async(execute: runBlock)
+        }
+    }
+
+    private func run() {
+        while let msg = messages.dequeue() {
+            msg.0(msg.1)
+        }
+        running = false
+    }
+}
+
+private struct Queue<T> {
+    // safe only so long as there is one consumer and multiple producers
+    fileprivate var array = [T?](repeating: nil, count: 2)
+    fileprivate var writeIdx = 0
+    fileprivate var readIdx = 0
+    fileprivate var readLock = NSLock()
+    fileprivate var growLock = NSLock()
+
+    public var isEmpty: Bool {
+        return writeIdx == readIdx
+    }
+
+    public var isFull: Bool {
+        return nextIndex(writeIdx) == readIdx
+    }
+
+    public var count: Int {
+        let localReadIdx = readIdx
+        let localWriteIdx = writeIdx
+        if localWriteIdx == localReadIdx {
+            return 0
+        }
+        if localWriteIdx > localReadIdx {
+            return localWriteIdx - localReadIdx
+        }
+        return array.count - (localReadIdx - localWriteIdx)
+    }
+
+    public mutating func grow() {
+        growLock.lock()
+        var newArray = [T?](repeating: nil, count: array.count * 2)
+
+        var oldReadIdx = readIdx
+        var newWriteIdx = 0
+        while oldReadIdx != writeIdx {
+            newArray[newWriteIdx] = array[oldReadIdx]
+            oldReadIdx = nextIndex(oldReadIdx)
+            newWriteIdx += 1
+        }
+
+        array = newArray
+        writeIdx = newWriteIdx
+        readIdx = 0
+
+        //print("grow[\(array.count)]  \(readIdx) // \(writeIdx)")
+
+        growLock.unlock()
+    }
+
+    private func nextIndex(_ idx: Int) -> Int {
+        var num = idx + 1
+        if num >= array.count {
+            num = 0
+        }
+        return num
+    }
+
+    public mutating func enqueue(_ element: T) {
+        readLock.lock()
+        while isFull {
+            grow()
+        }
+        //print("enqueue[\(writeIdx)]  \(element)")
+        array[writeIdx] = element
+        writeIdx = nextIndex(writeIdx)
+        readLock.unlock()
+    }
+
+    public mutating func dequeue() -> T? {
+        if isEmpty {
+            return nil
+        }
+        growLock.lock()
+        let element = array[readIdx]
+        array[readIdx] = nil
+        //print("dequeue[\(readIdx)]  \(element)")
+        growLock.unlock()
+
+        readIdx = nextIndex(readIdx)
+        return element
     }
 }
 

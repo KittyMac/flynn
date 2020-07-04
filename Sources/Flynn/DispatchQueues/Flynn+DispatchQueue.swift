@@ -52,6 +52,7 @@ open class Flynn {
     }
 
     public static var cores: Int {
+        // TODO: no hyperthreads pls!
         return ProcessInfo.processInfo.processorCount
     }
 }

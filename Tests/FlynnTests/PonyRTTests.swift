@@ -24,8 +24,15 @@ class PonyRTTests: XCTestCase {
         let counter = Counter()
         counter.beHello("Rocco")
                .beInc(1)
+                .beInc(2)
+                .beInc(3)
+                .beInc(4)
+                .beInc(5)
+                .beInc(6)
+                .beInc(7)
+                .beInc(8)
                .beEquals { (value: Int) in
-                    XCTAssertEqual(value, 1, "Counter did not add up to 1")
+                    XCTAssertEqual(value, 36, "Counter did not add up to 1")
                     expectation.fulfill()
                 }
         wait(for: [expectation], timeout: 10.0)

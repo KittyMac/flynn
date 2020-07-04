@@ -101,7 +101,7 @@ public class Behavior {
     }
 
     deinit {
-        //print("deinit - Behavior")
+        print("deinit - Behavior")
         fastBlocks.dealloc()
     }
 

@@ -108,19 +108,7 @@ struct FastBlockCalls {
     func dealloc() { }
 
     func call(_ actor: Actor, _ args: BehaviorArgs) {
-        actor.unsafeRetain()
-
-        actor.unsafeMsgCount.inc()
-        Flynn.totalMessages.inc()
-
-        actor.unsafeDispatchQueue.async {
-            self.block(args)
-
-            actor.unsafeMsgCount.dec()
-            Flynn.totalMessages.dec()
-
-            actor.unsafeRelease()
-        }
+        actor.unsafeSend(self.block, args)
     }
 }
 
