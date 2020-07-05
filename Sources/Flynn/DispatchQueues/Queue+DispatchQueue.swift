@@ -10,43 +10,37 @@ import Foundation
 
 #if !PLATFORM_SUPPORTS_PONYRT
 
-class Queue<T> {
-    // concurrently safe only so long as there is one consumer and multiple producers
-    fileprivate var arraySize = 512
-    fileprivate var array = [T?](repeating: nil, count: 512)
-    fileprivate var writeIdx = 0
-    fileprivate var readIdx = 0
-    fileprivate var readLock = NSLock()
+class Queue<T: AnyObject> {
+    // safe only so long as there is one consumer and multiple producers
+    private var arraySize: Int = 2048
+    private var array = [T?](repeating: nil, count: 2048)
+    private var writeIdx = 0
+    private var readIdx = 0
+    private var readLock = NSLock()
+    private var markedEmpty: Bool = true
 
     public var isEmpty: Bool {
-        readLock.lock()
-        let wasEmpty = (writeIdx == readIdx)
-        readLock.unlock()
-        return wasEmpty
+        return writeIdx == readIdx
     }
 
     public var isFull: Bool {
-        readLock.lock()
-        let wasFull = (nextIndex(writeIdx, arraySize) == readIdx)
-        readLock.unlock()
-        return wasFull
+        return nextIndex(writeIdx, arraySize) == readIdx
     }
 
     public var count: Int {
-        readLock.lock()
-        defer { readLock.unlock() }
-
-        if writeIdx == readIdx {
+        let localReadIdx = readIdx
+        let localWriteIdx = writeIdx
+        if localWriteIdx == localReadIdx {
             return 0
         }
-        if writeIdx > readIdx {
-            return writeIdx - readIdx
+        if localWriteIdx > localReadIdx {
+            return localWriteIdx - localReadIdx
         }
-        return arraySize - (readIdx - writeIdx)
+        return arraySize - (localReadIdx - localWriteIdx)
     }
 
-    public func grow() {
-        let oldSize = arraySize
+    private func grow() {
+        let oldArraySize = arraySize
         arraySize *= 2
         var newArray = [T?](repeating: nil, count: arraySize)
 
@@ -54,7 +48,7 @@ class Queue<T> {
         var newWriteIdx = 0
         while oldReadIdx != writeIdx {
             newArray[newWriteIdx] = array[oldReadIdx]
-            oldReadIdx = nextIndex(oldReadIdx, oldSize)
+            oldReadIdx = nextIndex(oldReadIdx, oldArraySize)
             newWriteIdx += 1
         }
 
@@ -72,37 +66,42 @@ class Queue<T> {
     @discardableResult
     public func enqueue(_ element: T) -> Bool {
         readLock.lock()
-        let wasEmpty = (writeIdx == readIdx)
 
-        while nextIndex(writeIdx, arraySize) == readIdx {
+        let wasEmpty = isEmpty
+        while isFull {
             grow()
         }
-
         //print("enqueue[\(writeIdx)]  \(element)")
         array[writeIdx] = element
         writeIdx = nextIndex(writeIdx, arraySize)
         readLock.unlock()
-        return wasEmpty
-    }
 
-    public func markEmpty() -> Bool {
-        readLock.lock()
-        let wasEmpty = (writeIdx == readIdx)
-        readLock.unlock()
         return wasEmpty
     }
 
     public func dequeue() -> T? {
+        readLock.lock()
+
         if isEmpty {
+            readLock.unlock()
             return nil
         }
 
-        readLock.lock()
         let element = array[readIdx]
         array[readIdx] = nil
         readIdx = nextIndex(readIdx, arraySize)
+
+        //print("dequeue[\(readIdx)]  \(element)")
         readLock.unlock()
+
         return element
+    }
+
+    public func markEmpty() -> Bool {
+        readLock.lock()
+        let wasEmpty = isEmpty
+        readLock.unlock()
+        return wasEmpty
     }
 }
 

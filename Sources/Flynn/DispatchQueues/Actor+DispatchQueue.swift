@@ -23,6 +23,19 @@ internal extension Actor {
     }
 }
 
+class ActorMessage {
+    let block: BehaviorBlock
+    let args: BehaviorArgs
+    init(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
+        self.block = block
+        self.args = args
+    }
+
+    func run() {
+        block(args)
+    }
+}
+
 open class Actor {
 
     public enum CoreAffinity: Int32 {
@@ -48,6 +61,7 @@ open class Actor {
     }
 
     public var safeCoreAffinity: CoreAffinity = .preferEfficiency
+    private var messagesCount: AtomicCount = AtomicCount()
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
@@ -64,13 +78,15 @@ open class Actor {
         var num: Int32 = 0
         for actor in actors {
             num += actor.unsafeMessagesCount
+            if num > 0 {
+                Flynn.schedule(actor)
+            }
         }
-        print(num)
         return num > 0
     }
 
     public var unsafeMessagesCount: Int32 {
-        return Int32(messages.count)
+        return messagesCount.value
     }
 
     public init() {
@@ -87,22 +103,23 @@ open class Actor {
         print("deinit - Actor")
     }
 
-    private var messages = Queue<(BehaviorBlock, BehaviorArgs)>()
+    private var messages = Queue<ActorMessage>()
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
-        if messages.enqueue((block, args)) {
-            //print("schedule \(self)")
+        messagesCount.inc()
+
+        if messages.enqueue(ActorMessage(block, args)) {
             Flynn.schedule(self)
         }
     }
 
-    private var running: Bool = false
     private var runningLock = NSLock()
     internal func unsafeRun() -> Bool {
         if runningLock.try() {
             //print("run \(self)")
             while let msg = messages.dequeue() {
                 //print("  msg for \(self)")
-                msg.0(msg.1)
+                msg.run()
+                messagesCount.dec()
             }
             runningLock.unlock()
         }
