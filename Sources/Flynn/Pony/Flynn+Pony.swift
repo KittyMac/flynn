@@ -13,7 +13,6 @@ import Pony
 
 open class Flynn {
     internal static var ponyIsStarted: Bool = false
-    internal static var dispatchQueuesTotalMessages: Int = 0
 
 #if DEBUG
     public static var checkForUnsafeArguments: Bool = true

@@ -21,6 +21,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		46B7F59024B14C2D003D846A /* Scheduler+DispatchQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B7F58F24B14C2D003D846A /* Scheduler+DispatchQueue.swift */; };
+		46B7F59224B14D13003D846A /* Queue+DispatchQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B7F59124B14D13003D846A /* Queue+DispatchQueue.swift */; };
 		OBJ_104 /* BadFlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_50 /* BadFlynnTests.swift */; };
 		OBJ_105 /* FlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_51 /* FlynnTests.swift */; };
 		OBJ_106 /* PonyRTTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_52 /* PonyRTTests.swift */; };
@@ -89,6 +91,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		46B7F58F24B14C2D003D846A /* Scheduler+DispatchQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Scheduler+DispatchQueue.swift"; sourceTree = "<group>"; };
+		46B7F59124B14D13003D846A /* Queue+DispatchQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Queue+DispatchQueue.swift"; sourceTree = "<group>"; };
 		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::Pony::Product" /* Pony.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Pony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -179,6 +183,8 @@
 			children = (
 				OBJ_13 /* Actor+DispatchQueue.swift */,
 				OBJ_14 /* Flynn+DispatchQueue.swift */,
+				46B7F59124B14D13003D846A /* Queue+DispatchQueue.swift */,
+				46B7F58F24B14C2D003D846A /* Scheduler+DispatchQueue.swift */,
 			);
 			path = DispatchQueues;
 			sourceTree = "<group>";
@@ -498,7 +504,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
+				46B7F59024B14C2D003D846A /* Scheduler+DispatchQueue.swift in Sources */,
 				OBJ_76 /* Behavior+FastBlockCalls.swift in Sources */,
+				46B7F59224B14D13003D846A /* Queue+DispatchQueue.swift in Sources */,
 				OBJ_77 /* Behavior.swift in Sources */,
 				OBJ_78 /* Actor+DispatchQueue.swift in Sources */,
 				OBJ_79 /* Flynn+DispatchQueue.swift in Sources */,

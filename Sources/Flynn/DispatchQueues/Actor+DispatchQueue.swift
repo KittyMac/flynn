@@ -42,33 +42,18 @@ open class Actor {
 
     private let uuid: String
 
-    private lazy var dispatchQueue = DispatchQueue(label: "actor.\(uuid).queue", qos: dispatchQoS)
-    private var dispatchQoS: DispatchQoS = .userInitiated
-
     public var safePriority: Int32 {
         set { withExtendedLifetime(newValue) { } }
         get { return 0 }
     }
 
-    public var safeCoreAffinity: CoreAffinity {
-        set {
-            switch newValue {
-            case .onlyEfficiency, .preferEfficiency:
-                dispatchQoS = .utility
-            case .onlyPerformance, .preferPerformance:
-                dispatchQoS = .userInitiated
-            }
-        }
-        get { return CoreAffinity.preferEfficiency }
-    }
+    public var safeCoreAffinity: CoreAffinity = .preferEfficiency
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
-        // with dispatch queues we can only wait unti end
-        if minMsgs > 0 {
-            print("warning: Flynn (using dispatch queues) does not support waiting for message counts other than 0")
+        while messages.count > minMsgs {
+            usleep(10000)
         }
-        dispatchQueue.sync { }
     }
 
     public func unsafeYield() {
@@ -80,6 +65,7 @@ open class Actor {
         for actor in actors {
             num += actor.unsafeMessagesCount
         }
+        print(num)
         return num > 0
     }
 
@@ -95,9 +81,6 @@ open class Actor {
         // Actor().beBehavior() Swift will dealloc the actor prior
         // to the behavior being called.
         self.unsafeRetain()
-        dispatchQueue.asyncAfter(deadline: .now() + 1.0) {
-            self.unsafeRelease()
-        }
     }
 
     deinit {
@@ -105,104 +88,26 @@ open class Actor {
     }
 
     private var messages = Queue<(BehaviorBlock, BehaviorArgs)>()
-    private var running: Bool = false
-    private lazy var runBlock = DispatchWorkItem { self.run() }
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
-        messages.enqueue((block, args))
-        if !running {
-            running = true
-            dispatchQueue.async(execute: runBlock)
+        if messages.enqueue((block, args)) {
+            //print("schedule \(self)")
+            Flynn.schedule(self)
         }
     }
 
-    private func run() {
-        while let msg = messages.dequeue() {
-            msg.0(msg.1)
-        }
-        running = false
-    }
-}
-
-private struct Queue<T> {
-    // safe only so long as there is one consumer and multiple producers
-    fileprivate var array = [T?](repeating: nil, count: 2)
-    fileprivate var writeIdx = 0
-    fileprivate var readIdx = 0
-    fileprivate var readLock = NSLock()
-    fileprivate var growLock = NSLock()
-
-    public var isEmpty: Bool {
-        return writeIdx == readIdx
-    }
-
-    public var isFull: Bool {
-        return nextIndex(writeIdx) == readIdx
-    }
-
-    public var count: Int {
-        let localReadIdx = readIdx
-        let localWriteIdx = writeIdx
-        if localWriteIdx == localReadIdx {
-            return 0
-        }
-        if localWriteIdx > localReadIdx {
-            return localWriteIdx - localReadIdx
-        }
-        return array.count - (localReadIdx - localWriteIdx)
-    }
-
-    public mutating func grow() {
-        growLock.lock()
-        var newArray = [T?](repeating: nil, count: array.count * 2)
-
-        var oldReadIdx = readIdx
-        var newWriteIdx = 0
-        while oldReadIdx != writeIdx {
-            newArray[newWriteIdx] = array[oldReadIdx]
-            oldReadIdx = nextIndex(oldReadIdx)
-            newWriteIdx += 1
+    private var running: Bool = false
+    private var runningLock = NSLock()
+    internal func unsafeRun() -> Bool {
+        if runningLock.try() {
+            //print("run \(self)")
+            while let msg = messages.dequeue() {
+                //print("  msg for \(self)")
+                msg.0(msg.1)
+            }
+            runningLock.unlock()
         }
 
-        array = newArray
-        writeIdx = newWriteIdx
-        readIdx = 0
-
-        //print("grow[\(array.count)]  \(readIdx) // \(writeIdx)")
-
-        growLock.unlock()
-    }
-
-    private func nextIndex(_ idx: Int) -> Int {
-        var num = idx + 1
-        if num >= array.count {
-            num = 0
-        }
-        return num
-    }
-
-    public mutating func enqueue(_ element: T) {
-        readLock.lock()
-        while isFull {
-            grow()
-        }
-        //print("enqueue[\(writeIdx)]  \(element)")
-        array[writeIdx] = element
-        writeIdx = nextIndex(writeIdx)
-        readLock.unlock()
-    }
-
-    public mutating func dequeue() -> T? {
-        if isEmpty {
-            return nil
-        }
-        growLock.lock()
-        let element = array[readIdx]
-        array[readIdx] = nil
-        //print("dequeue[\(readIdx)]  \(element)")
-        growLock.unlock()
-
-        readIdx = nextIndex(readIdx)
-        return element
+        return !messages.markEmpty()
     }
 }
 
