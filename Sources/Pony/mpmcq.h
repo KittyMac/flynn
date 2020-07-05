@@ -25,7 +25,7 @@ PONY_ABA_PROTECTED_PTR_DECLARE(mpmcq_node_t)
 typedef struct mpmcq_t
 {
     alignas(64) PONY_ATOMIC(mpmcq_node_t*) head;
-    PONY_ATOMIC_ABA_PROTECTED_PTR(mpmcq_node_t) tail;
+    PONY_ATOMIC(mpmcq_node_t *) tail;
     PONY_ATOMIC(int64_t) num_messages;
 } mpmcq_t;
 

@@ -11,6 +11,8 @@
 
 import Foundation
 
+import Pony
+
 #if PLATFORM_SUPPORTS_PONYRT
 
 struct FastBlockCalls {
