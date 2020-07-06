@@ -69,10 +69,9 @@ open class Scheduler {
         #endif
 
         while running {
-            while let actor = actors.peek() {
+            while let actor = actors.dequeue() {
                 scalingSleep = 0
                 actor.unsafeRun()
-                actors.dequeue()
             }
 
             if actors.isEmpty {
