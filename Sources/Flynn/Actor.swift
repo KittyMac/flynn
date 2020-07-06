@@ -8,19 +8,6 @@
 
 import Foundation
 
-internal extension Actor {
-    @discardableResult
-    func unsafeRetain() -> Self {
-        _ = Unmanaged.passRetained(self)
-        return self
-    }
-    @discardableResult
-    func unsafeRelease() -> Self {
-        _ = Unmanaged.passUnretained(self).release()
-        return self
-    }
-}
-
 class ActorMessage {
     var actor: Actor?
     var block: BehaviorBlock?
@@ -105,15 +92,17 @@ open class Actor {
         return Int32(messages.count)
     }
 
+    private var hasUnbalancedRetain: Bool = true
     public init() {
         Flynn.startup()
         uuid = UUID().uuidString
 
         // This is required because with programming patterns like
         // Actor().beBehavior() Swift will dealloc the actor prior
-        // to the behavior being called.
-        //Flynn.schedule(self, safeCoreAffinity)
-        self.unsafeRetain()
+        // to the behavior being called. So we introduce an unbalanced
+        // retain which we release as soon as this actor processes its
+        // first message.
+        _ = Unmanaged.passRetained(self)
     }
 
     deinit {
@@ -147,6 +136,7 @@ open class Actor {
             //print("run \(self)")
             var maxMessages = 1000
             while let msg = messages.peek() {
+
                 //print("  msg for \(self)")
                 msg.run()
                 poolActorMessage(messages.dequeue()!)
@@ -161,6 +151,12 @@ open class Actor {
                     break
                 }
             }
+
+            if hasUnbalancedRetain {
+                _ = Unmanaged.passUnretained(self).release()
+                hasUnbalancedRetain = false
+            }
+
             runningLock.unlock()
         }
 
