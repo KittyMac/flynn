@@ -120,7 +120,7 @@ open class Actor {
     }
 
     private var runningLock = NSLock()
-    internal func unsafeRun() -> Bool {
+    internal func unsafeRun() {
         if runningLock.try() {
             //print("run \(self)")
             var maxMessages = 1000
@@ -142,6 +142,8 @@ open class Actor {
             runningLock.unlock()
         }
 
-        return !messages.markEmpty()
+        if !messages.markEmpty() {
+            Flynn.schedule(self, safeCoreAffinity)
+        }
     }
 }

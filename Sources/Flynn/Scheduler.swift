@@ -71,9 +71,7 @@ open class Scheduler {
         while running {
             while let actor = actors.peek() {
                 scalingSleep = 0
-                if actor.unsafeRun() {
-                    actors.enqueue(actor)
-                }
+                actor.unsafeRun()
                 actors.dequeue()
             }
 
