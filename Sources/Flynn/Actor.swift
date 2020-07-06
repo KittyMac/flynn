@@ -8,6 +8,19 @@
 
 import Foundation
 
+internal extension Actor {
+    @discardableResult
+    func unsafeRetain() -> Self {
+        _ = Unmanaged.passRetained(self)
+        return self
+    }
+    @discardableResult
+    func unsafeRelease() -> Self {
+        _ = Unmanaged.passUnretained(self).release()
+        return self
+    }
+}
+
 class ActorMessage {
     var actor: Actor?
     var block: BehaviorBlock?
@@ -99,7 +112,8 @@ open class Actor {
         // This is required because with programming patterns like
         // Actor().beBehavior() Swift will dealloc the actor prior
         // to the behavior being called.
-        Flynn.schedule(self, safeCoreAffinity)
+        //Flynn.schedule(self, safeCoreAffinity)
+        self.unsafeRetain()
     }
 
     deinit {
