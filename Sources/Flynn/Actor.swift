@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if !PLATFORM_SUPPORTS_PONYRT
-
 class ActorMessage {
     var block: BehaviorBlock?
     var args: BehaviorArgs?
@@ -49,9 +47,22 @@ open class Actor {
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
+        var scalingSleep: UInt32 = 10
+        let maxScalingSleep: UInt32 = 500
+
+        var timeSlept: UInt32 = 0
         while messages.count > minMsgs {
-            usleep(10000)
+            usleep(scalingSleep)
+
+            timeSlept += scalingSleep
+
+            scalingSleep += 1
+            if scalingSleep > maxScalingSleep {
+                scalingSleep = maxScalingSleep
+            }
         }
+
+        //print("timeSlept: \(timeSlept)")
     }
 
     private var yield: Bool = false
@@ -128,5 +139,3 @@ open class Actor {
         return !messages.markEmpty()
     }
 }
-
-#endif

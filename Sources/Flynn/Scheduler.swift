@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if !PLATFORM_SUPPORTS_PONYRT
-
 public enum CoreAffinity: Int32 {
     case preferEfficiency = 0
     case preferPerformance = 1
@@ -101,5 +99,3 @@ open class Scheduler {
     }
 
 }
-
-#endif

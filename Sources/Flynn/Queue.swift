@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if !PLATFORM_SUPPORTS_PONYRT
-
 func bridge<T: AnyObject>(obj: T) -> UnsafeRawPointer {
     return UnsafeRawPointer(Unmanaged.passRetained(obj).toOpaque())
 }
@@ -142,5 +140,3 @@ public class Queue<T: AnyObject> {
         return wasEmpty
     }
 }
-
-#endif

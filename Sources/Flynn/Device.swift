@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if !PLATFORM_SUPPORTS_PONYRT
-
 struct Sysctl {
     static subscript<T>(_ key: String) -> T? {
         get {
@@ -99,5 +97,3 @@ open class Device {
     }
 
 }
-
-#endif

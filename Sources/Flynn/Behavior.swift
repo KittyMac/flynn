@@ -48,22 +48,17 @@ private func checkReferenceTypesToBehavior(_ args: BehaviorArgs) {
 @dynamicCallable
 public class ChainableBehavior<T: Actor> {
     private weak var actor: T?
-    private let fastBlocks: FastBlockCalls
+    private let block: BehaviorBlock
     private let checkForUnsafeArguments = Flynn.checkForUnsafeArguments
 
     public init(_ actor: T, _ block: @escaping BehaviorBlock) {
         self.actor = actor
-        self.fastBlocks = FastBlockCalls(block)
+        self.block = block
     }
 
     public init(_ block: @escaping BehaviorBlock) {
         self.actor = nil
-        self.fastBlocks = FastBlockCalls(block)
-    }
-
-    deinit {
-        //print("deinit - ChainableBehavior")
-        fastBlocks.dealloc()
+        self.block = block
     }
 
     public func setActor(_ actor: T) {
@@ -74,12 +69,12 @@ public class ChainableBehavior<T: Actor> {
         if checkForUnsafeArguments {
             checkReferenceTypesToBehavior(args)
         }
-        fastBlocks.call(actor!, args)
+        actor!.unsafeSend(block, args)
         return actor!
     }
 
     @discardableResult public func dynamicallyFlow(withArguments args: BehaviorArgs) -> T {
-        fastBlocks.call(actor!, args)
+        actor!.unsafeSend(block, args)
         return actor!
     }
 }
@@ -87,22 +82,17 @@ public class ChainableBehavior<T: Actor> {
 @dynamicCallable
 public class Behavior {
     private weak var actor: Actor?
-    private let fastBlocks: FastBlockCalls
+    private let block: BehaviorBlock
     private let checkForUnsafeArguments = Flynn.checkForUnsafeArguments
 
     public init(_ actor: Actor, _ block: @escaping BehaviorBlock) {
         self.actor = actor
-        self.fastBlocks = FastBlockCalls(block)
+        self.block = block
     }
 
     public init(_ block: @escaping BehaviorBlock) {
         self.actor = nil
-        self.fastBlocks = FastBlockCalls(block)
-    }
-
-    deinit {
-        print("deinit - Behavior")
-        fastBlocks.dealloc()
+        self.block = block
     }
 
     public func setActor(_ actor: Actor) {
@@ -113,10 +103,10 @@ public class Behavior {
         if checkForUnsafeArguments {
             checkReferenceTypesToBehavior(args)
         }
-        fastBlocks.call(actor!, args)
+        actor!.unsafeSend(block, args)
     }
 
     public func dynamicallyFlow(withArguments args: BehaviorArgs) {
-        fastBlocks.call(actor!, args)
+        actor!.unsafeSend(block, args)
     }
 }
