@@ -18,6 +18,10 @@ func bridge<T: AnyObject>(ptr: UnsafeRawPointer) -> T {
     return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
 }
 
+func bridgePeek<T: AnyObject>(ptr: UnsafeRawPointer) -> T {
+    return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
+}
+
 public class Queue<T: AnyObject> {
     // safe only so long as there is one consumer and multiple producers
     private var arraySize: Int = 0
@@ -103,6 +107,7 @@ public class Queue<T: AnyObject> {
         return wasEmpty
     }
 
+    @discardableResult
     public func dequeue() -> T? {
         readLock.lock()
 
@@ -117,8 +122,15 @@ public class Queue<T: AnyObject> {
         readIdx = nextIndex(readIdx, arraySize)
 
         readLock.unlock()
-
         return bridge(ptr: elementPtr!)
+    }
+
+    public func peek() -> T? {
+        let elementPtr = (arrayPtr+readIdx).pointee
+        if elementPtr == nil {
+            return nil
+        }
+        return bridgePeek(ptr: elementPtr!)
     }
 
     public func markEmpty() -> Bool {

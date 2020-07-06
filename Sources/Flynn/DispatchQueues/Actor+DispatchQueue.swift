@@ -92,9 +92,10 @@ open class Actor {
     internal func unsafeRun() -> Bool {
         if runningLock.try() {
             //print("run \(self)")
-            while let msg = messages.dequeue() {
+            while let msg = messages.peek() {
                 //print("  msg for \(self)")
                 msg.run()
+                messages.dequeue()
 
                 if yield {
                     yield = false
