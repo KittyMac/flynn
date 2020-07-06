@@ -16,6 +16,11 @@ struct Sysctl {
             if sysctlbyname(key, nil, &len, nil, 0) == 0 {
 
                 switch T.self {
+                case is UInt32.Type:
+                    var value = CUnsignedInt()
+                    sysctlbyname(key, &value, &len, nil, 0)
+                    //print(key, ":", value)
+                    return UInt32(value) as? T
                 case is Int.Type:
                     var value = CInt()
                     sysctlbyname(key, &value, &len, nil, 0)
@@ -57,7 +62,7 @@ open class Device {
         #else
         cores = Sysctl["hw.physicalcpu"] ?? 0
 
-        let cpuFamily: Int = Sysctl["hw.cpufamily"] ?? 0
+        let cpuFamily: UInt32 = Sysctl["hw.cpufamily"] ?? 0
         switch UInt32(cpuFamily) {
         case UInt32(CPUFAMILY_ARM_MONSOON_MISTRAL):
             /* 2x Monsoon + 4x Mistral cores */

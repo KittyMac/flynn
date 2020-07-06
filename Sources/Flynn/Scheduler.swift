@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum CoreAffinity: Int32 {
+public enum CoreAffinity: Int {
     case preferEfficiency = 0
     case preferPerformance = 1
     case onlyEfficiency = 2
