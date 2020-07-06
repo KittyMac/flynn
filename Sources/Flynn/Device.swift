@@ -8,6 +8,7 @@
 
 import Foundation
 
+#if !os(Linux)
 struct Sysctl {
     static subscript<T>(_ key: String) -> T? {
         get {
@@ -41,6 +42,7 @@ struct Sysctl {
         set { }
     }
 }
+#endif
 
 open class Device {
 
