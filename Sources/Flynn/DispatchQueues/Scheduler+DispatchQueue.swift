@@ -19,7 +19,7 @@ public enum CoreAffinity: Int32 {
 
 open class Scheduler {
 
-    private var actors = Queue<Actor>()
+    private var actors = Queue<Actor>(128)
 
     private let affinity: CoreAffinity
     private let uuid: String

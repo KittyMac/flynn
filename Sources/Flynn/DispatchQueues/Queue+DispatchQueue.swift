@@ -10,14 +10,29 @@ import Foundation
 
 #if !PLATFORM_SUPPORTS_PONYRT
 
-class Queue<T: AnyObject> {
+func bridge<T: AnyObject>(obj: T) -> UnsafeRawPointer {
+    return UnsafeRawPointer(Unmanaged.passRetained(obj).toOpaque())
+}
+
+func bridge<T: AnyObject>(ptr: UnsafeRawPointer) -> T {
+    return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
+}
+
+public class Queue<T: AnyObject> {
     // safe only so long as there is one consumer and multiple producers
-    private var arraySize: Int = 2048
-    private var array = [T?](repeating: nil, count: 2048)
+    private var arraySize: Int = 0
+    private var arrayPtr: UnsafeMutablePointer<UnsafeRawPointer?>
     private var writeIdx = 0
     private var readIdx = 0
+
     private var readLock = NSLock()
-    private var markedEmpty: Bool = true
+    private var writeLock = NSLock()
+
+    public init(_ size: Int) {
+        arraySize = size
+        arrayPtr = UnsafeMutablePointer<UnsafeRawPointer?>.allocate(capacity: arraySize)
+        arrayPtr.initialize(repeating: nil, count: arraySize)
+    }
 
     public var isEmpty: Bool {
         return writeIdx == readIdx
@@ -40,22 +55,27 @@ class Queue<T: AnyObject> {
     }
 
     private func grow() {
+        readLock.lock()
+
         let oldArraySize = arraySize
         arraySize *= 2
-        var newArray = [T?](repeating: nil, count: arraySize)
+        let newArrayPtr = UnsafeMutablePointer<UnsafeRawPointer?>.allocate(capacity: arraySize)
+        newArrayPtr.initialize(repeating: nil, count: arraySize)
 
         var oldReadIdx = readIdx
         var newWriteIdx = 0
         while oldReadIdx != writeIdx {
-            newArray[newWriteIdx] = array[oldReadIdx]
+            (newArrayPtr+newWriteIdx).pointee = (arrayPtr+oldReadIdx).pointee
             oldReadIdx = nextIndex(oldReadIdx, oldArraySize)
             newWriteIdx += 1
         }
 
-        array = newArray
+        arrayPtr.deallocate()
+        arrayPtr = newArrayPtr
         writeIdx = newWriteIdx
         readIdx = 0
 
+        readLock.unlock()
         //print("grow[\(arraySize)]  \(readIdx) // \(writeIdx)")
     }
 
@@ -65,16 +85,20 @@ class Queue<T: AnyObject> {
 
     @discardableResult
     public func enqueue(_ element: T) -> Bool {
-        readLock.lock()
+        writeLock.lock()
 
         let wasEmpty = isEmpty
         while isFull {
             grow()
         }
-        //print("enqueue[\(writeIdx)]  \(element)")
-        array[writeIdx] = element
+
+        let elementPtr = bridge(obj: element)
+        //print("enqueue[\(writeIdx)]  \(elementPtr)")
+
+        (arrayPtr+writeIdx).pointee = elementPtr
         writeIdx = nextIndex(writeIdx, arraySize)
-        readLock.unlock()
+
+        writeLock.unlock()
 
         return wasEmpty
     }
@@ -82,25 +106,27 @@ class Queue<T: AnyObject> {
     public func dequeue() -> T? {
         readLock.lock()
 
-        if isEmpty {
+        let elementPtr = (arrayPtr+readIdx).pointee
+        if elementPtr == nil {
             readLock.unlock()
             return nil
         }
+        //print("dequeue[\(readIdx)]  \(elementPtr!)")
 
-        let element = array[readIdx]
-        array[readIdx] = nil
+        (arrayPtr+readIdx).pointee = nil
         readIdx = nextIndex(readIdx, arraySize)
 
-        //print("dequeue[\(readIdx)]  \(element)")
         readLock.unlock()
 
-        return element
+        return bridge(ptr: elementPtr!)
     }
 
     public func markEmpty() -> Bool {
+        writeLock.lock()
         readLock.lock()
         let wasEmpty = isEmpty
         readLock.unlock()
+        writeLock.unlock()
         return wasEmpty
     }
 }

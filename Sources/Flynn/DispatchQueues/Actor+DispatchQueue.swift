@@ -103,7 +103,7 @@ open class Actor {
         print("deinit - Actor")
     }
 
-    private var messages = Queue<ActorMessage>()
+    private var messages = Queue<ActorMessage>(128)
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
         messagesCount.inc()
 

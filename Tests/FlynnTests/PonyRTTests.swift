@@ -19,6 +19,59 @@ class PonyRTTests: XCTestCase {
         Flynn.shutdown()
     }
 
+    func testQueue() {
+
+        self.measure {
+
+            let queue = Queue<NSString>(64)
+
+            let concurrentQueue = DispatchQueue(label: "test.concurrent.queue", attributes: .concurrent)
+
+            var correct: Int32 = 0
+            for idx in 0..<20000 {
+                correct += Int32(idx)
+
+                concurrentQueue.async {
+                    queue.enqueue("\(idx)" as NSString)
+                }
+            }
+
+            var total: Int32 = 0
+
+            while total != correct {
+                while let numberString = queue.dequeue() {
+                    total += numberString.intValue
+                }
+            }
+
+            XCTAssert(total == correct)
+        }
+    }
+
+    func testActorQueue() {
+        let queue = Queue<Actor>(50000)
+
+        let concurrentQueue = DispatchQueue(label: "test.concurrent.queue", attributes: .concurrent)
+
+        for idx in 0..<100 {
+            concurrentQueue.async {
+                queue.enqueue(PassToMe())
+            }
+        }
+
+        while queue.count < 100 {
+            usleep(500)
+        }
+
+        var count = 0
+        while let actor = queue.dequeue() as? PassToMe {
+            actor.unsafePrint("hello \(count)!")
+            count += 1
+        }
+
+        XCTAssert(count == 100)
+    }
+
     func testScheduleActor1() {
         let expectation = XCTestExpectation(description: "Wait for counter to finish")
         let counter = Counter()

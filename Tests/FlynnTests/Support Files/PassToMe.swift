@@ -12,6 +12,10 @@ import XCTest
 
 class PassToMe: Actor {
 
+    public func unsafePrint(_ string: String) {
+        print(string)
+    }
+
     lazy var beString = ChainableBehavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter String - a swift string ( a struct )
         print("hello world from " + args[x:0])
