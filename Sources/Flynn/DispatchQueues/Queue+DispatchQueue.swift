@@ -15,7 +15,7 @@ func bridge<T: AnyObject>(obj: T) -> UnsafeRawPointer {
 }
 
 func bridge<T: AnyObject>(ptr: UnsafeRawPointer) -> T {
-    return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
+    return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
 }
 
 public class Queue<T: AnyObject> {

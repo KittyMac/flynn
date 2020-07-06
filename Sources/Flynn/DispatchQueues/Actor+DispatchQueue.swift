@@ -96,7 +96,7 @@ open class Actor {
         // This is required because with programming patterns like
         // Actor().beBehavior() Swift will dealloc the actor prior
         // to the behavior being called.
-        self.unsafeRetain()
+        Flynn.schedule(self)
     }
 
     deinit {
