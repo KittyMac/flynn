@@ -53,7 +53,7 @@ class PonyRTTests: XCTestCase {
 
         let concurrentQueue = DispatchQueue(label: "test.concurrent.queue", attributes: .concurrent)
 
-        for idx in 0..<100 {
+        for _ in 0..<100 {
             concurrentQueue.async {
                 queue.enqueue(PassToMe())
             }

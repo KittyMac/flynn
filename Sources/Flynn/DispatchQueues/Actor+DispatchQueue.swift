@@ -61,7 +61,6 @@ open class Actor {
     }
 
     public var safeCoreAffinity: CoreAffinity = .preferEfficiency
-    private var messagesCount: AtomicCount = AtomicCount()
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
@@ -86,7 +85,8 @@ open class Actor {
     }
 
     public var unsafeMessagesCount: Int32 {
-        return messagesCount.value
+        //return messagesCount.value
+        return Int32(messages.count)
     }
 
     public init() {
@@ -105,8 +105,6 @@ open class Actor {
 
     private var messages = Queue<ActorMessage>(128)
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
-        messagesCount.inc()
-
         if messages.enqueue(ActorMessage(block, args)) {
             Flynn.schedule(self)
         }
@@ -119,7 +117,6 @@ open class Actor {
             while let msg = messages.dequeue() {
                 //print("  msg for \(self)")
                 msg.run()
-                messagesCount.dec()
             }
             runningLock.unlock()
         }

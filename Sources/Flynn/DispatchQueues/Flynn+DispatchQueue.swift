@@ -58,6 +58,7 @@ open class Flynn {
     private static var schedulers: [Scheduler] = []
     private static var schedulerIdx: Int = 0
     private static var running = AtomicContidion()
+    private static var device = Device()
 
     public class func startup() {
         running.check {
@@ -74,8 +75,7 @@ open class Flynn {
     }
 
     public static var cores: Int {
-        // TODO: no hyperthreads pls!
-        return ProcessInfo.processInfo.processorCount / 2
+        return device.cores
     }
 
     public static func schedule(_ actor: Actor) {
