@@ -11,15 +11,20 @@ import Foundation
 #if !PLATFORM_SUPPORTS_PONYRT
 
 class ActorMessage {
-    let block: BehaviorBlock
-    let args: BehaviorArgs
+    var block: BehaviorBlock?
+    var args: BehaviorArgs?
     init(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
         self.block = block
         self.args = args
     }
 
     func run() {
-        block(args)
+        block!(args!)
+    }
+
+    func clear() {
+        block = nil
+        args = nil
     }
 }
 
@@ -81,9 +86,24 @@ open class Actor {
         print("deinit - Actor")
     }
 
+    private var messagePool = Queue<ActorMessage>(128)
+    private func unpoolActorMessage(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) -> ActorMessage {
+        if let msg = messagePool.dequeue() {
+            msg.args = args
+            msg.block = block
+            return msg
+        }
+        return ActorMessage(block, args)
+    }
+
+    private func poolActorMessage(_ msg: ActorMessage) {
+        msg.clear()
+        messagePool.enqueue(msg)
+    }
+
     private var messages = Queue<ActorMessage>(128)
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
-        if messages.enqueue(ActorMessage(block, args)) {
+        if messages.enqueue(unpoolActorMessage(block, args)) {
             Flynn.schedule(self, safeCoreAffinity)
         }
     }
@@ -95,7 +115,7 @@ open class Actor {
             while let msg = messages.peek() {
                 //print("  msg for \(self)")
                 msg.run()
-                messages.dequeue()
+                poolActorMessage(messages.dequeue()!)
 
                 if yield {
                     yield = false
