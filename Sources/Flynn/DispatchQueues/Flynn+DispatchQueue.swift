@@ -14,11 +14,22 @@ class AtomicContidion {
     private var _value: Bool = false
     private var lock = NSLock()
 
-    func check(_ block: () -> Void) {
+    func checkInactive(_ block: () -> Void) {
         if _value == false {
             lock.lock()
             if _value == false {
                 _value = true
+                block()
+            }
+            lock.unlock()
+        }
+    }
+
+    func checkActive(_ block: () -> Void) {
+        if _value == true {
+            lock.lock()
+            if _value == true {
+                _value = false
                 block()
             }
             lock.unlock()
@@ -61,7 +72,7 @@ open class Flynn {
     private static var device = Device()
 
     public class func startup() {
-        running.check {
+        running.checkInactive {
             for idx in 0..<device.eCores {
                 schedulers.append(Scheduler(idx, .onlyEfficiency))
             }
@@ -72,10 +83,12 @@ open class Flynn {
     }
 
     public class func shutdown() {
-        for scheduler in schedulers {
-            scheduler.join()
+        running.checkActive {
+            for scheduler in schedulers {
+                scheduler.join()
+            }
+            schedulers.removeAll()
         }
-        schedulers.removeAll()
     }
 
     public static var cores: Int {
