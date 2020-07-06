@@ -103,7 +103,7 @@ open class Actor {
         // first message.
         #if os(Linux)
         _ = Unmanaged.passRetained(self)
-        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { (_) in
+        _ = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { (_) in
             _ = Unmanaged.passUnretained(self).release()
         }
         #else
