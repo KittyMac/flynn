@@ -11,9 +11,14 @@ import Foundation
 class ActorMessage {
     var block: BehaviorBlock?
     var args: BehaviorArgs?
-    init(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
-        self.block = block
-        self.args = args
+    init(_ blockIn: @escaping BehaviorBlock, _ argsIn: BehaviorArgs) {
+        block = blockIn
+        args = argsIn
+    }
+
+    func set(_ blockIn: @escaping BehaviorBlock, _ argsIn: BehaviorArgs) {
+        block = blockIn
+        args = argsIn
     }
 
     func run() {
@@ -100,8 +105,7 @@ open class Actor {
     private var messagePool = Queue<ActorMessage>(128)
     private func unpoolActorMessage(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) -> ActorMessage {
         if let msg = messagePool.dequeue() {
-            msg.args = args
-            msg.block = block
+            msg.set(block, args)
             return msg
         }
         return ActorMessage(block, args)
@@ -128,7 +132,7 @@ open class Actor {
                 //print("  msg for \(self)")
                 msg.run()
                 poolActorMessage(messages.dequeue()!)
-                
+
                 maxMessages -= 1
                 if maxMessages <= 0 {
                     break

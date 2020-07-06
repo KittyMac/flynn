@@ -27,13 +27,24 @@ public class Queue<T: AnyObject> {
     private var writeIdx = 0
     private var readIdx = 0
 
-    private var readLock = NSLock()
-    private var writeLock = NSLock()
+    private var readLock = pthread_mutex_t()
+    private var writeLock = pthread_mutex_t()
 
     public init(_ size: Int) {
         arraySize = size
         arrayPtr = UnsafeMutablePointer<UnsafeRawPointer?>.allocate(capacity: arraySize)
         arrayPtr.initialize(repeating: nil, count: arraySize)
+
+        pthread_mutex_init(&readLock, nil)
+        pthread_mutex_init(&writeLock, nil)
+    }
+
+    deinit {
+        clear()
+        arrayPtr.deallocate()
+
+        pthread_mutex_destroy(&readLock)
+        pthread_mutex_destroy(&writeLock)
     }
 
     public var isEmpty: Bool {
@@ -57,7 +68,7 @@ public class Queue<T: AnyObject> {
     }
 
     private func grow() {
-        readLock.lock()
+        pthread_mutex_lock(&readLock)
 
         let oldArraySize = arraySize
         arraySize *= 2
@@ -77,7 +88,7 @@ public class Queue<T: AnyObject> {
         writeIdx = newWriteIdx
         readIdx = 0
 
-        readLock.unlock()
+        pthread_mutex_unlock(&readLock)
         //print("grow[\(arraySize)]  \(readIdx) // \(writeIdx)")
     }
 
@@ -87,7 +98,7 @@ public class Queue<T: AnyObject> {
 
     @discardableResult
     public func enqueue(_ element: T) -> Bool {
-        writeLock.lock()
+        pthread_mutex_lock(&writeLock)
 
         let wasEmpty = isEmpty
         while isFull {
@@ -100,18 +111,18 @@ public class Queue<T: AnyObject> {
         (arrayPtr+writeIdx).pointee = elementPtr
         writeIdx = nextIndex(writeIdx, arraySize)
 
-        writeLock.unlock()
+        pthread_mutex_unlock(&writeLock)
 
         return wasEmpty
     }
 
     @discardableResult
     public func dequeue() -> T? {
-        readLock.lock()
+        pthread_mutex_lock(&readLock)
 
         let elementPtr = (arrayPtr+readIdx).pointee
         if elementPtr == nil {
-            readLock.unlock()
+            pthread_mutex_unlock(&readLock)
             return nil
         }
         //print("dequeue[\(readIdx)]  \(elementPtr!)")
@@ -119,24 +130,39 @@ public class Queue<T: AnyObject> {
         (arrayPtr+readIdx).pointee = nil
         readIdx = nextIndex(readIdx, arraySize)
 
-        readLock.unlock()
+        pthread_mutex_unlock(&readLock)
         return bridge(ptr: elementPtr!)
     }
 
     public func peek() -> T? {
+        pthread_mutex_lock(&readLock)
         let elementPtr = (arrayPtr+readIdx).pointee
         if elementPtr == nil {
+            pthread_mutex_unlock(&readLock)
             return nil
         }
+        pthread_mutex_unlock(&readLock)
         return bridgePeek(ptr: elementPtr!)
     }
 
+    public func clear() {
+        pthread_mutex_lock(&readLock)
+
+        while let elementPtr = (arrayPtr+readIdx).pointee {
+            let _: T = bridge(ptr: elementPtr)
+            (arrayPtr+readIdx).pointee = nil
+            readIdx = nextIndex(readIdx, arraySize)
+        }
+
+        pthread_mutex_unlock(&readLock)
+    }
+
     public func markEmpty() -> Bool {
-        writeLock.lock()
-        readLock.lock()
+        pthread_mutex_lock(&writeLock)
+        pthread_mutex_lock(&readLock)
         let wasEmpty = isEmpty
-        readLock.unlock()
-        writeLock.unlock()
+        pthread_mutex_unlock(&readLock)
+        pthread_mutex_unlock(&writeLock)
         return wasEmpty
     }
 }
