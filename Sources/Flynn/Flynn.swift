@@ -67,7 +67,7 @@ open class Flynn {
         if coreAffinity == .onlyEfficiency {
             minimumSchedulerWithStride( stride(from: 0, to: device.eCores, by: 1) ).schedule(actor)
         } else if coreAffinity == .onlyPerformance {
-            minimumSchedulerWithStride( stride(from: device.eCores, to: device.pCores, by: 1) ).schedule(actor)
+            minimumSchedulerWithStride( stride(from: device.eCores, to: device.cores, by: 1) ).schedule(actor)
         } else if coreAffinity == .preferPerformance {
             minimumSchedulerWithStride( stride(from: device.cores-1, to: 0, by: -1) ).schedule(actor)
         } else {
