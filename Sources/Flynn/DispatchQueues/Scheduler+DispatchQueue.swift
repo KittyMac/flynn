@@ -21,17 +21,33 @@ open class Scheduler {
 
     private var actors = Queue<Actor>(128)
 
+    private let index: Int
     private let affinity: CoreAffinity
     private let uuid: String
 
     private lazy var thread = Thread(block: run)
     private var running: Bool
 
-    init(_ affinity: CoreAffinity) {
+    var count: Int {
+        return actors.count
+    }
+
+    init(_ index: Int, _ affinity: CoreAffinity) {
+        self.index = index
         self.affinity = affinity
         self.uuid = UUID().uuidString
 
         running = true
+
+        if affinity == .onlyPerformance {
+            thread.name = "Flynn #\(index) (P)"
+            thread.qualityOfService = .userInitiated
+        } else if affinity == .onlyEfficiency {
+            thread.name = "Flynn #\(index) (E)"
+            thread.qualityOfService = .utility
+        } else {
+            thread.name = "Flynn #\(index) (unknown)"
+        }
 
         thread.start()
     }

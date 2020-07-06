@@ -10,19 +10,6 @@ import Foundation
 
 #if !PLATFORM_SUPPORTS_PONYRT
 
-internal extension Actor {
-    @discardableResult
-    func unsafeRetain() -> Self {
-        _ = Unmanaged.passRetained(self)
-        return self
-    }
-    @discardableResult
-    func unsafeRelease() -> Self {
-        _ = Unmanaged.passUnretained(self).release()
-        return self
-    }
-}
-
 class ActorMessage {
     let block: BehaviorBlock
     let args: BehaviorArgs
@@ -37,13 +24,6 @@ class ActorMessage {
 }
 
 open class Actor {
-
-    public enum CoreAffinity: Int32 {
-        case preferEfficiency = 0
-        case preferPerformance = 1
-        case onlyEfficiency = 2
-        case onlyPerformance = 3
-    }
 
     private class func startup() {
         Flynn.startup()
@@ -69,17 +49,15 @@ open class Actor {
         }
     }
 
+    private var yield: Bool = false
     public func unsafeYield() {
-        // yielding is not supported with DispatchQueues
+        yield = true
     }
 
     public func unsafeShouldWaitOnActors(_ actors: [Actor]) -> Bool {
         var num: Int32 = 0
         for actor in actors {
             num += actor.unsafeMessagesCount
-            if num > 0 {
-                Flynn.schedule(actor)
-            }
         }
         return num > 0
     }
@@ -96,7 +74,7 @@ open class Actor {
         // This is required because with programming patterns like
         // Actor().beBehavior() Swift will dealloc the actor prior
         // to the behavior being called.
-        Flynn.schedule(self)
+        Flynn.schedule(self, safeCoreAffinity)
     }
 
     deinit {
@@ -106,7 +84,7 @@ open class Actor {
     private var messages = Queue<ActorMessage>(128)
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
         if messages.enqueue(ActorMessage(block, args)) {
-            Flynn.schedule(self)
+            Flynn.schedule(self, safeCoreAffinity)
         }
     }
 
@@ -117,6 +95,11 @@ open class Actor {
             while let msg = messages.dequeue() {
                 //print("  msg for \(self)")
                 msg.run()
+
+                if yield {
+                    yield = false
+                    break
+                }
             }
             runningLock.unlock()
         }

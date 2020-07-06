@@ -62,8 +62,11 @@ open class Flynn {
 
     public class func startup() {
         running.check {
-            for _ in 0..<cores {
-                schedulers.append(Scheduler(.onlyPerformance))
+            for idx in 0..<device.eCores {
+                schedulers.append(Scheduler(idx, .onlyEfficiency))
+            }
+            for idx in 0..<device.pCores {
+                schedulers.append(Scheduler(idx, .onlyPerformance))
             }
         }
     }
@@ -72,15 +75,43 @@ open class Flynn {
         for scheduler in schedulers {
             scheduler.join()
         }
+        schedulers.removeAll()
     }
 
     public static var cores: Int {
         return device.cores
     }
 
-    public static func schedule(_ actor: Actor) {
-        schedulers[schedulerIdx].schedule(actor)
-        schedulerIdx = (schedulerIdx + 1) % schedulers.count
+    @inline(__always)
+    private static func minimumSchedulerWithStride(_ stride: StrideTo<Int>) -> Scheduler {
+        var minIdx = 0
+        var minCount = 999999
+
+        for idx in stride {
+            let count = schedulers[idx].count
+            if count == 0 {
+                return schedulers[idx]
+            }
+            if minIdx == -1 || count < minCount {
+                minCount = count
+                minIdx = idx
+            }
+        }
+
+        return schedulers[minIdx]
+    }
+
+    public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity) {
+        if coreAffinity == .onlyEfficiency {
+            minimumSchedulerWithStride( stride(from: 0, to: device.eCores, by: 1) ).schedule(actor)
+        } else if coreAffinity == .onlyPerformance {
+            minimumSchedulerWithStride( stride(from: device.eCores, to: device.pCores, by: 1) ).schedule(actor)
+        } else if coreAffinity == .preferPerformance {
+            minimumSchedulerWithStride( stride(from: device.cores-1, to: 0, by: -1) ).schedule(actor)
+        } else {
+            // preferEfficiency
+            minimumSchedulerWithStride( stride(from: 0, to: device.cores, by: 1) ).schedule(actor)
+        }
     }
 }
 
