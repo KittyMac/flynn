@@ -92,7 +92,6 @@ open class Actor {
         return Int32(messages.count)
     }
 
-    private var hasUnbalancedRetain: Bool = true
     public init() {
         Flynn.startup()
         uuid = UUID().uuidString
@@ -102,7 +101,14 @@ open class Actor {
         // to the behavior being called. So we introduce an unbalanced
         // retain which we release as soon as this actor processes its
         // first message.
+        #if os(Linux)
         _ = Unmanaged.passRetained(self)
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { (_) in
+            _ = Unmanaged.passUnretained(self).release()
+        }
+        #else
+        _ = Unmanaged.passRetained(self).autorelease()
+        #endif
     }
 
     deinit {
@@ -150,11 +156,6 @@ open class Actor {
                     yield = false
                     break
                 }
-            }
-
-            if hasUnbalancedRetain {
-                _ = Unmanaged.passUnretained(self).release()
-                hasUnbalancedRetain = false
             }
 
             runningLock.unlock()
