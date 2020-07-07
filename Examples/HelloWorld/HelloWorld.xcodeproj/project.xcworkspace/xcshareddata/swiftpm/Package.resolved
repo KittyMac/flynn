@@ -5,8 +5,8 @@
         "package": "Flynn",
         "repositoryURL": "https://github.com/KittyMac/flynn",
         "state": {
-          "branch": "dispatch_queues_opt",
-          "revision": "a9eabdc74f46dbcf3466cc24f2f0ca651032dd34",
+          "branch": "master",
+          "revision": "e19ff845086805d24bbc2334b2802c1c67cc65a0",
           "version": null
         }
       }
