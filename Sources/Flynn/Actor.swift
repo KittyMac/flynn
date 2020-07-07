@@ -135,21 +135,23 @@ open class Actor {
     internal func unsafeRun() -> Bool {
         if runningLock.try() {
             //print("run \(self)")
-            var maxMessages = 1000
-            while let msg = messages.peek() {
+            autoreleasepool {
+                var maxMessages = 1000
+                while let msg = messages.peek() {
 
-                //print("  msg for \(self)")
-                msg.run()
-                poolActorMessage(messages.dequeue()!)
+                    //print("  msg for \(self)")
+                    msg.run()
+                    poolActorMessage(messages.dequeue()!)
 
-                maxMessages -= 1
-                if maxMessages <= 0 {
-                    break
-                }
+                    maxMessages -= 1
+                    if maxMessages <= 0 {
+                        break
+                    }
 
-                if yield {
-                    yield = false
-                    break
+                    if yield {
+                        yield = false
+                        break
+                    }
                 }
             }
 
