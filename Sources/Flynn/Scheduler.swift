@@ -69,50 +69,58 @@ open class Scheduler {
         return actors.steal()
     }
 
-    func run() {
-        while running {
-            autoreleasepool {
-                while let actor = actors.dequeue() {
-                    // if we're not allowed on this scheduler due to core affinity, then
-                    // we need to reschedule this actor on one which can run it
-                    var actorAffinity = actor.unsafeCoreAffinity
-                    if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
-                        actorAffinity != affinity {
+    private func runInternal() {
+        while let actor = actors.dequeue() {
+            // if we're not allowed on this scheduler due to core affinity, then
+            // we need to reschedule this actor on one which can run it
+            var actorAffinity = actor.unsafeCoreAffinity
+            if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
+                actorAffinity != affinity {
+                Flynn.schedule(actor, actor.unsafeCoreAffinity)
+                continue
+            }
+
+            while actor.unsafeRun() {
+                actorAffinity = actor.unsafeCoreAffinity
+
+                if let next = actors.peek() {
+                    if next.unsafePriority >= actor.unsafePriority {
                         Flynn.schedule(actor, actor.unsafeCoreAffinity)
-                        continue
-                    }
-
-                    while actor.unsafeRun() {
-                        actorAffinity = actor.unsafeCoreAffinity
-
-                        if let next = actors.peek() {
-                            if next.unsafePriority >= actor.unsafePriority {
-                                Flynn.schedule(actor, actor.unsafeCoreAffinity)
-                                break
-                            }
-                        }
-
-                        // Before we can just re-run the same actor, we need to ensure the
-                        // core affinities, which might have changed, are still good
-                        if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
-                            actorAffinity != affinity {
-                            Flynn.schedule(actor, actor.unsafeCoreAffinity)
-                            break
-                        }
-                        if  (actorAffinity == .preferEfficiency && affinity == .onlyPerformance) ||
-                            (actorAffinity == .preferPerformance && affinity == .onlyEfficiency) {
-                            if Flynn.schedule(actor, actor.unsafeCoreAffinity, true) {
-                                break
-                            }
-                        }
+                        break
                     }
                 }
-                if actors.isEmpty {
-                    idle = true
-                    waitingForWorkSemaphore.wait()
-                    idle = false
+
+                // Before we can just re-run the same actor, we need to ensure the
+                // core affinities, which might have changed, are still good
+                if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
+                    actorAffinity != affinity {
+                    Flynn.schedule(actor, actor.unsafeCoreAffinity)
+                    break
+                }
+                if  (actorAffinity == .preferEfficiency && affinity == .onlyPerformance) ||
+                    (actorAffinity == .preferPerformance && affinity == .onlyEfficiency) {
+                    if Flynn.schedule(actor, actor.unsafeCoreAffinity, true) {
+                        break
+                    }
                 }
             }
+        }
+        if actors.isEmpty {
+            idle = true
+            waitingForWorkSemaphore.wait()
+            idle = false
+        }
+    }
+
+    func run() {
+        while running {
+#if os(Linux)
+            runInternal()
+#else
+            autoreleasepool {
+                runInternal()
+            }
+#endif
         }
     }
 
