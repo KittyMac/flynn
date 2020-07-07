@@ -47,10 +47,25 @@ public class Queue<T: AnyObject> {
         pthread_mutex_destroy(&writeLock)
     }
 
+    @inline(__always)
+    private func nextIndex(_ idx: Int, _ size: Int) -> Int {
+        return (idx + 1) % size
+    }
+
+    @inline(__always)
+    private func prevIndex(_ idx: Int, _ size: Int) -> Int {
+        if idx <= 0 {
+            return arraySize - 1
+        }
+        return idx - 1
+    }
+
+    @inline(__always)
     public var isEmpty: Bool {
         return writeIdx == readIdx
     }
 
+    @inline(__always)
     public var isFull: Bool {
         return nextIndex(writeIdx, arraySize) == readIdx
     }
@@ -92,17 +107,6 @@ public class Queue<T: AnyObject> {
         //print("grow[\(arraySize)]  \(readIdx) // \(writeIdx)")
     }
 
-    private func nextIndex(_ idx: Int, _ size: Int) -> Int {
-        return (idx + 1) % size
-    }
-
-    private func prevIndex(_ idx: Int, _ size: Int) -> Int {
-        if idx <= 0 {
-            return arraySize - 1
-        }
-        return idx - 1
-    }
-
     @discardableResult
     public func enqueue(_ element: T) -> Bool {
         pthread_mutex_lock(&writeLock)
@@ -112,10 +116,9 @@ public class Queue<T: AnyObject> {
             grow()
         }
 
-        let elementPtr = bridge(obj: element)
         //print("enqueue[\(writeIdx)]  \(elementPtr)")
 
-        (arrayPtr+writeIdx).pointee = elementPtr
+        (arrayPtr+writeIdx).pointee = bridge(obj: element)
         writeIdx = nextIndex(writeIdx, arraySize)
 
         pthread_mutex_unlock(&writeLock)

@@ -30,7 +30,10 @@ open class Scheduler {
     private var waitingForWorkSemaphore = DispatchSemaphore(value: 0)
 
     var count: Int {
-        return actors.count
+        if idle {
+            return actors.count
+        }
+        return actors.count + 1
     }
 
     init(_ index: Int, _ affinity: CoreAffinity) {
@@ -57,7 +60,9 @@ open class Scheduler {
     func schedule(_ actor: Actor) {
         //print("schedule \(actor)")
         actors.enqueue(actor)
-        waitingForWorkSemaphore.signal()
+        if idle {
+            waitingForWorkSemaphore.signal()
+        }
     }
 
     func steal() -> Actor? {
@@ -67,10 +72,9 @@ open class Scheduler {
     func run() {
         while running {
             while let actor = actors.dequeue() {
-
-                // if i'm not allowed to run this actor due to core affinity, then we need
-                // to rechedule this actor on a core which is allowed to run it.
-                let actorAffinity = actor.unsafeCoreAffinity
+                // if we're not allowed on this scheduler due to core affinity, then
+                // we need to reschedule this actor on one which can run it
+                var actorAffinity = actor.unsafeCoreAffinity
                 if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
                     actorAffinity != affinity {
                     Flynn.schedule(actor, actor.unsafeCoreAffinity)
@@ -78,6 +82,8 @@ open class Scheduler {
                 }
 
                 while actor.unsafeRun() {
+                    actorAffinity = actor.unsafeCoreAffinity
+
                     if let next = actors.peek() {
                         if next.unsafePriority >= actor.unsafePriority {
                             Flynn.schedule(actor, actor.unsafeCoreAffinity)
@@ -85,8 +91,13 @@ open class Scheduler {
                         }
                     }
 
-                    // If we prefer a different affinity, check to see if one of those schedulers
-                    // is idle, if it is then we should reschedule to get on the right scheduler
+                    // Before we can just re-run the same actor, we need to ensure the
+                    // core affinities, which might have changed, are still good
+                    if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
+                        actorAffinity != affinity {
+                        Flynn.schedule(actor, actor.unsafeCoreAffinity)
+                        break
+                    }
                     if  (actorAffinity == .preferEfficiency && affinity == .onlyPerformance) ||
                         (actorAffinity == .preferPerformance && affinity == .onlyEfficiency) {
                         if Flynn.schedule(actor, actor.unsafeCoreAffinity, true) {

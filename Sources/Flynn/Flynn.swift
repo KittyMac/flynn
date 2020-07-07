@@ -20,8 +20,6 @@ open class Flynn {
     private static var running = AtomicContidion()
     private static var device = Device()
 
-    private static var stats = ProfileStats()
-
     public class func startup() {
         running.checkInactive {
             for idx in 0..<device.eCores {
@@ -35,8 +33,6 @@ open class Flynn {
 
     public class func shutdown() {
         running.checkActive {
-            stats.printStats()
-
             for scheduler in schedulers {
                 scheduler.join()
             }
@@ -61,9 +57,6 @@ open class Flynn {
                 return schedulers[idx]
             }
             let count = schedulers[idx].count
-            if count == 0 {
-                return schedulers[idx]
-            }
             if count < minCount {
                 minCount = count
                 minIdx = idx
@@ -78,7 +71,7 @@ open class Flynn {
             return nil
         }
 
-        if maxCount > 2 {
+        if maxCount > 1 {
             if let actor = schedulers[maxIdx].steal() {
                 Flynn.schedule(actor, actor.unsafeCoreAffinity)
             }

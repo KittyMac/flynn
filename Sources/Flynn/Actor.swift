@@ -154,6 +154,8 @@ open class Actor {
             }
 
             runningLock.unlock()
+        } else {
+            return false
         }
 
         return !messages.markEmpty()
