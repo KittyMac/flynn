@@ -98,9 +98,9 @@ open class Device {
 
         cores = eCores + pCores
 
-        print("cores: \(cores)")
-        print("ecores: \(eCores)")
-        print("pcores: \(pCores)")
+        //print("cores: \(cores)")
+        //print("ecores: \(eCores)")
+        //print("pcores: \(pCores)")
     }
 
 }

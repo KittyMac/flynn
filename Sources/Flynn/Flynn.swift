@@ -52,7 +52,7 @@ open class Flynn {
             if actor.unsafeCoreAffinity == .onlyPerformance || actor.unsafeCoreAffinity == .preferPerformance {
                 matchAffinity = .onlyPerformance
             }
-            
+
             // we want to find an idle scheduler which matches our core affinity.
             // If one doesn't exist, then we should return false and not schedule the actor
             for scheduler in schedulers {

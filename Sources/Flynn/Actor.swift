@@ -106,10 +106,6 @@ open class Actor {
         #endif
     }
 
-    deinit {
-        print("deinit - Actor")
-    }
-
     private var messagePool = Queue<ActorMessage>(128, false)
     private func unpoolActorMessage(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) -> ActorMessage {
         if let msg = messagePool.dequeue() {

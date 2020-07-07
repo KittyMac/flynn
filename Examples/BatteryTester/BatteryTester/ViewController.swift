@@ -19,13 +19,13 @@ class Counter: Actor {
     public var unsafeSleepAmount: UInt32 = 0
 
     private var done: Bool = false
-    private let batchCount: Int = 100000
+    private let batchCount: Int  = 100000
 
-    init(_ sleepAmount: UInt32, _ qos: Int32) {
+    init(_ sleepAmount: UInt32, _ qos: Int) {
         super.init()
 
         if let qos = CoreAffinity(rawValue: qos) {
-            safeCoreAffinity = qos
+            unsafeCoreAffinity = qos
         }
 
         unsafeSleepAmount = sleepAmount
@@ -54,9 +54,9 @@ class Counter: Actor {
     }
 
     lazy var beSetCoreAffinity = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-        // flynnlint:parameter Int32 - quality of service
+        // flynnlint:parameter Int - core affinity value
         if let qos = CoreAffinity(rawValue: args[x:0]) {
-            self.safeCoreAffinity = qos
+            self.unsafeCoreAffinity = qos
         }
     }
 }
@@ -78,7 +78,7 @@ class ViewController: PlanetViewController {
         guard let coreAffinity = coreAffinity else { return }
 
         let sleepAmount = UInt32(sleepSlider.value)
-        let qos = Int32(coreAffinity.selectedSegmentIndex)
+        let qos = Int(coreAffinity.selectedSegmentIndex)
         while counters.count < num {
             counters.append(Counter(sleepAmount, qos))
         }
