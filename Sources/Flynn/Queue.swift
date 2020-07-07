@@ -22,15 +22,18 @@ func bridgePeek<T: AnyObject>(ptr: UnsafeRawPointer) -> T {
 
 public class Queue<T: AnyObject> {
     // safe only so long as there is one consumer and multiple producers
+    private let arrayResizing: Bool
     private var arraySize: Int = 0
     private var arrayPtr: UnsafeMutablePointer<UnsafeRawPointer?>
+
     private var writeIdx = 0
     private var readIdx = 0
 
     private var readLock = pthread_mutex_t()
     private var writeLock = pthread_mutex_t()
 
-    public init(_ size: Int) {
+    public init(_ size: Int, _ resizing: Bool = true) {
+        arrayResizing = resizing
         arraySize = size
         arrayPtr = UnsafeMutablePointer<UnsafeRawPointer?>.allocate(capacity: arraySize)
         arrayPtr.initialize(repeating: nil, count: arraySize)
@@ -113,6 +116,10 @@ public class Queue<T: AnyObject> {
 
         let wasEmpty = isEmpty
         while isFull {
+            if arrayResizing == false {
+                pthread_mutex_unlock(&writeLock)
+                return false
+            }
             grow()
         }
 
