@@ -1,16 +1,16 @@
 import Foundation
 
 func printTimeElapsedWhenRunningCode(title: String, operation:() -> Void) {
-    let startTime = CFAbsoluteTimeGetCurrent()
+    let startTime = ProcessInfo.processInfo.systemUptime
     operation()
-    let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+    let timeElapsed = ProcessInfo.processInfo.systemUptime - startTime
     print("Time elapsed for \(title): \(Int(timeElapsed * 1000)) ms")
 }
 
 func timeElapsedInSecondsWhenRunningCode(operation: () -> Void) -> Double {
-    let startTime = CFAbsoluteTimeGetCurrent()
+    let startTime = ProcessInfo.processInfo.systemUptime
     operation()
-    let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+    let timeElapsed = ProcessInfo.processInfo.systemUptime - startTime
     return Double(timeElapsed)
 }
 
@@ -19,9 +19,9 @@ class ProfileStats {
     var timeSchedules: Double = 0
 
     func recordSchedule(operation: () -> Void) {
-        let startTime = CFAbsoluteTimeGetCurrent()
+        let startTime = ProcessInfo.processInfo.systemUptime
         operation()
-        let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+        let timeElapsed = ProcessInfo.processInfo.systemUptime - startTime
 
         numSchedules += 1
         timeSchedules += timeElapsed
