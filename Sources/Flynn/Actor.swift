@@ -47,12 +47,8 @@ open class Actor {
 
     private let uuid: String
 
-    public var safePriority: Int32 {
-        set { withExtendedLifetime(newValue) { } }
-        get { return 0 }
-    }
-
-    public var safeCoreAffinity: CoreAffinity = .preferEfficiency
+    public var unsafePriority: Int = 0
+    public var unsafeCoreAffinity: CoreAffinity = .preferEfficiency
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
@@ -131,12 +127,12 @@ open class Actor {
     private var messages = Queue<ActorMessage>(128)
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
         if messages.enqueue(unpoolActorMessage(block, args)) {
-            Flynn.schedule(self, safeCoreAffinity)
+            Flynn.schedule(self, unsafeCoreAffinity)
         }
     }
 
     private var runningLock = NSLock()
-    internal func unsafeRun() {
+    internal func unsafeRun() -> Bool {
         if runningLock.try() {
             //print("run \(self)")
             var maxMessages = 1000
@@ -160,8 +156,6 @@ open class Actor {
             runningLock.unlock()
         }
 
-        if !messages.markEmpty() {
-            Flynn.schedule(self, safeCoreAffinity)
-        }
+        return !messages.markEmpty()
     }
 }

@@ -75,11 +75,17 @@ open class Scheduler {
         while running {
             while let actor = actors.dequeue() {
                 scalingSleep = 0
-                actor.unsafeRun()
+                while actor.unsafeRun() {
+                    if let next = actors.peek() {
+                        if next.unsafePriority >= actor.unsafePriority {
+                            Flynn.schedule(actor, actor.unsafeCoreAffinity)
+                            break
+                        }
+                    }
+                }
             }
 
             if actors.isEmpty {
-
                 if !Flynn.steal(self) {
                     scalingSleep += scalingSleepDelta
                     if scalingSleep > scalingSleepMax {
