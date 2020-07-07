@@ -22,6 +22,7 @@ open class Scheduler {
     internal let index: Int
     internal let affinity: CoreAffinity
     internal let uuid: String
+    internal var idle: Bool
 
     private lazy var thread = Thread(block: run)
     private var running: Bool
@@ -38,6 +39,7 @@ open class Scheduler {
         self.uuid = UUID().uuidString
 
         running = true
+        idle = false
 
         if affinity == .onlyPerformance {
             thread.name = "Flynn #\(index) (P)"
@@ -65,6 +67,16 @@ open class Scheduler {
     func run() {
         while running {
             while let actor = actors.dequeue() {
+
+                // if i'm not allowed to run this actor due to core affinity, then we need
+                // to rechedule this actor on a core which is allowed to run it.
+                let actorAffinity = actor.unsafeCoreAffinity
+                if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
+                    actorAffinity != affinity {
+                    Flynn.schedule(actor, actor.unsafeCoreAffinity)
+                    continue
+                }
+
                 while actor.unsafeRun() {
                     if let next = actors.peek() {
                         if next.unsafePriority >= actor.unsafePriority {
@@ -72,11 +84,22 @@ open class Scheduler {
                             break
                         }
                     }
+
+                    // If we prefer a different affinity, check to see if one of those schedulers
+                    // is idle, if it is then we should reschedule to get on the right scheduler
+                    if  (actorAffinity == .preferEfficiency && affinity == .onlyPerformance) ||
+                        (actorAffinity == .preferPerformance && affinity == .onlyEfficiency) {
+                        if Flynn.schedule(actor, actor.unsafeCoreAffinity, true) {
+                            break
+                        }
+                    }
                 }
             }
 
             if actors.isEmpty {
+                idle = true
                 waitingForWorkSemaphore.wait()
+                idle = false
             }
         }
     }

@@ -49,7 +49,7 @@ open class Flynn {
     }
 
     @inline(__always)
-    private static func minimumSchedulerWithStride(_ stride: StrideTo<Int>) -> Scheduler {
+    private static func minimumSchedulerWithStride(_ stride: StrideTo<Int>, _ onlyIfIdle: Bool) -> Scheduler? {
         var minIdx = 0
         var minCount = 999999
 
@@ -57,6 +57,9 @@ open class Flynn {
         var maxCount = 0
 
         for idx in stride {
+            if schedulers[idx].idle {
+                return schedulers[idx]
+            }
             let count = schedulers[idx].count
             if count == 0 {
                 return schedulers[idx]
@@ -71,6 +74,10 @@ open class Flynn {
             }
         }
 
+        if onlyIfIdle && schedulers[maxIdx].idle == true {
+            return nil
+        }
+
         if maxCount > 2 {
             if let actor = schedulers[maxIdx].steal() {
                 Flynn.schedule(actor, actor.unsafeCoreAffinity)
@@ -80,24 +87,25 @@ open class Flynn {
         return schedulers[minIdx]
     }
 
-    public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity) {
-        stats.recordSchedule {
-            var scheduler: Scheduler?
+    @discardableResult
+    public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity, _ onlyIfIdle: Bool = false) -> Bool {
+        var scheduler: Scheduler?
 
-            if coreAffinity == .onlyEfficiency {
-                scheduler = minimumSchedulerWithStride( stride(from: 0, to: device.eCores, by: 1) )
-            } else if coreAffinity == .onlyPerformance {
-                scheduler = minimumSchedulerWithStride( stride(from: device.eCores, to: device.cores, by: 1) )
-            } else if coreAffinity == .preferPerformance {
-                scheduler = minimumSchedulerWithStride( stride(from: device.cores-1, to: -1, by: -1) )
-            } else {
-                // preferEfficiency
-                scheduler = minimumSchedulerWithStride( stride(from: 0, to: device.cores, by: 1) )
-            }
-
-            if let scheduler = scheduler {
-                scheduler.schedule(actor)
-            }
+        if coreAffinity == .onlyEfficiency {
+            scheduler = minimumSchedulerWithStride( stride(from: 0, to: device.eCores, by: 1), onlyIfIdle )
+        } else if coreAffinity == .onlyPerformance {
+            scheduler = minimumSchedulerWithStride( stride(from: device.eCores, to: device.cores, by: 1), onlyIfIdle )
+        } else if coreAffinity == .preferPerformance {
+            scheduler = minimumSchedulerWithStride( stride(from: device.cores-1, to: -1, by: -1), onlyIfIdle )
+        } else {
+            // preferEfficiency
+            scheduler = minimumSchedulerWithStride( stride(from: 0, to: device.cores, by: 1), onlyIfIdle )
         }
+
+        if let scheduler = scheduler {
+            scheduler.schedule(actor)
+            return true
+        }
+        return false
     }
 }
