@@ -80,8 +80,14 @@ open class Flynn {
         return schedulers[minIdx]
     }
 
+    private static var lastSchedulerIdx: Int = 0
     @discardableResult
     public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity, _ onlyIfIdle: Bool = false) -> Bool {
+
+        lastSchedulerIdx = (lastSchedulerIdx + 1) % schedulers.count
+        schedulers[lastSchedulerIdx].schedule(actor)
+        return true
+        /*
         var scheduler: Scheduler?
 
         if coreAffinity == .onlyEfficiency {
@@ -99,6 +105,6 @@ open class Flynn {
             scheduler.schedule(actor)
             return true
         }
-        return false
+        return false*/
     }
 }
