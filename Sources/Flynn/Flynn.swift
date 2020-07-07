@@ -75,4 +75,17 @@ open class Flynn {
             minimumSchedulerWithStride( stride(from: 0, to: device.cores, by: 1) ).schedule(actor)
         }
     }
+
+    internal static func steal(_ scheduler: Scheduler) -> Bool {
+        if schedulers.count != device.cores {
+            return false
+        }
+        for victim in schedulers where victim.count > 1 {
+            if let actor = victim.steal() {
+                scheduler.schedule(actor)
+                return true
+            }
+        }
+        return false
+    }
 }

@@ -88,7 +88,6 @@ open class Actor {
     }
 
     public var unsafeMessagesCount: Int32 {
-        //return messagesCount.value
         return Int32(messages.count)
     }
 

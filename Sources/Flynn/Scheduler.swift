@@ -55,6 +55,10 @@ open class Scheduler {
         actors.enqueue(actor)
     }
 
+    func steal() -> Actor? {
+        return actors.steal()
+    }
+
     func run() {
         var scalingSleep: UInt32 = 0
 
@@ -75,12 +79,15 @@ open class Scheduler {
             }
 
             if actors.isEmpty {
-                scalingSleep += scalingSleepDelta
-                if scalingSleep > scalingSleepMax {
-                    scalingSleep = scalingSleepMax
-                }
-                if scalingSleep >= scalingSleepMin {
-                    usleep(scalingSleep)
+
+                if !Flynn.steal(self) {
+                    scalingSleep += scalingSleepDelta
+                    if scalingSleep > scalingSleepMax {
+                        scalingSleep = scalingSleepMax
+                    }
+                    if scalingSleep >= scalingSleepMin {
+                        usleep(scalingSleep)
+                    }
                 }
             }
         }

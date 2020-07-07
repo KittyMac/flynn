@@ -96,6 +96,13 @@ public class Queue<T: AnyObject> {
         return (idx + 1) % size
     }
 
+    private func prevIndex(_ idx: Int, _ size: Int) -> Int {
+        if idx == 0 {
+            return arraySize - 1
+        }
+        return idx - 1
+    }
+
     @discardableResult
     public func enqueue(_ element: T) -> Bool {
         pthread_mutex_lock(&writeLock)
@@ -143,6 +150,29 @@ public class Queue<T: AnyObject> {
         }
         pthread_mutex_unlock(&readLock)
         return bridgePeek(ptr: elementPtr!)
+    }
+
+    public func steal() -> T? {
+        if pthread_mutex_trylock(&writeLock) == 0 {
+            pthread_mutex_lock(&readLock)
+
+            let elementPtr = (arrayPtr+writeIdx).pointee
+            if elementPtr == nil {
+                pthread_mutex_unlock(&readLock)
+                pthread_mutex_unlock(&writeLock)
+                return nil
+            }
+            (arrayPtr+writeIdx).pointee = nil
+            writeIdx = prevIndex(writeIdx, arraySize)
+
+            pthread_mutex_unlock(&readLock)
+            pthread_mutex_unlock(&writeLock)
+
+            print("stolen, baby!")
+
+            return bridge(ptr: elementPtr!)
+        }
+        return nil
     }
 
     public func clear() {
