@@ -1,5 +1,5 @@
 //
-//  PonyRTTests.swift
+//  FlynnRuntimeTests.swift
 //  FlynnTests
 //
 //  Created by Rocco Bowling on 5/12/20.
@@ -9,7 +9,7 @@
 import XCTest
 import Flynn
 
-class PonyRTTests: XCTestCase {
+class FlynnRuntimeTests: XCTestCase {
 
     override func setUp() {
         Flynn.startup()

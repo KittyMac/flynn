@@ -63,10 +63,6 @@ class ConcurrentDatastore: Actor {
 }
 ```
 
-#### [Actors are executed cooperatively](docs/QUICKSTART.md)
-
-Flynn uses a modified version of the [Pony language runtime](https://www.ponylang.io), which has been driving production applications for years. This proven core allows you to create millions of actors while keeping thread counts and resource usage to a minimum.
-
 #### [Use FlynnLint](docs/QUICKSTART.md)
 
 Flynn provides the scaffolding for safer concurrency, but FlynnLint enforces it.  FlynnLint will protect you from numerous concurrency pitfalls by not allowing unsafe code to compile:
