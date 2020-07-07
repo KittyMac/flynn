@@ -97,7 +97,7 @@ public class Queue<T: AnyObject> {
     }
 
     private func prevIndex(_ idx: Int, _ size: Int) -> Int {
-        if idx == 0 {
+        if idx <= 0 {
             return arraySize - 1
         }
         return idx - 1
@@ -153,24 +153,24 @@ public class Queue<T: AnyObject> {
     }
 
     public func steal() -> T? {
-        if pthread_mutex_trylock(&writeLock) == 0 {
-            pthread_mutex_lock(&readLock)
+        if isEmpty == false {
+            if pthread_mutex_trylock(&writeLock) == 0 {
+                pthread_mutex_lock(&readLock)
 
-            let elementPtr = (arrayPtr+writeIdx).pointee
-            if elementPtr == nil {
+                writeIdx = prevIndex(writeIdx, arraySize)
+                let elementPtr = (arrayPtr+writeIdx).pointee
+                if elementPtr == nil {
+                    pthread_mutex_unlock(&readLock)
+                    pthread_mutex_unlock(&writeLock)
+                    return nil
+                }
+                (arrayPtr+writeIdx).pointee = nil
+
                 pthread_mutex_unlock(&readLock)
                 pthread_mutex_unlock(&writeLock)
-                return nil
+
+                return bridge(ptr: elementPtr!)
             }
-            (arrayPtr+writeIdx).pointee = nil
-            writeIdx = prevIndex(writeIdx, arraySize)
-
-            pthread_mutex_unlock(&readLock)
-            pthread_mutex_unlock(&writeLock)
-
-            print("stolen, baby!")
-
-            return bridge(ptr: elementPtr!)
         }
         return nil
     }

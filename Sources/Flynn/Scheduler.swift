@@ -19,9 +19,9 @@ open class Scheduler {
 
     private var actors = Queue<Actor>(128)
 
-    private let index: Int
-    private let affinity: CoreAffinity
-    private let uuid: String
+    internal let index: Int
+    internal let affinity: CoreAffinity
+    internal let uuid: String
 
     private lazy var thread = Thread(block: run)
     private var running: Bool

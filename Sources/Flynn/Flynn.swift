@@ -80,7 +80,7 @@ open class Flynn {
         if schedulers.count != device.cores {
             return false
         }
-        for victim in schedulers where victim.count > 1 {
+        for victim in schedulers where victim.count > 1 && victim.index != scheduler.index {
             if let actor = victim.steal() {
                 scheduler.schedule(actor)
                 return true
