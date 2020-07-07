@@ -26,6 +26,8 @@ open class Scheduler {
     private lazy var thread = Thread(block: run)
     private var running: Bool
 
+    private var waitingForWorkSemaphore = DispatchSemaphore(value: 0)
+
     var count: Int {
         return actors.count
     }
@@ -53,6 +55,7 @@ open class Scheduler {
     func schedule(_ actor: Actor) {
         //print("schedule \(actor)")
         actors.enqueue(actor)
+        waitingForWorkSemaphore.signal()
     }
 
     func steal() -> Actor? {
@@ -60,21 +63,8 @@ open class Scheduler {
     }
 
     func run() {
-        var scalingSleep: UInt32 = 0
-
-        #if TARGET_OS_IPHONE
-            let scalingSleepDelta: UInt32 = 250
-            let scalingSleepMin: UInt32 = 500
-            let scalingSleepMax: UInt32 = 50000
-        #else
-            let scalingSleepDelta: UInt32 = 50
-            let scalingSleepMin: UInt32 = 250
-            let scalingSleepMax: UInt32 = 50000
-        #endif
-
         while running {
             while let actor = actors.dequeue() {
-                scalingSleep = 0
                 while actor.unsafeRun() {
                     if let next = actors.peek() {
                         if next.unsafePriority >= actor.unsafePriority {
@@ -86,19 +76,14 @@ open class Scheduler {
             }
 
             if actors.isEmpty {
-                scalingSleep += scalingSleepDelta
-                if scalingSleep > scalingSleepMax {
-                    scalingSleep = scalingSleepMax
-                }
-                if scalingSleep >= scalingSleepMin {
-                    usleep(scalingSleep)
-                }
+                waitingForWorkSemaphore.wait()
             }
         }
     }
 
     public func join() {
         running = false
+        waitingForWorkSemaphore.signal()
 
         // todo: use conditions
         while thread.isFinished == false {

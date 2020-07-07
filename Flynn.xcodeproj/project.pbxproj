@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		460044C224B4BE55003EF7C2 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460044C124B4BE55003EF7C2 /* Profile.swift */; };
 		OBJ_47 /* Actor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* Actor.swift */; };
 		OBJ_48 /* Atomics.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Atomics.swift */; };
 		OBJ_49 /* Behavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* Behavior.swift */; };
@@ -63,6 +64,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		460044C124B4BE55003EF7C2 /* Profile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_10 /* Actor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actor.swift; sourceTree = "<group>"; };
@@ -159,7 +161,7 @@
 			name = Products;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -172,7 +174,6 @@
 				OBJ_40 /* Makefile */,
 				OBJ_41 /* README.md */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_7 /* Sources */ = {
@@ -196,6 +197,7 @@
 				OBJ_16 /* Flynn.swift */,
 				OBJ_17 /* Queue.swift */,
 				OBJ_18 /* Scheduler.swift */,
+				460044C124B4BE55003EF7C2 /* Profile.swift */,
 			);
 			name = Flynn;
 			path = Sources/Flynn;
@@ -269,7 +271,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_34 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -327,6 +329,7 @@
 			buildActionMask = 0;
 			files = (
 				OBJ_47 /* Actor.swift in Sources */,
+				460044C224B4BE55003EF7C2 /* Profile.swift in Sources */,
 				OBJ_48 /* Atomics.swift in Sources */,
 				OBJ_49 /* Behavior.swift in Sources */,
 				OBJ_50 /* Device.swift in Sources */,

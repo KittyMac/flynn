@@ -181,7 +181,7 @@ class FlynnTests: XCTestCase {
             } else {
                 pipeline.beFlow(2)
             }
-            pipeline.unsafeWait(10)
+            pipeline.unsafeWait(0)
         }
 
         pipeline.beFlow()

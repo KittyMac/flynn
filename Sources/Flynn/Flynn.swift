@@ -20,6 +20,8 @@ open class Flynn {
     private static var running = AtomicContidion()
     private static var device = Device()
 
+    private static var stats = ProfileStats()
+
     public class func startup() {
         running.checkInactive {
             for idx in 0..<device.eCores {
@@ -33,6 +35,8 @@ open class Flynn {
 
     public class func shutdown() {
         running.checkActive {
+            stats.printStats()
+
             for scheduler in schedulers {
                 scheduler.join()
             }
@@ -67,7 +71,7 @@ open class Flynn {
             }
         }
 
-        if maxCount > 1 {
+        if maxCount > 2 {
             if let actor = schedulers[maxIdx].steal() {
                 Flynn.schedule(actor, actor.unsafeCoreAffinity)
             }
@@ -77,15 +81,23 @@ open class Flynn {
     }
 
     public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity) {
-        if coreAffinity == .onlyEfficiency {
-            minimumSchedulerWithStride( stride(from: 0, to: device.eCores, by: 1) ).schedule(actor)
-        } else if coreAffinity == .onlyPerformance {
-            minimumSchedulerWithStride( stride(from: device.eCores, to: device.cores, by: 1) ).schedule(actor)
-        } else if coreAffinity == .preferPerformance {
-            minimumSchedulerWithStride( stride(from: device.cores-1, to: -1, by: -1) ).schedule(actor)
-        } else {
-            // preferEfficiency
-            minimumSchedulerWithStride( stride(from: 0, to: device.cores, by: 1) ).schedule(actor)
+        stats.recordSchedule {
+            var scheduler: Scheduler?
+
+            if coreAffinity == .onlyEfficiency {
+                scheduler = minimumSchedulerWithStride( stride(from: 0, to: device.eCores, by: 1) )
+            } else if coreAffinity == .onlyPerformance {
+                scheduler = minimumSchedulerWithStride( stride(from: device.eCores, to: device.cores, by: 1) )
+            } else if coreAffinity == .preferPerformance {
+                scheduler = minimumSchedulerWithStride( stride(from: device.cores-1, to: -1, by: -1) )
+            } else {
+                // preferEfficiency
+                scheduler = minimumSchedulerWithStride( stride(from: 0, to: device.cores, by: 1) )
+            }
+
+            if let scheduler = scheduler {
+                scheduler.schedule(actor)
+            }
         }
     }
 }
