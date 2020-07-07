@@ -14,20 +14,6 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Flynn::Pony"
-               BuildableName = "Pony.framework"
-               BlueprintName = "Pony"
-               ReferencedContainer = "container:Flynn.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "Flynn::Flynn"
                BuildableName = "Flynn.framework"
                BlueprintName = "Flynn"

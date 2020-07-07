@@ -192,7 +192,7 @@ class FlynnTests: XCTestCase {
         let counter = Counter()
         for _ in 0..<50000 {
             counter.beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1)
-            counter.unsafeWait()
+            counter.unsafeWait(10)
         }
     }
 
