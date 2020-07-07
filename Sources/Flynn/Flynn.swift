@@ -68,7 +68,7 @@ open class Flynn {
         }
 
         if maxCount > 1 {
-            if let actor = schedulers[maxCount].steal() {
+            if let actor = schedulers[maxIdx].steal() {
                 Flynn.schedule(actor, actor.unsafeCoreAffinity)
             }
         }
