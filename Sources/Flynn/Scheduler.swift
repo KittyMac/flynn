@@ -86,14 +86,12 @@ open class Scheduler {
             }
 
             if actors.isEmpty {
-                if !Flynn.steal(self) {
-                    scalingSleep += scalingSleepDelta
-                    if scalingSleep > scalingSleepMax {
-                        scalingSleep = scalingSleepMax
-                    }
-                    if scalingSleep >= scalingSleepMin {
-                        usleep(scalingSleep)
-                    }
+                scalingSleep += scalingSleepDelta
+                if scalingSleep > scalingSleepMax {
+                    scalingSleep = scalingSleepMax
+                }
+                if scalingSleep >= scalingSleepMin {
+                    usleep(scalingSleep)
                 }
             }
         }

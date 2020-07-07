@@ -49,14 +49,27 @@ open class Flynn {
         var minIdx = 0
         var minCount = 999999
 
+        var maxIdx = 0
+        var maxCount = 0
+
         for idx in stride {
             let count = schedulers[idx].count
             if count == 0 {
                 return schedulers[idx]
             }
-            if minIdx == -1 || count < minCount {
+            if count < minCount {
                 minCount = count
                 minIdx = idx
+            }
+            if count > maxCount {
+                maxCount = count
+                maxIdx = idx
+            }
+        }
+
+        if maxCount > 1 {
+            if let actor = schedulers[maxCount].steal() {
+                Flynn.schedule(actor, actor.unsafeCoreAffinity)
             }
         }
 
@@ -74,18 +87,5 @@ open class Flynn {
             // preferEfficiency
             minimumSchedulerWithStride( stride(from: 0, to: device.cores, by: 1) ).schedule(actor)
         }
-    }
-
-    internal static func steal(_ scheduler: Scheduler) -> Bool {
-        if schedulers.count != device.cores {
-            return false
-        }
-        for victim in schedulers where victim.count > 1 && victim.index != scheduler.index {
-            if let actor = victim.steal() {
-                scheduler.schedule(actor)
-                return true
-            }
-        }
-        return false
     }
 }
