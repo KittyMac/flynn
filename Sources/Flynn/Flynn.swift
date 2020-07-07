@@ -48,32 +48,24 @@ open class Flynn {
     @discardableResult
     public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity, _ onlyIfIdle: Bool = false) -> Bool {
         if onlyIfIdle {
-            // we want to find an idle scheduler which matches our core affinity.
-            // If one doesn't exist, then we should return false and not schedule the actor
             var matchAffinity: CoreAffinity = .onlyEfficiency
             if actor.unsafeCoreAffinity == .onlyPerformance || actor.unsafeCoreAffinity == .preferPerformance {
                 matchAffinity = .onlyPerformance
             }
+            
+            // we want to find an idle scheduler which matches our core affinity.
+            // If one doesn't exist, then we should return false and not schedule the actor
             for scheduler in schedulers {
                 if scheduler.idle && scheduler.affinity == matchAffinity {
-                    schedulers[lastSchedulerIdx].schedule(actor)
+                    scheduler.schedule(actor)
                     return true
                 }
             }
             return false
         }
 
-        // TODO: only match the right affinity
         lastSchedulerIdx = (lastSchedulerIdx + 1) % schedulers.count
         schedulers[lastSchedulerIdx].schedule(actor)
         return true
-        /*
-        let count = schedulers.count
-        for _ in 0..<count {
-            lastSchedulerIdx = (lastSchedulerIdx + 1) % count
-            schedulers[lastSchedulerIdx].schedule(actor)
-            return true
-        }
-        return false*/
     }
 }
