@@ -44,65 +44,34 @@ open class Flynn {
         return device.cores
     }
 
-    @inline(__always)
-    private static func minimumSchedulerWithStride(_ stride: StrideTo<Int>, _ onlyIfIdle: Bool) -> Scheduler? {
-        var minIdx = 0
-        var minCount = 999999
-
-        var maxIdx = 0
-        var maxCount = 0
-
-        for idx in stride {
-            if schedulers[idx].idle {
-                return schedulers[idx]
-            }
-            let count = schedulers[idx].count
-            if count < minCount {
-                minCount = count
-                minIdx = idx
-            }
-            if count > maxCount {
-                maxCount = count
-                maxIdx = idx
-            }
-        }
-
-        if onlyIfIdle && schedulers[maxIdx].idle == true {
-            return nil
-        }
-
-        if maxCount > 1 {
-            if let actor = schedulers[maxIdx].steal() {
-                Flynn.schedule(actor, actor.unsafeCoreAffinity)
-            }
-        }
-
-        return schedulers[minIdx]
-    }
-
     private static var lastSchedulerIdx: Int = 0
     @discardableResult
     public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity, _ onlyIfIdle: Bool = false) -> Bool {
+        if onlyIfIdle {
+            // we want to find an idle scheduler which matches our core affinity.
+            // If one doesn't exist, then we should return false and not schedule the actor
+            var matchAffinity: CoreAffinity = .onlyEfficiency
+            if actor.unsafeCoreAffinity == .onlyPerformance || actor.unsafeCoreAffinity == .preferPerformance {
+                matchAffinity = .onlyPerformance
+            }
+            for scheduler in schedulers {
+                if scheduler.idle && scheduler.affinity == matchAffinity {
+                    schedulers[lastSchedulerIdx].schedule(actor)
+                    return true
+                }
+            }
+            return false
+        }
 
+        // TODO: only match the right affinity
         lastSchedulerIdx = (lastSchedulerIdx + 1) % schedulers.count
         schedulers[lastSchedulerIdx].schedule(actor)
         return true
         /*
-        var scheduler: Scheduler?
-
-        if coreAffinity == .onlyEfficiency {
-            scheduler = minimumSchedulerWithStride( stride(from: 0, to: device.eCores, by: 1), onlyIfIdle )
-        } else if coreAffinity == .onlyPerformance {
-            scheduler = minimumSchedulerWithStride( stride(from: device.eCores, to: device.cores, by: 1), onlyIfIdle )
-        } else if coreAffinity == .preferPerformance {
-            scheduler = minimumSchedulerWithStride( stride(from: device.cores-1, to: -1, by: -1), onlyIfIdle )
-        } else {
-            // preferEfficiency
-            scheduler = minimumSchedulerWithStride( stride(from: 0, to: device.cores, by: 1), onlyIfIdle )
-        }
-
-        if let scheduler = scheduler {
-            scheduler.schedule(actor)
+        let count = schedulers.count
+        for _ in 0..<count {
+            lastSchedulerIdx = (lastSchedulerIdx + 1) % count
+            schedulers[lastSchedulerIdx].schedule(actor)
             return true
         }
         return false*/
