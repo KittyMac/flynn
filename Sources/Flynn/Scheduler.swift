@@ -9,11 +9,11 @@
 import Foundation
 
 public enum CoreAffinity: Int {
-    case none = 0
-    case preferEfficiency = 1
-    case preferPerformance = 2
-    case onlyEfficiency = 3
-    case onlyPerformance = 4
+    case preferEfficiency = 0
+    case preferPerformance = 1
+    case onlyEfficiency = 2
+    case onlyPerformance = 3
+    case none = 99
 }
 
 open class Scheduler {
