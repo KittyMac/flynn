@@ -60,7 +60,13 @@ open class Scheduler {
 
     func schedule(_ actor: Actor) {
         //print("schedule \(actor)")
+        if !running {
+            Flynn.schedule(actor, actor.unsafeCoreAffinity)
+            return
+        }
+
         actors.enqueue(actor)
+
         if idle {
             waitingForWorkSemaphore.signal()
         }

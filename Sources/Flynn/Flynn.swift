@@ -41,9 +41,22 @@ open class Flynn {
 
     public class func shutdown() {
         running.checkActive {
+            // wait until all work is completed
+            var runningActors: Int = 1
+            while runningActors > 0 {
+                runningActors = 0
+                for scheduler in schedulers {
+                    runningActors += scheduler.count
+                }
+                usleep(5000)
+            }
+
+            // join all of the scheduler threads
             for scheduler in schedulers {
                 scheduler.join()
             }
+
+            // clear all of the schedulers
             schedulers.removeAll()
         }
     }

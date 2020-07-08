@@ -104,6 +104,29 @@ class FlynnTests: XCTestCase {
         expectation.fulfill()
     }
 
+    func testShutdown() {
+        let expectation = XCTestExpectation(description: "Flowable actors")
+
+        let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args: BehaviorArgs) in
+            let value: String = args[x:0]
+            XCTAssertEqual(value.count, 50000, "load balancing did not contain the expected number of characters")
+            expectation.fulfill()
+        })
+
+        for num in 0..<50000 {
+            if num % 2 == 0 {
+                pipeline.beFlow("x")
+            } else {
+                pipeline.beFlow("o")
+            }
+        }
+        pipeline.beFlow()
+
+        Flynn.shutdown()
+
+        wait(for: [expectation], timeout: 10.0)
+    }
+
     func testFlowable() {
         let expectation = XCTestExpectation(description: "Flowable actors")
 
@@ -118,6 +141,7 @@ class FlynnTests: XCTestCase {
         pipeline.beFlow(" ")
         pipeline.beFlow("world")
         pipeline.beFlow()
+
         wait(for: [expectation], timeout: 10.0)
     }
 
