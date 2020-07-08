@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4630CE2E2491ECAB00ECB1FB /* UIControl+Closures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4630CE2D2491ECAB00ECB1FB /* UIControl+Closures.swift */; };
+		463D6ABD24B649B400EA4F85 /* CounterActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463D6ABC24B649B400EA4F85 /* CounterActor.swift */; };
 		4669ED8B2491D02600E42ECB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4669ED8A2491D02600E42ECB /* AppDelegate.swift */; };
 		4669ED8F2491D02600E42ECB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4669ED8E2491D02600E42ECB /* ViewController.swift */; };
 		4669ED922491D02600E42ECB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4669ED902491D02600E42ECB /* Main.storyboard */; };
@@ -32,6 +33,7 @@
 
 /* Begin PBXFileReference section */
 		4630CE2D2491ECAB00ECB1FB /* UIControl+Closures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIControl+Closures.swift"; sourceTree = "<group>"; };
+		463D6ABC24B649B400EA4F85 /* CounterActor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CounterActor.swift; sourceTree = "<group>"; };
 		4669ED872491D02600E42ECB /* BatteryTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BatteryTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4669ED8A2491D02600E42ECB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4669ED8E2491D02600E42ECB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -91,6 +93,7 @@
 			children = (
 				4630CE2D2491ECAB00ECB1FB /* UIControl+Closures.swift */,
 				4669ED8A2491D02600E42ECB /* AppDelegate.swift */,
+				463D6ABC24B649B400EA4F85 /* CounterActor.swift */,
 				4669ED8E2491D02600E42ECB /* ViewController.swift */,
 				4669ED902491D02600E42ECB /* Main.storyboard */,
 				4669ED932491D02600E42ECB /* Assets.xcassets */,
@@ -271,6 +274,7 @@
 			files = (
 				4669ED8F2491D02600E42ECB /* ViewController.swift in Sources */,
 				4630CE2E2491ECAB00ECB1FB /* UIControl+Closures.swift in Sources */,
+				463D6ABD24B649B400EA4F85 /* CounterActor.swift in Sources */,
 				4669ED8B2491D02600E42ECB /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

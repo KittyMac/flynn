@@ -1,32 +1,11 @@
-# Flynn
-
-<img align="left" src="meta/flynn.png" width="180" >
-
-Write **fast**, **safe**, **efficient**, highly concurrent Swift with **Flynn**.
-
-```swift
-import Flynn
-
-class HelloWorld: Actor {
-  lazy var bePrint = Behavior(self) { (args: BehaviorArgs) in
-    // flynnlint:parameter String - string to print
-    print(args[x:0])
-  }
-}
-
-print("synchronous: before")
-HelloWorld().bePrint("asynchronous: hello world")
-print("synchronous: after")
-
-// Output to console log:
-//
-// synchronous: before
-// synchronous: after
-// asynchronous: hello world
-```
+<img align="center" src="meta/header.png" >
 
 &nbsp;  
 
+## Examples
+
+[Hello World](Examples/HelloWorld/README.md) - You guessed it!  
+[Battery Tester](Examples/BatteryTester/README.md) - Use an Actor's core affinity to easily choose performance vs energy consumption
 
 ## Quick Start
 
@@ -34,7 +13,7 @@ print("synchronous: after")
 
 Flynn grafts Actor-Model programming onto Swift, providing a new level of safety and performance for your highly concurrent Swift code.  Here's what you need to know:
 
-#### [Actors are concurrency safe Swift classes](docs/QUICKSTART.md)
+#### [Actors are concurrency safe Swift classes](docs/ACTOR.md)
 
 Using Actors to separate concurrent logic provides safety, performance, and efficiency.
 
@@ -48,7 +27,7 @@ class ConcurrentDatastore: Actor {
 }
 ```
 
-#### [Behaviors are asynchronous method calls](docs/QUICKSTART.md)
+#### [Behaviors are asynchronous method calls](docs/BEHAVIOR.md)
 
 Actors provide behaviors (which look like normal method calls at the call site) that execute asynchronously from the caller's perspective.
 
@@ -71,7 +50,11 @@ class ConcurrentDatastore: Actor {
 }
 ```
 
-#### [Use FlynnLint](docs/QUICKSTART.md)
+#### [Actors run on schedulers](docs/BEHAVIOR.md)
+
+Unlike other attempts to bring Actor-Model programming to Swift, Flynn does not rely on the "DispatchQueue per Actor" mechanism. This makes actors in Flynn much more light-weight; you can have millions of actors.  This is accomplished by Flynn's actor scheduling system. Follow the link above to learn more.
+
+#### [Use FlynnLint](docs/FLYNNLINT.md)
 
 Flynn provides the scaffolding for safer concurrency, but FlynnLint enforces it.  FlynnLint will protect you from numerous concurrency pitfalls by not allowing unsafe code to compile:
 
