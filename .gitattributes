@@ -1,4 +1,4 @@
 # https://github.com/github/linguist#vendored-code
-Makefile linguist-vendored
-meta/* linguist-vendored
+Makefile linguist-vendored=true
+meta/* linguist-vendored=true
 
