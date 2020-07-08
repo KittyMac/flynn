@@ -87,6 +87,13 @@ open class Scheduler {
                     if next.unsafePriority >= actor.unsafePriority {
                         Flynn.schedule(actor, actor.unsafeCoreAffinity)
                         break
+                    } else {
+                        // if we're going to keep running we need to make sure the people
+                        // behind us don't starve.  Dequeue one and reschedule it somewhere
+                        // else
+                        if let next = actors.dequeue() {
+                            Flynn.schedule(next, next.unsafeCoreAffinity)
+                        }
                     }
                 }
 
@@ -99,7 +106,7 @@ open class Scheduler {
                 }
                 if  (actorAffinity == .preferEfficiency && affinity == .onlyPerformance) ||
                     (actorAffinity == .preferPerformance && affinity == .onlyEfficiency) {
-                    if Flynn.schedule(actor, actor.unsafeCoreAffinity, true) {
+                    if Flynn.scheduleIfIdle(actor, actor.unsafeCoreAffinity) {
                         break
                     }
                 }

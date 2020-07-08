@@ -154,6 +154,10 @@ public class Queue<T: AnyObject> {
     }
 
     public func peek() -> T? {
+        if isEmpty {
+            return nil
+        }
+
         pthread_mutex_lock(&readLock)
         let elementPtr = (arrayPtr+readIdx).pointee
         if elementPtr == nil {

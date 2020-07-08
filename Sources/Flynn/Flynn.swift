@@ -45,27 +45,28 @@ open class Flynn {
     }
 
     private static var lastSchedulerIdx: Int = 0
-    @discardableResult
-    public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity, _ onlyIfIdle: Bool = false) -> Bool {
-        if onlyIfIdle {
-            var matchAffinity: CoreAffinity = .onlyEfficiency
-            if actor.unsafeCoreAffinity == .onlyPerformance || actor.unsafeCoreAffinity == .preferPerformance {
-                matchAffinity = .onlyPerformance
-            }
-
-            // we want to find an idle scheduler which matches our core affinity.
-            // If one doesn't exist, then we should return false and not schedule the actor
-            for scheduler in schedulers {
-                if scheduler.idle && scheduler.affinity == matchAffinity {
-                    scheduler.schedule(actor)
-                    return true
-                }
-            }
-            return false
-        }
-
+    @inline(__always)
+    public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity) {
         lastSchedulerIdx = (lastSchedulerIdx + 1) % schedulers.count
         schedulers[lastSchedulerIdx].schedule(actor)
-        return true
+    }
+
+    @inline(__always)
+    @discardableResult
+    public static func scheduleIfIdle(_ actor: Actor, _ coreAffinity: CoreAffinity) -> Bool {
+        var matchAffinity: CoreAffinity = .onlyEfficiency
+        if actor.unsafeCoreAffinity == .onlyPerformance || actor.unsafeCoreAffinity == .preferPerformance {
+            matchAffinity = .onlyPerformance
+        }
+
+        // we want to find an idle scheduler which matches our core affinity.
+        // If one doesn't exist, then we should return false and not schedule the actor
+        for scheduler in schedulers {
+            if scheduler.idle && scheduler.affinity == matchAffinity {
+                scheduler.schedule(actor)
+                return true
+            }
+        }
+        return false
     }
 }
