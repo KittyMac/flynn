@@ -6,7 +6,7 @@ Any actor in Flynn can be assigned a core affinity by doing:
 
 ```actor.unsafeCoreAffinity = .preferEfficiency```
 
-For complete details, please see the [Actor Scheduling](../docs/SCHEDULING.md) documentation.
+For complete details, please see the [Actor Scheduling](../../docs/SCHEDULER.md) documentation.
 
 
 ![](meta/screenshot.png)
