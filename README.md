@@ -8,13 +8,21 @@ Write **fast**, **safe**, **efficient**, highly concurrent Swift with **Flynn**.
 import Flynn
 
 class HelloWorld: Actor {
-  lazy var bePrint = ChainableBehavior(self) { (args: BehaviorArgs) in
+  lazy var bePrint = Behavior(self) { (args: BehaviorArgs) in
     // flynnlint:parameter String - string to print
-    print(args[x:0], terminator: "")
+    print(args[x:0])
   }
 }
 
-HelloWorld().bePrint("hello").bePrint(" ").bePrint("world!\n")
+print("synchronous: before")
+HelloWorld().bePrint("asynchronous: hello world")
+print("synchronous: after")
+
+// Output to console log:
+//
+// synchronous: before
+// synchronous: after
+// asynchronous: hello world
 ```
 
 &nbsp;  
