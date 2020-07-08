@@ -19,8 +19,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         window?.makeKeyAndVisible()
 
-        Flynn.checkForUnsafeArguments = true
-
         /*
         UIFont.familyNames.forEach({ familyName in
             let fontNames = UIFont.fontNames(forFamilyName: familyName)
