@@ -4,8 +4,8 @@
 
 ## Examples
 
-[Hello World](Examples/HelloWorld/README.md) - You guessed it!  
-[Battery Tester](Examples/BatteryTester/README.md) - Use an Actor's core affinity to easily choose performance vs energy consumption
+[Hello World](Examples/HelloWorld/) - You guessed it!  
+[Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption
 
 ## Quick Start
 
