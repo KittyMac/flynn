@@ -27,7 +27,15 @@ open class Scheduler {
     internal let uuid: String
     internal var idle: Bool
 
+    // Thread(block: run) is preferable, but requires 10.12. Can't use selectors on linux
+    // (no objc) so we use the block version on linux and the selector version everywhere
+    // else. We can switch to the all blocks version for everyone in the future.
+#if os(Linux)
     private lazy var thread = Thread(block: run)
+#else
+    private lazy var thread = Thread(target: self, selector: #selector(run), object: nil)
+#endif
+
     private var running: Bool
 
     private var waitingForWorkSemaphore = DispatchSemaphore(value: 0)
@@ -132,7 +140,7 @@ open class Scheduler {
         }
     }
 
-    func run() {
+    @objc func run() {
         while running {
 #if os(Linux)
             runInternal()

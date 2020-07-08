@@ -168,6 +168,7 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 30.0)
     }
 
+#if !os(Linux)
     @available(OSX 10.15, *)
     func testLoadBalancingLong() {
         let options = XCTMeasureOptions()
@@ -176,6 +177,7 @@ class FlynnTests: XCTestCase {
             internalTestLoadBalancing()
         })
     }
+#endif
 
     func testLoadBalancing() {
         self.measure {
