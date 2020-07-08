@@ -121,28 +121,41 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
 
+    private func internalTestLoadBalancing() {
+        let expectation = XCTestExpectation(description: "Load balancing")
+
+        let pipeline = Passthrough() |> Array(count: Flynn.cores) { Uppercase() } |> Concatenate() |> Callback({ (args: BehaviorArgs) in
+            let value: String = args[x:0]
+            XCTAssertEqual(value.count, 50000, "load balancing did not contain the expected number of characters")
+            expectation.fulfill()
+        })
+
+        for num in 0..<50000 {
+            if num % 2 == 0 {
+                pipeline.beFlow("x")
+            } else {
+                pipeline.beFlow("o")
+            }
+            //pipeline.wait(100)
+        }
+
+        pipeline.beFlow()
+
+        wait(for: [expectation], timeout: 30.0)
+    }
+
+    @available(OSX 10.15, *)
+    func testLoadBalancingLong() {
+        let options = XCTMeasureOptions()
+        options.iterationCount = 100
+        self.measure(options: options, block: {
+            internalTestLoadBalancing()
+        })
+    }
+
     func testLoadBalancing() {
         self.measure {
-            let expectation = XCTestExpectation(description: "Load balancing")
-
-            let pipeline = Passthrough() |> Array(count: Flynn.cores) { Uppercase() } |> Concatenate() |> Callback({ (args: BehaviorArgs) in
-                let value: String = args[x:0]
-                XCTAssertEqual(value.count, 50000, "load balancing did not contain the expected number of characters")
-                expectation.fulfill()
-            })
-
-            for num in 0..<50000 {
-                if num % 2 == 0 {
-                    pipeline.beFlow("x")
-                } else {
-                    pipeline.beFlow("o")
-                }
-                //pipeline.wait(100)
-            }
-
-            pipeline.beFlow()
-
-            wait(for: [expectation], timeout: 30.0)
+            internalTestLoadBalancing()
         }
     }
 

@@ -61,7 +61,7 @@ public class ChainableBehavior<T: Actor> {
         self.block = block
     }
 
-    public func setActor(_ actor: T) {
+    public func setActor(_ actor: T?) {
         self.actor = actor
     }
 
@@ -95,7 +95,7 @@ public class Behavior {
         self.block = block
     }
 
-    public func setActor(_ actor: Actor) {
+    public func setActor(_ actor: Actor?) {
         self.actor = actor
     }
 

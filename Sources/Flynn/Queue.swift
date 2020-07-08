@@ -48,6 +48,8 @@ public class Queue<T: AnyObject> {
 
         pthread_mutex_destroy(&readLock)
         pthread_mutex_destroy(&writeLock)
+
+        //print("deinit - Queue")
     }
 
     @inline(__always)

@@ -33,6 +33,10 @@ class ActorMessage {
         block = nil
         args = nil
     }
+
+    deinit {
+        //print("deinit - ActorMessage")
+    }
 }
 
 open class Actor {
@@ -75,14 +79,6 @@ open class Actor {
         yield = true
     }
 
-    public func unsafeShouldWaitOnActors(_ actors: [Actor]) -> Bool {
-        var num: Int32 = 0
-        for actor in actors {
-            num += actor.unsafeMessagesCount
-        }
-        return num > 0
-    }
-
     public var unsafeMessagesCount: Int32 {
         return Int32(messages.count)
     }
@@ -104,6 +100,10 @@ open class Actor {
         #else
         _ = Unmanaged.passRetained(self).autorelease()
         #endif
+    }
+
+    deinit {
+        //print("deinit - Actor")
     }
 
     private var messagePool = Queue<ActorMessage>(128, false)

@@ -31,22 +31,33 @@ public func |> (left: [Flowable], right: [Flowable]) -> [Flowable] {
 }
 
 public class FlowableState {
-    private var actor: Actor
+    private weak var actor: Actor?
     fileprivate var numTargets: Int = 0
     fileprivate var flowTarget: Flowable?
     fileprivate var flowTargets: [Flowable] = []
     fileprivate var poolIdx: Int = 0
 
-    private func _retryEndFlowToNextTarget() {
+    fileprivate func shouldWaitOnActors(_ actors: [Actor]) -> Bool {
+        var num: Int32 = 0
+        for actor in actors {
+            num += actor.unsafeMessagesCount
+        }
+        return num > 0
+    }
+
+    fileprivate lazy var beRetryEndFlowToNextTarget = Behavior { [unowned self] (_: BehaviorArgs) in
+        self._beRetryEndFlowToNextTarget()
+    }
+    private func _beRetryEndFlowToNextTarget() {
         switch self.numTargets {
         case 0:
             return
         case 1:
             flowTarget?.beFlow.dynamicallyFlow(withArguments: [])
         default:
-            if actor.unsafeShouldWaitOnActors(flowTargets) {
+            if shouldWaitOnActors(flowTargets) {
                 beRetryEndFlowToNextTarget()
-                actor.unsafeYield()
+                actor?.unsafeYield()
                 return
             }
             poolIdx = (poolIdx + 1) % numTargets
@@ -54,11 +65,7 @@ public class FlowableState {
         }
     }
 
-    fileprivate lazy var beRetryEndFlowToNextTarget = Behavior { [unowned self] (_: BehaviorArgs) in
-        self._retryEndFlowToNextTarget()
-    }
-
-    public lazy var beTarget = Behavior { [unowned self] (args: BehaviorArgs) in
+    lazy var beTarget = Behavior { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter Flowable - Flowable actor to receive flow messages
         let localTarget: Flowable = args[x: 0]
         self.flowTarget = localTarget
@@ -66,7 +73,7 @@ public class FlowableState {
         self.numTargets = self.flowTargets.count
     }
 
-    public lazy var beTargets = Behavior { [unowned self] (args: BehaviorArgs) in
+    lazy var beTargets = Behavior { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter [Flowable] - Pool of flowable actors to receive flow messages
         let localTargets: [Flowable] = args[x: 0]
         self.flowTarget = localTargets.first
@@ -76,6 +83,7 @@ public class FlowableState {
 
     public init (_ actor: Actor) {
         self.actor = actor
+
         beTarget.setActor(actor)
         beTargets.setActor(actor)
         beRetryEndFlowToNextTarget.setActor(actor)
@@ -112,7 +120,7 @@ public extension Flowable {
             safeFlowable.flowTarget?.beFlow.dynamicallyFlow(withArguments: args)
         default:
             if args.isEmpty {
-                if unsafeShouldWaitOnActors(safeFlowable.flowTargets) {
+                if safeFlowable.shouldWaitOnActors(safeFlowable.flowTargets) {
                     safeFlowable.beRetryEndFlowToNextTarget()
                     unsafeYield()
                     return
