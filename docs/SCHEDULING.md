@@ -1,3 +1,0 @@
-## SCHEDULING
-
-TODO
