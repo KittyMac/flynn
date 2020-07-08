@@ -6,7 +6,7 @@
 
 [Hello World](Examples/HelloWorld/) - You guessed it!  
 [Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption  
-[Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://github.com/facebook/yoga) and [Metal](https://developer.apple.com/metal/)
+[Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://yogalayout.com) and [Metal](https://developer.apple.com/metal/)
 
 
 ## Quick Start
