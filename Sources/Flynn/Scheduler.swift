@@ -6,6 +6,8 @@
 //  Copyright © 2020 Rocco Bowling. All rights reserved.
 //
 
+// swiftlint:disable line_length
+
 import Foundation
 
 public enum CoreAffinity: Int {
