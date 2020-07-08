@@ -5,7 +5,9 @@
 ## Examples
 
 [Hello World](Examples/HelloWorld/) - You guessed it!  
-[Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption
+[Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption  
+[Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://github.com/facebook/yoga) and [Metal](https://developer.apple.com/metal/)
+
 
 ## Quick Start
 
@@ -50,7 +52,7 @@ class ConcurrentDatastore: Actor {
 }
 ```
 
-#### [Actors run on schedulers](docs/BEHAVIOR.md)
+#### [Actors run on schedulers](docs/SCHEDULER.md)
 
 Unlike other attempts to bring Actor-Model programming to Swift, Flynn does not rely on the "DispatchQueue per Actor" mechanism. This makes actors in Flynn much more light-weight; you can have millions of actors.  This is accomplished by Flynn's actor scheduling system. Follow the link above to learn more.
 
