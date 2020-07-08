@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>runDestinationsByUUID</key>
+	<dict>
+		<key>B0887098-DB74-441A-BEEA-8A3A5B0B0F04</key>
+		<dict>
+			<key>localComputer</key>
+			<dict>
+				<key>busSpeedInMHz</key>
+				<integer>100</integer>
+				<key>cpuCount</key>
+				<integer>2</integer>
+				<key>cpuKind</key>
+				<string>Unknown CPU</string>
+				<key>cpuSpeedInMHz</key>
+				<integer>2400</integer>
+				<key>logicalCPUCoresPerPackage</key>
+				<integer>28</integer>
+				<key>modelCode</key>
+				<string>MacPro6,1</string>
+				<key>physicalCPUCoresPerPackage</key>
+				<integer>14</integer>
+				<key>platformIdentifier</key>
+				<string>com.apple.platform.macosx</string>
+			</dict>
+			<key>targetArchitecture</key>
+			<string>x86_64h</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -145,16 +145,16 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
 
-    private func internalTestLoadBalancing() {
+    private func internalTestLoadBalancing(_ iterations: Int) {
         let expectation = XCTestExpectation(description: "Load balancing")
 
         let pipeline = Passthrough() |> Array(count: Flynn.cores) { Uppercase() } |> Concatenate() |> Callback({ (args: BehaviorArgs) in
             let value: String = args[x:0]
-            XCTAssertEqual(value.count, 50000, "load balancing did not contain the expected number of characters")
+            XCTAssertEqual(value.count, iterations, "load balancing did not contain the expected number of characters")
             expectation.fulfill()
         })
 
-        for num in 0..<50000 {
+        for num in 0..<iterations {
             if num % 2 == 0 {
                 pipeline.beFlow("x")
             } else {
@@ -174,14 +174,14 @@ class FlynnTests: XCTestCase {
         let options = XCTMeasureOptions()
         options.iterationCount = 100
         self.measure(options: options, block: {
-            internalTestLoadBalancing()
+            internalTestLoadBalancing(50_000)
         })
     }
 #endif
 
     func testLoadBalancing() {
         self.measure {
-            internalTestLoadBalancing()
+            internalTestLoadBalancing(50_000)
         }
     }
 
