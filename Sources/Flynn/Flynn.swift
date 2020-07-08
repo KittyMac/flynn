@@ -9,10 +9,18 @@
 import Foundation
 
 open class Flynn {
+
+    // MARK: - User Configurable Settings
 #if DEBUG
-    public static var checkForUnsafeArguments: Bool = true
+    public static var defaultCheckForUnsafeArguments: Bool = true
 #else
-    public static var checkForUnsafeArguments: Bool = false
+    public static var defaultCheckForUnsafeArguments: Bool = false
+#endif
+
+#if os(iOS)
+    public static var defaultActorAffinity: CoreAffinity = .preferEfficiency
+#else
+    public static var defaultActorAffinity: CoreAffinity = .none
 #endif
 
     private static var schedulers: [Scheduler] = []
@@ -22,11 +30,11 @@ open class Flynn {
 
     public class func startup() {
         running.checkInactive {
-            for idx in 0..<device.eCores {
-                schedulers.append(Scheduler(idx, .onlyEfficiency))
+            for _ in 0..<device.eCores {
+                schedulers.append(Scheduler(schedulers.count, .onlyEfficiency))
             }
-            for idx in 0..<device.pCores {
-                schedulers.append(Scheduler(idx, .onlyPerformance))
+            for _ in 0..<device.pCores {
+                schedulers.append(Scheduler(schedulers.count, .onlyPerformance))
             }
         }
     }
@@ -49,6 +57,17 @@ open class Flynn {
     public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity) {
         lastSchedulerIdx = (lastSchedulerIdx + 1) % schedulers.count
         schedulers[lastSchedulerIdx].schedule(actor)
+    }
+
+    @inline(__always)
+    public static func scheduleOtherThan(_ notThisOne: Scheduler, _ actor: Actor, _ coreAffinity: CoreAffinity) {
+        while true {
+            lastSchedulerIdx = (lastSchedulerIdx + 1) % schedulers.count
+            if lastSchedulerIdx != notThisOne.index {
+                schedulers[lastSchedulerIdx].schedule(actor)
+                return
+            }
+        }
     }
 
     @inline(__always)

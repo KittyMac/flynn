@@ -49,7 +49,7 @@ private func checkReferenceTypesToBehavior(_ args: BehaviorArgs) {
 public class ChainableBehavior<T: Actor> {
     private weak var actor: T?
     private let block: BehaviorBlock
-    private let checkForUnsafeArguments = Flynn.checkForUnsafeArguments
+    private let checkForUnsafeArguments = Flynn.defaultCheckForUnsafeArguments
 
     public init(_ actor: T, _ block: @escaping BehaviorBlock) {
         self.actor = actor
@@ -83,7 +83,7 @@ public class ChainableBehavior<T: Actor> {
 public class Behavior {
     private weak var actor: Actor?
     private let block: BehaviorBlock
-    private let checkForUnsafeArguments = Flynn.checkForUnsafeArguments
+    private let checkForUnsafeArguments = Flynn.defaultCheckForUnsafeArguments
 
     public init(_ actor: Actor, _ block: @escaping BehaviorBlock) {
         self.actor = actor

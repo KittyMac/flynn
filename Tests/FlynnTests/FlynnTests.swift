@@ -59,13 +59,13 @@ class FlynnTests: XCTestCase {
     func testPassByReferenceCheck() {
         let expectation = XCTestExpectation(description: "Warning when passing reference values")
 
-        Flynn.checkForUnsafeArguments = true
+        Flynn.defaultCheckForUnsafeArguments = true
 
         PassToMe()
             .beString("Swift String")
             .beNSString("NSString" as NSString)
 
-        Flynn.checkForUnsafeArguments = false
+        Flynn.defaultCheckForUnsafeArguments = false
 
         expectation.fulfill()
     }

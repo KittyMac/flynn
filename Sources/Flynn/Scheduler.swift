@@ -9,10 +9,11 @@
 import Foundation
 
 public enum CoreAffinity: Int {
-    case preferEfficiency = 0
-    case preferPerformance = 1
-    case onlyEfficiency = 2
-    case onlyPerformance = 3
+    case none = 0
+    case preferEfficiency = 1
+    case preferPerformance = 2
+    case onlyEfficiency = 3
+    case onlyPerformance = 4
 }
 
 open class Scheduler {
@@ -77,6 +78,7 @@ open class Scheduler {
             if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
                 actorAffinity != affinity {
                 Flynn.schedule(actor, actor.unsafeCoreAffinity)
+                //print("affinity bounce, 1a for \(actor) on \(self.index) with \(actorAffinity) and \(affinity)")
                 continue
             }
 
@@ -92,7 +94,8 @@ open class Scheduler {
                         // behind us don't starve.  Dequeue one and reschedule it somewhere
                         // else
                         if let next = actors.dequeue() {
-                            Flynn.schedule(next, next.unsafeCoreAffinity)
+                            Flynn.scheduleOtherThan(self, next, next.unsafeCoreAffinity)
+                            //print("priority starvation (keeping \(actor), bouncing \(next)")
                         }
                     }
                 }
@@ -102,11 +105,13 @@ open class Scheduler {
                 if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
                     actorAffinity != affinity {
                     Flynn.schedule(actor, actor.unsafeCoreAffinity)
+                    //print("affinity bounce, 1b for \(actor) on \(self.index) with \(actorAffinity) and \(affinity)")
                     break
                 }
                 if  (actorAffinity == .preferEfficiency && affinity == .onlyPerformance) ||
                     (actorAffinity == .preferPerformance && affinity == .onlyEfficiency) {
                     if Flynn.scheduleIfIdle(actor, actor.unsafeCoreAffinity) {
+                        //print("affinity bounce, 2 for \(actor) on \(self.index) with \(actorAffinity) and \(affinity)")
                         break
                     }
                 }

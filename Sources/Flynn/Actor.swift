@@ -52,7 +52,7 @@ open class Actor {
     private let uuid: String
 
     public var unsafePriority: Int = 0
-    public var unsafeCoreAffinity: CoreAffinity = .preferEfficiency
+    public var unsafeCoreAffinity: CoreAffinity = Flynn.defaultActorAffinity
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
