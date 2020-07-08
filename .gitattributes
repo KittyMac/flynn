@@ -1,8 +1,4 @@
-# https://github.com/github/linguist#documentation
-Makefile -linguist-documentation
-meta/* -linguist-documentation
-
 # https://github.com/github/linguist#vendored-code
-Makefile -linguist-vendored
-meta/* -linguist-vendored
+Makefile linguist-vendored
+meta/* linguist-vendored
 
