@@ -123,9 +123,9 @@ open class Actor {
 
     private func runMessages() {
         var maxMessages = 1000
-        while let msg = messages.dequeue() {
+        while let msg = messages.peek() {
             msg.run()
-            messagePool.enqueue(msg)
+            messagePool.enqueue(messages.dequeue()!)
 
             maxMessages -= 1
             if maxMessages <= 0 {
