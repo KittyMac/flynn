@@ -8,6 +8,13 @@
 [Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption  
 [Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://yogalayout.com) and [Metal](https://developer.apple.com/metal/)
 
+## Docs
+
+[Actors](docs/ACTOR.md) - Concurrency safe Swift classes  
+[Behaviors](docs/BEHAVIOR.md) - Asynchronous method calls  
+[FlynnLint](docs/FLYNNLINT.md) - Protects against data races and other bad things  
+[Scheduling](docs/SCHEDULER.md) - How and when Actors execute  
+[Benchmarks](docs/PERFORMANCE.md) - How does Flynn compare  
 
 ## Quick Start
 
