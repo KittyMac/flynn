@@ -59,26 +59,13 @@ public class Queue<T: AnyObject> {
     }
 
     @inline(__always)
-    private func nextIndex(_ idx: Int, _ size: Int) -> Int {
-        return (idx + 1) % size
-    }
-
-    @inline(__always)
-    private func prevIndex(_ idx: Int, _ size: Int) -> Int {
-        if idx <= 0 {
-            return arraySize - 1
-        }
-        return idx - 1
-    }
-
-    @inline(__always)
     public var isEmpty: Bool {
         return writeIdx == readIdx
     }
 
     @inline(__always)
     public var isFull: Bool {
-        return nextIndex(writeIdx, arraySize) == readIdx
+        return ((writeIdx + 1) % arraySize) == readIdx
     }
 
     public var count: Int {
@@ -105,7 +92,7 @@ public class Queue<T: AnyObject> {
         var newWriteIdx = 0
         while oldReadIdx != writeIdx {
             (newArrayPtr+newWriteIdx).pointee = (arrayPtr+oldReadIdx).pointee
-            oldReadIdx = nextIndex(oldReadIdx, oldArraySize)
+            oldReadIdx = (oldReadIdx + 1) % oldArraySize
             newWriteIdx += 1
         }
 
@@ -122,7 +109,7 @@ public class Queue<T: AnyObject> {
     public func enqueue(_ element: T) -> Bool {
         writeLock?.lock()
 
-        let wasEmpty = isEmpty
+        let wasEmpty = (writeIdx == readIdx)
         while isFull {
             if arrayResizing == false {
                 writeLock?.unlock()
@@ -134,7 +121,7 @@ public class Queue<T: AnyObject> {
         //print("enqueue[\(writeIdx)]  \(elementPtr)")
 
         (arrayPtr+writeIdx).pointee = bridge(obj: element)
-        writeIdx = nextIndex(writeIdx, arraySize)
+        writeIdx = (writeIdx + 1) % arraySize
 
         writeLock?.unlock()
 
@@ -153,14 +140,14 @@ public class Queue<T: AnyObject> {
         //print("dequeue[\(readIdx)]  \(elementPtr!)")
 
         (arrayPtr+readIdx).pointee = nil
-        readIdx = nextIndex(readIdx, arraySize)
+        readIdx = (readIdx + 1) % arraySize
 
         readLock?.unlock()
         return bridge(ptr: elementPtr!)
     }
 
     public func peek() -> T? {
-        if isEmpty {
+        if writeIdx == readIdx {
             return nil
         }
 
@@ -174,36 +161,13 @@ public class Queue<T: AnyObject> {
         return bridgePeek(ptr: elementPtr!)
     }
 
-    public func steal() -> T? {
-        if isEmpty == false {
-            if writeLock?.try() ?? true {
-                readLock?.lock()
-
-                writeIdx = prevIndex(writeIdx, arraySize)
-                let elementPtr = (arrayPtr+writeIdx).pointee
-                if elementPtr == nil {
-                    readLock?.unlock()
-                    writeLock?.unlock()
-                    return nil
-                }
-                (arrayPtr+writeIdx).pointee = nil
-
-                readLock?.unlock()
-                writeLock?.unlock()
-
-                return bridge(ptr: elementPtr!)
-            }
-        }
-        return nil
-    }
-
     public func clear() {
         readLock?.lock()
 
         while let elementPtr = (arrayPtr+readIdx).pointee {
             let _: T = bridge(ptr: elementPtr)
             (arrayPtr+readIdx).pointee = nil
-            readIdx = nextIndex(readIdx, arraySize)
+            readIdx = (readIdx + 1) % arraySize
         }
 
         readLock?.unlock()
@@ -212,7 +176,7 @@ public class Queue<T: AnyObject> {
     public func markEmpty() -> Bool {
         writeLock?.lock()
         readLock?.lock()
-        let wasEmpty = isEmpty
+        let wasEmpty = (writeIdx == readIdx)
         readLock?.unlock()
         writeLock?.unlock()
         return wasEmpty

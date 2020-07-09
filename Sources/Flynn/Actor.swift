@@ -18,17 +18,16 @@ class ActorMessage {
         args = argsIn
     }
 
+    @inline(__always)
     func set(_ actorIn: Actor, _ blockIn: @escaping BehaviorBlock, _ argsIn: BehaviorArgs) {
         actor = actorIn
         block = blockIn
         args = argsIn
     }
 
+    @inline(__always)
     func run() {
         block!(args!)
-    }
-
-    func clear() {
         actor = nil
         block = nil
         args = nil
@@ -115,11 +114,6 @@ open class Actor {
         return ActorMessage(self, block, args)
     }
 
-    private func poolActorMessage(_ msg: ActorMessage) {
-        msg.clear()
-        messagePool.enqueue(msg)
-    }
-
     private var messages = Queue<ActorMessage>(128)
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
         if messages.enqueue(unpoolActorMessage(block, args)) {
@@ -129,11 +123,9 @@ open class Actor {
 
     private func runMessages() {
         var maxMessages = 1000
-        while let msg = messages.peek() {
-
-            //print("  msg for \(self)")
+        while let msg = messages.dequeue() {
             msg.run()
-            poolActorMessage(messages.dequeue()!)
+            messagePool.enqueue(msg)
 
             maxMessages -= 1
             if maxMessages <= 0 {

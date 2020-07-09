@@ -82,10 +82,6 @@ open class Scheduler {
         }
     }
 
-    func steal() -> Actor? {
-        return actors.steal()
-    }
-
     private func runInternal() {
         while let actor = actors.dequeue() {
             // if we're not allowed on this scheduler due to core affinity, then
