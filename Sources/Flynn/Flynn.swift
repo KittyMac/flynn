@@ -28,8 +28,13 @@ open class Flynn {
     private static var running = AtomicContidion()
     private static var device = Device()
 
+    private static var timeStart: TimeInterval = 0
+
     public class func startup() {
         running.checkInactive {
+
+            timeStart = ProcessInfo.processInfo.systemUptime
+
             for _ in 0..<device.eCores {
                 schedulers.append(Scheduler(schedulers.count, .onlyEfficiency))
             }
@@ -55,6 +60,19 @@ open class Flynn {
             for scheduler in schedulers {
                 scheduler.join()
             }
+
+            // print all runtime stats
+#if DEBUG
+            let timeActive = ProcessInfo.processInfo.systemUptime - timeStart
+            print("Total runtime: \(Int(timeActive * 1000)) ms")
+            for scheduler in schedulers {
+                let index = scheduler.index
+                let timeActive = Int(scheduler.timeActive * 1000)
+                let timeIdle = Int(scheduler.timeIdle * 1000)
+                let actorsRun = scheduler.actorsRun
+                print("  #\(index): \(actorsRun) actors, active \(timeActive) ms, idle \(timeIdle) ms")
+            }
+#endif
 
             // clear all of the schedulers
             schedulers.removeAll()

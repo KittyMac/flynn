@@ -37,6 +37,11 @@ public class FlowableState {
     fileprivate var flowTargets: [Flowable] = []
     fileprivate var poolIdx: Int = 0
 
+    fileprivate func nextTarget() -> Flowable {
+        poolIdx = (poolIdx + 1) % numTargets
+        return flowTargets[poolIdx]
+    }
+
     fileprivate func shouldWaitOnActors(_ actors: [Actor]) -> Bool {
         var num: Int32 = 0
         for actor in actors {
@@ -60,8 +65,7 @@ public class FlowableState {
                 actor?.unsafeYield()
                 return
             }
-            poolIdx = (poolIdx + 1) % numTargets
-            flowTargets[poolIdx].beFlow.dynamicallyFlow(withArguments: [])
+            nextTarget().beFlow.dynamicallyFlow(withArguments: [])
         }
     }
 
@@ -107,8 +111,7 @@ public extension Flowable {
         case 1:
             return safeFlowable.flowTarget
         default:
-            safeFlowable.poolIdx = (safeFlowable.poolIdx + 1) % safeFlowable.numTargets
-            return safeFlowable.flowTargets[safeFlowable.poolIdx]
+            return safeFlowable.nextTarget()
         }
     }
 
@@ -126,8 +129,8 @@ public extension Flowable {
                     return
                 }
             }
-            safeFlowable.poolIdx = (safeFlowable.poolIdx + 1) % safeFlowable.numTargets
-            safeFlowable.flowTargets[safeFlowable.poolIdx].beFlow.dynamicallyFlow(withArguments: args)
+
+            safeFlowable.nextTarget().beFlow.dynamicallyFlow(withArguments: args)
         }
     }
 }

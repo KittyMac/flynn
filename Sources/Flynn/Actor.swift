@@ -114,7 +114,7 @@ open class Actor {
         return ActorMessage(self, block, args)
     }
 
-    private var messages = Queue<ActorMessage>(128)
+    private var messages = Queue<ActorMessage>(128, true, true, false)
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
         if messages.enqueue(unpoolActorMessage(block, args)) {
             Flynn.schedule(self, unsafeCoreAffinity)

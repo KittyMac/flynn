@@ -27,6 +27,10 @@ open class Scheduler {
     internal let uuid: String
     internal var idle: Bool
 
+    internal var timeIdle: TimeInterval = 0
+    internal var timeActive: TimeInterval = 0
+    internal var actorsRun: Int64 = 0
+
     // Thread(block: run) is preferable, but requires 10.12. Can't use selectors on linux
     // (no objc) so we use the block version on linux and the selector version everywhere
     // else. We can switch to the all blocks version for everyone in the future.
@@ -83,6 +87,10 @@ open class Scheduler {
     }
 
     private func runInternal() {
+#if DEBUG
+        var timeMark = ProcessInfo.processInfo.systemUptime
+#endif
+
         while let actor = actors.dequeue() {
             // if we're not allowed on this scheduler due to core affinity, then
             // we need to reschedule this actor on one which can run it
@@ -94,6 +102,7 @@ open class Scheduler {
                 continue
             }
 
+            actorsRun += 1
             while actor.unsafeRun() {
                 actorAffinity = actor.unsafeCoreAffinity
 
@@ -129,9 +138,22 @@ open class Scheduler {
                 }
             }
         }
+
+#if DEBUG
+        timeActive += ProcessInfo.processInfo.systemUptime - timeMark
+#endif
+
         if actors.isEmpty {
             idle = true
+
+#if DEBUG
+            timeMark = ProcessInfo.processInfo.systemUptime
+#endif
             waitingForWorkSemaphore.wait()
+#if DEBUG
+            timeIdle += ProcessInfo.processInfo.systemUptime - timeMark
+#endif
+
             idle = false
         }
     }
