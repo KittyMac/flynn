@@ -6,7 +6,7 @@
 
 [Hello World](Examples/HelloWorld/) - You guessed it!  
 [Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption  
-[Simple HTTP Server](Examples/SimpleHttpServer/) - Actors for HTTP connections, Actors as services  
+[Simple HTTP Server](Examples/SimpleHTTPServer/) - Actors for HTTP connections, Actors as services  
 
 ## Projects
 [Jukebox](https://github.com/KittyMac/jukebox2) - Linux daemon for running a homebrewed Alexa powered Jukebox  
