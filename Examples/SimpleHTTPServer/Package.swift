@@ -19,14 +19,14 @@ let package = Package(
             name: "SimpleHTTPServer",
             dependencies: [
 				"SimpleHTTPServerFramework",
-				"Socket", 
-				"Flynn", 
+				"Socket",
+				"Flynn",
 				.product(name: "ArgumentParser", package: "swift-argument-parser") ]),
         .target(
             name: "SimpleHTTPServerFramework",
             dependencies: [
-				"Socket", 
-				"Flynn", 
+				"Socket",
+				"Flynn",
 				.product(name: "ArgumentParser", package: "swift-argument-parser") ]),
         .testTarget(
             name: "SimpleHTTPServerFrameworkTests",

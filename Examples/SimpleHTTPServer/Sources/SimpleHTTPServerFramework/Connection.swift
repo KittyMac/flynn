@@ -43,7 +43,7 @@ public class Connection: Actor {
                             if url.hasSuffix("/") {
                                 fixedUrl = url + "/index.html"
                             }
-                            Files.shared.beGetFile(fixedUrl, self, beBeSendFileResponse)
+                            Files.shared.beGetFile(fixedUrl, self, beSendFileResponse)
                             return
                         }
                     }
@@ -61,7 +61,7 @@ public class Connection: Actor {
         self._beNextCommand()
     }
 
-    lazy var beBeSendFileResponse = Behavior(self) { [unowned self] (args: BehaviorArgs) in
+    lazy var beSendFileResponse = Behavior(self) { [unowned self] (args: BehaviorArgs) in
         // flynnlint:parameter Data - data of the file
         // flynnlint:parameter HttpContentType - content type of the file
         let data: Data = args[x:0]
