@@ -27,6 +27,6 @@ public struct HttpResponse {
     }
 
     static func asData(_ status: HttpStatus, _ type: HttpContentType) -> Data {
-        return asData(status, type, type.string)
+        return asData(status, type, status.string)
     }
 }
