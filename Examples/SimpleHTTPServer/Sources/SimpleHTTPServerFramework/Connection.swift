@@ -13,11 +13,15 @@ public class Connection: Actor {
         self.socket = socket
 
         try? socket.setReadTimeout(value: 25)
-
+        
         buffer = UnsafeMutablePointer<CChar>.allocate(capacity: bufferSize)
         buffer.initialize(to: 0)
 
         super.init()
+        
+        // This actor will process up to this many behaviors before it must allow
+        // allow another actor scheduler access.
+        self.unsafeMessageBatchSize = 2
 
         beNextCommand()
     }
@@ -27,10 +31,13 @@ public class Connection: Actor {
     }
 
     private func _beNextCommand() {
+        // Checks the socket to see if there is an HTTP command ready to be processed.
+        // Whether we process one or not, we call beNextCommand() to check again in
+        // the future for another command.
         if socket.remoteConnectionClosed {
             return
         }
-
+        
         do {
             if try socket.read(into: buffer, bufSize: bufferSize, truncate: true) > 0 {
                 let httpRequest = HttpRequest(buffer, bufferSize)
@@ -48,9 +55,8 @@ public class Connection: Actor {
                         }
                     }
                 }
-            } else {
-                unsafeYield()
             }
+            
             beNextCommand()
         } catch {
             self.socket.close()
@@ -72,6 +78,7 @@ public class Connection: Actor {
             } else {
                 try self.socket.write(from: HttpResponse.asData(.ok, type, data))
             }
+            
             self.beNextCommand()
         } catch {
             self.socket.close()
