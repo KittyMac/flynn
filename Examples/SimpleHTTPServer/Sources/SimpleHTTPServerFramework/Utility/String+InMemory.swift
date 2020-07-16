@@ -8,18 +8,20 @@ public struct InMemory {
     let startPtr: UnsafeMutablePointer<CChar>?
     let endPtr: UnsafeMutablePointer<CChar>?
 
-    public init(initialValue value: String?, _ startPtr: UnsafeMutablePointer<CChar>, _ endPtr: UnsafeMutablePointer<CChar>) {
+    public init(initialValue value: String?,
+                _ startPtr: UnsafeMutablePointer<CChar>,
+                _ endPtr: UnsafeMutablePointer<CChar>) {
         self.value = value
         self.startPtr = startPtr
         self.endPtr = endPtr
     }
-    
+
     public init() {
         value = nil
         startPtr = nil
         endPtr = nil
     }
-    
+
     @inline(__always)
     func isEmpty() -> Bool {
         return value == nil
@@ -45,7 +47,7 @@ public struct InMemory {
         }
         set { value = newValue }
     }
-    
+
     public var projectedValue: Self {
       get { self }
       set { self = newValue }

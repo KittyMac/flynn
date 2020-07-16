@@ -7,7 +7,7 @@ import Socket
 
 public struct HttpRequest {
     public var method: HttpMethod?
-    
+
     @InMemory public var url: String?
     @InMemory public var host: String?
     @InMemory public var userAgent: String?
@@ -16,7 +16,7 @@ public struct HttpRequest {
     @InMemory public var acceptCharset: String?
     @InMemory public var acceptLanguage: String?
     @InMemory public var connection: String?
-    
+
     public init() {
 
     }
@@ -135,7 +135,7 @@ public struct HttpRequest {
                     (keyEnd-1).pointee == CChar.t {
                     $userAgent = InMemory(initialValue: nil, valueStart, ptr)
                 }
-                
+
                 if  $accept.isEmpty() &&
                     (keyEnd-6).pointee == CChar.A &&
                     (keyEnd-5).pointee == CChar.c &&
@@ -145,7 +145,7 @@ public struct HttpRequest {
                     (keyEnd-1).pointee == CChar.t {
                     $accept = InMemory(initialValue: nil, valueStart, ptr)
                 }
-                
+
                 if  $acceptEncoding.isEmpty() &&
                     (keyEnd-15).pointee == CChar.A &&
                     (keyEnd-14).pointee == CChar.c &&
@@ -164,7 +164,7 @@ public struct HttpRequest {
                     (keyEnd-1).pointee == CChar.g {
                     $acceptEncoding = InMemory(initialValue: nil, valueStart, ptr)
                 }
-                
+
                 if  $acceptCharset.isEmpty() &&
                     (keyEnd-14).pointee == CChar.A &&
                     (keyEnd-13).pointee == CChar.c &&
@@ -182,7 +182,7 @@ public struct HttpRequest {
                     (keyEnd-1).pointee == CChar.t {
                     $acceptCharset = InMemory(initialValue: nil, valueStart, ptr)
                 }
-                
+
                 if  $acceptLanguage.isEmpty() &&
                     (keyEnd-15).pointee == CChar.A &&
                     (keyEnd-14).pointee == CChar.c &&
@@ -201,7 +201,7 @@ public struct HttpRequest {
                     (keyEnd-1).pointee == CChar.e {
                     $acceptLanguage = InMemory(initialValue: nil, valueStart, ptr)
                 }
-                
+
                 if  $connection.isEmpty() &&
                     (keyEnd-10).pointee == CChar.C &&
                     (keyEnd-9).pointee == CChar.o &&

@@ -12,6 +12,8 @@ do {
     let serverSocket = try Socket.create()
     try serverSocket.listen(on: port, node: address)
 
+    Files.shared.beSetRoot("/tmp/www/")
+
     repeat {
         autoreleasepool {
             if let newSocket = try? serverSocket.acceptClientConnection() {
