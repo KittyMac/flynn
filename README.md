@@ -6,6 +6,9 @@
 
 [Hello World](Examples/HelloWorld/) - You guessed it!  
 [Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption  
+[Simple HTTP Server](Examples/BatteryTester/) - Use Actors to service many HTTP connections, including pools of actors which protect critical resources  
+
+## Projects
 [Jukebox](https://github.com/KittyMac/jukebox2) - Linux daemon for running a homebrewed Alexa powered Jukebox  
 [Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://yogalayout.com) and [Metal](https://developer.apple.com/metal/)  
 

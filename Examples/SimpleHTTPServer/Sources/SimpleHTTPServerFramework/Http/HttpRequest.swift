@@ -59,6 +59,8 @@ public struct HttpRequest {
                         ptr.pointee == CChar.space {
                         method = .POST
                     } else if
+                        (ptr-6).pointee == CChar.D &&
+                        (ptr-5).pointee == CChar.E &&
                         (ptr-4).pointee == CChar.L &&
                         (ptr-3).pointee == CChar.E &&
                         (ptr-2).pointee == CChar.T &&

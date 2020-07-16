@@ -22,12 +22,6 @@ test:
 xcode:
 	swift package generate-xcodeproj
 
-install: build
-	
-	sudo systemctl stop jukebox
-	
-	sudo cp .build/release/jukebox2 /usr/local/bin
-	sudo cp meta/jukebox.service /etc/systemd/system/jukebox.service
-		
-	sudo systemctl start jukebox
-	sudo systemctl enable jukebox
+benchmark:
+	wrk -t 4 -c 100 -d30s --timeout 2000 http://127.0.0.1:8080/hello/world
+
