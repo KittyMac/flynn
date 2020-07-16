@@ -50,6 +50,7 @@ open class Actor {
 
     private let uuid: String
 
+    public var unsafeMessageBatchSize: UInt = 1000
     public var unsafePriority: Int = 0
     public var unsafeCoreAffinity: CoreAffinity = Flynn.defaultActorAffinity
 
@@ -122,7 +123,7 @@ open class Actor {
     }
 
     private func runMessages() {
-        var maxMessages = 1000
+        var maxMessages = unsafeMessageBatchSize
         while let msg = messages.peek() {
             msg.run()
             messagePool.enqueue(messages.dequeue()!)
