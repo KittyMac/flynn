@@ -10,7 +10,7 @@
 
 import Foundation
 
-public typealias BehaviorArgs = [Any]
+public typealias BehaviorArgs = [Any?]
 
 public extension Array {
     // Extract and convert a subscript all in one command. Since we don't have compiler
