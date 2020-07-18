@@ -91,14 +91,6 @@ open class Actor {
     public init() {
         Flynn.startup()
         uuid = UUID().uuidString
-
-        // This is required because with programming patterns like
-        // Actor().beBehavior() Swift will dealloc the actor prior
-        // to the behavior being called. So we introduce an unbalanced
-        // retain which we release as soon as this actor processes its
-        // first message.
-        
-        Flynn.register(self)
     }
 
     deinit {

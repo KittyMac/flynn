@@ -149,6 +149,7 @@ open class Scheduler {
 #if DEBUG
             timeMark = ProcessInfo.processInfo.systemUptime
 #endif
+            Flynn.checkRegisteredActors()
             waitingForWorkSemaphore.wait()
 #if DEBUG
             timeIdle += ProcessInfo.processInfo.systemUptime - timeMark
