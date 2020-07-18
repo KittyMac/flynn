@@ -37,11 +37,15 @@ private func failReferenceTypesToBehavior(_ arg: Any) {
 
 private func checkReferenceTypesToBehavior(_ args: BehaviorArgs) {
     //for arg in args where type(of: arg) is AnyClass {
-    for arg in args where type(of: arg) is AnyClass {
-        if !(arg is Actor) && !(arg is Behavior) {
-            failReferenceTypesToBehavior(arg)
+    for arg in args {
+        if let arg = arg {
+            if type(of: arg) is AnyClass {
+                if !(arg is Actor) && !(arg is Behavior) {
+                    failReferenceTypesToBehavior(arg)
+                }
+                break
+            }
         }
-        break
     }
 }
 

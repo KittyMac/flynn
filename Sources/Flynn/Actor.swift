@@ -83,6 +83,11 @@ open class Actor {
         return Int32(messages.count)
     }
 
+    private let initTime: TimeInterval = ProcessInfo.processInfo.systemUptime
+    public var unsafeUptime: TimeInterval {
+        return ProcessInfo.processInfo.systemUptime - initTime
+    }
+    
     public init() {
         Flynn.startup()
         uuid = UUID().uuidString
@@ -92,14 +97,8 @@ open class Actor {
         // to the behavior being called. So we introduce an unbalanced
         // retain which we release as soon as this actor processes its
         // first message.
-        #if os(Linux)
-        _ = Unmanaged.passRetained(self)
-        _ = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { (_) in
-            _ = Unmanaged.passUnretained(self).release()
-        }
-        #else
-        _ = Unmanaged.passRetained(self).autorelease()
-        #endif
+        
+        Flynn.register(self)
     }
 
     deinit {
@@ -125,7 +124,13 @@ open class Actor {
     private func runMessages() {
         var maxMessages = unsafeMessageBatchSize
         while let msg = messages.peek() {
+#if os(Linux)
             msg.run()
+#else
+            autoreleasepool {
+                msg.run()
+            }
+#endif
             messagePool.enqueue(messages.dequeue()!)
 
             maxMessages -= 1
@@ -144,13 +149,7 @@ open class Actor {
     internal func unsafeRun() -> Bool {
         if runningLock.try() {
             //print("run \(self)")
-#if os(Linux)
             runMessages()
-#else
-            autoreleasepool {
-                runMessages()
-            }
-#endif
             runningLock.unlock()
         } else {
             return false

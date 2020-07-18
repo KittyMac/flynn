@@ -11,6 +11,10 @@ import Foundation
 class AtomicContidion {
     private var _value: Bool = false
     private var lock = NSLock()
+    
+    public var isActive: Bool {
+        return _value
+    }
 
     func checkInactive(_ block: () -> Void) {
         if _value == false {

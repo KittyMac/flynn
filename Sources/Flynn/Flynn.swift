@@ -22,13 +22,14 @@ open class Flynn {
 #else
     public static var defaultActorAffinity: CoreAffinity = .none
 #endif
-
+    
     private static var schedulers: [Scheduler] = []
     private static var schedulerIdx: Int = 0
     private static var running = AtomicContidion()
     private static var device = Device()
 
     private static var timeStart: TimeInterval = 0
+    private static var registeredActorsCheckRunning = false
 
     public class func startup() {
         running.checkInactive {
@@ -40,6 +41,21 @@ open class Flynn {
             }
             for _ in 0..<device.pCores {
                 schedulers.append(Scheduler(schedulers.count, .onlyPerformance))
+            }
+            
+            registeredActorsCheckRunning = true
+            DispatchQueue.global(qos: .background).async {
+                while running.isActive {
+                    while let actor = registeredActorsQueue.peek() {
+                        if actor.unsafeUptime < 1.0 {
+                            break
+                        }
+                        registeredActorsQueue.dequeue()
+                    }
+                    usleep(100_000)
+                }
+                registeredActorsQueue.clear()
+                registeredActorsCheckRunning = false
             }
         }
     }
@@ -59,6 +75,11 @@ open class Flynn {
             // join all of the scheduler threads
             for scheduler in schedulers {
                 scheduler.join()
+            }
+            
+            // wait until the registered actors thread ends
+            while registeredActorsCheckRunning {
+                usleep(5000)
             }
 
             // print all runtime stats
@@ -82,7 +103,16 @@ open class Flynn {
     public static var cores: Int {
         return device.cores
     }
-
+    
+    private static var registeredActorsQueue = Queue<Actor>(1024, true, true, false)
+    public static func register(_ actor: Actor) {
+        // register is responsible for ensuring the actor is retained for a minimum amount of time. this is because
+        // actors with chainable behaviors doing this ( Image().beDoSomething() ) Swift will dealloc the actor before
+        // the behavior is called. So actors now register themselves when they are init'd, and Flynn ensures it is
+        // retained for at least one second before it is allowed to deallocate naturally.
+        registeredActorsQueue.enqueue(actor)
+    }
+    
     private static var lastSchedulerIdx: Int = 0
     @inline(__always)
     public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity) {
