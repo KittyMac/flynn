@@ -41,6 +41,15 @@ public class FlowableState {
         poolIdx = (poolIdx + 1) % numTargets
         return flowTargets[poolIdx]
     }
+    
+    fileprivate func flowTarget(_ args: BehaviorArgs) {
+        flowTarget?.beFlow.dynamicallyFlow(withArguments: args)
+    }
+
+    fileprivate func flowNextTarget(_ args: BehaviorArgs) {
+        poolIdx = (poolIdx + 1) % numTargets
+        flowTargets[poolIdx].beFlow.dynamicallyFlow(withArguments: args)
+    }
 
     fileprivate func shouldWaitOnActors(_ actors: [Actor]) -> Bool {
         var num: Int32 = 0
@@ -120,7 +129,7 @@ public extension Flowable {
         case 0:
             return
         case 1:
-            safeFlowable.flowTarget?.beFlow.dynamicallyFlow(withArguments: args)
+            safeFlowable.flowTarget(args)
         default:
             if args.isEmpty {
                 if safeFlowable.shouldWaitOnActors(safeFlowable.flowTargets) {
@@ -129,8 +138,7 @@ public extension Flowable {
                     return
                 }
             }
-
-            safeFlowable.nextTarget().beFlow.dynamicallyFlow(withArguments: args)
+            safeFlowable.flowNextTarget(args)
         }
     }
 }
