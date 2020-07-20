@@ -1,22 +1,14 @@
 import Flynn
 
-// swiftlint:disable force_cast
-
 class HelloWorld: Actor {
-    var safeValue: Int = 5
+  lazy var bePrint = Behavior(self) { (args: BehaviorArgs) in
+    // flynnlint:parameter String - string to print
+    print(args[x:0])
+  }
 }
 
-class GoodbyeWorld: HelloWorld {
-    override init() {
-        super.init()
-        self.safeValue = 42
-    }
-}
+print("synchronous: before")
+HelloWorld().bePrint("asynchronous: hello world")
+print("synchronous: after")
 
-let hello = HelloWorld()
-hello.safeValue = 7
-
-
-
-
-
+Flynn.shutdown()
