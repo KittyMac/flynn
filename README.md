@@ -13,8 +13,8 @@
 [Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://yogalayout.com) and [Metal](https://developer.apple.com/metal/)  
 
 ## Products
-<a href="https://apps.apple.com/us/app/pointsman/id1447780441"><img align="center" src="meta/pointsman.png" width="10%"></a>
-<a href="https://apps.apple.com/us/app/mad-kings-steward/id1461873703"><img align="center" src="meta/madsteward.png" width="10%"></a>
+<a href="https://apps.apple.com/us/app/pointsman/id1447780441" target="_blank"><img align="center" src="meta/pointsman.png" width="10%"></a>
+<a href="https://apps.apple.com/us/app/mad-kings-steward/id1461873703" target="_blank"><img align="center" src="meta/madsteward.png" width="10%"></a>
 
 Have you released something using Flynn? Let us know!
 
