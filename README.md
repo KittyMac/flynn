@@ -9,12 +9,13 @@
 [Simple HTTP Server](Examples/SimpleHTTPServer/) - Actors for HTTP connections, Actors as services  
 
 ## Projects
+[FlynnLint](https://github.com/KittyMac/flynnlint) - FlynnLint uses Flynn to concurrently check your Swift files for Flynn best practices  
 [Jukebox](https://github.com/KittyMac/jukebox2) - Linux daemon for running a homebrewed Alexa powered Jukebox  
 [Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://yogalayout.com) and [Metal](https://developer.apple.com/metal/)  
 
 ## Products
-<a href="https://apps.apple.com/us/app/pointsman/id1447780441" target="_blank"><img align="center" src="meta/pointsman.png" width="10%"></a>
-<a href="https://apps.apple.com/us/app/mad-kings-steward/id1461873703" target="_blank"><img align="center" src="meta/madsteward.png" width="10%"></a>
+<a href="https://apps.apple.com/us/app/pointsman/id1447780441" target="_blank"><img align="center" src="meta/pointsman.png" width="80"></a>
+<a href="https://apps.apple.com/us/app/mad-kings-steward/id1461873703" target="_blank"><img align="center" src="meta/madsteward.png" width="80"></a>
 
 Have you released something using Flynn? Let us know!
 
