@@ -154,13 +154,9 @@ class FlynnTests: XCTestCase {
             expectation.fulfill()
         })
 
-        for num in 0..<iterations {
-            if num % 2 == 0 {
-                pipeline.beFlow("x")
-            } else {
-                pipeline.beFlow("o")
-            }
-            //pipeline.wait(100)
+        for _ in 0..<iterations/2 {
+            pipeline.beFlow("x")
+            pipeline.beFlow("o")
         }
 
         pipeline.beFlow()

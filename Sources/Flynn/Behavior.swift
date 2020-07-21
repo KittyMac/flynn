@@ -16,13 +16,15 @@ public extension Array {
     // Extract and convert a subscript all in one command. Since we don't have compiler
     // support for checking parameters with behaviors, I am leaning towards crashing
     // in order to help identify buggy code faster.
+    @inline(__always)
     func get<T>(_ idx: Int) -> T {
         return self[idx] as! T
     }
+    @inline(__always)
     subscript<T>(x idx: Int) -> T {
         return self[idx] as! T
     }
-
+    @inline(__always)
     func check(_ idx: Int) -> Any {
         return self[idx]
     }
