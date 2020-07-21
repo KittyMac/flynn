@@ -50,13 +50,12 @@ public class FlowableState {
         poolIdx = (poolIdx + 1) % numTargets
         flowTargets[poolIdx].beFlow.dynamicallyFlow(withArguments: args)
     }
-
-    fileprivate func shouldWaitOnActors(_ actors: [Actor]) -> Bool {
-        var num: Int32 = 0
-        for actor in actors {
-            num += actor.unsafeMessagesCount
+    
+    fileprivate func shouldWaitOnTargets() -> Bool {
+        for actor in flowTargets where actor.unsafeMessagesCount > 0 {
+            return true
         }
-        return num > 0
+        return false
     }
 
     fileprivate lazy var beRetryEndFlowToNextTarget = Behavior { [unowned self] (_: BehaviorArgs) in
@@ -69,7 +68,7 @@ public class FlowableState {
         case 1:
             flowTarget?.beFlow.dynamicallyFlow(withArguments: [])
         default:
-            if shouldWaitOnActors(flowTargets) {
+            if shouldWaitOnTargets() {
                 beRetryEndFlowToNextTarget()
                 actor?.unsafeYield()
                 return
@@ -132,7 +131,7 @@ public extension Flowable {
             safeFlowable.flowTarget(args)
         default:
             if args.isEmpty {
-                if safeFlowable.shouldWaitOnActors(safeFlowable.flowTargets) {
+                if safeFlowable.shouldWaitOnTargets() {
                     safeFlowable.beRetryEndFlowToNextTarget()
                     unsafeYield()
                     return
