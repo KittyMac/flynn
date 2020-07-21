@@ -9,28 +9,49 @@
 import Foundation
 
 class ActorMessage {
-    var actor: Actor?
-    var block: BehaviorBlock?
-    var args: BehaviorArgs?
+    private static var emptyArgs: BehaviorArgs = []
+    
+    private var actor: Actor?
+    private var block: BehaviorBlock?
+    
+    private var numArgs: Int = 0
+    private var args: BehaviorArgs?
+    private var arg: Any?
+    
     init(_ actorIn: Actor, _ blockIn: @escaping BehaviorBlock, _ argsIn: BehaviorArgs) {
         actor = actorIn
         block = blockIn
-        args = argsIn
+        
+        numArgs = argsIn.count
+        switch(numArgs) {
+        case 0: break
+        case 1: arg = argsIn[0]
+        default: args = argsIn
+        }
     }
 
     @inline(__always)
     func set(_ actorIn: Actor, _ blockIn: @escaping BehaviorBlock, _ argsIn: BehaviorArgs) {
         actor = actorIn
         block = blockIn
-        args = argsIn
+        
+        numArgs = argsIn.count
+        switch(numArgs) {
+        case 0: break
+        case 1: arg = argsIn[0]
+        default: args = argsIn
+        }
     }
 
     @inline(__always)
     func run() {
-        block!(args!)
+        switch(numArgs) {
+        case 0: block!(ActorMessage.emptyArgs)
+        case 1: block!([arg]); arg = nil
+        default: block!(args!); args = nil
+        }
         actor = nil
         block = nil
-        args = nil
     }
 
     deinit {
@@ -97,7 +118,7 @@ open class Actor {
         //print("deinit - Actor")
     }
 
-    private var messagePool = Queue<ActorMessage>(128, false, false, true)
+    private var messagePool = Queue<ActorMessage>(128, true, false, true)
     private func unpoolActorMessage(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) -> ActorMessage {
         if let msg = messagePool.dequeue() {
             msg.set(self, block, args)
