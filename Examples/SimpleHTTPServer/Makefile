@@ -23,5 +23,5 @@ xcode:
 	swift package generate-xcodeproj
 
 benchmark:
-	wrk -t 4 -c 100 -d30s --timeout 2000 http://127.0.0.1:8080/hello/world
+	wrk -t 4 -c 100 -d30s --timeout 2000 http://localhost:8080/hello/world
 

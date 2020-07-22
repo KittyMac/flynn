@@ -14,5 +14,10 @@
     
     <SegmentedControl id="coreAffinity" />
     
+    <Button id="benchButton" backgroundColor="#EEEEEEFF" >
+        <Label id="benchButtonLabel" styleId="LabelStd1" text="Run Benchmark" textAlignment="center" numberOfLines="1" textColor="#000000FF" />
+    </Button>
+    <Label id="benchResultsLabel" styleId="LabelStd1" text="" textAlignment="center" numberOfLines="1" textColor="#000000FF" />
+
 </Scene>
 

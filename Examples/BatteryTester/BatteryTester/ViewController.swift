@@ -9,6 +9,13 @@
 // swiftlint:disable function_body_length
 // swiftlint:disable cyclomatic_complexity
 
+// Benchmark Results:
+// Performed on iPhone 8+
+// Screen brightness to minimum
+
+// 100% CPU usage on 2 Efficiency Cores: 100% -> 90% battery in 2884.95 seconds
+// 100% CPU usage on 2 Performance Cores: 100% -> 90% battery in 1243.90 seconds
+
 import UIKit
 import PlanetSwift
 import Anchorage
@@ -23,6 +30,13 @@ class ViewController: PlanetViewController {
     @objc dynamic var actorSlider: UISlider?
     @objc dynamic var sleepSlider: UISlider?
     @objc dynamic var coreAffinity: UISegmentedControl?
+    @objc dynamic var benchButton: UIButton?
+    @objc dynamic var benchButtonLabel: UILabel?
+    @objc dynamic var benchResultsLabel: UILabel?
+
+    var benchmarkRunning = false
+    var benchmarkStartTime = ProcessInfo.processInfo.systemUptime
+    var benchmarkStartBattery = UIDevice.current.batteryLevel
 
     var counters: [Counter] = []
 
@@ -44,6 +58,8 @@ class ViewController: PlanetViewController {
         super.viewDidLoad()
 
         title = "Battery Tester"
+
+        UIDevice.current.isBatteryMonitoringEnabled = true
 
         persistentViews = false
         navigationBarHidden = true
@@ -72,6 +88,16 @@ class ViewController: PlanetViewController {
                 view.topAnchor == prev!.bottomAnchor + 10
                 view.widthAnchor == parent.widthAnchor - 80
 
+            case self.benchButton:
+                view.topAnchor == prev!.bottomAnchor + 16
+                view.widthAnchor == 280
+                view.heightAnchor == 60
+
+            case self.benchResultsLabel:
+                view.topAnchor == prev!.bottomAnchor + 16
+                view.widthAnchor == parent.widthAnchor - 80
+                view.heightAnchor == 20
+
             default:
                 view.sizeAnchors == parent.sizeAnchors
                 return
@@ -85,6 +111,9 @@ class ViewController: PlanetViewController {
         guard let sleepSlider = sleepSlider else { return }
         guard let actorLabel = actorLabel else { return }
         guard let sleepLabel = sleepLabel else { return }
+        guard let benchButton = benchButton else { return }
+        guard let benchButtonLabel = benchButtonLabel else { return }
+        guard let benchResultsLabel = benchResultsLabel else { return }
 
         let updateFrequency = 1.0 / 60.0
 
@@ -101,6 +130,24 @@ class ViewController: PlanetViewController {
 
                 countsPerTime = total
                 countPerTimeTimer -= 1.0
+            }
+
+            UIApplication.shared.isIdleTimerDisabled = self.benchmarkRunning
+
+            if self.benchmarkRunning == false {
+                benchButtonLabel.text = "Start Benchmark"
+            } else {
+                let runtime = ProcessInfo.processInfo.systemUptime - self.benchmarkStartTime
+                let batteryLost = self.benchmarkStartBattery - UIDevice.current.batteryLevel
+                let batteryLostPercent = self.toPerc(batteryLost)
+                benchButtonLabel.text = "Benchmark Running..."
+                benchResultsLabel.text = String(format: "Runtime: %0.2fs Battery Loss: %d%%",
+                                                runtime,
+                                                batteryLostPercent)
+
+                if batteryLostPercent >= 10 {
+                    self.stopBenchmark()
+                }
             }
         }
 
@@ -130,6 +177,44 @@ class ViewController: PlanetViewController {
             _ = self.counters.map { $0.unsafeSleepAmount = sleepAmount }
             sleepLabel.text = "\(sleepAmount) µs sleep"
         }
+
+        benchButton.add(for: .touchUpInside) { [weak self] in
+            guard let self = self else { return }
+            self.toggleBenchmark()
+        }
+    }
+
+    func startBenchmark() {
+        benchmarkRunning = true
+        benchmarkStartTime = ProcessInfo.processInfo.systemUptime
+        benchmarkStartBattery = UIDevice.current.batteryLevel
+    }
+
+    func stopBenchmark() {
+        benchmarkRunning = false
+        print("Battery Benchmark Aborted")
+        print("=========================")
+
+        let runtime = ProcessInfo.processInfo.systemUptime - benchmarkStartTime
+        print("runtime: \(runtime) seconds")
+
+        let battery = UIDevice.current.batteryLevel
+        print("battery start: \( toPerc(benchmarkStartBattery) )%")
+        print("battery end: \( toPerc(battery) )%")
+        print("battery lost: \( toPerc(benchmarkStartBattery - battery) )%")
+    }
+
+    func toggleBenchmark() {
+        if benchmarkRunning {
+            stopBenchmark()
+
+        } else {
+            startBenchmark()
+        }
+    }
+
+    func toPerc(_ value: Float) -> Int {
+        return Int(value * 100)
     }
 
 }
