@@ -2,31 +2,6 @@
 
 &nbsp;  
 
-## Examples
-
-[Hello World](Examples/HelloWorld/) - You guessed it!  
-[Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption  
-[Simple HTTP Server](Examples/SimpleHTTPServer/) - Actors for HTTP connections, Actors as services  
-
-## Projects
-[FlynnLint](https://github.com/KittyMac/flynnlint) - FlynnLint uses Flynn to concurrently check your Swift files for Flynn best practices  
-[Jukebox](https://github.com/KittyMac/jukebox2) - Linux daemon for running a homebrewed Alexa powered Jukebox  
-[Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://yogalayout.com) and [Metal](https://developer.apple.com/metal/)  
-
-## Products
-<a href="https://apps.apple.com/us/app/pointsman/id1447780441" target="_blank"><img align="center" src="meta/pointsman.png" width="80"></a>
-<a href="https://apps.apple.com/us/app/mad-kings-steward/id1461873703" target="_blank"><img align="center" src="meta/madsteward.png" width="80"></a>
-
-Have you released something using Flynn? Let us know!
-
-## Docs
-
-[Actors](docs/ACTOR.md) - Concurrency safe Swift classes  
-[Behaviors](docs/BEHAVIOR.md) - Asynchronous method calls  
-[Scheduling](docs/SCHEDULER.md) - How and when Actors execute Behaviors  
-[FlynnLint](docs/FLYNNLINT.md) - Protects against data races and other bad things  
-[Benchmarks](docs/PERFORMANCE.md) - How does Flynn compare  
-
 ## Quick Start
 
 ### Actor-Model Programming
@@ -79,6 +54,30 @@ Unlike other attempts to bring Actor-Model programming to Swift, Flynn does not 
 Flynn provides the scaffolding for safer concurrency, but FlynnLint enforces it.  FlynnLint will protect you from numerous concurrency pitfalls by not allowing unsafe code to compile:
 
 ![](meta/flynnlint0.png)
+
+## Docs
+
+[Actors](docs/ACTOR.md) - Concurrency safe Swift classes  
+[Behaviors](docs/BEHAVIOR.md) - Asynchronous method calls  
+[Scheduling](docs/SCHEDULER.md) - How and when Actors execute Behaviors  
+[FlynnLint](docs/FLYNNLINT.md) - Protects against data races and other bad things  
+
+## Examples
+
+[Hello World](Examples/HelloWorld/) - You guessed it!  
+[Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption  
+[Simple HTTP Server](Examples/SimpleHTTPServer/) - Actors for HTTP connections, Actors as services  
+
+## Projects
+[FlynnLint](https://github.com/KittyMac/flynnlint) - FlynnLint uses Flynn to concurrently check your Swift files for Flynn best practices  
+[Jukebox](https://github.com/KittyMac/jukebox2) - Linux daemon for running a homebrewed Alexa powered Jukebox  
+[Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://yogalayout.com) and [Metal](https://developer.apple.com/metal/)  
+
+## Products
+<a href="https://apps.apple.com/us/app/pointsman/id1447780441" target="_blank"><img align="center" src="meta/pointsman.png" width="80"></a>
+<a href="https://apps.apple.com/us/app/mad-kings-steward/id1461873703" target="_blank"><img align="center" src="meta/madsteward.png" width="80"></a>
+
+Have you released something using Flynn? Let us know!
 
 
 ## Installation
