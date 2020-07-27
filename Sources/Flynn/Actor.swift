@@ -112,6 +112,7 @@ open class Actor {
     public init() {
         Flynn.startup()
         uuid = UUID().uuidString
+        Flynn.register(self)
     }
 
     deinit {

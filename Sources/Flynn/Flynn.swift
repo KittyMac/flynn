@@ -94,10 +94,15 @@ open class Flynn {
         // actors with chainable behaviors doing this ( Image().beDoSomething() ) Swift will dealloc the actor before
         // the behavior is called. So actors now register themselves when they are init'd, and Flynn ensures it is
         // retained for at least one second before it is allowed to deallocate naturally.
-        registeredActorsQueue.enqueue(actor)
+#if os(Linux)
+            registeredActorsQueue.enqueue(actor)
+#else
+            _ = Unmanaged.passRetained(actor).autorelease()
+#endif
     }
     
     public static func checkRegisteredActors() {
+#if os(Linux)
         // Schedulers call this periodically to ensure registered actors get unregistered after their time is up
         while let actor = registeredActorsQueue.peek() {
             if actor.unsafeUptime < 1.0 {
@@ -105,6 +110,7 @@ open class Flynn {
             }
             registeredActorsQueue.dequeue()
         }
+#endif
     }
     
     private static var lastSchedulerIdx: Int = 0

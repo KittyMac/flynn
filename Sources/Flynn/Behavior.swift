@@ -60,7 +60,6 @@ public class ChainableBehavior<T: Actor> {
     public init(_ actor: T, _ block: @escaping BehaviorBlock) {
         self.actor = actor
         self.block = block
-        Flynn.register(actor)
     }
 
     public init(_ block: @escaping BehaviorBlock) {
@@ -70,9 +69,6 @@ public class ChainableBehavior<T: Actor> {
 
     public func setActor(_ actor: T?) {
         self.actor = actor
-        if let actor = actor {
-            Flynn.register(actor)
-        }
     }
 
     @discardableResult public func dynamicallyCall(withArguments args: BehaviorArgs) -> T {
@@ -98,7 +94,6 @@ public class Behavior {
     public init(_ actor: Actor, _ block: @escaping BehaviorBlock) {
         self.actor = actor
         self.block = block
-        Flynn.register(actor)
     }
 
     public init(_ block: @escaping BehaviorBlock) {
@@ -108,9 +103,6 @@ public class Behavior {
 
     public func setActor(_ actor: Actor?) {
         self.actor = actor
-        if let actor = actor {
-            Flynn.register(actor)
-        }
     }
 
     public func dynamicallyCall(withArguments args: BehaviorArgs) {
