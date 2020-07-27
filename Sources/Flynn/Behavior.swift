@@ -98,6 +98,7 @@ public class Behavior {
     public init(_ actor: Actor, _ block: @escaping BehaviorBlock) {
         self.actor = actor
         self.block = block
+        Flynn.register(actor)
     }
 
     public init(_ block: @escaping BehaviorBlock) {
@@ -107,6 +108,9 @@ public class Behavior {
 
     public func setActor(_ actor: Actor?) {
         self.actor = actor
+        if let actor = actor {
+            Flynn.register(actor)
+        }
     }
 
     public func dynamicallyCall(withArguments args: BehaviorArgs) {

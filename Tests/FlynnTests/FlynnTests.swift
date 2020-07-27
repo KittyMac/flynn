@@ -95,6 +95,10 @@ class FlynnTests: XCTestCase {
 
     func testImage() {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
+
+        let color: [Float] = [1, 0, 1, 0]
+        Image().beSetColor(color)
+
         Image()
             .beAlpha()
             .beColor()
