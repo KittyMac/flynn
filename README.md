@@ -61,6 +61,7 @@ Flynn provides the scaffolding for safer concurrency, but FlynnLint enforces it.
 [Behaviors](docs/BEHAVIOR.md) - Asynchronous method calls  
 [Scheduling](docs/SCHEDULER.md) - How and when Actors execute Behaviors  
 [FlynnLint](docs/FLYNNLINT.md) - Protects against data races and other bad things  
+[Flowable Actors](docs/FLOWABLE.md) - Easily chainable networks of actors  
 
 ## Examples
 

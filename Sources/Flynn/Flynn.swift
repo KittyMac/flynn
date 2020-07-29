@@ -88,6 +88,14 @@ open class Flynn {
         return device.cores
     }
     
+    public static var eCores: Int {
+        return device.eCores
+    }
+    
+    public static var pCores: Int {
+        return device.pCores
+    }
+    
     private static var registeredActorsQueue = Queue<Actor>(1024, true, true, true)
     public static func register(_ actor: Actor) {
         // register is responsible for ensuring the actor is retained for a minimum amount of time. this is because
