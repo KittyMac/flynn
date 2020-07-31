@@ -6,6 +6,8 @@
 //  Copyright © 2020 Rocco Bowling. All rights reserved.
 //
 
+// swiftlint:disable nesting
+
 import XCTest
 import Flynn
 
@@ -89,5 +91,38 @@ class FlynnRuntimeTests: XCTestCase {
                     expectation.fulfill()
                 }
         wait(for: [expectation], timeout: 10.0)
+    }
+
+    func testSortableQueue() {
+
+        class SimpleInt: ExpressibleByIntegerLiteral {
+            typealias IntegerLiteralType = Int
+            var value: Int = 0
+
+            required init(integerLiteral value: Int) {
+                self.value = value
+            }
+        }
+
+        self.measure {
+            let queue = Queue<SimpleInt>(64)
+            let compareSimpleInts = { (lhs: SimpleInt, rhs: SimpleInt) -> Bool in
+                return lhs.value > rhs.value
+            }
+
+            queue.enqueue(5, sortedBy: compareSimpleInts)
+            queue.enqueue(2, sortedBy: compareSimpleInts)
+            queue.enqueue(17, sortedBy: compareSimpleInts)
+            queue.enqueue(15, sortedBy: compareSimpleInts)
+            queue.enqueue(99, sortedBy: compareSimpleInts)
+            queue.enqueue(0, sortedBy: compareSimpleInts)
+
+            var string = ""
+            while let value = queue.dequeue() {
+                string.append("\(value.value),")
+            }
+
+            XCTAssert(string == "0,2,5,15,17,99,")
+        }
     }
 }

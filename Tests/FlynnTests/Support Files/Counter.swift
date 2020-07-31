@@ -45,6 +45,10 @@ class Counter: Actor {
         counter += value
     }
 
+    public var unsafeValue: Int {
+        return counter
+    }
+
     lazy var beHello = ChainableBehavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter String - who is saying hello!
         print("hello world from " + args[x:0])

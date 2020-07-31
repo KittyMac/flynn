@@ -64,7 +64,8 @@ open class Flynn {
             }
             
             // wait until the registered actors thread ends
-            registeredActorsQueue.clear()
+            clearRegisteredActors()
+            clearRegisteredTimers()
 
             // print all runtime stats
 #if DEBUG
@@ -96,29 +97,8 @@ open class Flynn {
         return device.pCores
     }
     
-    private static var registeredActorsQueue = Queue<Actor>(1024, true, true, true)
-    public static func register(_ actor: Actor) {
-        // register is responsible for ensuring the actor is retained for a minimum amount of time. this is because
-        // actors with chainable behaviors doing this ( Image().beDoSomething() ) Swift will dealloc the actor before
-        // the behavior is called. So actors now register themselves when they are init'd, and Flynn ensures it is
-        // retained for at least one second before it is allowed to deallocate naturally.
-#if os(Linux)
-            registeredActorsQueue.enqueue(actor)
-#else
-            _ = Unmanaged.passRetained(actor).autorelease()
-#endif
-    }
-    
-    public static func checkRegisteredActors() {
-#if os(Linux)
-        // Schedulers call this periodically to ensure registered actors get unregistered after their time is up
-        while let actor = registeredActorsQueue.peek() {
-            if actor.unsafeUptime < 1.0 {
-                break
-            }
-            registeredActorsQueue.dequeue()
-        }
-#endif
+    internal static func wakeScheduler(_ index: Int) {
+        schedulers[index].wake()
     }
     
     private static var lastSchedulerIdx: Int = 0

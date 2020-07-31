@@ -10,6 +10,10 @@
 
 import Foundation
 
+internal protocol AnyBehavior {
+    func dynamicallyCallMaybe(withArguments args: BehaviorArgs) -> Bool
+}
+
 public typealias BehaviorArgs = [Any?]
 
 public extension Array {
@@ -52,7 +56,7 @@ private func checkReferenceTypesToBehavior(_ args: BehaviorArgs) {
 }
 
 @dynamicCallable
-public class ChainableBehavior<T: Actor> {
+public class ChainableBehavior<T: Actor>: AnyBehavior {
     private weak var actor: T?
     private let block: BehaviorBlock
     private let checkForUnsafeArguments = Flynn.defaultCheckForUnsafeArguments
@@ -71,6 +75,14 @@ public class ChainableBehavior<T: Actor> {
         self.actor = actor
     }
 
+    public func dynamicallyCallMaybe(withArguments args: BehaviorArgs) -> Bool {
+        if let actor = actor {
+            actor.unsafeSend(block, args)
+            return true
+        }
+        return false
+    }
+    
     @discardableResult public func dynamicallyCall(withArguments args: BehaviorArgs) -> T {
         if checkForUnsafeArguments {
             checkReferenceTypesToBehavior(args)
@@ -86,7 +98,7 @@ public class ChainableBehavior<T: Actor> {
 }
 
 @dynamicCallable
-public class Behavior {
+public class Behavior: AnyBehavior {
     private weak var actor: Actor?
     private let block: BehaviorBlock
     private let checkForUnsafeArguments = Flynn.defaultCheckForUnsafeArguments
@@ -105,6 +117,14 @@ public class Behavior {
         self.actor = actor
     }
 
+    public func dynamicallyCallMaybe(withArguments args: BehaviorArgs) -> Bool {
+        if let actor = actor {
+            actor.unsafeSend(block, args)
+            return true
+        }
+        return false
+    }
+    
     public func dynamicallyCall(withArguments args: BehaviorArgs) {
         if checkForUnsafeArguments {
             checkReferenceTypesToBehavior(args)

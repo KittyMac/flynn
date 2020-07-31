@@ -31,23 +31,29 @@ public class Queue<T: AnyObject> {
 
     private var readLock: NSLock?
     private var writeLock: NSLock?
+    
+    private let multipleProducers: Bool
+    private let multipleConsumers: Bool
 
     public init(_ size: Int,
                 _ resizing: Bool = true,
-                _ mulitpleProducers: Bool = true,
+                _ multipleProducers: Bool = true,
                 _ multipleConsumers: Bool = true) {
 
         arrayResizing = resizing
         arraySize = size
         arrayPtr = UnsafeMutablePointer<UnsafeRawPointer?>.allocate(capacity: arraySize)
         arrayPtr.initialize(repeating: nil, count: arraySize)
+        
+        self.multipleProducers = multipleProducers
+        self.multipleConsumers = multipleConsumers
 
         // Note: if the queue cannot grow, and we have only one producer or one consumer
         // then we can get away with not having those specific locks
         if multipleConsumers || resizing {
             readLock = NSLock()
         }
-        if mulitpleProducers || resizing {
+        if multipleProducers || resizing {
             writeLock = NSLock()
         }
     }
@@ -127,6 +133,62 @@ public class Queue<T: AnyObject> {
 
         return wasEmpty
     }
+    
+    @discardableResult
+    public func enqueue(_ element: T, sortedBy closure: (T, T) -> Bool) -> Bool {
+        if readLock == nil {
+            print("Sorted enqueuing is only supported on queues which allow resizing")
+            fatalError()
+        }
+        
+        writeLock?.lock()
+
+        let wasEmpty = (writeIdx == readIdx)
+        while isFull {
+            if arrayResizing == false {
+                writeLock?.unlock()
+                return false
+            }
+            grow()
+        }
+
+        // for sorted enqueuing, we need to capture the read lock and then
+        // insert our new item in the correct spot.
+        readLock?.lock()
+        
+        var idx = readIdx
+        while idx != writeIdx {
+            if let elementPtr = (arrayPtr+idx).pointee {
+                let lhs: T = bridgePeek(ptr: elementPtr)
+                if closure(lhs, element) {
+                    
+                    // We need to insert the new one here. Do that, then move everything down.
+                    var bubble: UnsafeRawPointer? = bridge(obj: element)
+                    while idx != writeIdx {
+                        let temp = (arrayPtr+idx).pointee
+                        (arrayPtr+idx).pointee = bubble
+                        bubble = temp
+                        idx = (idx + 1) % arraySize
+                    }
+                    (arrayPtr+writeIdx).pointee = bubble
+                    writeIdx = (writeIdx + 1) % arraySize
+                    
+                    readLock?.unlock()
+                    writeLock?.unlock()
+                    return wasEmpty
+                }
+            }
+            idx = (idx + 1) % arraySize
+        }
+
+        (arrayPtr+writeIdx).pointee = bridge(obj: element)
+        writeIdx = (writeIdx + 1) % arraySize
+        
+        readLock?.unlock()
+        writeLock?.unlock()
+
+        return wasEmpty
+    }
 
     @discardableResult
     public func dequeue() -> T? {
@@ -145,8 +207,37 @@ public class Queue<T: AnyObject> {
         readLock?.unlock()
         return bridge(ptr: elementPtr!)
     }
+    
+    public func dequeueIf(_ closure: (T) -> Bool) -> T? {
+        if writeIdx == readIdx {
+            return nil
+        }
+
+        readLock?.lock()
+        let elementPtr = (arrayPtr+readIdx).pointee
+        if elementPtr == nil {
+            readLock?.unlock()
+            return nil
+        }
+        
+        let item: T = bridgePeek(ptr: elementPtr!)
+        if closure(item) {
+            (arrayPtr+readIdx).pointee = nil
+            readIdx = (readIdx + 1) % arraySize
+            let element: T = bridge(ptr: elementPtr!)
+            readLock?.unlock()
+            return element
+        }
+        
+        readLock?.unlock()
+        return nil
+    }
 
     public func peek() -> T? {
+        if multipleConsumers {
+            print("Queues which allow multiple consumers cannot use peek() safely")
+            fatalError()
+        }
         if writeIdx == readIdx {
             return nil
         }

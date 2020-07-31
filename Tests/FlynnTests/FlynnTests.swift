@@ -235,6 +235,45 @@ class FlynnTests: XCTestCase {
         }
     }
 
+    func testRepeatingTimer() {
+        let expectation = XCTestExpectation(description: "Repeating Timer")
+
+        let counter = Counter()
+
+        Flynn.Timer(timeInterval: 0.01, repeats: true, counter.beInc, [1])
+
+        Flynn.Timer(timeInterval: 1, repeats: false, counter.beEquals, [ { (value: Int) in
+            print(value)
+            XCTAssert(value >= 99)
+            expectation.fulfill()
+        }])
+
+        wait(for: [expectation], timeout: 2.0)
+    }
+
+    func testSortedTimers() {
+        let expectation = XCTestExpectation(description: "Sorted Timer")
+
+        let builder = StringBuilder()
+
+        Flynn.Timer(timeInterval: 0.010, repeats: false, builder.beResult, [ { (value: String) in
+            XCTAssertEqual(value, "123456789", "string did not append in the correct order")
+            expectation.fulfill()
+        }])
+
+        Flynn.Timer(timeInterval: 0.006, repeats: false, builder.beAppend, ["6"])
+        Flynn.Timer(timeInterval: 0.008, repeats: false, builder.beAppend, ["8"])
+        Flynn.Timer(timeInterval: 0.003, repeats: false, builder.beAppend, ["3"])
+        Flynn.Timer(timeInterval: 0.007, repeats: false, builder.beAppend, ["7"])
+        Flynn.Timer(timeInterval: 0.005, repeats: false, builder.beAppend, ["5"])
+        Flynn.Timer(timeInterval: 0.009, repeats: false, builder.beAppend, ["9"])
+        Flynn.Timer(timeInterval: 0.002, repeats: false, builder.beAppend, ["2"])
+        Flynn.Timer(timeInterval: 0.004, repeats: false, builder.beAppend, ["4"])
+        Flynn.Timer(timeInterval: 0.001, repeats: false, builder.beAppend, ["1"])
+
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     static var allTests = [
         ("test1", test1),
         ("test2", test2),

@@ -20,7 +20,7 @@ public enum CoreAffinity: Int {
 
 open class Scheduler {
 
-    private var actors = Queue<Actor>(128)
+    private var actors = Queue<Actor>(128, true, true, false)
 
     internal let index: Int
     internal let affinity: CoreAffinity
@@ -84,6 +84,10 @@ open class Scheduler {
         if idle {
             waitingForWorkSemaphore.signal()
         }
+    }
+    
+    func wake() {
+        waitingForWorkSemaphore.signal()
     }
 
     private func runInternal() {
@@ -150,7 +154,15 @@ open class Scheduler {
             timeMark = ProcessInfo.processInfo.systemUptime
 #endif
             Flynn.checkRegisteredActors()
-            waitingForWorkSemaphore.wait()
+            
+            if index == 0 {
+                var timeout = Flynn.checkRegisteredTimers()
+                while actors.isEmpty == false && waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout) == .timedOut {
+                    timeout = Flynn.checkRegisteredTimers()
+                }
+            } else {
+                waitingForWorkSemaphore.wait()
+            }
 #if DEBUG
             timeIdle += ProcessInfo.processInfo.systemUptime - timeMark
 #endif
