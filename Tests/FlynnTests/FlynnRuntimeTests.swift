@@ -125,4 +125,38 @@ class FlynnRuntimeTests: XCTestCase {
             XCTAssert(string == "0,2,5,15,17,99,")
         }
     }
+
+    func testDequeueAny() {
+
+        class SimpleInt: ExpressibleByIntegerLiteral {
+            typealias IntegerLiteralType = Int
+            var value: Int = 0
+
+            required init(integerLiteral value: Int) {
+                self.value = value
+            }
+        }
+
+        self.measure {
+            let queue = Queue<SimpleInt>(64)
+
+            queue.enqueue(5)
+            queue.enqueue(2)
+            queue.enqueue(17)
+            queue.enqueue(15)
+            queue.enqueue(99)
+            queue.enqueue(0)
+
+            queue.dequeueAny { (item) -> Bool in
+                return item.value == 17 || item.value == 15 || item.value == 0
+            }
+
+            var string = ""
+            while let value = queue.dequeue() {
+                string.append("\(value.value),")
+            }
+
+            XCTAssert(string == "5,2,99,")
+        }
+    }
 }

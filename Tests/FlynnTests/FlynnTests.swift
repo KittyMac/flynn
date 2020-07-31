@@ -228,11 +228,18 @@ class FlynnTests: XCTestCase {
     }
 
     func testMemoryBloatFromMessagePassing2() {
+        let expectation = XCTestExpectation(description: "MemoryBloatFromMessagePassing2")
+
         let counter = Counter()
         for _ in 0..<50000 {
             counter.beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1).beInc(1)
             counter.unsafeWait(10)
         }
+        counter.beEquals { (value: Int) in
+            XCTAssertEqual(value, 50000 * 12, "Counter did not add up to 50000")
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 10.0)
     }
 
     func testRepeatingTimer() {

@@ -8,9 +8,9 @@
 
 import Foundation
 
-extension Flynn {
+public extension Flynn {
     
-    public class Timer {
+    class Timer {
         var fireTime: TimeInterval = 0.0
         
         var cancelled: Bool = false
@@ -22,7 +22,7 @@ extension Flynn {
         let args: BehaviorArgs
         
         @discardableResult
-        init(timeInterval: TimeInterval, repeats: Bool, _ behavior: AnyBehavior, _ args: BehaviorArgs) {
+        public init(timeInterval: TimeInterval, repeats: Bool, _ behavior: AnyBehavior, _ args: BehaviorArgs) {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.behavior = behavior
@@ -58,35 +58,86 @@ extension Flynn {
         registeredTimersQueue.clear()
     }
     
-    private static var registeredTimersQueue = Queue<Timer>(1024, true, true, true)
+    private static var registeredTimersQueue = Queue<Timer>(1024, true, true, false)
     internal static func register(_ timer: Timer) {
         registeredTimersQueue.enqueue(timer, sortedBy: { (lhs, rhs) in
             return lhs.fireTime > rhs.fireTime
         })
-        
-        // the "0" scheduler is our timer checker. Send it a signal so it can
-        // reset its signal timeout to match the new timer time
-        wakeScheduler(0)
+        wakeTimerLoop()
     }
     
     @discardableResult
-    internal static func checkRegisteredTimers() -> TimeInterval {
+    fileprivate static func checkRegisteredTimers() -> TimeInterval {
         let currentTime = ProcessInfo.processInfo.systemUptime
-        var timeTillNext: TimeInterval = 1.0
+        var nextTimerMinTime: TimeInterval = 10.0
         
-        let timerIsDone = { (timer: Timer) -> Bool in
-            timeTillNext = timer.fireTime - currentTime
-            return timer.fireTime <= currentTime
+        var completedTimers: [Flynn.Timer] = []
+        
+        registeredTimersQueue.dequeueAny { (timer) in
+            let timeDelta = timer.fireTime - currentTime
+            if timeDelta < 0 {
+                completedTimers.append(timer)
+                return true
+            }
+            if timeDelta < nextTimerMinTime {
+                nextTimerMinTime = timeDelta
+            }
+            return false
         }
         
-        while let timer = registeredTimersQueue.dequeueIf(timerIsDone) {
+        for timer in completedTimers {
             timer.fire()
         }
-        
-        if timeTillNext < 0 {
-            timeTillNext = 0
+                
+        if nextTimerMinTime < 0 {
+            nextTimerMinTime = 0
         }
-        return timeTillNext
+
+        return nextTimerMinTime / 2
     }
     
+    
+    internal class TimerLoop {
+
+        internal var idle: Bool
+        internal var running: Bool
+
+    #if os(Linux)
+        private lazy var thread = Thread(block: run)
+    #else
+        private lazy var thread = Thread(target: self, selector: #selector(run), object: nil)
+    #endif
+
+        private var waitingForWorkSemaphore = DispatchSemaphore(value: 0)
+
+        init() {
+            running = true
+            idle = false
+
+            thread.name = "Flynn Timers"
+            thread.qualityOfService = .default
+            thread.start()
+        }
+        
+        func wake() {
+            waitingForWorkSemaphore.signal()
+        }
+
+        @objc func run() {
+            while running {
+                Flynn.checkRegisteredActors()
+                let timeout = Flynn.checkRegisteredTimers()
+                _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
+            }
+        }
+
+        public func join() {
+            running = false
+            waitingForWorkSemaphore.signal()
+            while thread.isFinished == false {
+                usleep(1000)
+            }
+        }
+
+    }
 }

@@ -23,6 +23,7 @@ open class Flynn {
     public static var defaultActorAffinity: CoreAffinity = .none
 #endif
     
+    private static var timerLoop: TimerLoop?
     private static var schedulers: [Scheduler] = []
     private static var schedulerIdx: Int = 0
     private static var running = AtomicContidion()
@@ -36,6 +37,8 @@ open class Flynn {
 
             timeStart = ProcessInfo.processInfo.systemUptime
 
+            timerLoop = TimerLoop()
+            
             for _ in 0..<device.eCores {
                 schedulers.append(Scheduler(schedulers.count, .onlyEfficiency))
             }
@@ -62,6 +65,9 @@ open class Flynn {
             for scheduler in schedulers {
                 scheduler.join()
             }
+            
+            timerLoop?.join()
+            timerLoop = nil
             
             // wait until the registered actors thread ends
             clearRegisteredActors()
@@ -100,6 +106,11 @@ open class Flynn {
     internal static func wakeScheduler(_ index: Int) {
         schedulers[index].wake()
     }
+    
+    internal static func wakeTimerLoop() {
+        timerLoop?.wake()
+    }
+
     
     private static var lastSchedulerIdx: Int = 0
     @inline(__always)

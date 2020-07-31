@@ -149,20 +149,10 @@ open class Scheduler {
 
         if actors.isEmpty {
             idle = true
-
 #if DEBUG
             timeMark = ProcessInfo.processInfo.systemUptime
 #endif
-            Flynn.checkRegisteredActors()
-            
-            if index == 0 {
-                var timeout = Flynn.checkRegisteredTimers()
-                while actors.isEmpty == false && waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout) == .timedOut {
-                    timeout = Flynn.checkRegisteredTimers()
-                }
-            } else {
-                waitingForWorkSemaphore.wait()
-            }
+            waitingForWorkSemaphore.wait()
 #if DEBUG
             timeIdle += ProcessInfo.processInfo.systemUptime - timeMark
 #endif
@@ -186,8 +176,6 @@ open class Scheduler {
     public func join() {
         running = false
         waitingForWorkSemaphore.signal()
-
-        // todo: use conditions
         while thread.isFinished == false {
             usleep(1000)
         }

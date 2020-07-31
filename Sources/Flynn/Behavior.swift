@@ -10,7 +10,7 @@
 
 import Foundation
 
-internal protocol AnyBehavior {
+public protocol AnyBehavior {
     func dynamicallyCallMaybe(withArguments args: BehaviorArgs) -> Bool
 }
 

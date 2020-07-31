@@ -73,6 +73,19 @@ public class Queue<T: AnyObject> {
     public var isFull: Bool {
         return ((writeIdx + 1) % arraySize) == readIdx
     }
+    
+    public func dump() {
+        print("Queue \(self)")
+        print("cout: \(count)")
+        print("isEmpty: \(isEmpty)")
+        
+        let readElement = (arrayPtr+readIdx).pointee
+        let writeElement = (arrayPtr+writeIdx).pointee
+        print("readIdx: \(readIdx), value: \(String(describing: readElement))")
+        print("writeIdx: \(writeIdx), value: \(String(describing: writeElement))")
+        print("arraySize: \(arraySize)")
+        print("\n")
+    }
 
     public var count: Int {
         let localReadIdx = readIdx
@@ -136,6 +149,9 @@ public class Queue<T: AnyObject> {
     
     @discardableResult
     public func enqueue(_ element: T, sortedBy closure: (T, T) -> Bool) -> Bool {
+        // Note: sorting while enqueing is slow, because the writer needs to lock both
+        // the read and the write before inserting in sorted order. Generally, this
+        // function should be avoided in favor of dequeue-ing out of order
         if readLock == nil {
             print("Sorted enqueuing is only supported on queues which allow resizing")
             fatalError()
@@ -231,6 +247,45 @@ public class Queue<T: AnyObject> {
         
         readLock?.unlock()
         return nil
+    }
+    
+    public func dequeueAny(_ closure: (T) -> Bool) {
+        if writeIdx == readIdx {
+            return
+        }
+        
+        readLock?.lock()
+        let elementPtr = (arrayPtr+readIdx).pointee
+        if elementPtr == nil {
+            readLock?.unlock()
+            return
+        }
+        
+        var tempIdx = readIdx
+        let savedWriteIdx = writeIdx
+        while tempIdx != savedWriteIdx {
+            if let tempPtr = (arrayPtr+tempIdx).pointee {
+                let tempItem: T = bridgePeek(ptr: tempPtr)
+                if closure(tempItem) {
+                    let _: T = bridge(ptr: tempPtr)
+                    (arrayPtr+tempIdx).pointee = nil
+                    
+                    // fill in the nil spot so we don't leave any holes
+                    var fillIdx = tempIdx
+                    while fillIdx != readIdx {
+                        let prevIdx = fillIdx == 0 ? arraySize - 1 : (fillIdx - 1) % arraySize
+                        (arrayPtr+fillIdx).pointee = (arrayPtr+prevIdx).pointee
+                        fillIdx = prevIdx
+                    }
+                    
+                    (arrayPtr+readIdx).pointee = nil
+                    readIdx = (readIdx + 1) % arraySize
+                }
+            }
+            tempIdx = (tempIdx + 1) % arraySize
+        }
+        readLock?.unlock()
+        return
     }
 
     public func peek() -> T? {
