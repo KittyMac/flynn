@@ -62,6 +62,7 @@ Flynn provides the scaffolding for safer concurrency, but FlynnLint enforces it.
 [Scheduling](docs/SCHEDULER.md) - How and when Actors execute Behaviors  
 [FlynnLint](docs/FLYNNLINT.md) - Protects against data races and other bad things  
 [Flowable Actors](docs/FLOWABLE.md) - Easily chainable networks of actors  
+[Flynn.Timer](docs/TIMERS.md) - Actor friendly Timers  
 
 ## Examples
 
