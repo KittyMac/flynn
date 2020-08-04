@@ -19,7 +19,7 @@ public extension Flynn {
         let repeats: Bool
         
         let behavior: AnyBehavior
-        let args: BehaviorArgs
+        var args: BehaviorArgs
         
         @discardableResult
         public init(timeInterval: TimeInterval, repeats: Bool, _ behavior: AnyBehavior, _ args: BehaviorArgs) {
@@ -27,6 +27,7 @@ public extension Flynn {
             self.repeats = repeats
             self.behavior = behavior
             self.args = args
+            self.args.append(self)
             
             schedule()
         }
