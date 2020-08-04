@@ -59,7 +59,9 @@ public extension Flynn {
         registeredTimersQueue.clear()
     }
     
-    private static var registeredTimersQueue = Queue<Timer>(1024, true, true, false)
+    private static var registeredTimersQueue = Queue<Timer>(size: 1024,
+                                                            manyProducers: true,
+                                                            manyConsumers: false)
     internal static func register(_ timer: Timer) {
         registeredTimersQueue.enqueue(timer, sortedBy: { (lhs, rhs) in
             return lhs.fireTime > rhs.fireTime

@@ -20,7 +20,9 @@ public enum CoreAffinity: Int {
 
 open class Scheduler {
 
-    private var actors = Queue<Actor>(128, true, true, false)
+    private var actors = Queue<Actor>(size: 128,
+                                      manyProducers: true,
+                                      manyConsumers: false)
 
     internal let index: Int
     internal let affinity: CoreAffinity

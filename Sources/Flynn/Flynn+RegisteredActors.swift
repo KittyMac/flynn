@@ -10,7 +10,9 @@ import Foundation
 
 extension Flynn {
     
-    private static var registeredActorsQueue = Queue<Actor>(1024, true, true, true)
+    private static var registeredActorsQueue = Queue<Actor>(size: 1024,
+                                                            manyProducers: true,
+                                                            manyConsumers: true)
     
     internal static func clearRegisteredActors() {
         registeredActorsQueue.clear()

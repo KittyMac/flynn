@@ -119,7 +119,9 @@ open class Actor {
         //print("deinit - Actor")
     }
 
-    private var messagePool = Queue<ActorMessage>(128, true, false, true)
+    private var messagePool = Queue<ActorMessage>(size: 128,
+                                                  manyProducers: false,
+                                                  manyConsumers: true)
     private func unpoolActorMessage(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) -> ActorMessage {
         if let msg = messagePool.dequeue() {
             msg.set(self, block, args)
@@ -128,7 +130,9 @@ open class Actor {
         return ActorMessage(self, block, args)
     }
 
-    private var messages = Queue<ActorMessage>(128, true, true, false)
+    private var messages = Queue<ActorMessage>(size: 128,
+                                               manyProducers: true,
+                                               manyConsumers: false)
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
         if messages.enqueue(unpoolActorMessage(block, args)) {
             Flynn.schedule(self, unsafeCoreAffinity)

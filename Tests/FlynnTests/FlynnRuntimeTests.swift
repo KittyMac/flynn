@@ -25,7 +25,7 @@ class FlynnRuntimeTests: XCTestCase {
 
         self.measure {
 
-            let queue = Queue<NSString>(64)
+            let queue = Queue<NSString>(size: 64)
 
             let concurrentQueue = DispatchQueue(label: "test.concurrent.queue", attributes: .concurrent)
 
@@ -51,7 +51,7 @@ class FlynnRuntimeTests: XCTestCase {
     }
 
     func testActorQueue() {
-        let queue = Queue<Actor>(50000)
+        let queue = Queue<Actor>(size: 50000)
 
         let concurrentQueue = DispatchQueue(label: "test.concurrent.queue", attributes: .concurrent)
 
@@ -105,7 +105,7 @@ class FlynnRuntimeTests: XCTestCase {
         }
 
         self.measure {
-            let queue = Queue<SimpleInt>(64)
+            let queue = Queue<SimpleInt>(size: 64)
             let compareSimpleInts = { (lhs: SimpleInt, rhs: SimpleInt) -> Bool in
                 return lhs.value > rhs.value
             }
@@ -138,7 +138,7 @@ class FlynnRuntimeTests: XCTestCase {
         }
 
         self.measure {
-            let queue = Queue<SimpleInt>(64)
+            let queue = Queue<SimpleInt>(size: 64)
 
             queue.enqueue(5)
             queue.enqueue(2)
