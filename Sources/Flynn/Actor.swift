@@ -11,7 +11,7 @@ import Foundation
 class ActorMessage {
     private static var emptyArgs: BehaviorArgs = []
     
-    private var actor: Actor?
+    private weak var actor: Actor?
     private var block: BehaviorBlock?
     
     private var numArgs: Int = 0

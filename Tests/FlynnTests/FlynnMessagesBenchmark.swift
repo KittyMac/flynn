@@ -215,14 +215,6 @@ class FlynnMessagesBenchmark: XCTestCase {
                 self.leader = leader
             }
 
-            private func sendPings() {
-                neighborIdx = (neighborIdx + 1) % neighbors.count
-                neighbors[neighborIdx].bePing(42)
-
-                // Note: we're currently 15x slower than Pony :(
-                //15,281,896
-            }
-
             lazy var beSetNeighbors = Behavior(self) { [unowned self] (args: BehaviorArgs) in
                 // flynnlint:parameter [Pinger] - array of Pingers
                 self.neighbors = args[x:0]
@@ -245,18 +237,21 @@ class FlynnMessagesBenchmark: XCTestCase {
                 self.count = 0
             }
 
-            lazy var bePing = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-                // flynnlint:parameter Int - the answer to everything
-                let payload: Int = args[x:0]
-
-                if self.go {
-                    self.count += 1
-                    self.sendPings()
+            private func _bePing() {
+                if go {
+                    count += 1
+                    neighborIdx = (neighborIdx + 1) % neighbors.count
+                    neighbors[neighborIdx].bePing(42)
                 } else {
-                    if self.report == true {
+                    if report == true {
                         fatalError("Late message, what???")
                     }
                 }
+            }
+            lazy var bePing = Behavior(self) { [unowned self] (args: BehaviorArgs) in
+                // flynnlint:parameter Int - the answer to everything
+                _ = args
+                self._bePing()
             }
 
         }

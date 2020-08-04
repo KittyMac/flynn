@@ -127,17 +127,19 @@ open class Scheduler {
 
                 // Before we can just re-run the same actor, we need to ensure the
                 // core affinities, which might have changed, are still good
-                if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
-                    actorAffinity != affinity {
-                    Flynn.schedule(actor, actor.unsafeCoreAffinity)
-                    //print("affinity bounce, 1b for \(actor) on \(self.index) with \(actorAffinity) and \(affinity)")
-                    break
-                }
-                if  (actorAffinity == .preferEfficiency && affinity == .onlyPerformance) ||
-                    (actorAffinity == .preferPerformance && affinity == .onlyEfficiency) {
-                    if Flynn.scheduleIfIdle(actor, actor.unsafeCoreAffinity) {
-                        //print("affinity bounce, 2 for \(actor) on \(self.index) with \(actorAffinity) and \(affinity)")
+                if actorAffinity != .none {
+                    if (actorAffinity == .onlyEfficiency || actorAffinity == .onlyPerformance) &&
+                        actorAffinity != affinity {
+                        Flynn.schedule(actor, actor.unsafeCoreAffinity)
+                        //print("affinity bounce, 1b for \(actor) on \(self.index) with \(actorAffinity) and \(affinity)")
                         break
+                    }
+                    if  (actorAffinity == .preferEfficiency && affinity == .onlyPerformance) ||
+                        (actorAffinity == .preferPerformance && affinity == .onlyEfficiency) {
+                        if Flynn.scheduleIfIdle(actor, actor.unsafeCoreAffinity) {
+                            //print("affinity bounce, 2 for \(actor) on \(self.index) with \(actorAffinity) and \(affinity)")
+                            break
+                        }
                     }
                 }
             }
@@ -148,16 +150,15 @@ open class Scheduler {
 #endif
 
         if actors.isEmpty {
-            idle = true
 #if DEBUG
             timeMark = ProcessInfo.processInfo.systemUptime
 #endif
+            idle = true
             waitingForWorkSemaphore.wait()
+            idle = false
 #if DEBUG
             timeIdle += ProcessInfo.processInfo.systemUptime - timeMark
 #endif
-
-            idle = false
         }
     }
 

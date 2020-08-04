@@ -8,23 +8,11 @@
 
 import Foundation
 
-func bridge<T: AnyObject>(obj: T) -> UnsafeRawPointer {
-    return UnsafeRawPointer(Unmanaged.passRetained(obj).toOpaque())
-}
-
-func bridge<T: AnyObject>(ptr: UnsafeRawPointer) -> T {
-    return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
-}
-
-func bridgePeek<T: AnyObject>(ptr: UnsafeRawPointer) -> T {
-    return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
-}
-
 public class Queue<T: AnyObject> {
     // safe only so long as there is one consumer and multiple producers
     private let arrayResizing: Bool
     private var arraySize: Int = 0
-    private var arrayPtr: UnsafeMutablePointer<UnsafeRawPointer?>
+    private var arrayPtr: UnsafeMutablePointer<T?>
 
     private var writeIdx = 0
     private var readIdx = 0
@@ -42,7 +30,7 @@ public class Queue<T: AnyObject> {
 
         arrayResizing = resizing
         arraySize = size
-        arrayPtr = UnsafeMutablePointer<UnsafeRawPointer?>.allocate(capacity: arraySize)
+        arrayPtr = UnsafeMutablePointer<T?>.allocate(capacity: arraySize)
         arrayPtr.initialize(repeating: nil, count: arraySize)
         
         self.multipleProducers = multipleProducers
@@ -104,7 +92,7 @@ public class Queue<T: AnyObject> {
 
         let oldArraySize = arraySize
         arraySize *= 2
-        let newArrayPtr = UnsafeMutablePointer<UnsafeRawPointer?>.allocate(capacity: arraySize)
+        let newArrayPtr = UnsafeMutablePointer<T?>.allocate(capacity: arraySize)
         newArrayPtr.initialize(repeating: nil, count: arraySize)
 
         var oldReadIdx = readIdx
@@ -139,7 +127,7 @@ public class Queue<T: AnyObject> {
 
         //print("enqueue[\(writeIdx)]  \(elementPtr)")
 
-        (arrayPtr+writeIdx).pointee = bridge(obj: element)
+        (arrayPtr+writeIdx).pointee = element
         writeIdx = (writeIdx + 1) % arraySize
 
         writeLock?.unlock()
@@ -175,11 +163,11 @@ public class Queue<T: AnyObject> {
         var idx = readIdx
         while idx != writeIdx {
             if let elementPtr = (arrayPtr+idx).pointee {
-                let lhs: T = bridgePeek(ptr: elementPtr)
+                let lhs: T = elementPtr
                 if closure(lhs, element) {
                     
                     // We need to insert the new one here. Do that, then move everything down.
-                    var bubble: UnsafeRawPointer? = bridge(obj: element)
+                    var bubble: T? = element
                     while idx != writeIdx {
                         let temp = (arrayPtr+idx).pointee
                         (arrayPtr+idx).pointee = bubble
@@ -197,7 +185,7 @@ public class Queue<T: AnyObject> {
             idx = (idx + 1) % arraySize
         }
 
-        (arrayPtr+writeIdx).pointee = bridge(obj: element)
+        (arrayPtr+writeIdx).pointee = element
         writeIdx = (writeIdx + 1) % arraySize
         
         readLock?.unlock()
@@ -221,7 +209,7 @@ public class Queue<T: AnyObject> {
         readIdx = (readIdx + 1) % arraySize
 
         readLock?.unlock()
-        return bridge(ptr: elementPtr!)
+        return elementPtr!
     }
     
     public func dequeueIf(_ closure: (T) -> Bool) -> T? {
@@ -236,11 +224,11 @@ public class Queue<T: AnyObject> {
             return nil
         }
         
-        let item: T = bridgePeek(ptr: elementPtr!)
+        let item: T = elementPtr!
         if closure(item) {
             (arrayPtr+readIdx).pointee = nil
             readIdx = (readIdx + 1) % arraySize
-            let element: T = bridge(ptr: elementPtr!)
+            let element: T = elementPtr!
             readLock?.unlock()
             return element
         }
@@ -265,9 +253,9 @@ public class Queue<T: AnyObject> {
         let savedWriteIdx = writeIdx
         while tempIdx != savedWriteIdx {
             if let tempPtr = (arrayPtr+tempIdx).pointee {
-                let tempItem: T = bridgePeek(ptr: tempPtr)
+                let tempItem: T = tempPtr
                 if closure(tempItem) {
-                    let _: T = bridge(ptr: tempPtr)
+                    let _: T = tempPtr
                     (arrayPtr+tempIdx).pointee = nil
                     
                     // fill in the nil spot so we don't leave any holes
@@ -304,14 +292,14 @@ public class Queue<T: AnyObject> {
             return nil
         }
         readLock?.unlock()
-        return bridgePeek(ptr: elementPtr!)
+        return elementPtr!
     }
 
     public func clear() {
         readLock?.lock()
 
         while let elementPtr = (arrayPtr+readIdx).pointee {
-            let _: T = bridge(ptr: elementPtr)
+            let _: T = elementPtr
             (arrayPtr+readIdx).pointee = nil
             readIdx = (readIdx + 1) % arraySize
         }
