@@ -10,8 +10,11 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "Pony"
+        ),
+        .target(
             name: "Flynn",
-            dependencies: [ ]
+            dependencies: [ "Pony" ]
         ),
         .testTarget(
             name: "FlynnTests",

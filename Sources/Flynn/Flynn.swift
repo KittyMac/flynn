@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pony
 
 open class Flynn {
 
@@ -46,11 +47,14 @@ open class Flynn {
                 schedulers.append(Scheduler(schedulers.count, .onlyPerformance))
             }
             
+            pony_startup()
+            
         }
     }
 
     public class func shutdown() {
         running.checkActive {
+            
             // wait until all work is completed
             var runningActors: Int = 1
             while runningActors > 0 {
@@ -65,6 +69,8 @@ open class Flynn {
             for scheduler in schedulers {
                 scheduler.join()
             }
+            
+            pony_shutdown()
             
             timerLoop?.join()
             timerLoop = nil
