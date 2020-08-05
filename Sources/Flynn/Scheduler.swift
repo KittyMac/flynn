@@ -50,7 +50,7 @@ open class Scheduler {
         if idle {
             return actors.count
         }
-        return actors.count + 1
+        return actors.count &+ 1
     }
 
     init(_ index: Int, _ affinity: CoreAffinity) {
@@ -84,6 +84,7 @@ open class Scheduler {
         actors.enqueue(actor)
 
         if idle {
+            idle = false
             waitingForWorkSemaphore.signal()
         }
     }

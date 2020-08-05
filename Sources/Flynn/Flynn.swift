@@ -115,14 +115,17 @@ open class Flynn {
     private static var lastSchedulerIdx: Int = 0
     @inline(__always)
     public static func schedule(_ actor: Actor, _ coreAffinity: CoreAffinity) {
-        lastSchedulerIdx = (lastSchedulerIdx + 1) % schedulers.count
+        lastSchedulerIdx = (lastSchedulerIdx &+ 1) % schedulers.count
+        if schedulers[lastSchedulerIdx].idle == false {
+            lastSchedulerIdx = (lastSchedulerIdx &+ 1) % schedulers.count
+        }
         schedulers[lastSchedulerIdx].schedule(actor)
     }
 
     @inline(__always)
     public static func scheduleOtherThan(_ notThisOne: Scheduler, _ actor: Actor, _ coreAffinity: CoreAffinity) {
         while true {
-            lastSchedulerIdx = (lastSchedulerIdx + 1) % schedulers.count
+            lastSchedulerIdx = (lastSchedulerIdx &+ 1) % schedulers.count
             if lastSchedulerIdx != notThisOne.index {
                 schedulers[lastSchedulerIdx].schedule(actor)
                 return

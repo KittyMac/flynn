@@ -11,7 +11,7 @@ import Foundation
 class ActorMessage {
     private static var emptyArgs: BehaviorArgs = []
     
-    private weak var actor: Actor?
+    private unowned var actor: Actor?
     private var block: BehaviorBlock?
     
     private var numArgs: Int = 0
@@ -24,9 +24,12 @@ class ActorMessage {
         
         numArgs = argsIn.count
         switch(numArgs) {
-        case 0: break
-        case 1: arg = argsIn[0]
-        default: args = argsIn
+        case 0:
+            break
+        case 1:
+            arg = argsIn[0]
+        default:
+            args = argsIn
         }
     }
 
@@ -37,18 +40,26 @@ class ActorMessage {
         
         numArgs = argsIn.count
         switch(numArgs) {
-        case 0: break
-        case 1: arg = argsIn[0]
-        default: args = argsIn
+        case 0:
+            break
+        case 1:
+            arg = argsIn[0]
+        default:
+            args = argsIn
         }
     }
 
     @inline(__always)
     func run() {
         switch(numArgs) {
-        case 0: block!(ActorMessage.emptyArgs)
-        case 1: block!([arg]); arg = nil
-        default: block!(args!); args = nil
+        case 0:
+            block!(ActorMessage.emptyArgs)
+        case 1:
+            block!([arg]);
+            arg = nil
+        default:
+            block!(args!);
+            args = nil
         }
         actor = nil
         block = nil

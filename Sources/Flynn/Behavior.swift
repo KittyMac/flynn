@@ -56,7 +56,7 @@ private func checkReferenceTypesToBehavior(_ args: BehaviorArgs) {
 }
 
 @dynamicCallable
-public class ChainableBehavior<T: Actor>: AnyBehavior {
+public final class ChainableBehavior<T: Actor>: AnyBehavior {
     private weak var actor: T?
     private let block: BehaviorBlock
     private let checkForUnsafeArguments = Flynn.defaultCheckForUnsafeArguments
@@ -98,7 +98,7 @@ public class ChainableBehavior<T: Actor>: AnyBehavior {
 }
 
 @dynamicCallable
-public class Behavior: AnyBehavior {
+public final class Behavior: AnyBehavior {
     private weak var actor: Actor?
     private let block: BehaviorBlock
     private let checkForUnsafeArguments = Flynn.defaultCheckForUnsafeArguments

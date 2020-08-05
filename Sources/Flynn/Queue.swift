@@ -49,7 +49,7 @@ public class Queue<T: AnyObject> {
 
     @inline(__always)
     public var isFull: Bool {
-        return ((writeIdx + 1) % arraySize) == readIdx
+        return ((writeIdx &+ 1) % arraySize) == readIdx
     }
     
     @inline(__always)
@@ -63,8 +63,8 @@ public class Queue<T: AnyObject> {
         print("cout: \(count)")
         print("isEmpty: \(isEmpty)")
         
-        let readElement = (arrayPtr+readIdx).pointee
-        let writeElement = (arrayPtr+writeIdx).pointee
+        let readElement = (arrayPtr + readIdx).pointee
+        let writeElement = (arrayPtr + writeIdx).pointee
         print("readIdx: \(readIdx), value: \(String(describing: readElement))")
         print("writeIdx: \(writeIdx), value: \(String(describing: writeElement))")
         print("arraySize: \(arraySize)")
@@ -78,9 +78,9 @@ public class Queue<T: AnyObject> {
             return 0
         }
         if localWriteIdx > localReadIdx {
-            return localWriteIdx - localReadIdx
+            return localWriteIdx &- localReadIdx
         }
-        return arraySize - (localReadIdx - localWriteIdx)
+        return arraySize &- (localReadIdx &- localWriteIdx)
     }
 
     private func grow() {
@@ -97,8 +97,8 @@ public class Queue<T: AnyObject> {
         var newWriteIdx = 0
         while oldReadIdx != writeIdx {
             (newArrayPtr+newWriteIdx).pointee = (arrayPtr+oldReadIdx).pointee
-            oldReadIdx = (oldReadIdx + 1) % oldArraySize
-            newWriteIdx += 1
+            oldReadIdx = (oldReadIdx &+ 1) % oldArraySize
+            newWriteIdx &+= 1
         }
 
         arrayPtr.deallocate()
@@ -124,7 +124,7 @@ public class Queue<T: AnyObject> {
         //print("enqueue[\(writeIdx)]  \(elementPtr)")
 
         (arrayPtr+writeIdx).pointee = element
-        writeIdx = (writeIdx + 1) % arraySize
+        writeIdx = (writeIdx &+ 1) % arraySize
         
         checkPressure()
 
@@ -160,10 +160,10 @@ public class Queue<T: AnyObject> {
                         let temp = (arrayPtr+idx).pointee
                         (arrayPtr+idx).pointee = bubble
                         bubble = temp
-                        idx = (idx + 1) % arraySize
+                        idx = (idx &+ 1) % arraySize
                     }
                     (arrayPtr+writeIdx).pointee = bubble
-                    writeIdx = (writeIdx + 1) % arraySize
+                    writeIdx = (writeIdx &+ 1) % arraySize
                     
                     checkPressure()
                     
@@ -172,11 +172,11 @@ public class Queue<T: AnyObject> {
                     return wasEmpty
                 }
             }
-            idx = (idx + 1) % arraySize
+            idx = (idx &+ 1) % arraySize
         }
 
         (arrayPtr+writeIdx).pointee = element
-        writeIdx = (writeIdx + 1) % arraySize
+        writeIdx = (writeIdx &+ 1) % arraySize
         
         checkPressure()
         
@@ -200,7 +200,7 @@ public class Queue<T: AnyObject> {
         //print("dequeue[\(readIdx)]  \(elementPtr!)")
 
         (arrayPtr+readIdx).pointee = nil
-        readIdx = (readIdx + 1) % arraySize
+        readIdx = (readIdx &+ 1) % arraySize
         
         checkPressure()
 
@@ -225,7 +225,7 @@ public class Queue<T: AnyObject> {
         let item: T = elementPtr!
         if closure(item) {
             (arrayPtr+readIdx).pointee = nil
-            readIdx = (readIdx + 1) % arraySize
+            readIdx = (readIdx &+ 1) % arraySize
             let element: T = elementPtr!
             if useReadLock { readLock.unlock() }
             return element
@@ -261,16 +261,16 @@ public class Queue<T: AnyObject> {
                     // fill in the nil spot so we don't leave any holes
                     var fillIdx = tempIdx
                     while fillIdx != readIdx {
-                        let prevIdx = fillIdx == 0 ? arraySize - 1 : (fillIdx - 1) % arraySize
+                        let prevIdx = fillIdx == 0 ? arraySize &- 1 : (fillIdx &- 1) % arraySize
                         (arrayPtr+fillIdx).pointee = (arrayPtr+prevIdx).pointee
                         fillIdx = prevIdx
                     }
                     
                     (arrayPtr+readIdx).pointee = nil
-                    readIdx = (readIdx + 1) % arraySize
+                    readIdx = (readIdx &+ 1) % arraySize
                 }
             }
-            tempIdx = (tempIdx + 1) % arraySize
+            tempIdx = (tempIdx &+ 1) % arraySize
         }
         if useReadLock { readLock.unlock() }
         return
@@ -305,7 +305,7 @@ public class Queue<T: AnyObject> {
         while let elementPtr = (arrayPtr+readIdx).pointee {
             let _: T = elementPtr
             (arrayPtr+readIdx).pointee = nil
-            readIdx = (readIdx + 1) % arraySize
+            readIdx = (readIdx &+ 1) % arraySize
         }
 
         if useReadLock { readLock.unlock() }
