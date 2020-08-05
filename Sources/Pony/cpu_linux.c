@@ -30,7 +30,6 @@ static uint32_t* avail_cpu_list;
 static uint32_t avail_cpu_size;
 
 static uint32_t hw_core_count;
-static uint32_t hw_cpu_count;
 
 static uint32_t hw_e_core_count = 0;
 static uint32_t hw_p_core_count = 0;
@@ -109,7 +108,7 @@ void ponyint_cpu_init()
         index++;
     }
     
-    hw_cpu_count = CPU_COUNT(&hw_cpus);
+    hw_core_count = CPU_COUNT(&hw_cpus);
     
     if (hw_e_core_count == 0 || hw_p_core_count == 0) {
         hw_e_core_count = hw_core_count / 2;
@@ -122,7 +121,6 @@ void ponyint_cpu_init()
     if (hw_p_core_count == 0) {
         hw_p_core_count = 1;
     }
-    
 }
 
 uint32_t ponyint_p_core_count()
@@ -138,11 +136,6 @@ uint32_t ponyint_e_core_count()
 uint32_t ponyint_core_count()
 {
     return hw_core_count;
-}
-
-uint32_t ponyint_cpu_count()
-{
-    return hw_cpu_count;
 }
 
 void ponyint_cpu_sleep(int ns)

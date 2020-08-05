@@ -18,7 +18,6 @@ bool pony_startup(void);
 void pony_shutdown(void);
 
 int pony_core_count();
-int pony_cpu_count();
 
 void * pony_actor_create();
 void pony_actor_attach_swift_actor(void * actor, void * swiftActor);

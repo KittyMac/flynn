@@ -370,16 +370,16 @@ pony_ctx_t* ponyint_sched_init()
     pony_register_thread();
     
     uint32_t threads = ponyint_core_count();
-            
-    scheduler_count = threads;
     
+    scheduler_count = threads;
+        
     atomic_store_explicit(&active_scheduler_count, scheduler_count, memory_order_relaxed);
     atomic_store_explicit(&active_scheduler_count_check, scheduler_count, memory_order_relaxed);
     scheduler = (scheduler_t*)ponyint_pool_alloc_size(scheduler_count * sizeof(scheduler_t));
     memset(scheduler, 0, scheduler_count * sizeof(scheduler_t));
         
     pthread_once(&sched_mut_once, sched_mut_init);
-    
+        
     for(uint32_t i = 0; i < scheduler_count; i++)
     {
         // create pthread condition object

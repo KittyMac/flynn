@@ -12,7 +12,7 @@ clean:
 	rm -rf .build
 
 test:
-	swift test
+	swift test -v
 
 xcode:
 	swift package generate-xcodeproj
