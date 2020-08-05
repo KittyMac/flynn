@@ -16,6 +16,10 @@ class PassToMe: Actor {
         print(string)
     }
 
+    lazy var beNone = Behavior(self) { (_: BehaviorArgs) in
+        print("hello world with no arguments")
+    }
+    
     lazy var beString = ChainableBehavior(self) { (args: BehaviorArgs) in
         // flynnlint:parameter String - a swift string ( a struct )
         print("hello world from " + args[x:0])

@@ -21,6 +21,18 @@ class FlynnTests: XCTestCase {
     override func tearDown() {
         Flynn.shutdown()
     }
+    
+    func test0() {
+        let expectation = XCTestExpectation(description: "Warning when passing reference values")
+
+        Flynn.defaultCheckForUnsafeArguments = true
+
+        PassToMe().beNone()
+
+        Flynn.defaultCheckForUnsafeArguments = false
+
+        expectation.fulfill()
+    }
 
     func test1() {
         let expectation = XCTestExpectation(description: "Wait for counter to finish")
@@ -282,6 +294,8 @@ class FlynnTests: XCTestCase {
     }
 
     static var allTests = [
+        ("test0", test0),
+        /*
         ("test1", test1),
         ("test2", test2),
         ("testPassByReferenceCheck", testPassByReferenceCheck),
@@ -292,5 +306,6 @@ class FlynnTests: XCTestCase {
         ("testMeasureOverheadAgainstLoadBalancingExample", testMeasureOverheadAgainstLoadBalancingExample),
         ("testMemoryBloatFromMessagePassing", testMemoryBloatFromMessagePassing),
         ("testMemoryBloatFromMessagePassing2", testMemoryBloatFromMessagePassing2)
+         */
     ]
 }

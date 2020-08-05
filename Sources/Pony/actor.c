@@ -41,91 +41,9 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&actor->q)) != NULL) {
         
         switch(msg->msgId) {
-            case kMessageFastBlock0: {
-                pony_msgfb0_t * m = (pony_msgfb0_t *)msg;
-                m->p();
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-            } break;
-            
-            case kMessageFastBlock1: {
-                pony_msgfb1_t * m = (pony_msgfb1_t *)msg;
-                m->p(m->a0);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0);
-            } break;
-            
-            case kMessageFastBlock2: {
-                pony_msgfb2_t * m = (pony_msgfb2_t *)msg;
-                m->p(m->a0, m->a1);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0); objc_autorelease(m->a1);
-            } break;
-            
-            case kMessageFastBlock3: {
-                pony_msgfb3_t * m = (pony_msgfb3_t *)msg;
-                m->p(m->a0, m->a1, m->a2);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2);
-            } break;
-            
-            case kMessageFastBlock4: {
-                pony_msgfb4_t * m = (pony_msgfb4_t *)msg;
-                m->p(m->a0, m->a1, m->a2, m->a3);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3);
-            } break;
-            
-            case kMessageFastBlock5: {
-                pony_msgfb5_t * m = (pony_msgfb5_t *)msg;
-                m->p(m->a0, m->a1, m->a2, m->a3, m->a4);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4);
-            } break;
-            
-            case kMessageFastBlock6: {
-                pony_msgfb6_t * m = (pony_msgfb6_t *)msg;
-                m->p(m->a0, m->a1, m->a2, m->a3, m->a4, m->a5);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5);
-            } break;
-            
-            case kMessageFastBlock7: {
-                pony_msgfb7_t * m = (pony_msgfb7_t *)msg;
-                m->p(m->a0, m->a1, m->a2, m->a3, m->a4, m->a5, m->a6);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5); objc_autorelease(m->a6);
-            } break;
-            
-            case kMessageFastBlock8: {
-                pony_msgfb8_t * m = (pony_msgfb8_t *)msg;
-                m->p(m->a0, m->a1, m->a2, m->a3, m->a4, m->a5, m->a6, m->a7);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5); objc_autorelease(m->a6); objc_autorelease(m->a7);
-            } break;
-            
-            case kMessageFastBlock9: {
-                pony_msgfb9_t * m = (pony_msgfb9_t *)msg;
-                m->p(m->a0, m->a1, m->a2, m->a3, m->a4, m->a5, m->a6, m->a7, m->a8);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5); objc_autorelease(m->a6); objc_autorelease(m->a7); objc_autorelease(m->a8);
-            } break;
-                
-            case kMessageFastBlock10: {
-                pony_msgfb10_t * m = (pony_msgfb10_t *)msg;
-                m->p(m->a0, m->a1, m->a2, m->a3, m->a4, m->a5, m->a6, m->a7, m->a8, m->a9);
-                //objc_autorelease(m->p);
-                //objc_autorelease(actor->swiftActor);
-                //objc_autorelease(m->a0); objc_autorelease(m->a1); objc_autorelease(m->a2); objc_autorelease(m->a3); objc_autorelease(m->a4); objc_autorelease(m->a5); objc_autorelease(m->a6); objc_autorelease(m->a7); objc_autorelease(m->a8); objc_autorelease(m->a9);
+            case kMessagePointer: {
+                pony_msgfunc_t * m = (pony_msgfunc_t *)msg;
+                m->func(m->arg);
             } break;
         }
         
@@ -210,7 +128,7 @@ size_t ponyint_actor_num_messages(pony_actor_t* actor)
     return n;
 }
 
-pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx, void * swiftActor)
+pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
 {
     int32_t typeSize = sizeof(pony_actor_t);
     
@@ -221,7 +139,6 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx, void * swiftActor)
     
     static int32_t actorUID = 1;
     actor->uid = actorUID++;
-    actor->swiftActor = swiftActor;
     
     ponyint_messageq_init(&actor->q);
     
@@ -252,92 +169,11 @@ void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t
     }
 }
 
-/*
-void pony_send_fast_block0(pony_ctx_t* ctx, pony_actor_t* to, FastBlockCallback0 p)
+void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message))
 {
-    pony_msgfb0_t* m = (pony_msgfb0_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb0_t)), kMessageFastBlock0);
-    m->p = p;
-    objc_retain(to->swiftActor);
+    pony_msgfunc_t* m = (pony_msgfunc_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfunc_t)), kMessagePointer);
+    m->arg = argumentPtr;
+    m->func = handleMessageFunc;
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
-void pony_send_fast_block1(pony_ctx_t* ctx, pony_actor_t* to, id arg0, FastBlockCallback1 p)
-{
-    pony_msgfb1_t* m = (pony_msgfb1_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb1_t)), kMessageFastBlock1);
-    m->p = p; m->a0 = arg0;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_send_fast_block2(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, FastBlockCallback2 p)
-{
-    pony_msgfb2_t* m = (pony_msgfb2_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb2_t)), kMessageFastBlock2);
-    m->p = p; m->a0 = arg0; m->a1 = arg1;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_send_fast_block3(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, FastBlockCallback3 p)
-{
-    pony_msgfb3_t* m = (pony_msgfb3_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb3_t)), kMessageFastBlock3);
-    m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_send_fast_block4(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, FastBlockCallback4 p)
-{
-    pony_msgfb4_t* m = (pony_msgfb4_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb4_t)), kMessageFastBlock4);
-    m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_send_fast_block5(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, FastBlockCallback5 p)
-{
-    pony_msgfb5_t* m = (pony_msgfb5_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb5_t)), kMessageFastBlock5);
-    m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_send_fast_block6(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, FastBlockCallback6 p)
-{
-    pony_msgfb6_t* m = (pony_msgfb6_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb6_t)), kMessageFastBlock6);
-    m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4; m->a5 = arg5;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_send_fast_block7(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, FastBlockCallback7 p)
-{
-    pony_msgfb7_t* m = (pony_msgfb7_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb7_t)), kMessageFastBlock7);
-    m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4; m->a5 = arg5; m->a6 = arg6;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_send_fast_block8(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, FastBlockCallback8 p)
-{
-    pony_msgfb8_t* m = (pony_msgfb8_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb8_t)), kMessageFastBlock8);
-    m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4; m->a5 = arg5; m->a6 = arg6; m->a7 = arg7;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_send_fast_block9(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, FastBlockCallback9 p)
-{
-    pony_msgfb9_t* m = (pony_msgfb9_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb9_t)), kMessageFastBlock9);
-    m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4; m->a5 = arg5; m->a6 = arg6; m->a7 = arg7; m->a8 = arg8;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-
-void pony_send_fast_block10(pony_ctx_t* ctx, pony_actor_t* to, id arg0, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9, FastBlockCallback10 p)
-{
-    pony_msgfb10_t* m = (pony_msgfb10_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfb10_t)), kMessageFastBlock10);
-    m->p = p; m->a0 = arg0; m->a1 = arg1; m->a2 = arg2; m->a3 = arg3; m->a4 = arg4; m->a5 = arg5; m->a6 = arg6; m->a7 = arg7; m->a8 = arg8; m->a9 = arg9;
-    objc_retain(to->swiftActor);
-    pony_sendv(ctx, to, &m->msg, &m->msg);
-}
-*/

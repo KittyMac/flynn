@@ -20,7 +20,10 @@ void pony_shutdown(void);
 int pony_core_count();
 int pony_cpu_count();
 
-void * pony_actor_create(void * swiftActor);
+void * pony_actor_create();
+void pony_actor_attach_swift_actor(void * actor, void * swiftActor);
+
+void pony_actor_send_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message));
 
 void pony_actor_setpriority(void * actor, int priority);
 int pony_actor_getpriority(void * actor);

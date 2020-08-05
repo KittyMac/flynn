@@ -85,6 +85,8 @@ open class Actor {
     public var unsafeMessageBatchSize: UInt = 1000
     public var unsafePriority: Int = 0
     public var unsafeCoreAffinity: CoreAffinity = Flynn.defaultActorAffinity
+    
+    internal let ponyActor: Pony.PonyActor
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
@@ -92,7 +94,7 @@ open class Actor {
         let maxScalingSleep: UInt32 = 500
 
         var timeSlept: UInt32 = 0
-        while messages.count > minMsgs {
+        while ponyActor.messageCount > minMsgs {
             usleep(scalingSleep)
 
             timeSlept += scalingSleep
@@ -102,8 +104,6 @@ open class Actor {
                 scalingSleep = maxScalingSleep
             }
         }
-
-        //print("timeSlept: \(timeSlept)")
     }
 
     private var yield: Bool = false
@@ -112,7 +112,7 @@ open class Actor {
     }
 
     public var unsafeMessagesCount: Int32 {
-        return Int32(messages.count)
+        return ponyActor.messageCount
     }
 
     private let initTime: TimeInterval = ProcessInfo.processInfo.systemUptime
@@ -123,67 +123,17 @@ open class Actor {
     public init() {
         Flynn.startup()
         uuid = UUID().uuidString
+        ponyActor = Pony.PonyActor()
         Flynn.register(self)
+        ponyActor.attach(self)
     }
 
     deinit {
         //print("deinit - Actor")
     }
 
-    private var messagePool = Queue<ActorMessage>(size: 128,
-                                                  manyProducers: false,
-                                                  manyConsumers: true)
-    private func unpoolActorMessage(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) -> ActorMessage {
-        if let msg = messagePool.dequeue() {
-            msg.set(self, block, args)
-            return msg
-        }
-        return ActorMessage(self, block, args)
-    }
-
-    private var messages = Queue<ActorMessage>(size: 128,
-                                               manyProducers: true,
-                                               manyConsumers: false)
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
-        if messages.enqueue(unpoolActorMessage(block, args)) {
-            Flynn.schedule(self, unsafeCoreAffinity)
-        }
+        ponyActor.send(block, args)
     }
 
-    private func runMessages() {
-        var maxMessages = unsafeMessageBatchSize
-        while let msg = messages.peek() {
-#if os(Linux)
-            msg.run()
-#else
-            autoreleasepool {
-                msg.run()
-            }
-#endif
-            messagePool.enqueue(messages.dequeue()!)
-
-            maxMessages -= 1
-            if maxMessages <= 0 {
-                break
-            }
-
-            if yield {
-                yield = false
-                break
-            }
-        }
-    }
-
-    private var runningLock = NSLock()
-    internal func unsafeRun() -> Bool {
-        if runningLock.try() {
-            //print("run \(self)")
-            runMessages()
-            runningLock.unlock()
-        } else {
-            return false
-        }
-
-        return !messages.markEmpty()
-    }
 }
