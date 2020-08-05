@@ -22,20 +22,6 @@
 
 static bool pony_is_inited = false;
 
-void * pony_register_fast_block0(FastBlockCallback0 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block1(FastBlockCallback1 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block2(FastBlockCallback2 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block3(FastBlockCallback3 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block4(FastBlockCallback4 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block5(FastBlockCallback5 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block6(FastBlockCallback6 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block7(FastBlockCallback7 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block8(FastBlockCallback8 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block9(FastBlockCallback9 callback) { return objc_retain((__bridge void *)callback); }
-void * pony_register_fast_block10(FastBlockCallback10 callback) { return objc_retain((__bridge void *)callback); }
-
-void pony_unregister_fast_block(void * p) { objc_autorelease(p); }
-
 bool pony_startup() {
     if (pony_is_inited) { return true; }
     
@@ -72,7 +58,7 @@ int pony_cpu_count() {
 void * pony_actor_create(void * swiftActor) {
     return ponyint_create_actor(pony_ctx(), swiftActor);
 }
-
+/*
 void pony_actor_fast_dispatch0(void * actor, void * callback) {
     objc_retain(callback);
     pony_send_fast_block0(pony_ctx(), actor, (__bridge FastBlockCallback0)(callback));
@@ -127,7 +113,7 @@ void pony_actor_fast_dispatch10(void * actor, id arg0, id arg1, id arg2, id arg3
     objc_retain(arg0); objc_retain(arg1); objc_retain(arg2); objc_retain(arg3); objc_retain(arg4); objc_retain(arg5); objc_retain(arg6); objc_retain(arg7); objc_retain(arg8); objc_retain(arg9);
     pony_send_fast_block10(pony_ctx(), actor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, (__bridge FastBlockCallback10)(callback));
 }
-
+*/
 
 void pony_actor_setpriority(void * actor, int priority) {
     ponyint_actor_setpriority(actor, priority);

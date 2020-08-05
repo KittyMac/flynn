@@ -38,13 +38,6 @@
 #define id void*
 #endif
 
-void _objc_autoreleasePoolPrint(void);
-void objc_autoreleasePoolPop(void *pool);
-void *objc_autoreleasePoolPush(void);
-void objc_autorelease(id value);
-void objc_release(id value);
-id objc_retain(id value);
-
 typedef void (^BlockCallback)(void);
 typedef void (^FastBlockCallback0)(void);
 typedef void (^FastBlockCallback1)(id);

@@ -1,12 +1,18 @@
 SWIFT_BUILD_FLAGS=--configuration release
 
-all: build
+all: fix_bad_header_files build
+	
+fix_bad_header_files:
+	-@find  . -name '._*.h' -exec rm {} \;
 
 build:
-	swift build $(SWIFT_BUILD_FLAGS)
+	swift build -v $(SWIFT_BUILD_FLAGS)
 
 clean:
 	rm -rf .build
+
+test:
+	swift test
 
 xcode:
 	swift package generate-xcodeproj

@@ -21,6 +21,11 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifndef PLATFORM_APPLE
+#define QOS_CLASS_USER_INITIATED 0
+#define QOS_CLASS_UTILITY 1
+#endif
+
 static DECLARE_THREAD_FN(run_thread);
 
 // Scheduler global data.
@@ -221,7 +226,9 @@ static void run(scheduler_t* sched)
     
     pony_actor_t* actor = pop_global(sched, sched);
     
+#ifdef PLATFORM_APPLE
     autorelease_pool = objc_autoreleasePoolPush();
+#endif
     
     while(true) {
         
@@ -256,7 +263,9 @@ static void run(scheduler_t* sched)
             
             pony_actor_t* next = pop_global(sched, sched);
             
+#ifdef PLATFORM_APPLE
             autorelease_pool_is_dirty = true;
+#endif
             
             if(reschedule) {
                 if(next != NULL) {
@@ -293,12 +302,13 @@ static void run(scheduler_t* sched)
                 actor = next;
             }
             
+#ifdef PLATFORM_APPLE
             if (autorelease_pool_is_dirty) {
-                //_objc_autoreleasePoolPrint();
                 objc_autoreleasePoolPop(autorelease_pool);
                 autorelease_pool = objc_autoreleasePoolPush();
                 autorelease_pool_is_dirty = false;
             }
+#endif
         } else if(sched->terminate) {
             break;
         }

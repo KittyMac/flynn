@@ -14,8 +14,6 @@
 
 #include <stdbool.h>
 
-#include <Foundation/Foundation.h>
-
 bool pony_startup(void);
 void pony_shutdown(void);
 
