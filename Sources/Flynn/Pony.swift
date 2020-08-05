@@ -26,6 +26,18 @@ fileprivate func handleMessage0(_ argumentPtr: AnyPtr) {
     }
 }
 
+fileprivate func handleMessage1(_ argumentPtr: AnyPtr) {
+    if let msg: Pony.PonyActorMessage1 = Class(argumentPtr) {
+        msg.block([msg.arg])
+    }
+}
+
+fileprivate func handleMessageMany(_ argumentPtr: AnyPtr) {
+    if let msg: Pony.PonyActorMessageMany = Class(argumentPtr) {
+        msg.block(msg.args)
+    }
+}
+
 enum Pony {
     
     class PonyActorMessage0 {
@@ -33,6 +45,26 @@ enum Pony {
         
         init(_ block: @escaping BehaviorBlock) {
             self.block = block
+        }
+    }
+    
+    class PonyActorMessage1 {
+        let block: BehaviorBlock
+        let arg: Any?
+        
+        init(_ block: @escaping BehaviorBlock, _ arg: Any?) {
+            self.block = block
+            self.arg = arg
+        }
+    }
+    
+    class PonyActorMessageMany {
+        let block: BehaviorBlock
+        let args: BehaviorArgs
+        
+        init(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
+            self.block = block
+            self.args = args
         }
     }
         
@@ -48,8 +80,15 @@ enum Pony {
         }
         
         func send(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
-            let msg = PonyActorMessage0(block)
-            pony_actor_send_message(actorPtr, Ptr(msg), handleMessage0)
+            switch args.count {
+            case 0:
+                pony_actor_send_message(actorPtr, Ptr(PonyActorMessage0(block)), handleMessage0)
+            case 1:
+                pony_actor_send_message(actorPtr, Ptr(PonyActorMessage1(block, args[0])), handleMessage1)
+            default:
+                pony_actor_send_message(actorPtr, Ptr(PonyActorMessageMany(block, args)), handleMessageMany)
+            }
+            
         }
         
         var messageCount: Int32 {
