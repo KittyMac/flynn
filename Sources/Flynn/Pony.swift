@@ -20,56 +20,101 @@ func Class <T: AnyObject>(_ ptr: AnyPtr) -> T? {
     return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
 }
 
+let emptyArgs: BehaviorArgs = []
+
 fileprivate func handleMessage0(_ argumentPtr: AnyPtr) {
     if let msg: Pony.PonyActorMessage0 = Class(argumentPtr) {
-        msg.block([])
+        msg.run()
     }
 }
 
 fileprivate func handleMessage1(_ argumentPtr: AnyPtr) {
     if let msg: Pony.PonyActorMessage1 = Class(argumentPtr) {
-        msg.block([msg.arg])
+        msg.run()
     }
 }
 
 fileprivate func handleMessageMany(_ argumentPtr: AnyPtr) {
     if let msg: Pony.PonyActorMessageMany = Class(argumentPtr) {
-        msg.block(msg.args)
+        msg.run()
     }
 }
 
 enum Pony {
     
     class PonyActorMessage0 {
-        let block: BehaviorBlock
+        weak var pool: Queue<PonyActorMessage0>?
+        var block: BehaviorBlock?
         
-        init(_ block: @escaping BehaviorBlock) {
+        init(_ pool:Queue<PonyActorMessage0>?, _ block: @escaping BehaviorBlock) {
+            self.pool = pool
             self.block = block
+        }
+        
+        func set(_ block: @escaping BehaviorBlock) {
+            self.block = block
+        }
+        
+        func run() {
+            block?(emptyArgs)
+            block = nil
+            pool?.enqueue(self)
         }
     }
     
     class PonyActorMessage1 {
-        let block: BehaviorBlock
-        let arg: Any?
+        weak var pool: Queue<PonyActorMessage1>?
+        var block: BehaviorBlock?
+        var arg: Any?
         
-        init(_ block: @escaping BehaviorBlock, _ arg: Any?) {
+        init(_ pool: Queue<PonyActorMessage1>?, _ block: @escaping BehaviorBlock, _ arg: Any?) {
+            self.pool = pool
             self.block = block
             self.arg = arg
+        }
+        
+        func set(_ block: @escaping BehaviorBlock, _ arg: Any?) {
+            self.block = block
+            self.arg = arg
+        }
+        
+        func run() {
+            block?([arg])
+            block = nil
+            arg = nil
+            pool?.enqueue(self)
         }
     }
     
     class PonyActorMessageMany {
-        let block: BehaviorBlock
-        let args: BehaviorArgs
+        weak var pool: Queue<PonyActorMessageMany>?
+        var block: BehaviorBlock?
+        var args: BehaviorArgs?
         
-        init(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
+        init(_ pool: Queue<PonyActorMessageMany>?, _ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
             self.block = block
             self.args = args
+        }
+        
+        func set(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
+            self.block = block
+            self.args = args
+        }
+        
+        func run() {
+            block?(args!)
+            block = nil
+            args = nil
+            pool?.enqueue(self)
         }
     }
         
     struct PonyActor {
         let actorPtr: AnyPtr
+        
+        var poolMessage0 = Queue<PonyActorMessage0>(size: 128, manyProducers: false, manyConsumers: true)
+        var poolMessage1 = Queue<PonyActorMessage1>(size: 128, manyProducers: false, manyConsumers: true)
+        var poolMessageMany = Queue<PonyActorMessageMany>(size: 128, manyProducers: false, manyConsumers: true)
         
         init() {
             actorPtr = pony_actor_create()
@@ -79,14 +124,38 @@ enum Pony {
             pony_actor_attach_swift_actor(actorPtr, Ptr(actor))
         }
         
+        private func unpoolMessage0(_ block: @escaping BehaviorBlock) -> PonyActorMessage0 {
+            if let msg = poolMessage0.dequeue() {
+                msg.set(block)
+                return msg
+            }
+            return PonyActorMessage0(poolMessage0, block)
+        }
+        
+        private func unpoolMessage1(_ block: @escaping BehaviorBlock, _ arg: Any?) -> PonyActorMessage1 {
+            if let msg = poolMessage1.dequeue() {
+                msg.set(block, arg)
+                return msg
+            }
+            return PonyActorMessage1(poolMessage1, block, arg)
+        }
+        
+        private func unpoolMessageMany(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) -> PonyActorMessageMany {
+            if let msg = poolMessageMany.dequeue() {
+                msg.set(block, args)
+                return msg
+            }
+            return PonyActorMessageMany(poolMessageMany, block, args)
+        }
+        
         func send(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
             switch args.count {
             case 0:
-                pony_actor_send_message(actorPtr, Ptr(PonyActorMessage0(block)), handleMessage0)
+                pony_actor_send_message(actorPtr, Ptr(unpoolMessage0(block)), handleMessage0)
             case 1:
-                pony_actor_send_message(actorPtr, Ptr(PonyActorMessage1(block, args[0])), handleMessage1)
+                pony_actor_send_message(actorPtr, Ptr(unpoolMessage1(block, args[0])), handleMessage1)
             default:
-                pony_actor_send_message(actorPtr, Ptr(PonyActorMessageMany(block, args)), handleMessageMany)
+                pony_actor_send_message(actorPtr, Ptr(unpoolMessageMany(block, args)), handleMessageMany)
             }
             
         }

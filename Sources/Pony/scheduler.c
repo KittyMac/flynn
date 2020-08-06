@@ -203,7 +203,7 @@ static pony_actor_t* steal(scheduler_t* sched)
             scaling_sleep = scaling_sleep_max;
         }
         if(scaling_sleep >= scaling_sleep_min) {
-            ponyint_cpu_sleep(scaling_sleep);
+            //ponyint_cpu_sleep(scaling_sleep);
         }
         
         if (sched->terminate) {

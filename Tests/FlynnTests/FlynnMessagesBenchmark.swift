@@ -387,7 +387,13 @@ class FlynnMessagesBenchmark: XCTestCase {
                 // Create the desired number of Pinger actors and then send them
                 // their initial ping() messages.
                 for idx in 0..<numPingers {
-                    pingers.append(Pinger(idx, self))
+                    let pinger = Pinger(idx, self)
+                    pinger.bePing.setActor(pinger)
+                    pinger.beReport.setActor(pinger)
+                    pinger.beGo.setActor(pinger)
+                    pinger.beStop.setActor(pinger)
+                    pinger.beSetNeighbors.setActor(pinger)
+                    pingers.append(pinger)
                 }
 
                 for pinger in pingers {
@@ -418,7 +424,7 @@ class FlynnMessagesBenchmark: XCTestCase {
 
                 for _ in 0..<initialPings {
                     for pinger in pingers {
-                        pinger.bePing(42)
+                        pinger.bePing()
                     }
                 }
             }
@@ -428,14 +434,14 @@ class FlynnMessagesBenchmark: XCTestCase {
 
                 // The interval timer has fired.  Stop all Pingers and start
                 // waiting for confirmation that they have stopped.
-                let timer: Flynn.Timer? = args[x:0]
+                //let timer: Flynn.Timer? = args[x:0]
 
                 self.reportCount += 1
                 self.done = self.reportCount >= 10
 
-                if self.done {
-                    timer?.cancel()
-                }
+                //if self.done {
+                //    timer?.cancel()
+                //}
 
                 self.currentT = self.now()
                 print("\(self.currentT)", terminator: "")
@@ -541,16 +547,14 @@ class FlynnMessagesBenchmark: XCTestCase {
                 if go {
                     count += 1
                     neighborIdx = (neighborIdx + 1) % neighbors.count
-                    neighbors[neighborIdx].bePing(42)
+                    neighbors[neighborIdx].bePing()
                 } else {
                     if report == true {
                         fatalError("Late message, what???")
                     }
                 }
             }
-            lazy var bePing = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-                // flynnlint:parameter Int - the answer to everything
-                _ = args
+            lazy var bePing = Behavior(self) { [unowned self] (_: BehaviorArgs) in
                 self._bePing()
             }
 
@@ -558,15 +562,21 @@ class FlynnMessagesBenchmark: XCTestCase {
 
         Flynn.startup()
 
-        let numPingers = 8 // Number of intra-process Pony ping actors
+        let numPingers = 512 // Number of intra-process Pony ping actors
         let reportInterval = 1.0 // print report every second
         let initialPings = 5
 
         let syncLeader = SyncLeader(numPingers, initialPings)
+        syncLeader.beTimerFired.setActor(syncLeader)
+        syncLeader.beReportPings.setActor(syncLeader)
+        syncLeader.beReportStopped.setActor(syncLeader)
 
-        syncLeader.beTimerFired(nil)
+        while(true) {
+            sleep(1)
+            syncLeader.beTimerFired(nil)
+        }
 
-        Flynn.Timer(timeInterval: reportInterval, repeats: true, syncLeader.beTimerFired, [])
+        //Flynn.Timer(timeInterval: reportInterval, repeats: true, syncLeader.beTimerFired, [])
 
         Flynn.shutdown()
     }
