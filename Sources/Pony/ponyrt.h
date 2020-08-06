@@ -18,8 +18,6 @@
 #include <stdbool.h>
 #include "atomics.h"
 
-#define COREAFFINITY_PREFER_TO_ONLY(x) (x + kCoreAffinity_OnlyThreshold)
-
 
 #define kMessagePointer 1
 

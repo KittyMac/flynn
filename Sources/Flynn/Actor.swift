@@ -135,5 +135,9 @@ open class Actor {
     internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
         ponyActor.send(block, args)
     }
+    
+    internal func unsafeSend(_ block: @escaping NewBehaviorBlock) {
+        ponyActor.send(block)
+    }
 
 }

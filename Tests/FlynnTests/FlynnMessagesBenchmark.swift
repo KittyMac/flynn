@@ -388,7 +388,7 @@ class FlynnMessagesBenchmark: XCTestCase {
                 // their initial ping() messages.
                 for idx in 0..<numPingers {
                     let pinger = Pinger(idx, self)
-                    pinger.bePing.setActor(pinger)
+                    //pinger.bePing.setActor(pinger)
                     pinger.beReport.setActor(pinger)
                     pinger.beGo.setActor(pinger)
                     pinger.beStop.setActor(pinger)
@@ -424,7 +424,7 @@ class FlynnMessagesBenchmark: XCTestCase {
 
                 for _ in 0..<initialPings {
                     for pinger in pingers {
-                        pinger.bePing()
+                        pinger.bePing(42)
                     }
                 }
             }
@@ -514,6 +514,8 @@ class FlynnMessagesBenchmark: XCTestCase {
             private var report: Bool = false
             private var count: UInt64 = 0
             private var neighborIdx: Int
+            
+            private var neighbor: Pinger?
 
             init(_ idx: Int, _ leader: SyncLeader) {
                 self.idx = idx
@@ -524,12 +526,13 @@ class FlynnMessagesBenchmark: XCTestCase {
             lazy var beSetNeighbors = Behavior(self) { [unowned self] (args: BehaviorArgs) in
                 // flynnlint:parameter [Pinger] - array of Pingers
                 self.neighbors = args[x:0]
+                
+                self.neighbor = self.neighbors[(self.neighborIdx + 1) % self.neighbors.count]
             }
 
             lazy var beGo = Behavior(self) { [unowned self] (_: BehaviorArgs) in
                 self.go = true
                 self.report = false
-                self.count = 0
             }
 
             lazy var beStop = Behavior(self) { [unowned self] (_: BehaviorArgs) in
@@ -543,19 +546,40 @@ class FlynnMessagesBenchmark: XCTestCase {
                 self.count = 0
             }
 
-            private func _bePing() {
+            /*
+            private func _bePing(_ payload: Int) {
                 if go {
                     count += 1
-                    neighborIdx = (neighborIdx + 1) % neighbors.count
-                    neighbors[neighborIdx].bePing()
+                    neighbor?.bePing(42)
                 } else {
                     if report == true {
                         fatalError("Late message, what???")
                     }
                 }
             }
-            lazy var bePing = Behavior(self) { [unowned self] (_: BehaviorArgs) in
-                self._bePing()
+            lazy var bePing = Behavior(self) { [unowned self] (args: BehaviorArgs) in
+                self._bePing(args[x:0])
+            }
+            */
+            
+            private func _bePing(_ payload: Int) {
+                if go {
+                    count += 1
+                    
+                    neighbor?.bePing(42)
+                    //neighborIdx = (neighborIdx &+ 1) % neighbors.count
+                    //neighbors[neighborIdx].bePing(42)
+                } else {
+                    if report == true {
+                        fatalError("Late message, what???")
+                    }
+                }
+            }
+            
+            public func bePing(_ payload: Int) {
+                unsafeSend({
+                    self._bePing(payload)
+                })
             }
 
         }

@@ -99,7 +99,6 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
         }
         break;
     }
-    
     ponyint_mpmcq_push_single(&sched->q, actor);
 }
 
@@ -173,7 +172,7 @@ static pony_actor_t* steal(scheduler_t* sched)
     int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
 #else
     int scaling_sleep = 0;
-    int scaling_sleep_delta = 50;
+    int scaling_sleep_delta = 10;
     int scaling_sleep_min = 250;      // The minimum value we start actually sleeping at
     int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
 #endif
@@ -189,7 +188,7 @@ static pony_actor_t* steal(scheduler_t* sched)
             actor = pop_global(sched, victim);
             
             // If we stole the wrong actor, throw it back in the sea
-            if (actor != NULL && actor->coreAffinity >= kCoreAffinity_OnlyThreshold && actor->coreAffinity != sched->coreAffinity) {
+            if (actor != NULL && COREAFFINITY_IS_INCOMPATIBLE(actor->coreAffinity, sched->coreAffinity)) {
                 push(sched, actor);
                 actor = NULL;
             }
@@ -203,7 +202,7 @@ static pony_actor_t* steal(scheduler_t* sched)
             scaling_sleep = scaling_sleep_max;
         }
         if(scaling_sleep >= scaling_sleep_min) {
-            //ponyint_cpu_sleep(scaling_sleep);
+            ponyint_cpu_sleep(scaling_sleep);
         }
         
         if (sched->terminate) {
@@ -249,7 +248,7 @@ static void run(scheduler_t* sched)
         }
         if(actor != NULL) {
             
-            if (actor->coreAffinity >= kCoreAffinity_OnlyThreshold && actor->coreAffinity != sched->coreAffinity) {
+            if (COREAFFINITY_IS_INCOMPATIBLE(actor->coreAffinity, sched->coreAffinity)) {
                 push(sched, actor);
                 actor = NULL;
                 continue;
@@ -281,7 +280,7 @@ static void run(scheduler_t* sched)
                         actor = next;
                     }
                 } else {
-                    if (actor->coreAffinity <= kCoreAffinity_OnlyThreshold) {
+                    if (COREAFFINITY_IS_PREFERENTIAL(actor->coreAffinity)) {
                         // If we prefer a different affinity, check to see if one of those schedulers
                         // is idle, if it is send this actor over to them
                         int targetAffinity = COREAFFINITY_PREFER_TO_ONLY(actor->coreAffinity);

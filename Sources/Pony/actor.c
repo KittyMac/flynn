@@ -139,6 +139,7 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     
     static int32_t actorUID = 1;
     actor->uid = actorUID++;
+    actor->coreAffinity = kCoreAffinity_None;
     
     ponyint_messageq_init(&actor->q);
     

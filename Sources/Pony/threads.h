@@ -19,7 +19,11 @@
 #define kCoreAffinity_OnlyEfficiency 2
 #define kCoreAffinity_OnlyPerformance 3
 
-#define kCoreAffinity_OnlyThreshold 2
+#define COREAFFINITY_IS_INCOMPATIBLE(x, y) ((x == kCoreAffinity_OnlyEfficiency || x == kCoreAffinity_OnlyPerformance) && x != y)
+#define COREAFFINITY_IS_PREFERENTIAL(x) (x <= kCoreAffinity_PreferPerformance)
+#define COREAFFINITY_PREFER_TO_ONLY(x) (x + 2)
+
+#define kCoreAffinity_None 99
 
 
 #define pony_thread_id_t pthread_t
