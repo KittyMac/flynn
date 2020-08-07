@@ -19,6 +19,8 @@
 #include <string.h>
 #include <stdio.h>
 
+void ponyint_actor_destroy(pony_actor_t* actor);
+
 // The flags of a given actor cannot be mutated from more than one actor at
 // once, so these operations need not be atomic RMW.
 bool has_flag(pony_actor_t* actor, uint8_t flag)
@@ -53,6 +55,13 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
         if (n > max_msgs || actor->yield) {
             break;
         }
+    }
+    
+    if (actor->destroy) {
+        ponyint_actor_setpendingdestroy(actor);
+        ponyint_messageq_markempty(&actor->q);
+        ponyint_actor_destroy(actor);
+        return false;
     }
     
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
@@ -111,6 +120,8 @@ void ponyint_actor_destroy(pony_actor_t* actor)
     
     int32_t typeSize = sizeof(actor);
     ponyint_pool_free_size(typeSize, actor);
+    
+    //fprintf(stderr, "pony actor freed\n");
 }
 
 bool ponyint_actor_pendingdestroy(pony_actor_t* actor)
@@ -158,8 +169,7 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
 
 void ponyint_destroy_actor(pony_actor_t* actor)
 {
-    ponyint_actor_setpendingdestroy(actor);
-    ponyint_actor_destroy(actor);
+    actor->destroy = true;
 }
 
 pony_msg_t* pony_alloc_msg(uint32_t index, uint32_t msgId)

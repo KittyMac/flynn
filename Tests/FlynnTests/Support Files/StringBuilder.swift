@@ -10,6 +10,8 @@ import XCTest
 
 @testable import Flynn
 
+/*
+
 class StringBuilder: Actor {
     private var string: String = ""
 
@@ -30,3 +32,5 @@ class StringBuilder: Actor {
         callback(self.string)
     }
 }
+
+*/

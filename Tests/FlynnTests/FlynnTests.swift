@@ -25,14 +25,14 @@ class FlynnTests: XCTestCase {
     func test0() {
         let expectation = XCTestExpectation(description: "Warning when passing reference values")
 
-        Flynn.defaultCheckForUnsafeArguments = true
-
+        print("before")
         PassToMe().beNone()
-
-        Flynn.defaultCheckForUnsafeArguments = false
+        print("after")
 
         expectation.fulfill()
     }
+    
+    /*
 
     func test1() {
         let expectation = XCTestExpectation(description: "Wait for counter to finish")
@@ -292,6 +292,7 @@ class FlynnTests: XCTestCase {
 
         wait(for: [expectation], timeout: 1.0)
     }
+ */
 
     static var allTests = [
         ("test0", test0),

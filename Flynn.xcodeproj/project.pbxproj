@@ -21,10 +21,9 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		46DA1FB524DB14F3008CCAA1 /* Pony.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DA1FB424DB14F2008CCAA1 /* Pony.swift */; };
 		OBJ_110 /* BadFlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_51 /* BadFlynnTests.swift */; };
 		OBJ_111 /* FlynnMessagesBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_52 /* FlynnMessagesBenchmark.swift */; };
-		OBJ_112 /* FlynnRuntimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_53 /* FlynnRuntimeTests.swift */; };
+		OBJ_112 /* FlynnComponentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_53 /* FlynnComponentsTests.swift */; };
 		OBJ_113 /* FlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_54 /* FlynnTests.swift */; };
 		OBJ_114 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_56 /* Color.swift */; };
 		OBJ_115 /* Counter.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_57 /* Counter.swift */; };
@@ -48,14 +47,11 @@
 		OBJ_141 /* threads.m in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_43 /* threads.m */; };
 		OBJ_78 /* Actor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* Actor.swift */; };
 		OBJ_79 /* Atomics.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* Atomics.swift */; };
-		OBJ_80 /* Behavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Behavior.swift */; };
 		OBJ_81 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* Device.swift */; };
 		OBJ_82 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* Extensions.swift */; };
 		OBJ_83 /* Flowable.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* Flowable.swift */; };
-		OBJ_84 /* Flynn+RegisteredActors.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_15 /* Flynn+RegisteredActors.swift */; };
 		OBJ_85 /* Flynn+Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_16 /* Flynn+Timer.swift */; };
 		OBJ_86 /* Flynn.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_17 /* Flynn.swift */; };
-		OBJ_87 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_18 /* Profile.swift */; };
 		OBJ_88 /* Queue.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_19 /* Queue.swift */; };
 		OBJ_91 /* Pony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Flynn::Pony::Product" /* Pony.framework */; };
 		OBJ_99 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
@@ -93,19 +89,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		46DA1FB424DB14F2008CCAA1 /* Pony.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pony.swift; sourceTree = "<group>"; };
 		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::Pony::Product" /* Pony.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Pony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_10 /* Atomics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Atomics.swift; sourceTree = "<group>"; };
-		OBJ_11 /* Behavior.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Behavior.swift; sourceTree = "<group>"; };
 		OBJ_12 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		OBJ_13 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		OBJ_14 /* Flowable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flowable.swift; sourceTree = "<group>"; };
-		OBJ_15 /* Flynn+RegisteredActors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Flynn+RegisteredActors.swift"; sourceTree = "<group>"; };
 		OBJ_16 /* Flynn+Timer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Flynn+Timer.swift"; sourceTree = "<group>"; };
 		OBJ_17 /* Flynn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flynn.swift; sourceTree = "<group>"; };
-		OBJ_18 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		OBJ_19 /* Queue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Queue.swift; sourceTree = "<group>"; };
 		OBJ_22 /* actor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = actor.h; sourceTree = "<group>"; };
 		OBJ_23 /* alloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = alloc.h; sourceTree = "<group>"; };
@@ -134,7 +126,7 @@
 		OBJ_50 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		OBJ_51 /* BadFlynnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadFlynnTests.swift; sourceTree = "<group>"; };
 		OBJ_52 /* FlynnMessagesBenchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlynnMessagesBenchmark.swift; sourceTree = "<group>"; };
-		OBJ_53 /* FlynnRuntimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlynnRuntimeTests.swift; sourceTree = "<group>"; };
+		OBJ_53 /* FlynnComponentsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlynnComponentsTests.swift; sourceTree = "<group>"; };
 		OBJ_54 /* FlynnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlynnTests.swift; sourceTree = "<group>"; };
 		OBJ_56 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		OBJ_57 /* Counter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Counter.swift; sourceTree = "<group>"; };
@@ -235,7 +227,7 @@
 				OBJ_50 /* Info.plist */,
 				OBJ_51 /* BadFlynnTests.swift */,
 				OBJ_52 /* FlynnMessagesBenchmark.swift */,
-				OBJ_53 /* FlynnRuntimeTests.swift */,
+				OBJ_53 /* FlynnComponentsTests.swift */,
 				OBJ_54 /* FlynnTests.swift */,
 				OBJ_55 /* Support Files */,
 				OBJ_63 /* XCTestManifests.swift */,
@@ -297,15 +289,11 @@
 			children = (
 				OBJ_9 /* Actor.swift */,
 				OBJ_10 /* Atomics.swift */,
-				OBJ_11 /* Behavior.swift */,
 				OBJ_12 /* Device.swift */,
 				OBJ_13 /* Extensions.swift */,
 				OBJ_14 /* Flowable.swift */,
-				OBJ_15 /* Flynn+RegisteredActors.swift */,
 				OBJ_16 /* Flynn+Timer.swift */,
 				OBJ_17 /* Flynn.swift */,
-				46DA1FB424DB14F2008CCAA1 /* Pony.swift */,
-				OBJ_18 /* Profile.swift */,
 				OBJ_19 /* Queue.swift */,
 			);
 			name = Flynn;
@@ -319,6 +307,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = OBJ_74 /* Build configuration list for PBXNativeTarget "Flynn" */;
 			buildPhases = (
+				46FDD31624DCF9A800A694D7 /* SwiftLint */,
 				OBJ_77 /* Sources */,
 				OBJ_90 /* Frameworks */,
 			);
@@ -410,6 +399,27 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		46FDD31624DCF9A800A694D7 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint autocorrect --path ${SRCROOT}/Sources/\n  swiftlint --path ${SRCROOT}/Sources/\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		OBJ_109 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -417,7 +427,7 @@
 			files = (
 				OBJ_110 /* BadFlynnTests.swift in Sources */,
 				OBJ_111 /* FlynnMessagesBenchmark.swift in Sources */,
-				OBJ_112 /* FlynnRuntimeTests.swift in Sources */,
+				OBJ_112 /* FlynnComponentsTests.swift in Sources */,
 				OBJ_113 /* FlynnTests.swift in Sources */,
 				OBJ_114 /* Color.swift in Sources */,
 				OBJ_115 /* Counter.swift in Sources */,
@@ -453,15 +463,11 @@
 			files = (
 				OBJ_78 /* Actor.swift in Sources */,
 				OBJ_79 /* Atomics.swift in Sources */,
-				OBJ_80 /* Behavior.swift in Sources */,
 				OBJ_81 /* Device.swift in Sources */,
 				OBJ_82 /* Extensions.swift in Sources */,
 				OBJ_83 /* Flowable.swift in Sources */,
-				46DA1FB524DB14F3008CCAA1 /* Pony.swift in Sources */,
-				OBJ_84 /* Flynn+RegisteredActors.swift in Sources */,
 				OBJ_85 /* Flynn+Timer.swift in Sources */,
 				OBJ_86 /* Flynn.swift in Sources */,
-				OBJ_87 /* Profile.swift in Sources */,
 				OBJ_88 /* Queue.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

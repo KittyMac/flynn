@@ -13,6 +13,7 @@
 import XCTest
 
 @testable import Flynn
+/*
 
 class FlynnMessagesBenchmark: XCTestCase {
 
@@ -606,3 +607,4 @@ class FlynnMessagesBenchmark: XCTestCase {
     }
 
 }
+*/

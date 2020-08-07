@@ -8,6 +8,7 @@
 
 import Foundation
 
+/*
 public extension Flynn {
     
     class Timer {
@@ -144,3 +145,5 @@ public extension Flynn {
 
     }
 }
+
+*/

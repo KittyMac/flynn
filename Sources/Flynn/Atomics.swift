@@ -11,7 +11,7 @@ import Foundation
 class AtomicContidion {
     private var _value: Bool = false
     private var lock = NSLock()
-    
+
     public var isActive: Bool {
         return _value
     }

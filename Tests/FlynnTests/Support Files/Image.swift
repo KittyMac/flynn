@@ -9,6 +9,8 @@
 import XCTest
 @testable import Flynn
 
+/*
+
 public class ImageableState {
     private var path: String = ""
 
@@ -41,3 +43,5 @@ public final class Image: Actor, Colorable, Imageable, Viewable {
         self.safeViewableRender(args[x:0])
     }
 }
+
+ */

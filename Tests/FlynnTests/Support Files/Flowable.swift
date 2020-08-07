@@ -10,6 +10,8 @@ import XCTest
 
 @testable import Flynn
 
+/*
+
 // Pass through all arguments
 final class Passthrough: Actor, Flowable {
     lazy var safeFlowable = FlowableState(self)
@@ -80,3 +82,4 @@ class Callback: Actor, Flowable {
         self.safeFlowToNextTarget(args)
     }
 }
+*/

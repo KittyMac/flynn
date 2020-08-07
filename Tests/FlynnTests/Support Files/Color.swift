@@ -9,6 +9,8 @@
 import XCTest
 @testable import Flynn
 
+/*
+
 public class ColorableState<T: Actor> {
     private var color: [Float] = [1, 1, 1, 1]
 
@@ -58,3 +60,5 @@ public final class Color: Actor, Colorable, Viewable {
         self.safeViewableRender(args[x:0])
     }
 }
+
+ */

@@ -6,7 +6,53 @@
 //  Copyright © 2020 Rocco Bowling. All rights reserved.
 //
 
+// swiftlint:disable identifier_name
+
 import Foundation
+import Pony
+
+typealias PonyBlock = () -> Void
+
+typealias AnyPtr = UnsafeMutableRawPointer?
+
+func Ptr <T: AnyObject>(_ obj: T) -> AnyPtr {
+    return Unmanaged.passRetained(obj).toOpaque()
+}
+
+func Class <T: AnyObject>(_ ptr: AnyPtr) -> T? {
+    guard let ptr = ptr else { return nil }
+    return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
+}
+
+private func handleMessage(_ argumentPtr: AnyPtr) {
+    if let msg: ActorMessage = Class(argumentPtr) {
+        msg.run()
+    }
+}
+
+private class ActorMessage {
+    weak var pool: Queue<ActorMessage>?
+    var block: PonyBlock?
+
+    init(_ pool: Queue<ActorMessage>?, _ block: @escaping PonyBlock) {
+        self.pool = pool
+        self.block = block
+    }
+
+    func set(_ block: @escaping PonyBlock) {
+        self.block = block
+    }
+
+    func run() {
+        block?()
+        block = nil
+        pool?.enqueue(self)
+    }
+
+    deinit {
+        //print("deinit - ActorMessage")
+    }
+}
 
 open class Actor {
 
@@ -19,71 +65,81 @@ open class Actor {
     }
 
     private let uuid: String
-    
-    internal var ponyActor: Pony.PonyActor
-    
-    public var unsafeCoreAffinity: CoreAffinity {
+
+    private let ponyActorPtr: AnyPtr
+
+    private var poolMessage = Queue<ActorMessage>(size: 128, manyProducers: false, manyConsumers: true)
+
+    @inline(__always)
+    private func unpoolMessage(_ block: @escaping PonyBlock) -> ActorMessage {
+        if let msg = poolMessage.dequeue() {
+            msg.set(block)
+            return msg
+        }
+        return ActorMessage(poolMessage, block)
+    }
+
+    var coreAffinity: CoreAffinity {
         get {
-            return ponyActor.coreAffinity
+            if let affinity = CoreAffinity(rawValue: pony_actor_getcoreAffinity(ponyActorPtr)) {
+                return affinity
+            }
+            return .none
         }
         set {
-            ponyActor.coreAffinity = newValue
+            pony_actor_setcoreAffinity(ponyActorPtr, newValue.rawValue)
         }
     }
-    
-    public var unsafePriority: Int32 {
+
+    var priority: Int32 {
         get {
-            return ponyActor.priority
+            return pony_actor_getpriority(ponyActorPtr)
         }
         set {
-            ponyActor.priority = newValue
+            pony_actor_setpriority(ponyActorPtr, newValue)
         }
     }
-    
-    public var unsafeMessageBatchSize: Int32 {
+
+    var batchSize: Int32 {
         get {
-            return ponyActor.batchSize
+            return pony_actor_getpriority(ponyActorPtr)
         }
         set {
-            ponyActor.batchSize = newValue
+            pony_actor_setpriority(ponyActorPtr, newValue)
         }
     }
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
-        ponyActor.wait(minMsgs)
+        pony_actor_wait(minMsgs, ponyActorPtr)
     }
 
     public func unsafeYield() {
-        ponyActor.yield()
+        pony_actor_yield(ponyActorPtr)
     }
 
     public var unsafeMessagesCount: Int32 {
-        return ponyActor.messageCount
+        return pony_actor_num_messages(ponyActorPtr)
     }
 
     private let initTime: TimeInterval = ProcessInfo.processInfo.systemUptime
     public var unsafeUptime: TimeInterval {
         return ProcessInfo.processInfo.systemUptime - initTime
     }
-    
+
     public init() {
         Flynn.startup()
         uuid = UUID().uuidString
-        ponyActor = Pony.PonyActor()
-        Flynn.register(self)
+        ponyActorPtr = pony_actor_create()
     }
 
     deinit {
         //print("deinit - Actor")
+        pony_actor_destroy(ponyActorPtr)
     }
 
-    internal func unsafeSend(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
-        ponyActor.send(block, args)
-    }
-    
-    internal func unsafeSend(_ block: @escaping NewBehaviorBlock) {
-        ponyActor.send(block)
+    internal func unsafeSend(_ block: @escaping PonyBlock) {
+        pony_actor_send_message(ponyActorPtr, Ptr(unpoolMessage(block)), handleMessage)
     }
 
 }

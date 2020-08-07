@@ -15,18 +15,35 @@ class PassToMe: Actor {
     public func unsafePrint(_ string: String) {
         print(string)
     }
-
-    lazy var beNone = Behavior(self) { (_: BehaviorArgs) in
+    
+    private func _beNone() {
         print("hello world with no arguments")
     }
-    
-    lazy var beString = ChainableBehavior(self) { (args: BehaviorArgs) in
-        // flynnlint:parameter String - a swift string ( a struct )
-        print("hello world from " + args[x:0])
-    }
 
-    lazy var beNSString = ChainableBehavior(self) { (args: BehaviorArgs) in
-        // flynnlint:parameter NSString - a object string
-        print("hello world from " + args[x:0])
+    private func _beString(_ string: String) {
+        print(string)
+    }
+    
+    private func _beNSString (_ string: NSString) {
+        print(string)
+    }
+    
+}
+
+extension PassToMe {
+    public func beNone() {
+        unsafeSend(_beNone)
+    }
+    
+    public func beString(_ string: String) {
+        unsafeSend { [unowned self] in
+            self._beString(string)
+        }
+    }
+    
+    public func beNSString(_ string: NSString) {
+        unsafeSend { [unowned self] in
+            self._beNSString(string)
+        }
     }
 }

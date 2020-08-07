@@ -20,19 +20,14 @@ public enum CoreAffinity: Int32 {
 open class Flynn {
 
     // MARK: - User Configurable Settings
-#if DEBUG
-    public static var defaultCheckForUnsafeArguments: Bool = true
-#else
-    public static var defaultCheckForUnsafeArguments: Bool = false
-#endif
 
 #if os(iOS)
     public static var defaultActorAffinity: CoreAffinity = .preferEfficiency
 #else
     public static var defaultActorAffinity: CoreAffinity = .none
 #endif
-    
-    private static var timerLoop: TimerLoop?
+
+    //private static var timerLoop: TimerLoop?
     private static var running = AtomicContidion()
     private static var device = Device()
 
@@ -43,39 +38,38 @@ open class Flynn {
         running.checkInactive {
             timeStart = ProcessInfo.processInfo.systemUptime
 
-            timerLoop = TimerLoop()
-                        
+            //timerLoop = TimerLoop()
+
             pony_startup()
         }
     }
 
     public class func shutdown() {
         running.checkActive {
-                        
+
             pony_shutdown()
-            
-            timerLoop?.join()
-            timerLoop = nil
-            
+
+            //timerLoop?.join()
+            //timerLoop = nil
+
             // wait until the registered actors thread ends
-            clearRegisteredActors()
-            clearRegisteredTimers()
+            //clearRegisteredTimers()
         }
     }
 
     public static var cores: Int {
         return device.cores
     }
-    
+
     public static var eCores: Int {
         return device.eCores
     }
-    
+
     public static var pCores: Int {
         return device.pCores
     }
-        
+
     internal static func wakeTimerLoop() {
-        timerLoop?.wake()
+        //timerLoop?.wake()
     }
 }

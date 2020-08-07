@@ -9,6 +9,8 @@
 import XCTest
 @testable import Flynn
 
+/*
+
 protocol Viewable: Actor {
     var beRender: Behavior { get }
 }
@@ -18,3 +20,5 @@ extension Viewable {
         print("Viewable bounds \(bounds)")
     }
 }
+
+*/

@@ -27,6 +27,7 @@ typedef struct pony_actor_t
     int32_t coreAffinity;
     int32_t batchSize;
     bool yield;
+    bool destroy;
 } pony_actor_t;
 
 enum
