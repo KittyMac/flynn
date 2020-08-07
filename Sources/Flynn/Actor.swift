@@ -11,7 +11,7 @@
 import Foundation
 import Pony
 
-typealias PonyBlock = () -> Void
+public typealias PonyBlock = () -> Void
 
 typealias AnyPtr = UnsafeMutableRawPointer?
 
@@ -140,7 +140,7 @@ open class Actor {
         pony_actor_destroy(ponyActorPtr)
     }
 
-    internal func unsafeSend(_ block: @escaping PonyBlock) {
+    public func unsafeSend(_ block: @escaping PonyBlock) {
         pony_actor_send_message(ponyActorPtr, Ptr(unpoolMessage(block)), handleMessage)
     }
 
