@@ -13,7 +13,7 @@
 import XCTest
 
 @testable import Flynn
-/*
+
 
 class FlynnMessagesBenchmark: XCTestCase {
 
@@ -388,13 +388,7 @@ class FlynnMessagesBenchmark: XCTestCase {
                 // Create the desired number of Pinger actors and then send them
                 // their initial ping() messages.
                 for idx in 0..<numPingers {
-                    let pinger = Pinger(idx, self)
-                    //pinger.bePing.setActor(pinger)
-                    pinger.beReport.setActor(pinger)
-                    pinger.beGo.setActor(pinger)
-                    pinger.beStop.setActor(pinger)
-                    pinger.beSetNeighbors.setActor(pinger)
-                    pingers.append(pinger)
+                    pingers.append(Pinger(idx, self))
                 }
 
                 for pinger in pingers {
@@ -430,9 +424,7 @@ class FlynnMessagesBenchmark: XCTestCase {
                 }
             }
 
-            lazy var beTimerFired = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-                // flynnlint:parameter Timer? - the timer who called this behavior, if it exists
-
+            private func _beTimerFired() {
                 // The interval timer has fired.  Stop all Pingers and start
                 // waiting for confirmation that they have stopped.
                 //let timer: Flynn.Timer? = args[x:0]
@@ -454,10 +446,11 @@ class FlynnMessagesBenchmark: XCTestCase {
                     pinger.beStop()
                 }
             }
+            public func beTimerFired() {
+                unsafeSend(_beTimerFired)
+            }
 
-            lazy var beReportStopped = Behavior(self) { [unowned self] (_: BehaviorArgs) in
-                // flynnlint:parameter Int - the idx of the pinger who stopped
-
+            private func _beReportStopped() {
                 // Collect reports from Pingers that they have stopped working.
                 // If all have finished, then ask them to report their message
                 // received counts.
@@ -471,11 +464,11 @@ class FlynnMessagesBenchmark: XCTestCase {
                     }
                 }
             }
+            public func beReportStopped() {
+                unsafeSend(_beReportStopped)
+            }
 
-            lazy var beReportPings = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-                // flynnlint:parameter Int - the idx of the pinger who stopped
-                // flynnlint:parameter UInt64 - the number of pings performed
-
+            private func _beReportPings(_ idx: Int, _ count: UInt64) {
                 // Collect message count reports.  If all have reported, then
                 // calculate the total message rate, then start the next work
                 // interval.
@@ -484,8 +477,6 @@ class FlynnMessagesBenchmark: XCTestCase {
                 // a two-round synchronous protocol to ensure that ping messages
                 // from an earlier work interval are not counted in later
                 // intervals or cause memory consumption.
-                let idx: Int = args[x:0]
-                let count: UInt64 = args[x:1]
 
                 self.partialCount += count
                 self.waitingFor -= 1
@@ -503,6 +494,11 @@ class FlynnMessagesBenchmark: XCTestCase {
 
                         self.tellAllToGo()
                     }
+                }
+            }
+            public func beReportPings(_ idx: Int, _ count: UInt64) {
+                unsafeSend { [unowned self] in
+                    self._beReportPings(idx, count)
                 }
             }
         }
@@ -524,49 +520,45 @@ class FlynnMessagesBenchmark: XCTestCase {
                 self.leader = leader
             }
 
-            lazy var beSetNeighbors = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-                // flynnlint:parameter [Pinger] - array of Pingers
-                self.neighbors = args[x:0]
-                
+            private func _beSetNeighbors(_ neighbors: [Pinger]) {
+                self.neighbors = neighbors
                 self.neighbor = self.neighbors[(self.neighborIdx + 1) % self.neighbors.count]
             }
+            public func beSetNeighbors(_ neighbors: [Pinger]) {
+                unsafeSend { [unowned self] in
+                    self._beSetNeighbors(neighbors)
+                }
+            }
 
-            lazy var beGo = Behavior(self) { [unowned self] (_: BehaviorArgs) in
+            private func _beGo() {
                 self.go = true
                 self.report = false
             }
+            public func beGo() {
+                unsafeSend(_beGo)
+            }
 
-            lazy var beStop = Behavior(self) { [unowned self] (_: BehaviorArgs) in
+            private func _beStop() {
                 self.go = false
                 self.leader.beReportStopped()
             }
+            public func beStop() {
+                unsafeSend(_beStop)
+            }
 
-            lazy var beReport = Behavior(self) { [unowned self] (_: BehaviorArgs) in
+            private func _beReport() {
                 self.report = true
                 self.leader.beReportPings(self.idx, self.count)
                 self.count = 0
             }
+            public func beReport() {
+                unsafeSend(_beReport)
+            }
 
-            /*
+           
             private func _bePing(_ payload: Int) {
                 if go {
                     count += 1
-                    neighbor?.bePing(42)
-                } else {
-                    if report == true {
-                        fatalError("Late message, what???")
-                    }
-                }
-            }
-            lazy var bePing = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-                self._bePing(args[x:0])
-            }
-            */
-            
-            private func _bePing(_ payload: Int) {
-                if go {
-                    count += 1
-                    
                     neighbor?.bePing(42)
                     //neighborIdx = (neighborIdx &+ 1) % neighbors.count
                     //neighbors[neighborIdx].bePing(42)
@@ -576,9 +568,8 @@ class FlynnMessagesBenchmark: XCTestCase {
                     }
                 }
             }
-            
             public func bePing(_ payload: Int) {
-                unsafeSend({
+                unsafeSend({ [unowned self] in
                     self._bePing(payload)
                 })
             }
@@ -588,17 +579,14 @@ class FlynnMessagesBenchmark: XCTestCase {
         Flynn.startup()
 
         let numPingers = 512 // Number of intra-process Pony ping actors
-        let reportInterval = 1.0 // print report every second
+        let reportInterval = 1 // print report every second
         let initialPings = 5
 
         let syncLeader = SyncLeader(numPingers, initialPings)
-        syncLeader.beTimerFired.setActor(syncLeader)
-        syncLeader.beReportPings.setActor(syncLeader)
-        syncLeader.beReportStopped.setActor(syncLeader)
 
         while(true) {
-            sleep(1)
-            syncLeader.beTimerFired(nil)
+            sleep(UInt32(reportInterval))
+            syncLeader.beTimerFired()
         }
 
         //Flynn.Timer(timeInterval: reportInterval, repeats: true, syncLeader.beTimerFired, [])
@@ -607,4 +595,4 @@ class FlynnMessagesBenchmark: XCTestCase {
     }
 
 }
-*/
+
