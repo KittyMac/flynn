@@ -21,7 +21,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifndef QOS_CLASS_USER_INITIATED
+#ifndef PLATFORM_IS_APPLE
 #define QOS_CLASS_USER_INITIATED 0
 #define QOS_CLASS_UTILITY 1
 #endif
