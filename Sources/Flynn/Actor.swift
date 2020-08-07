@@ -81,7 +81,7 @@ open class Actor {
         return ActorMessage(poolMessage, block)
     }
 
-    var unsafeCoreAffinity: CoreAffinity {
+    public var unsafeCoreAffinity: CoreAffinity {
         get {
             if let affinity = CoreAffinity(rawValue: pony_actor_getcoreAffinity(ponyActorPtr)) {
                 return affinity
@@ -93,7 +93,7 @@ open class Actor {
         }
     }
 
-    var unsafePriority: Int32 {
+    public var unsafePriority: Int32 {
         get {
             return pony_actor_getpriority(ponyActorPtr)
         }
@@ -102,7 +102,7 @@ open class Actor {
         }
     }
 
-    var unsafeBatchSize: Int32 {
+    public var unsafeBatchSize: Int32 {
         get {
             return pony_actor_getpriority(ponyActorPtr)
         }
