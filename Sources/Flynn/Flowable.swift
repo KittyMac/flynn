@@ -58,6 +58,10 @@ public class FlowableState {
     fileprivate var flowTargets: [Flowable] = []
     fileprivate var poolIdx: Int = 0
 
+    public init() {
+
+    }
+
     fileprivate func nextTarget() -> Flowable {
         poolIdx = (poolIdx + 1) % numTargets
         return flowTargets[poolIdx]
@@ -95,7 +99,7 @@ public class FlowableState {
         }
     }
     fileprivate func beRetryEndFlowToNextTarget(_ actor: Flowable) {
-        actor.unsafeSend { [unowned self] in
+        actor.unsafeSend {
             self._beRetryEndFlowToNextTarget(actor)
         }
     }
@@ -125,14 +129,12 @@ public protocol Flowable: Actor {
 public extension Flowable {
 
     func beTarget(_ target: Flowable) {
-        // TODO: figure out why these cannot be unowned without crashing
-        unsafeSend { // [unowned self] in
+        unsafeSend {
             self.safeFlowable._beTarget(target)
         }
     }
     func beTargets(_ targets: [Flowable]) {
-        // TODO: figure out why these cannot be unowned without crashing
-        unsafeSend { // [unowned self] in
+        unsafeSend {
             self.safeFlowable._beTargets(targets)
         }
     }

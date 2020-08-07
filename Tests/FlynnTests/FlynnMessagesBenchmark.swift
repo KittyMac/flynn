@@ -481,7 +481,7 @@ class FlynnMessagesBenchmark: XCTestCase {
                 }
             }
             public func beReportPings(_ idx: Int, _ count: UInt64) {
-                unsafeSend { [unowned self] in
+                unsafeSend {
                     self._beReportPings(idx, count)
                 }
             }
@@ -509,7 +509,7 @@ class FlynnMessagesBenchmark: XCTestCase {
                 self.neighbor = self.neighbors[(self.neighborIdx + 1) % self.neighbors.count]
             }
             public func beSetNeighbors(_ neighbors: [Pinger]) {
-                unsafeSend { [unowned self] in
+                unsafeSend {
                     self._beSetNeighbors(neighbors)
                 }
             }
@@ -553,9 +553,9 @@ class FlynnMessagesBenchmark: XCTestCase {
                 }
             }
             public func bePing(_ payload: Int) {
-                unsafeSend({ [unowned self] in
+                unsafeSend {
                     self._bePing(payload)
-                })
+                }
             }
 
         }

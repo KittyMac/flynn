@@ -18,7 +18,7 @@ final class Passthrough: Actor, Flowable {
         safeFlowToNextTarget(args)
     }
     func beFlow(_ args: FlowableArgs) {
-        unsafeSend { [unowned self] in
+        unsafeSend {
             self._beFlow(args)
         }
     }
@@ -33,7 +33,7 @@ class Print: Actor, Flowable {
         safeFlowToNextTarget(args)
     }
     func beFlow(_ args: FlowableArgs) {
-        unsafeSend { [unowned self] in
+        unsafeSend {
             self._beFlow(args)
         }
     }
@@ -49,7 +49,7 @@ class Uppercase: Actor, Flowable {
         safeFlowToNextTarget([value.uppercased()])
     }
     func beFlow(_ args: FlowableArgs) {
-        unsafeSend { [unowned self] in
+        unsafeSend {
             self._beFlow(args)
         }
     }
@@ -73,7 +73,7 @@ class Concatenate: Actor, Flowable {
         combined.append(value)
     }
     func beFlow(_ args: FlowableArgs) {
-        unsafeSend { [unowned self] in
+        unsafeSend {
             self._beFlow(args)
         }
     }
@@ -93,7 +93,7 @@ class Callback: Actor, Flowable {
         safeFlowToNextTarget(args)
     }
     func beFlow(_ args: FlowableArgs) {
-        unsafeSend { [unowned self] in
+        unsafeSend {
             self._beFlow(args)
         }
     }

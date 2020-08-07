@@ -36,13 +36,13 @@ extension PassToMe {
     }
     
     public func beString(_ string: String) {
-        unsafeSend { [unowned self] in
+        unsafeSend {
             self._beString(string)
         }
     }
     
     public func beNSString(_ string: NSString) {
-        unsafeSend { [unowned self] in
+        unsafeSend {
             self._beNSString(string)
         }
     }
