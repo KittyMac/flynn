@@ -25,8 +25,8 @@ typedef struct pony_actor_t
     int32_t uid;
     int32_t priority;
     int32_t coreAffinity;
+    int32_t batchSize;
     bool yield;
-    void * swiftActor;
 } pony_actor_t;
 
 enum
@@ -45,6 +45,9 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs);
 
 int32_t ponyint_actor_getpriority(pony_actor_t* actor);
 void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority);
+
+int32_t ponyint_actor_getbatchSize(pony_actor_t* actor);
+void ponyint_actor_setbatchSize(pony_actor_t* actor, int32_t batchSize);
 
 int32_t ponyint_actor_getcoreAffinity(pony_actor_t* actor);
 void ponyint_actor_setcoreAffinity(pony_actor_t* actor, int32_t coreAffinity);

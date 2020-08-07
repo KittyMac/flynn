@@ -58,11 +58,8 @@ enum Pony {
         init() {
             actorPtr = pony_actor_create()
         }
-        
-        func attach(_ actor: Actor) {
-            pony_actor_attach_swift_actor(actorPtr, Ptr(actor))
-        }
-        
+                
+        @inline(__always)
         private func unpoolMessage0(_ block: @escaping NewBehaviorBlock) -> PonyActorMessage0 {
             if let msg = poolMessage0.dequeue() {
                 msg.set(block)
@@ -70,17 +67,59 @@ enum Pony {
             }
             return PonyActorMessage0(poolMessage0, block)
         }
-                
+        
+        @inline(__always)
         func send(_ block: @escaping BehaviorBlock, _ args: BehaviorArgs) {
             send({ block(args) })
         }
         
+        @inline(__always)
         func send(_ block: @escaping NewBehaviorBlock) {
             pony_actor_send_message(actorPtr, Ptr(unpoolMessage0(block)), handleMessage0)
         }
         
+        @inline(__always)
+        func wait(_ minMsgs: Int32) {
+            pony_actor_wait(minMsgs, actorPtr)
+        }
+        
+        @inline(__always)
+        func yield() {
+            pony_actor_yield(actorPtr)
+        }
+        
         var messageCount: Int32 {
             return pony_actor_num_messages(actorPtr)
+        }
+        
+        var coreAffinity: CoreAffinity {
+            get {
+                if let affinity = CoreAffinity(rawValue: pony_actor_getcoreAffinity(actorPtr)) {
+                    return affinity
+                }
+                return .none
+            }
+            set {
+                pony_actor_setcoreAffinity(actorPtr, newValue.rawValue)
+            }
+        }
+        
+        var priority: Int32 {
+            get {
+                return pony_actor_getpriority(actorPtr)
+            }
+            set {
+                pony_actor_setpriority(actorPtr, newValue)
+            }
+        }
+        
+        var batchSize: Int32 {
+            get {
+                return pony_actor_getpriority(actorPtr)
+            }
+            set {
+                pony_actor_setpriority(actorPtr, newValue)
+            }
         }
     }
     

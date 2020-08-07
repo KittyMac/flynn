@@ -68,6 +68,15 @@ void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority)
     actor->priority = priority;
 }
 
+int32_t ponyint_actor_getbatchSize(pony_actor_t* actor) {
+    return actor->batchSize;
+}
+
+void ponyint_actor_setbatchSize(pony_actor_t* actor, int32_t batchSize)
+{
+    actor->batchSize = batchSize;
+}
+
 int32_t ponyint_actor_getcoreAffinity(pony_actor_t* actor) {
     return actor->coreAffinity;
 }
@@ -140,6 +149,7 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     static int32_t actorUID = 1;
     actor->uid = actorUID++;
     actor->coreAffinity = kCoreAffinity_None;
+    actor->batchSize = 1000;
     
     ponyint_messageq_init(&actor->q);
     

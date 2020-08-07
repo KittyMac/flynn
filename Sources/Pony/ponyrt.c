@@ -54,11 +54,6 @@ void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
 }
 
-void pony_actor_attach_swift_actor(void * actor, void * swiftActor) {
-    pony_actor_t* asActor = actor;
-    asActor->swiftActor = swiftActor;
-}
-
 void pony_actor_send_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message)) {
     pony_send_message(pony_ctx(), actor, argumentPtr, handleMessageFunc);
 }
@@ -69,6 +64,14 @@ void pony_actor_setpriority(void * actor, int priority) {
 
 int pony_actor_getpriority(void * actor) {
     return ponyint_actor_getpriority(actor);
+}
+
+void pony_actor_setbatchSize(void * actor, int batchSize) {
+    ponyint_actor_setbatchSize(actor, batchSize);
+}
+
+int pony_actor_getbatchSize(void * actor) {
+    return ponyint_actor_getbatchSize(actor);
 }
 
 void pony_actor_setcoreAffinity(void * actor, int coreAffinity) {

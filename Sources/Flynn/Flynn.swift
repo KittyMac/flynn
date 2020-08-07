@@ -9,7 +9,7 @@
 import Foundation
 import Pony
 
-public enum CoreAffinity: Int {
+public enum CoreAffinity: Int32 {
     case preferEfficiency = 0
     case preferPerformance = 1
     case onlyEfficiency = 2

@@ -255,7 +255,7 @@ static void run(scheduler_t* sched)
             }
 
             // Run the current actor and get the next actor.
-            bool reschedule = ponyint_actor_run(&sched->ctx, actor, 1000);
+            bool reschedule = ponyint_actor_run(&sched->ctx, actor, actor->batchSize);
             
             bool actor_did_yield = actor->yield;
             actor->yield = false;

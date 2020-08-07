@@ -42,7 +42,7 @@
 		OBJ_134 /* cpu_linux.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_36 /* cpu_linux.c */; };
 		OBJ_135 /* messageq.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_37 /* messageq.c */; };
 		OBJ_136 /* mpmcq.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_38 /* mpmcq.c */; };
-		OBJ_137 /* ponyrt.m in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_39 /* ponyrt.m */; };
+		OBJ_137 /* ponyrt.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_39 /* ponyrt.c */; };
 		OBJ_139 /* pool.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_41 /* pool.c */; };
 		OBJ_140 /* scheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_42 /* scheduler.c */; };
 		OBJ_141 /* threads.m in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_43 /* threads.m */; };
@@ -124,7 +124,7 @@
 		OBJ_36 /* cpu_linux.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cpu_linux.c; sourceTree = "<group>"; };
 		OBJ_37 /* messageq.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = messageq.c; sourceTree = "<group>"; };
 		OBJ_38 /* mpmcq.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = mpmcq.c; sourceTree = "<group>"; };
-		OBJ_39 /* ponyrt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ponyrt.m; sourceTree = "<group>"; };
+		OBJ_39 /* ponyrt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ponyrt.c; sourceTree = "<group>"; };
 		OBJ_41 /* pool.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pool.c; sourceTree = "<group>"; };
 		OBJ_42 /* scheduler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = scheduler.c; sourceTree = "<group>"; };
 		OBJ_43 /* threads.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = threads.m; sourceTree = "<group>"; };
@@ -201,7 +201,7 @@
 				OBJ_36 /* cpu_linux.c */,
 				OBJ_37 /* messageq.c */,
 				OBJ_38 /* mpmcq.c */,
-				OBJ_39 /* ponyrt.m */,
+				OBJ_39 /* ponyrt.c */,
 				OBJ_41 /* pool.c */,
 				OBJ_42 /* scheduler.c */,
 				OBJ_43 /* threads.m */,
@@ -440,7 +440,7 @@
 				OBJ_134 /* cpu_linux.c in Sources */,
 				OBJ_135 /* messageq.c in Sources */,
 				OBJ_136 /* mpmcq.c in Sources */,
-				OBJ_137 /* ponyrt.m in Sources */,
+				OBJ_137 /* ponyrt.c in Sources */,
 				OBJ_139 /* pool.c in Sources */,
 				OBJ_140 /* scheduler.c in Sources */,
 				OBJ_141 /* threads.m in Sources */,
