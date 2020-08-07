@@ -21,7 +21,7 @@ class FlynnTests: XCTestCase {
     override func tearDown() {
         Flynn.shutdown()
     }
-    
+
     func test0() {
         let expectation = XCTestExpectation(description: "Warning when passing reference values")
 
@@ -31,7 +31,7 @@ class FlynnTests: XCTestCase {
 
         expectation.fulfill()
     }
-    
+
     /*
 
     func test1() {
@@ -305,7 +305,7 @@ class FlynnTests: XCTestCase {
          */
         ("testFlowable", testFlowable),
         ("testLoadBalancing", testLoadBalancing),
-        ("testMeasureOverheadAgainstLoadBalancingExample", testMeasureOverheadAgainstLoadBalancingExample),
+        ("testMeasureOverheadAgainstLoadBalancingExample", testMeasureOverheadAgainstLoadBalancingExample)
         /*
         ("testMemoryBloatFromMessagePassing", testMemoryBloatFromMessagePassing),
         ("testMemoryBloatFromMessagePassing2", testMemoryBloatFromMessagePassing2)

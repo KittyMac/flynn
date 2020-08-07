@@ -23,8 +23,8 @@
         "package": "Flynn",
         "repositoryURL": "https://github.com/KittyMac/flynn",
         "state": {
-          "branch": "master",
-          "revision": "b23bb5bf39248f3b04ea34941116d01d06770538",
+          "branch": "ponyrt_v2",
+          "revision": "04e5e85507b8a083457bafba2db78687316d844a",
           "version": null
         }
       },

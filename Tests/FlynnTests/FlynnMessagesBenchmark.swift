@@ -14,7 +14,6 @@ import XCTest
 
 @testable import Flynn
 
-
 class FlynnMessagesBenchmark: XCTestCase {
 
     override func setUp() {
@@ -103,8 +102,8 @@ class FlynnMessagesBenchmark: XCTestCase {
             private var totalCount: UInt64 = 0
             private var currentT: TimeInterval = 0
             private var lastT: TimeInterval = 0
-            private var done: Bool = false
             private var reportCount: Int = 0
+            private var done: Bool = false
 
             private var queue = DispatchQueue(label: "syncleader.serial.queue")
 
@@ -150,12 +149,13 @@ class FlynnMessagesBenchmark: XCTestCase {
                 }
             }
 
-            public func asyncTimerFired() {
+            public func asyncTimerFired(_ done: Bool) {
                 queue.async {
                     // The interval timer has fired.  Stop all Pingers and start
                     // waiting for confirmation that they have stopped.
+                    self.done = done
+                    
                     self.reportCount += 1
-                    self.done = self.reportCount >= 10
 
                     self.currentT = self.now()
                     print("\(self.currentT)", terminator: "")
@@ -290,8 +290,9 @@ class FlynnMessagesBenchmark: XCTestCase {
 
         for _ in 0..<10 {
             sleep(UInt32(reportInterval))
-            syncLeader.asyncTimerFired()
+            syncLeader.asyncTimerFired(false)
         }
+        syncLeader.asyncTimerFired(true)
     }
 
     // MARK: - FLYNN
@@ -301,16 +302,18 @@ class FlynnMessagesBenchmark: XCTestCase {
         // benchmark message-ubench.  Comments kept in as-is.
 
         // Results from running on 28-core, macOS Catalina, 512 pingers:
-        // 56095.776907177,  1.0029740829995717,  0
-        // 56096.778064337006,  0.9989892450030311,  25309547
-        // 56097.778834662,  0.9984388539960491,  25549201
-        // 56098.780288517,  0.9991674679986318,  25481234
-        // 56099.78053841901,  0.9980002690062975,  25601976
-        // 56100.780932402005,  0.9984003620047588,  26053790
-        // 56101.780990455,  0.9978283839955111,  25901507
-        // 56102.782545219,  0.9995059629945899,  25822182
-        // 56103.783036787005,  0.9982786500040675,  26174614
-        // 56104.786429730004,  1.0011489349999465,  25732419
+        // 9984.535411017001,  0.9979306630011706,  29230808
+        // 9985.540364971,  1.0028819920007663,  29269366
+        // 9986.544228205,  1.0013275140008773,  29429371
+        // 9987.544452796,  0.9978043720002461,  29784492
+        // 9988.544668666,  0.9980040519985778,  29265244
+        // 9989.545868362,  0.9988699859986809,  29007760
+        // 9990.546877921,  0.9989349309998943,  29250099
+        // 9991.546983637001,  0.9978452790001029,  29677932
+        // 9992.547778818001,  0.9986258280005131,  29159357
+        // 9993.547844452001,  0.9980227110008855,  29769889
+        // 9994.552421620001,  1.002462877000653,  29227430
+        // 9995.552889342001,  0.9982467350000661,  29145377
 
         // A microbenchmark for measuring message passing rates in the Pony runtime.
         //
@@ -361,8 +364,8 @@ class FlynnMessagesBenchmark: XCTestCase {
             private var totalCount: UInt64 = 0
             private var currentT: TimeInterval = 0
             private var lastT: TimeInterval = 0
-            private var done: Bool = false
             private var reportCount: Int = 0
+            private var done: Bool = false
 
             init(_ numPingers: Int, _ initialPings: Int) {
                 self.initialPings = initialPings
@@ -408,30 +411,28 @@ class FlynnMessagesBenchmark: XCTestCase {
                 }
             }
 
-            private func _beTimerFired() {
+            private func _beTimerFired(_ done: Bool) {
                 // The interval timer has fired.  Stop all Pingers and start
                 // waiting for confirmation that they have stopped.
-                //let timer: Flynn.Timer? = args[x:0]
-
+                self.done = done
                 self.reportCount += 1
-                self.done = self.reportCount >= 10
-
-                //if self.done {
-                //    timer?.cancel()
-                //}
 
                 self.currentT = self.now()
                 print("\(self.currentT)", terminator: "")
 
-                self.partialCount = 0
-                self.waitingFor = self.pingers.count
+                if !done {
+                    self.partialCount = 0
+                    self.waitingFor = self.pingers.count
 
-                for pinger in self.pingers {
-                    pinger.beStop()
+                    for pinger in self.pingers {
+                        pinger.beStop()
+                    }
                 }
             }
-            public func beTimerFired() {
-                unsafeSend(_beTimerFired)
+            public func beTimerFired(_ done: Bool) {
+                unsafeSend {
+                    self._beTimerFired(done)
+                }
             }
 
             private func _beReportStopped() {
@@ -495,7 +496,7 @@ class FlynnMessagesBenchmark: XCTestCase {
             private var report: Bool = false
             private var count: UInt64 = 0
             private var neighborIdx: Int
-            
+
             private var neighbor: Pinger?
 
             init(_ idx: Int, _ leader: SyncLeader) {
@@ -539,7 +540,6 @@ class FlynnMessagesBenchmark: XCTestCase {
                 unsafeSend(_beReport)
             }
 
-           
             private func _bePing(_ payload: Int) {
                 if go {
                     count += 1
@@ -570,8 +570,9 @@ class FlynnMessagesBenchmark: XCTestCase {
 
         for _ in 0..<10 {
             sleep(UInt32(reportInterval))
-            syncLeader.beTimerFired()
+            syncLeader.beTimerFired(false)
         }
+        syncLeader.beTimerFired(true)
 
         //Flynn.Timer(timeInterval: reportInterval, repeats: true, syncLeader.beTimerFired, [])
 
@@ -579,4 +580,3 @@ class FlynnMessagesBenchmark: XCTestCase {
     }
 
 }
-

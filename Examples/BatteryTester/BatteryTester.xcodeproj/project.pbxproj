@@ -564,7 +564,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/KittyMac/flynn";
 			requirement = {
-				branch = master;
+				branch = ponyrt_v2;
 				kind = branch;
 			};
 		};

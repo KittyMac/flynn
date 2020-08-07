@@ -27,7 +27,7 @@ final class Passthrough: Actor, Flowable {
 // Print description of arguments to file
 class Print: Actor, Flowable {
     var safeFlowable = FlowableState()
-    
+
     private func _beFlow(_ args: FlowableArgs) {
         print(args.description)
         safeFlowToNextTarget(args)
@@ -42,7 +42,7 @@ class Print: Actor, Flowable {
 // Takes a string as the first argument, passes along the uppercased version of it
 class Uppercase: Actor, Flowable {
     var safeFlowable = FlowableState()
-    
+
     private func _beFlow(_ args: FlowableArgs) {
         guard !args.isEmpty else { return self.safeFlowToNextTarget(args) }
         let value: String = args[x: 0]
@@ -87,7 +87,7 @@ class Callback: Actor, Flowable {
         self.callback = callback
         super.init()
     }
-    
+
     private func _beFlow(_ args: FlowableArgs) {
         callback(args)
         safeFlowToNextTarget(args)
@@ -98,4 +98,3 @@ class Callback: Actor, Flowable {
         }
     }
 }
-
