@@ -263,7 +263,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "FLYNNLINT=${BUILD_ROOT}/../../SourcePackages/checkouts/flynn/meta/FlynnLint\nif [ -f \"${FLYNNLINT}\" ]; then\n    ${FLYNNLINT} ${SRCROOT}\nelse\n    echo \"warning: Unable to find FlynnLint, aborting...\"\nfi\n";
+			shellScript = "#FLYNNLINT=${BUILD_ROOT}/../../SourcePackages/checkouts/flynn/meta/FlynnLint\n#if [ -f \"${FLYNNLINT}\" ]; then\n#    ${FLYNNLINT} ${SRCROOT}\n#else\n#    echo \"warning: Unable to find FlynnLint, aborting...\"\n#fi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

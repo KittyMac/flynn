@@ -24,7 +24,7 @@
         "repositoryURL": "https://github.com/KittyMac/flynn",
         "state": {
           "branch": "ponyrt_v2",
-          "revision": "04e5e85507b8a083457bafba2db78687316d844a",
+          "revision": "d7580eff10a0f7e3dbaeed1bb24cc2c415965f30",
           "version": null
         }
       },
@@ -33,7 +33,7 @@
         "repositoryURL": "https://github.com/SmallPlanet/PlanetSwift",
         "state": {
           "branch": "master",
-          "revision": "2556084dd32e6d44f87bb0efcd139fedeee85c7c",
+          "revision": "56bcbeb06e110c98b0ecf9e85230f5703ff0e406",
           "version": null
         }
       }

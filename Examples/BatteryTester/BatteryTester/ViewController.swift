@@ -45,7 +45,7 @@ class ViewController: PlanetViewController {
         guard let coreAffinity = coreAffinity else { return }
 
         let sleepAmount = UInt32(sleepSlider.value)
-        let qos = Int(coreAffinity.selectedSegmentIndex)
+        let qos = Int32(coreAffinity.selectedSegmentIndex)
         while counters.count < num {
             counters.append(Counter(sleepAmount, qos))
         }
@@ -160,7 +160,7 @@ class ViewController: PlanetViewController {
 
         coreAffinity.add(for: .valueChanged) { [weak self] in
             guard let self = self else { return }
-            let qos = Int(coreAffinity.selectedSegmentIndex)
+            let qos = Int32(coreAffinity.selectedSegmentIndex)
             _ = self.counters.map { $0.beSetCoreAffinity(qos) }
         }
 
