@@ -94,7 +94,7 @@ class FlynnTests: XCTestCase {
             .beAlpha()
             .beColor()
 
-        color.beGetColor( Behavior(color) { (args: BehaviorArgs) in
+        color.beGetColor( Behavior(color) { (args: FlowableArgs) in
             let color: [Float] = args[x:0]
             print("color is \(color)")
         })
@@ -119,11 +119,11 @@ class FlynnTests: XCTestCase {
         //print(color.safeColorable._color)
         expectation.fulfill()
     }
-
+*/
     func testShutdown() {
         let expectation = XCTestExpectation(description: "Flowable actors")
 
-        let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args: BehaviorArgs) in
+        let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args: FlowableArgs) in
             let value: String = args[x:0]
             XCTAssertEqual(value.count, 50000, "load balancing did not contain the expected number of characters")
             expectation.fulfill()
@@ -131,12 +131,12 @@ class FlynnTests: XCTestCase {
 
         for num in 0..<50000 {
             if num % 2 == 0 {
-                pipeline.beFlow("x")
+                pipeline.beFlow(["x"])
             } else {
-                pipeline.beFlow("o")
+                pipeline.beFlow(["o"])
             }
         }
-        pipeline.beFlow()
+        pipeline.beFlow([])
 
         Flynn.shutdown()
 
@@ -146,17 +146,17 @@ class FlynnTests: XCTestCase {
     func testFlowable() {
         let expectation = XCTestExpectation(description: "Flowable actors")
 
-        let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args: BehaviorArgs) in
+        let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args: FlowableArgs) in
             let value: String = args[x:0]
             print(value)
             XCTAssertEqual(value, "HELLO WORLD", "chaining actors did not work as intended")
             expectation.fulfill()
         })
 
-        pipeline.beFlow("hello")
-        pipeline.beFlow(" ")
-        pipeline.beFlow("world")
-        pipeline.beFlow()
+        pipeline.beFlow(["hello"])
+        pipeline.beFlow([" "])
+        pipeline.beFlow(["world"])
+        pipeline.beFlow([])
 
         wait(for: [expectation], timeout: 10.0)
     }
@@ -164,18 +164,18 @@ class FlynnTests: XCTestCase {
     private func internalTestLoadBalancing(_ iterations: Int) {
         let expectation = XCTestExpectation(description: "Load balancing")
 
-        let pipeline = Passthrough() |> Array(count: Flynn.cores) { Uppercase() } |> Concatenate() |> Callback({ (args: BehaviorArgs) in
+        let pipeline = Passthrough() |> Array(count: Flynn.cores) { Uppercase() } |> Concatenate() |> Callback({ (args: FlowableArgs) in
             let value: String = args[x:0]
             XCTAssertEqual(value.count, iterations, "load balancing did not contain the expected number of characters")
             expectation.fulfill()
         })
 
         for _ in 0..<iterations/2 {
-            pipeline.beFlow("x")
-            pipeline.beFlow("o")
+            pipeline.beFlow(["x"])
+            pipeline.beFlow(["o"])
         }
 
-        pipeline.beFlow()
+        pipeline.beFlow([])
 
         wait(for: [expectation], timeout: 30.0)
     }
@@ -218,7 +218,7 @@ class FlynnTests: XCTestCase {
 
         let expectation = XCTestExpectation(description: "Memory overhead in calling behaviors")
 
-        let pipeline = Passthrough() |> Array(count: Flynn.cores) { Passthrough() } |> Passthrough() |> Callback({ (args: BehaviorArgs) in
+        let pipeline = Passthrough() |> Array(count: Flynn.cores) { Passthrough() } |> Passthrough() |> Callback({ (args: FlowableArgs) in
             //let s:String = args[x:0]
             //XCTAssertEqual(s.count, 22250000, "load balancing did not contain the expected number of characters")
             if args.isEmpty {
@@ -228,17 +228,17 @@ class FlynnTests: XCTestCase {
 
         for num in 0..<50000 {
             if num % 2 == 0 {
-                pipeline.beFlow(1)
+                pipeline.beFlow([1])
             } else {
-                pipeline.beFlow(2)
+                pipeline.beFlow([2])
             }
             pipeline.unsafeWait(0)
         }
 
-        pipeline.beFlow()
+        pipeline.beFlow([])
         wait(for: [expectation], timeout: 30.0)
     }
-
+/*
     func testMemoryBloatFromMessagePassing2() {
         let expectation = XCTestExpectation(description: "MemoryBloatFromMessagePassing2")
 
@@ -302,9 +302,11 @@ class FlynnTests: XCTestCase {
         ("testPassByReferenceCheck", testPassByReferenceCheck),
         ("testColor", testColor),
         ("testImage", testImage),
+         */
         ("testFlowable", testFlowable),
         ("testLoadBalancing", testLoadBalancing),
         ("testMeasureOverheadAgainstLoadBalancingExample", testMeasureOverheadAgainstLoadBalancingExample),
+        /*
         ("testMemoryBloatFromMessagePassing", testMemoryBloatFromMessagePassing),
         ("testMemoryBloatFromMessagePassing2", testMemoryBloatFromMessagePassing2)
          */

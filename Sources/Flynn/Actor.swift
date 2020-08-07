@@ -39,10 +39,12 @@ private class ActorMessage {
         self.block = block
     }
 
+    @inline(__always)
     func set(_ block: @escaping PonyBlock) {
         self.block = block
     }
 
+    @inline(__always)
     func run() {
         block?()
         block = nil
@@ -79,7 +81,7 @@ open class Actor {
         return ActorMessage(poolMessage, block)
     }
 
-    var coreAffinity: CoreAffinity {
+    var unsafeCoreAffinity: CoreAffinity {
         get {
             if let affinity = CoreAffinity(rawValue: pony_actor_getcoreAffinity(ponyActorPtr)) {
                 return affinity
@@ -91,7 +93,7 @@ open class Actor {
         }
     }
 
-    var priority: Int32 {
+    var unsafePriority: Int32 {
         get {
             return pony_actor_getpriority(ponyActorPtr)
         }
@@ -100,7 +102,7 @@ open class Actor {
         }
     }
 
-    var batchSize: Int32 {
+    var unsafeBatchSize: Int32 {
         get {
             return pony_actor_getpriority(ponyActorPtr)
         }

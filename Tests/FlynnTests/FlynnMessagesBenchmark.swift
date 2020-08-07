@@ -153,7 +153,7 @@ class FlynnMessagesBenchmark: XCTestCase {
                 }
             }
 
-            public func asyncTimerFired(_ expectation: XCTestExpectation) {
+            public func asyncTimerFired() {
                 queue.async {
                     // The interval timer has fired.  Stop all Pingers and start
                     // waiting for confirmation that they have stopped.
@@ -161,7 +161,7 @@ class FlynnMessagesBenchmark: XCTestCase {
                     self.done = self.reportCount >= 10
 
                     if self.done {
-                        expectation.fulfill()
+                        
                     }
 
                     self.currentT = self.now()
@@ -295,19 +295,10 @@ class FlynnMessagesBenchmark: XCTestCase {
 
         let syncLeader = SyncLeader(numPingers, initialPings)
 
-        let expectation = XCTestExpectation(description: "Flowable actors")
-
-        syncLeader.asyncTimerFired(expectation)
-
-        if #available(OSX 10.12, *) {
-            Timer.scheduledTimer(withTimeInterval: reportInterval, repeats: true) { (_) in
-                syncLeader.asyncTimerFired(expectation)
-            }
-        } else {
-            fatalError("this test requires 10.12 and later")
+        for _ in 0..<10 {
+            sleep(UInt32(reportInterval))
+            syncLeader.asyncTimerFired()
         }
-
-        wait(for: [expectation], timeout: 30.0)
     }
 
     // MARK: - FLYNN
@@ -584,7 +575,7 @@ class FlynnMessagesBenchmark: XCTestCase {
 
         let syncLeader = SyncLeader(numPingers, initialPings)
 
-        while(true) {
+        for _ in 0..<10 {
             sleep(UInt32(reportInterval))
             syncLeader.beTimerFired()
         }
