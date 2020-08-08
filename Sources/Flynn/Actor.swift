@@ -102,12 +102,12 @@ open class Actor {
         }
     }
 
-    public var unsafeBatchSize: Int32 {
+    public var unsafeMessageBatchSize: Int32 {
         get {
-            return pony_actor_getpriority(ponyActorPtr)
+            return pony_actor_getbatchSize(ponyActorPtr)
         }
         set {
-            pony_actor_setpriority(ponyActorPtr, newValue)
+            pony_actor_setbatchSize(ponyActorPtr)
         }
     }
 
