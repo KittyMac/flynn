@@ -11,7 +11,7 @@ public class Connection: Actor, FilesReceiver {
     public init(socket: Socket) {
         self.socket = socket
 
-        try? socket.setReadTimeout(value: 25)
+        try? socket.setReadTimeout(value: 5)
 
         buffer = UnsafeMutablePointer<CChar>.allocate(capacity: bufferSize)
         buffer.initialize(to: 0)
@@ -20,7 +20,7 @@ public class Connection: Actor, FilesReceiver {
 
         // This actor will process up to this many behaviors before it must allow
         // allow another actor scheduler access.
-        unsafeMessageBatchSize = 2
+        unsafeMessageBatchSize = 1
 
         beNextCommand()
     }
