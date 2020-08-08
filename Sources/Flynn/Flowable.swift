@@ -120,23 +120,29 @@ public class FlowableState {
 public protocol Flowable: Actor {
     var safeFlowable: FlowableState { get set }
 
-    func beTarget(_ target: Flowable)
-    func beTargets(_ targets: [Flowable])
+    @discardableResult
+    func beTarget(_ target: Flowable) -> Self
 
-    func beFlow(_ args: FlowableArgs)
+    @discardableResult
+    func beTargets(_ targets: [Flowable]) -> Self
+
+    @discardableResult
+    func beFlow(_ args: FlowableArgs) -> Self
 }
 
 public extension Flowable {
 
-    func beTarget(_ target: Flowable) {
+    func beTarget(_ target: Flowable) -> Self {
         unsafeSend {
             self.safeFlowable._beTarget(target)
         }
+        return self
     }
-    func beTargets(_ targets: [Flowable]) {
+    func beTargets(_ targets: [Flowable]) -> Self {
         unsafeSend {
             self.safeFlowable._beTargets(targets)
         }
+        return self
     }
 
     func safeNextTarget() -> Flowable? {
