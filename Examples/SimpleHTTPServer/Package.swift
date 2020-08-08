@@ -10,7 +10,7 @@ let package = Package(
         .library(name: "SimpleHTTPServerFramework", targets: ["SimpleHTTPServerFramework"])
     ],
     dependencies: [
-        .package(url: "https://github.com/KittyMac/Flynn.git", .branch("master")),
+        .package(url: "https://github.com/KittyMac/Flynn.git", .branch("ponyrt_v2")),
 		.package(url: "https://github.com/apple/swift-argument-parser", .upToNextMinor(from: "0.2.0")),
 		.package(name: "Socket", url: "https://github.com/IBM-Swift/BlueSocket.git", .upToNextMinor(from: "1.0.0"))
     ],

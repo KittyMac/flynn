@@ -14,8 +14,8 @@
         "package": "Flynn",
         "repositoryURL": "https://github.com/KittyMac/Flynn.git",
         "state": {
-          "branch": "master",
-          "revision": "e63a3eea791643604a3e4abacf027aa1a1ae046c",
+          "branch": "ponyrt_v2",
+          "revision": "d84541cdd9db4ff8a456a9930f701d052be8942b",
           "version": null
         }
       },
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/apple/swift-argument-parser",
         "state": {
           "branch": null,
-          "revision": "eb51f949cdd0c9d88abba9ce79d37eb7ea1231d0",
-          "version": "0.2.0"
+          "revision": "3e7d2fe99da091dcc1e4a7dd22fc3cfc2dca7937",
+          "version": "0.2.2"
         }
       }
     ]
