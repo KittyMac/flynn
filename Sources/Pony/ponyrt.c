@@ -25,7 +25,7 @@ static bool pony_is_inited = false;
 bool pony_startup() {
     if (pony_is_inited) { return true; }
     
-    fprintf(stderr, "pony_startup()\n");
+    //fprintf(stderr, "pony_startup()\n");
     
     ponyint_cpu_init();
     
@@ -41,7 +41,7 @@ void pony_shutdown() {
     
     ponyint_sched_stop();
     
-    fprintf(stderr, "pony_shutdown()\n");
+    //fprintf(stderr, "pony_shutdown()\n");
     
     pony_is_inited = false;
 }
