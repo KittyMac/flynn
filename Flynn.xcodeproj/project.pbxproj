@@ -21,6 +21,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		4606AA3F24DF25780032422A /* MessageTestDispatchQueues.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606AA3D24DF25780032422A /* MessageTestDispatchQueues.swift */; };
+		4606AA4024DF25780032422A /* MessageTestFlynn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606AA3E24DF25780032422A /* MessageTestFlynn.swift */; };
 		OBJ_101 /* BadFlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_46 /* BadFlynnTests.swift */; };
 		OBJ_102 /* FlynnComponentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_47 /* FlynnComponentsTests.swift */; };
 		OBJ_103 /* FlynnMessagesBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_48 /* FlynnMessagesBenchmark.swift */; };
@@ -89,6 +91,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4606AA3D24DF25780032422A /* MessageTestDispatchQueues.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageTestDispatchQueues.swift; sourceTree = "<group>"; };
+		4606AA3E24DF25780032422A /* MessageTestFlynn.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageTestFlynn.swift; sourceTree = "<group>"; };
 		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::Pony::Product" /* Pony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Pony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -236,7 +240,7 @@
 			path = Tests/FlynnTests;
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -249,12 +253,13 @@
 				OBJ_66 /* Makefile */,
 				OBJ_67 /* README.md */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_50 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				4606AA3D24DF25780032422A /* MessageTestDispatchQueues.swift */,
+				4606AA3E24DF25780032422A /* MessageTestFlynn.swift */,
 				OBJ_51 /* Color.swift */,
 				OBJ_52 /* Counter.swift */,
 				OBJ_53 /* Flowable.swift */,
@@ -387,7 +392,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_59 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -418,7 +423,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#if [ -f \"${SRCROOT}/meta/FlynnLint\" ]; then\n#    ${SRCROOT}/meta/FlynnLint ${SRCROOT}/Sources ${SRCROOT}/Tests\n#else\n#    echo \"warning: Unable to find FlynnLint, aborting...\"\n#fi\n";
+			shellScript = "if [ -f \"${SRCROOT}/meta/FlynnLint\" ]; then\n    ${SRCROOT}/meta/FlynnLint ${SRCROOT}/Sources ${SRCROOT}/Tests\nelse\n    echo \"warning: Unable to find FlynnLint, aborting...\"\nfi\n";
 		};
 		469A49D724DDCAE1001DAE5E /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -454,8 +459,10 @@
 				OBJ_107 /* Flowable.swift in Sources */,
 				OBJ_108 /* Image.swift in Sources */,
 				OBJ_109 /* PassToMe.swift in Sources */,
+				4606AA4024DF25780032422A /* MessageTestFlynn.swift in Sources */,
 				OBJ_110 /* StringBuilder.swift in Sources */,
 				OBJ_111 /* View.swift in Sources */,
+				4606AA3F24DF25780032422A /* MessageTestDispatchQueues.swift in Sources */,
 				OBJ_112 /* XCTestManifests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
