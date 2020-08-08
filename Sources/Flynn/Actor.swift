@@ -107,7 +107,7 @@ open class Actor {
             return pony_actor_getbatchSize(ponyActorPtr)
         }
         set {
-            pony_actor_setbatchSize(ponyActorPtr)
+            pony_actor_setbatchSize(ponyActorPtr, newValue)
         }
     }
 
