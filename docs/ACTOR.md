@@ -2,25 +2,7 @@
 
 Think of actors as concurrency safe Swift classes. This safety is accomplished by restricting communication with the actor to behaviors; all other members and functions on an actor should be set to private.  Behavior calls are units of execution which will be processed sequentially but concurrently. Since all functions are private and all behavior code is safely executed, all code inside of the actor is then thread safe.
 
-This is the ideal. Unfortunately, to be 100% thread safe through access restrictions we would need to modify Swift itself.  Since we are not going there, there are a set of best practices that, if you follow them, get you as close to 100% thread safe as is possible.
-
-## Flynnlint Shortcut
-
-If you are using Flynnlint, you can get started with actors very quickly by using the following autocomplete shortcut:
-
-```nameOfActor::ACTOR```
-
-Type that into any Swift file in your XCode project; save and build. When Flynnlint checks the file, it will replace the shortcut with an actor template, like this one:
-
-```swift
-class NameOfActor: Actor {
-    lazy var bePrintString = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-        // flynnlint:parameter String - string to print
-        let value: String = args[x:0]
-        print(value)
-    }
-}
-```
+This is the ideal. Unfortunately, to be 100% thread safe through access restrictions we would need to modify Swift itself.  Since we are not in a position to do that, instead we have a set of best practices which get you as close to 100% thread safe as is possible.
 
 ## Actor Best Practices
 
@@ -33,7 +15,7 @@ class NameOfActor: Actor {
 **Send pass-by-value arguments to behaviors**  
 *Pass-by-value types are safe to share between threads and should be preferred use sending data to actors*
 
-**Beware of callback APIs used internally in an actor**  
+**Beware of closures and actors**  
 *Many APIs execute closures as callbacks; if those are executed on a different thread, then two threads are accessing the innards of an actor at the same time (which would be bad). Closure callbacks should immediately call behaviors, keeping thread safety*
 
 These may seem like a lot! Flynnlint will ensure you comply with these best practices at compile time. So if you forget to label an Actor variable as private, it will flag that as an error.
@@ -102,56 +84,45 @@ import Foundation
 
 // All views must be able to draw themselves
 public protocol Viewable: Actor {
-    var beDraw: Behavior { get }
+    @discardableResult
+    func beDraw(_ rect: CGRect) -> Self
 }
 
 // MARK: - COLORABLE
 
 // A Colorable view requires state. It needs to store the color which needs to be drawn,
 // as well as the behaviors this mixin adds to the view we're creating
-public class ColorableState<T: Actor> {
+public class ColorableState {
     public var color: [Float] = [1, 1, 1, 1]
 
-    private func setColor(_ red: Float, _ green: Float, _ blue: Float, _ alpha: Float) {
+    fileprivate func setColor(_ red: Float, _ green: Float, _ blue: Float, _ alpha: Float) {
         color = [red, green, blue, alpha]
-    }
-
-    lazy var beClear = ChainableBehavior<T> { [unowned self] (_: BehaviorArgs) in
-        self.setColor(0, 0, 0, 0)
-    }
-
-    lazy var beWhite = ChainableBehavior<T> { [unowned self] (_: BehaviorArgs) in
-        self.setColor(1, 1, 1, 1)
-    }
-
-    lazy var beBlack = ChainableBehavior<T> { [unowned self] (_: BehaviorArgs) in
-        self.setColor(0, 0, 0, 1)
-    }
-
-    lazy var beRed = ChainableBehavior<T> { [unowned self] (_: BehaviorArgs) in
-        self.setColor(1, 0, 0, 1)
-    }
-
-    init (_ actor: T) {
-        beClear.setActor(actor)
-        beWhite.setActor(actor)
-        beBlack.setActor(actor)
-        beRed.setActor(actor)
     }
 }
 
 // The base protocol enforces that the views which want to be colorable include
 // their colorable state
 public protocol Colorable: Actor {
-    var safeColorable: ColorableState<Self> { get set }
+    var safeColorable: ColorableState { get set }
 }
 
 // We expose the behaviors (stored in our colorable state) to the protocol
 public extension Colorable {
-    var beClear: ChainableBehavior<Self> { return safeColorable.beClear }
-    var beWhite: ChainableBehavior<Self> { return safeColorable.beWhite }
-    var beBlack: ChainableBehavior<Self> { return safeColorable.beBlack }
-    var beRed: ChainableBehavior<Self> { return safeColorable.beRed }
+    private func _beClear() {
+        safeColorable.setColor(0, 0, 0, 0)
+    }
+
+    private func _beWhite() {
+        safeColorable.setColor(1, 1, 1, 1)
+    }
+
+    private func _beBlack() {
+        safeColorable.setColor(0, 0, 0, 1)
+    }
+
+    private func _beRed() {
+        safeColorable.setColor(1, 0, 0, 1)
+    }
 }
 
 // MARK: - Color Actor
@@ -160,20 +131,22 @@ public extension Colorable {
 // views can be created which also are Colorable and Viewable, but are not
 // Color views.
 public final class Color: Actor, Colorable, Viewable {
-    public lazy var safeColorable = ColorableState(self)
+    public var safeColorable = ColorableState()
 
-    public lazy var beDraw = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-        // flynnlint:parameter CGRect - The bounds in which to draw the view
-        let bounds: CGRect = args[x:0]
+    private func _beDraw(_ bounds: CGRect) {
         print("draw the color \(self.safeColorable.color) into the bounds \(bounds)")
     }
 }
+
+
+// MARK: - Example usage
 
 let colorView = Color().beRed()
 let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
 colorView.beDraw(bounds)
 
 Flynn.shutdown()
+
 
 ```
 
