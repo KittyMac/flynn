@@ -6,7 +6,7 @@
 
 ### Actor-Model Programming
 
-Flynn grafts Actor-Model programming onto Swift, providing a new level of safety and performance for your highly concurrent Swift code.  Here's what you need to know:
+Flynn grafts Actor-Model programming onto Swift, providing a new level of safety and performance for your highly concurrent Swift code.  Flynn is heavily inspired by the [Pony programming language](https://www.ponylang.io). Here's what you need to know:
 
 #### [Actors are concurrency safe Swift classes](docs/ACTOR.md)
 
@@ -37,23 +37,23 @@ From the Actor's perspective, behaviors execute synchronously (in the same order
 class ConcurrentDatastore: Actor {
   ...
   // Behaviors are called asynchronously but execute synchronously on the Actor
-  lazy var beStore = ChainableBehavior(self) { [unowned self] (args: BehaviorArgs) in
-    // flynnlint:parameter String - key
-    // flynnlint:parameter String - value
-    self.storage[args[x:0]] = args[x:1]
+  private func _beStore(_ key: String, _ value: String) {
+    storage[key] = value
   }
 }
 ```
 
 #### [Actors run on schedulers](docs/SCHEDULER.md)
 
-Unlike other attempts to bring Actor-Model programming to Swift, Flynn does not rely on the "DispatchQueue per Actor" mechanism. This makes actors in Flynn much more light-weight; you can have millions of actors.  This is accomplished by Flynn's actor scheduling system. Follow the link above to learn more.
+Unlike other attempts to bring Actor-Model programming to Swift, Flynn does not use DispatchQueues. Instead, Flynn includes a modified version of the [Pony language runtime](https://www.ponylang.io/faq/#runtime). This makes actors in Flynn much more light-weight than DispatchQueues; you can have millions of actors all sending messages to each other incredibly efficiently.
 
 #### [Use FlynnLint](docs/FLYNNLINT.md)
 
-Flynn provides the scaffolding for safer concurrency, but FlynnLint enforces it.  FlynnLint will protect you from numerous concurrency pitfalls by not allowing unsafe code to compile:
+Flynn provides the scaffolding for safer concurrency but it relies on you, the developer, to follow the best practices for safe concurrency.  FlynnLint will help you by enforcing those best practices for you at compile time. This keeps you out of numerous concurrency pitfalls by not allowing unsafe code to compile:
 
 ![](meta/flynnlint0.png)
+
+In this example, we have a public variable on our Counter Actor. Public variables are not allowed as they can be potentially accessed from other others, breaking the concurrency safety the Actor-Model paradigm provides us.
 
 ## Docs
 
