@@ -16,19 +16,18 @@ For example, lets suppose we were making a fully concurrent image processing pip
 
 Each actor adheres to the ```Flowable``` protocol. For this example, let's look at what the FindImages actor might look like:
 
-````swift
+```swift
 class FindImages: Actor, Flowable {
     // input: path to source directory
     // output: paths to an individual image files
-    lazy var safeFlowable = FlowableState(self)
+    public var safeFlowable = FlowableState()
     private let extensions: [String]
 
     init (_ extensions: [String]) {
         self.extensions = extensions
     }
 
-    lazy var beFlow = Behavior(self) { [unowned self] (args: BehaviorArgs) in
-        // flynnlint:parameter Any
+    private func _beFlow(_ args: FlowableArgs) {
         if args.isEmpty { return self.safeFlowToNextTarget(args) }
 
         let path: String = args[x:0]
@@ -54,7 +53,7 @@ class FindImages: Actor, Flowable {
         }
     }
 }
-````
+```
 
 A flowable actor really only needs to define on behavior, the ```beFlow()``` behavior.  This behavior receives data (in the form of the BehaviorArgs, which is [Any?]) and then passes data on to the next flowable target ( by calling ```self.safeFlowToNextTarget([fileURL.path])``` ). In our case, the FindImages actor expects to receive a file path to the directory to search for images, and for each image it finds it sends the path to that specific image to the next flowable actor.
 
@@ -72,8 +71,8 @@ let pipeline = FindImages(["png", "jpg", "pict"]) |>
                 CompressImage() |>
                 SaveImageToFile()
 
-pipeline.beFlow("path/to/images/folder1/")
-pipeline.beFlow("path/to/images/folder2/")
+pipeline.beFlow(["path/to/images/folder1/"])
+pipeline.beFlow(["path/to/images/folder2/"])
 ```
 
 ## How Flynnlint Uses Flowable Actors

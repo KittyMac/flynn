@@ -1,14 +1,14 @@
 ## SCHEDULING
 
-Flynn is heavily inspired by the [Pony programming language](https://www.ponylang.io); I spent many months learning not only the language itself but also the runtime and how it works.  Flynn's runtime architecture is very similar to Pony (in fact, in past version of Flynn it used the Pony runtime directly!). This document outlines how Flynn's runtime works, especially around Actors and Scheduling.
+Flynn is heavily inspired by the [Pony programming language](https://www.ponylang.io).  More than that, Flynn uses a modified version of the Pony runtime to provide high performance actor scheduling and messaging. This document describes the basics of how the Flynn runtime (and, by extension, the Pony runtime) works.
 
 If you have read the other documentation sections, then you know that Actors are concurrency safe entities which communicate through Behaviors. When a Behavior is called, a message is added to the actor's "message queue".  If the message queue was empty at the time it was added, then the Actor needs to be scheduled for execution. Here is where we pick up the story.
 
-When Flynn starts up (either by explicitly calling ```Flynn.startup()``` or automatically when the first actor is initialized), Flynn will spawn a number of Schedulers. 
+When Flynn starts up (either by explicitly calling ```Flynn.startup()``` or automatically when the first actor is initialized), the Flynn runtime will spawn a number of Schedulers. 
 
 1. One scheduler per CPU core
 2. "Efficiency" and "performance" schedulers
-3. Flynn is a cooperative multitasking system
+3. Flynn runtime is a cooperative multitasking system
 4. Schedulers are responsible for running Actors
 
 
