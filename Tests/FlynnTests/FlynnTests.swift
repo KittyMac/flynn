@@ -25,8 +25,6 @@ class FlynnTests: XCTestCase {
         expectation.fulfill()
     }
 
-    /*
-
     func test1() {
         let expectation = XCTestExpectation(description: "Wait for counter to finish")
 
@@ -61,20 +59,6 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
 
-    func testPassByReferenceCheck() {
-        let expectation = XCTestExpectation(description: "Warning when passing reference values")
-
-        Flynn.defaultCheckForUnsafeArguments = true
-
-        PassToMe()
-            .beString("Swift String")
-            .beNSString("NSString" as NSString)
-
-        Flynn.defaultCheckForUnsafeArguments = false
-
-        expectation.fulfill()
-    }
-*/
     func testColor() {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
         let color = Color()
@@ -93,10 +77,9 @@ class FlynnTests: XCTestCase {
         
         color.beRender()
 
-        //print(color.safeColorable._color)
         expectation.fulfill()
     }
-/*
+
     func testImage() {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
 
@@ -111,7 +94,7 @@ class FlynnTests: XCTestCase {
         //print(color.safeColorable._color)
         expectation.fulfill()
     }
-*/
+
     func testShutdown() {
         let expectation = XCTestExpectation(description: "Flowable actors")
 
