@@ -18,7 +18,7 @@ As an exercise, we added a Files actor to coordinate access to the file system f
 
 | Test Server        |  Requests/sec  | Avg Latency  | Avg CPU |
 |--------------------|----------------|--------------|---------|
-|  SimpleHttpServer  |  110,103.87    | 1.02ms       | 200%    |
+|  SimpleHttpServer  |  111,042.50    | 0.90ms       | 190%    |
 |  Crystal           |  92,657.10     | 1.08ms       | 200%    |
 |  Vapor             |  60,981.02     | 1.63ms       | 750%    |
 |  Node              |  63,496.17     | 1.57ms       | 110%    |
@@ -39,5 +39,4 @@ As mentioned above, our connection actors "recursively" call beNextCommand(). In
 
 When an actor is run by a scheduler, it will process at most "one batch" worth of messages. At the time of this writing, the default batch size is 1000 messages. When we call a behavior recursively, that behavior is added to the queue immediately, and the actor will continue to execute and utilize the scheduler while doing so.  If we leave the batch size at 1000, we will see similar level of throughput but a much higher average latency. This is because some connections are being super-served, while others are being starved of scheduler time.
 
-All actors are not created equal and Flynn acknowledges this fact by providing you ample per actor overrides.  In this case, we settled on ```self.unsafeMessageBatchSize = 2```.  This allows a Connection actor to process, at most, 2 behaviors in a row before it yields to another actor. Setting this value to "1" provides the most consistent latency, but overly hinders throughput.  A value of "2" seems to provide the best of both worlds, and as such is what we went with.
-
+All actors are not created equal and Flynn acknowledges this fact by providing you ample per actor overrides.  In this case, we settled on ```self.unsafeMessageBatchSize = 1```.  This allows a Connection actor to process, at most, 1 behavior at a time before it yields to another actor.
