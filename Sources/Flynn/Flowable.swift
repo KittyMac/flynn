@@ -97,15 +97,15 @@ public class FlowableState {
     }
 
     fileprivate func _beTarget(_ localTarget: Flowable) {
-        self.flowTarget = localTarget
-        self.flowTargets.append(localTarget)
-        self.numTargets = self.flowTargets.count
+        flowTarget = localTarget
+        flowTargets.append(localTarget)
+        numTargets = flowTargets.count
     }
 
     fileprivate func _beTargets(_ localTargets: [Flowable]) {
-        self.flowTarget = localTargets.first
-        self.flowTargets.append(contentsOf: localTargets)
-        self.numTargets = self.flowTargets.count
+        flowTarget = localTargets.first
+        flowTargets.append(contentsOf: localTargets)
+        numTargets = flowTargets.count
     }
 }
 
