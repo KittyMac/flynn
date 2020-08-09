@@ -62,7 +62,7 @@ Note that once an actor is scheduled, it will be retained by the Flynn runtime u
 An individual actor is quiescent when:
 
 - it has an empty message queue
-- no string references to the actor remain
+- no strong references to the actor remain
 
 Once an actor reaches quiescence, it will be deallocated. So in our example above, the Image actor will be created and four behaviors will be called (generating four messages in the Image actor's queue).  The processImage() function will finish, and the local scope reference to Image will go away. However, since the actor is now scheduled with the Flynn runtime, it will stay alive until all of its messages have been processed. Once it reaches quiescence, it will be deallocated.
 
