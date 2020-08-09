@@ -1,10 +1,3 @@
-//
-//  FlynnTests.swift
-//  FlynnTests
-//
-//  Created by Rocco Bowling on 5/10/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
 
 // swiftlint:disable line_length
 
@@ -81,7 +74,7 @@ class FlynnTests: XCTestCase {
 
         expectation.fulfill()
     }
-
+*/
     func testColor() {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
         let color = Color()
@@ -94,17 +87,16 @@ class FlynnTests: XCTestCase {
             .beAlpha()
             .beColor()
 
-        color.beGetColor( Behavior(color) { (args: FlowableArgs) in
-            let color: [Float] = args[x:0]
+        color.beGetColor { (color) in
             print("color is \(color)")
-        })
-        color.beGetColor(color.beSetColor)
-        color.beRender(CGRect.zero)
+        }
+        
+        color.beRender()
 
         //print(color.safeColorable._color)
         expectation.fulfill()
     }
-
+/*
     func testImage() {
         let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
 

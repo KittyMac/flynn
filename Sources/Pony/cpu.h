@@ -1,10 +1,4 @@
-//
-//  cpu.h
-//  Flynn
-//
-//  Created by Rocco Bowling on 5/12/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
+
 // Note: This code is derivative of the Pony runtime; see README.md for more details
 
 #include "platform.h"

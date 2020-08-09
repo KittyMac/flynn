@@ -1,10 +1,3 @@
-//
-//  FlynnTests.swift
-//  FlynnTests
-//
-//  Created by Rocco Bowling on 5/10/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
 
 // Unit tests which expose problems in Flynn still need to address
 

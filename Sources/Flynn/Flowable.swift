@@ -1,11 +1,3 @@
-//
-//  Actor.swift
-//  Flynn
-//
-//  Created by Rocco Bowling on 5/10/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
-
 // swiftlint:disable force_cast
 
 import Foundation
