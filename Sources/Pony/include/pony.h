@@ -12,6 +12,8 @@ bool pony_startup(void);
 void pony_shutdown(void);
 
 int pony_core_count();
+int pony_e_core_count();
+int pony_p_core_count();
 
 void * pony_actor_create();
 

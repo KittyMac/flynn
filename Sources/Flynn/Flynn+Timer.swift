@@ -1,57 +1,87 @@
 import Foundation
 
-/*
+public typealias TimerArgs = [Any?]
+
+public typealias TimerCallback = (_ timer: Flynn.Timer) -> Void
+
+public protocol Timerable: Actor {
+    @discardableResult
+    func beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) -> Self
+}
+
 public extension Flynn {
-    
+
     class Timer {
         var fireTime: TimeInterval = 0.0
-        
+
         var cancelled: Bool = false
-        
+
         let timeInterval: TimeInterval
         let repeats: Bool
-        
-        let behavior: AnyBehavior
-        var args: BehaviorArgs
-        
+
+        weak var target: Timerable?
+        var callback: TimerCallback?
+        var args: TimerArgs = []
+
         @discardableResult
-        public init(timeInterval: TimeInterval, repeats: Bool, _ behavior: AnyBehavior, _ args: BehaviorArgs) {
+        public init(timeInterval: TimeInterval, repeats: Bool, _ target: Timerable) {
             self.timeInterval = timeInterval
             self.repeats = repeats
-            self.behavior = behavior
+            self.target = target
+
+            schedule()
+        }
+
+        @discardableResult
+        public init(timeInterval: TimeInterval, repeats: Bool, _ target: Timerable, _ args: TimerArgs) {
+            self.timeInterval = timeInterval
+            self.repeats = repeats
+            self.target = target
             self.args = args
-            self.args.append(self)
-            
+
+            schedule()
+        }
+
+        @discardableResult
+        public init(timeInterval: TimeInterval, repeats: Bool, _ callback: @escaping TimerCallback) {
+            self.timeInterval = timeInterval
+            self.repeats = repeats
+            self.callback = callback
+
             schedule()
         }
 
         public func cancel() {
             cancelled = true
         }
-                
+
         internal func schedule() {
             fireTime = ProcessInfo.processInfo.systemUptime + timeInterval
             Flynn.register(self)
         }
-        
+
         internal func fire() {
             if cancelled {
                 return
             }
-            if behavior.dynamicallyCallMaybe(withArguments: args) == true {
-                if repeats {
-                    schedule()
-                }
+            if let target = target {
+                target.beTimerFired(self, args)
+            } else if let callback = callback {
+                callback(self)
             } else {
                 cancelled = true
             }
+
+            if !cancelled && repeats {
+                schedule()
+            }
         }
     }
-    
+
     internal static func clearRegisteredTimers() {
         registeredTimersQueue.clear()
     }
-    
+
     private static var registeredTimersQueue = Queue<Timer>(size: 1024,
                                                             manyProducers: true,
                                                             manyConsumers: false)
@@ -61,14 +91,14 @@ public extension Flynn {
         })
         wakeTimerLoop()
     }
-    
+
     @discardableResult
     fileprivate static func checkRegisteredTimers() -> TimeInterval {
         let currentTime = ProcessInfo.processInfo.systemUptime
         var nextTimerMinTime: TimeInterval = 10.0
-        
+
         var completedTimers: [Flynn.Timer] = []
-        
+
         registeredTimersQueue.dequeueAny { (timer) in
             let timeDelta = timer.fireTime - currentTime
             if timeDelta < 0 {
@@ -80,19 +110,18 @@ public extension Flynn {
             }
             return false
         }
-        
+
         for timer in completedTimers {
             timer.fire()
         }
-                
+
         if nextTimerMinTime < 0 {
             nextTimerMinTime = 0
         }
 
         return nextTimerMinTime / 2
     }
-    
-    
+
     internal class TimerLoop {
 
         internal var idle: Bool
@@ -114,14 +143,13 @@ public extension Flynn {
             thread.qualityOfService = .default
             thread.start()
         }
-        
+
         func wake() {
             waitingForWorkSemaphore.signal()
         }
 
         @objc func run() {
             while running {
-                Flynn.checkRegisteredActors()
                 let timeout = Flynn.checkRegisteredTimers()
                 _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
             }
@@ -137,5 +165,3 @@ public extension Flynn {
 
     }
 }
-
-*/

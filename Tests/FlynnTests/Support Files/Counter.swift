@@ -3,15 +3,15 @@ import XCTest
 
 @testable import Flynn
 
-class Counter: Actor {
+class Counter: Actor, Timerable {
     private var counter: Int = 0
 
     private func apply(_ value: Int) {
         counter += value
     }
 
-    public var unsafeValue: Int {
-        return counter
+    private func _beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) {
+        counter += args[x:0]
     }
 
     private func _beHello(_ string: String) {
@@ -35,6 +35,11 @@ class Counter: Actor {
 
 extension Counter {
 
+    @discardableResult
+    public func beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) -> Self {
+        unsafeSend { self._beTimerFired(timer, args) }
+        return self
+    }
     @discardableResult
     public func beHello(_ string: String) -> Self {
         unsafeSend { self._beHello(string) }

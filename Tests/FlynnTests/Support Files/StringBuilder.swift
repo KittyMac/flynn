@@ -3,19 +3,24 @@ import XCTest
 
 @testable import Flynn
 
-class StringBuilder: Actor {
+class StringBuilder: Actor, Timerable {
     private var string: String = ""
+    
+    private func _beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) {
+        let value: String = args[x:0]
+        string.append(value)
+    }
 
     private func _beAppend(_ value: String) {
-        self.string.append(value)
+        string.append(value)
     }
 
     private func _beSpace() {
-        self.string.append(" ")
+        string.append(" ")
     }
 
     private func _beResult(_ callback: @escaping ((String) -> Void)) {
-        callback(self.string)
+        callback(string)
     }
 }
 
@@ -25,6 +30,11 @@ class StringBuilder: Actor {
 
 extension StringBuilder {
 
+    @discardableResult
+    public func beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) -> Self {
+        unsafeSend { self._beTimerFired(timer, args) }
+        return self
+    }
     @discardableResult
     public func beAppend(_ value: String) -> Self {
         unsafeSend { self._beAppend(value) }

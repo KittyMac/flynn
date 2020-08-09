@@ -44,6 +44,14 @@ int pony_core_count() {
     return ponyint_core_count();
 }
 
+int pony_e_core_count() {
+    return ponyint_e_core_count();
+}
+
+int pony_p_core_count() {
+    return ponyint_p_core_count();
+}
+
 void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
 }

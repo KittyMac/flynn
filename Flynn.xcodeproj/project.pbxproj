@@ -49,7 +49,6 @@
 		OBJ_131 /* threads.m in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_38 /* threads.m */; };
 		OBJ_73 /* Actor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* Actor.swift */; };
 		OBJ_74 /* Atomics.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* Atomics.swift */; };
-		OBJ_75 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Device.swift */; };
 		OBJ_76 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* Extensions.swift */; };
 		OBJ_77 /* Flowable.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* Flowable.swift */; };
 		OBJ_78 /* Flynn+Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* Flynn+Timer.swift */; };
@@ -97,7 +96,6 @@
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::Pony::Product" /* Pony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Pony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_10 /* Atomics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Atomics.swift; sourceTree = "<group>"; };
-		OBJ_11 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		OBJ_12 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		OBJ_13 /* Flowable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flowable.swift; sourceTree = "<group>"; };
 		OBJ_14 /* Flynn+Timer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Flynn+Timer.swift"; sourceTree = "<group>"; };
@@ -295,7 +293,6 @@
 			children = (
 				OBJ_9 /* Actor.swift */,
 				OBJ_10 /* Atomics.swift */,
-				OBJ_11 /* Device.swift */,
 				OBJ_12 /* Extensions.swift */,
 				OBJ_13 /* Flowable.swift */,
 				OBJ_14 /* Flynn+Timer.swift */,
@@ -490,7 +487,6 @@
 			files = (
 				OBJ_73 /* Actor.swift in Sources */,
 				OBJ_74 /* Atomics.swift in Sources */,
-				OBJ_75 /* Device.swift in Sources */,
 				OBJ_76 /* Extensions.swift in Sources */,
 				OBJ_77 /* Flowable.swift in Sources */,
 				OBJ_78 /* Flynn+Timer.swift in Sources */,

@@ -59,8 +59,7 @@ class FlynnComponentsTests: XCTestCase {
         }
 
         var count = 0
-        while let actor = queue.dequeue() as? PassToMe {
-            actor.unsafePrint("hello \(count)!")
+        while let _ = queue.dequeue() as? PassToMe {
             count += 1
         }
 

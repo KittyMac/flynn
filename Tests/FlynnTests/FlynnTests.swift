@@ -213,7 +213,7 @@ class FlynnTests: XCTestCase {
         pipeline.beFlow([])
         wait(for: [expectation], timeout: 30.0)
     }
-/*
+
     func testMemoryBloatFromMessagePassing2() {
         let expectation = XCTestExpectation(description: "MemoryBloatFromMessagePassing2")
 
@@ -233,14 +233,16 @@ class FlynnTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Repeating Timer")
 
         let counter = Counter()
+        
+        Flynn.Timer(timeInterval: 0.01, repeats: true, counter, [1])
 
-        Flynn.Timer(timeInterval: 0.01, repeats: true, counter.beInc, [1])
-
-        Flynn.Timer(timeInterval: 1, repeats: false, counter.beEquals, [ { (value: Int) in
-            print(value)
-            XCTAssert(value >= 99)
-            expectation.fulfill()
-        }])
+        Flynn.Timer(timeInterval: 1, repeats: false, { (timer) in
+            counter.beEquals { (value) in
+                print(value)
+                XCTAssert(value >= 99)
+                expectation.fulfill()
+            }
+        })
 
         wait(for: [expectation], timeout: 2.0)
     }
@@ -250,40 +252,36 @@ class FlynnTests: XCTestCase {
 
         let builder = StringBuilder()
 
-        Flynn.Timer(timeInterval: 0.010, repeats: false, builder.beResult, [ { (value: String) in
-            XCTAssertEqual(value, "123456789", "string did not append in the correct order")
-            expectation.fulfill()
-        }])
+        Flynn.Timer(timeInterval: 0.010, repeats: false, { (timer) in
+            builder.beResult { (value) in
+                XCTAssertEqual(value, "123456789", "string did not append in the correct order")
+                expectation.fulfill()
+            }
+        })
 
-        Flynn.Timer(timeInterval: 0.006, repeats: false, builder.beAppend, ["6"])
-        Flynn.Timer(timeInterval: 0.008, repeats: false, builder.beAppend, ["8"])
-        Flynn.Timer(timeInterval: 0.003, repeats: false, builder.beAppend, ["3"])
-        Flynn.Timer(timeInterval: 0.007, repeats: false, builder.beAppend, ["7"])
-        Flynn.Timer(timeInterval: 0.005, repeats: false, builder.beAppend, ["5"])
-        Flynn.Timer(timeInterval: 0.009, repeats: false, builder.beAppend, ["9"])
-        Flynn.Timer(timeInterval: 0.002, repeats: false, builder.beAppend, ["2"])
-        Flynn.Timer(timeInterval: 0.004, repeats: false, builder.beAppend, ["4"])
-        Flynn.Timer(timeInterval: 0.001, repeats: false, builder.beAppend, ["1"])
+        Flynn.Timer(timeInterval: 0.006, repeats: false, builder, ["6"])
+        Flynn.Timer(timeInterval: 0.008, repeats: false, builder, ["8"])
+        Flynn.Timer(timeInterval: 0.003, repeats: false, builder, ["3"])
+        Flynn.Timer(timeInterval: 0.007, repeats: false, builder, ["7"])
+        Flynn.Timer(timeInterval: 0.005, repeats: false, builder, ["5"])
+        Flynn.Timer(timeInterval: 0.009, repeats: false, builder, ["9"])
+        Flynn.Timer(timeInterval: 0.002, repeats: false, builder, ["2"])
+        Flynn.Timer(timeInterval: 0.004, repeats: false, builder, ["4"])
+        Flynn.Timer(timeInterval: 0.001, repeats: false, builder, ["1"])
 
         wait(for: [expectation], timeout: 1.0)
     }
- */
 
     static var allTests = [
         ("test0", test0),
-        /*
         ("test1", test1),
         ("test2", test2),
-        ("testPassByReferenceCheck", testPassByReferenceCheck),
         ("testColor", testColor),
         ("testImage", testImage),
-         */
         ("testFlowable", testFlowable),
         ("testLoadBalancing", testLoadBalancing),
-        ("testMeasureOverheadAgainstLoadBalancingExample", testMeasureOverheadAgainstLoadBalancingExample)
-        /*
+        ("testMeasureOverheadAgainstLoadBalancingExample", testMeasureOverheadAgainstLoadBalancingExample),
         ("testMemoryBloatFromMessagePassing", testMemoryBloatFromMessagePassing),
         ("testMemoryBloatFromMessagePassing2", testMemoryBloatFromMessagePassing2)
-         */
     ]
 }

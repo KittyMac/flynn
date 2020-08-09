@@ -5,10 +5,6 @@ import XCTest
 
 class PassToMe: Actor {
 
-    public func unsafePrint(_ string: String) {
-        print(string)
-    }
-
     private func _beNone() {
         print("hello world with no arguments")
     }
