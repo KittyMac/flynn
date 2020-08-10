@@ -93,7 +93,7 @@ If you use swiftpm, you can add Flynn as a dependency directly to your Package.s
 
 ```
 dependencies: [
-    .package(url: "https://github.com/KittyMac/Flynn.git", .upToNextMinor(from: "0.1")),
+    .package(url: "https://github.com/KittyMac/Flynn.git", .upToNextMinor(from: "0.1.1")),
 ],
 ```
 
