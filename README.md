@@ -53,7 +53,7 @@ Flynn provides the scaffolding for safer concurrency but it relies on you, the d
 
 ![](meta/flynnlint0.png)
 
-In this example, we have a public variable on our Counter Actor. Public variables are not allowed as they can be potentially accessed from other others, breaking the concurrency safety the Actor-Model paradigm provides us.
+In this example, we have a public variable on our Counter Actor. Public variables are not allowed as they can be potentially accessed from other threads, breaking the concurrency safety the Actor-Model paradigm provides us.
 
 ## Docs
 
