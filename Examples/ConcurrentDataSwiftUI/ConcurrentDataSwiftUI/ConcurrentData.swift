@@ -5,7 +5,7 @@
 import SwiftUI
 import Flynn
 
-class ConcurrentData: Actor, Timerable, ObservableObject {
+class ConcurrentData: Actor, ObservableObject {
 
     // Our internal data storage. We make sure this is private, so it can only be set
     // by behavior calls (which will ensure safe concurrency)
@@ -54,16 +54,16 @@ class ConcurrentData: Actor, Timerable, ObservableObject {
         }
     }
 
-    // To make this interesting, we are going to change the value periodically. The
-    // user can still freely edit the text field while the count is incrementing
-    private func _beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) {
-        count += 1
-    }
-
     override init() {
         super.init()
 
-        Flynn.Timer(timeInterval: 0.5, repeats: true, self)
+        // To make this interesting, we are going to change the value periodically. The
+        // user can still freely edit the text field while the count is incrementing. The
+        // Flynn timer's closure will be run in the same concurrently safe context all
+        // actor behaviors run
+        Flynn.Timer(timeInterval: 0.5, repeats: true, self) { (_) in
+            self.count += 1
+        }
     }
 }
 
@@ -85,11 +85,6 @@ extension ConcurrentData {
     @discardableResult
     public func beLoadState() -> Self {
         unsafeSend(_beLoadState)
-        return self
-    }
-    @discardableResult
-    public func beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) -> Self {
-        unsafeSend { self._beTimerFired(timer, args) }
         return self
     }
 
