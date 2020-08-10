@@ -69,6 +69,7 @@ In this example, we have a public variable on our Counter Actor. Public variable
 [Hello World](Examples/HelloWorld/) - You guessed it!  
 [Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption  
 [Simple HTTP Server](Examples/SimpleHTTPServer/) - Actors for HTTP connections, Actors as services  
+[Concurrent Data SwiftUI](Examples/ConcurrentDataSwiftUI/) - Simple example of using Actor as ObservableObject for SwiftUI
 
 ## Projects
 [FlynnLint](https://github.com/KittyMac/flynnlint) - FlynnLint uses Flynn to concurrently check your Swift files for Flynn best practices  
