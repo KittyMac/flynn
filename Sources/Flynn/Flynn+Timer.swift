@@ -20,8 +20,10 @@ public extension Flynn {
         let repeats: Bool
 
         weak var target: Timerable?
-        var callback: TimerCallback?
         var args: TimerArgs = []
+
+        weak var actor: Actor?
+        var callback: TimerCallback?
 
         @discardableResult
         public init(timeInterval: TimeInterval, repeats: Bool, _ target: Timerable) {
@@ -43,9 +45,10 @@ public extension Flynn {
         }
 
         @discardableResult
-        public init(timeInterval: TimeInterval, repeats: Bool, _ callback: @escaping TimerCallback) {
+        public init(timeInterval: TimeInterval, repeats: Bool, _ actor: Actor, _ callback: @escaping TimerCallback) {
             self.timeInterval = timeInterval
             self.repeats = repeats
+            self.actor = actor
             self.callback = callback
 
             schedule()
@@ -66,8 +69,8 @@ public extension Flynn {
             }
             if let target = target {
                 target.beTimerFired(self, args)
-            } else if let callback = callback {
-                callback(self)
+            } else if let callback = callback, let actor = actor {
+                actor.unsafeSend { callback(self) }
             } else {
                 cancelled = true
             }

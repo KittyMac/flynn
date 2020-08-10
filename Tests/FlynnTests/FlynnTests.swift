@@ -236,7 +236,7 @@ class FlynnTests: XCTestCase {
         
         Flynn.Timer(timeInterval: 0.01, repeats: true, counter, [1])
 
-        Flynn.Timer(timeInterval: 1, repeats: false, { (timer) in
+        Flynn.Timer(timeInterval: 1, repeats: false, counter, { (timer) in
             counter.beEquals { (value) in
                 print(value)
                 XCTAssert(value >= 99)
@@ -252,7 +252,7 @@ class FlynnTests: XCTestCase {
 
         let builder = StringBuilder()
 
-        Flynn.Timer(timeInterval: 0.010, repeats: false, { (timer) in
+        Flynn.Timer(timeInterval: 0.010, repeats: false, builder, { (timer) in
             builder.beResult { (value) in
                 XCTAssertEqual(value, "123456789", "string did not append in the correct order")
                 expectation.fulfill()
