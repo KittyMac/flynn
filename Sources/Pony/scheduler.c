@@ -28,7 +28,6 @@ extern void objc_autoreleasePoolPop(void *);
 static DECLARE_THREAD_FN(run_thread);
 
 // Scheduler global data.
-static uint64_t last_cd_tsc;
 static uint32_t scheduler_count;
 static PONY_ATOMIC(uint32_t) active_scheduler_count;
 static PONY_ATOMIC(uint32_t) active_scheduler_count_check;
@@ -74,29 +73,29 @@ static pony_actor_t* pop(scheduler_t* sched)
 static void push(scheduler_t* sched, pony_actor_t* actor)
 {
     switch (actor->coreAffinity) {
-    case kCoreAffinity_OnlyPerformance:
-    case kCoreAffinity_OnlyEfficiency:
-        if (actor->coreAffinity != sched->coreAffinity) {
-            if (actor->coreAffinity == kCoreAffinity_OnlyPerformance) {
-                ponyint_mpmcq_push(&injectHighPerformance, actor);
-            } else {
-                ponyint_mpmcq_push(&injectHighEfficiency, actor);
+        case kCoreAffinity_OnlyPerformance:
+        case kCoreAffinity_OnlyEfficiency:
+            if (actor->coreAffinity != sched->coreAffinity) {
+                if (actor->coreAffinity == kCoreAffinity_OnlyPerformance) {
+                    ponyint_mpmcq_push(&injectHighPerformance, actor);
+                } else {
+                    ponyint_mpmcq_push(&injectHighEfficiency, actor);
+                }
+                return;
             }
-            return;
-        }
-        break;
-    case kCoreAffinity_PreferEfficiency:
-        if (sched->coreAffinity == kCoreAffinity_OnlyPerformance) {
-            ponyint_mpmcq_push(&injectHighEfficiency, actor);
-            return;
-        }
-        break;
-    case kCoreAffinity_PreferPerformance:
-        if (sched->coreAffinity == kCoreAffinity_OnlyEfficiency) {
-            ponyint_mpmcq_push(&injectHighPerformance, actor);
-            return;
-        }
-        break;
+            break;
+        case kCoreAffinity_PreferEfficiency:
+            if (sched->coreAffinity == kCoreAffinity_OnlyPerformance) {
+                ponyint_mpmcq_push(&injectHighEfficiency, actor);
+                return;
+            }
+            break;
+        case kCoreAffinity_PreferPerformance:
+            if (sched->coreAffinity == kCoreAffinity_OnlyEfficiency) {
+                ponyint_mpmcq_push(&injectHighPerformance, actor);
+                return;
+            }
+            break;
     }
     ponyint_mpmcq_push_single(&sched->q, actor);
 }
@@ -132,27 +131,38 @@ static scheduler_t* choose_victim(scheduler_t* sched)
     if(sched->last_victim->q.num_messages > 0) {
         return sched->last_victim;
     }
-
+    
     scheduler_t* victim = sched->last_victim;
     while(true)
     {
-      victim--;
-
-      if(victim < scheduler)
-        victim = &scheduler[scheduler_count - 1];
-
-      if((victim == sched->last_victim) || (scheduler_count == 1)) {
-        sched->last_victim = sched;
-        break;
-      }
-      if(victim == sched) {
-        continue;
-      }
-      sched->last_victim = victim;
-      return victim;
+        victim--;
+        
+        if(victim < scheduler)
+            victim = &scheduler[scheduler_count - 1];
+        
+        if((victim == sched->last_victim) || (scheduler_count == 1)) {
+            sched->last_victim = sched;
+            break;
+        }
+        if(victim == sched) {
+            continue;
+        }
+        sched->last_victim = victim;
+        return victim;
     }
-
+    
     return NULL;
+}
+
+void check_memory_usage(scheduler_t* sched, bool now) {
+    if(sched->index == 0)
+    {
+        static int not_all_the_time = 0;
+        not_all_the_time++;
+        if (now || (not_all_the_time % 100 == 0)) {
+            ponyint_update_memory_usage();
+        }
+    }
 }
 
 /**
@@ -175,6 +185,7 @@ static pony_actor_t* steal(scheduler_t* sched)
     int scaling_sleep_min = 50;      // The minimum value we start actually sleeping at
     int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
 #endif
+    
     
     sched->idle = true;
     
@@ -201,6 +212,7 @@ static pony_actor_t* steal(scheduler_t* sched)
             scaling_sleep = scaling_sleep_max;
         }
         if(scaling_sleep >= scaling_sleep_min) {
+            check_memory_usage(sched, true);
             ponyint_cpu_sleep(scaling_sleep);
         }
         
@@ -219,9 +231,6 @@ static pony_actor_t* steal(scheduler_t* sched)
  */
 static void run(scheduler_t* sched)
 {
-    if(sched->index == 0)
-        last_cd_tsc = 0;
-    
     pony_actor_t* actor = pop_global(sched, sched);
     
 #ifdef PLATFORM_IS_APPLE
@@ -230,14 +239,7 @@ static void run(scheduler_t* sched)
     
     while(true) {
         
-        if(sched->index == 0)
-        {
-          static int not_all_the_time = 0;
-          not_all_the_time++;
-          if((not_all_the_time % 100 == 0)) {
-            ponyint_update_memory_usage();
-          }
-        }
+        check_memory_usage(sched, false);
         
         if(actor == NULL) {
             actor = pop_global(sched, sched);
@@ -252,7 +254,7 @@ static void run(scheduler_t* sched)
                 actor = NULL;
                 continue;
             }
-
+            
             // Run the current actor and get the next actor.
             bool reschedule = ponyint_actor_run(&sched->ctx, actor, actor->batchSize);
             
@@ -336,7 +338,7 @@ static void ponyint_sched_shutdown()
         scheduler[i].terminate = true;
         ponyint_thread_join(scheduler[i].tid);
     }
-        
+    
     for(uint32_t i = 0; i < scheduler_count; i++)
     {
         while(ponyint_thread_messageq_pop(&scheduler[i].mq) != NULL) { ; }
@@ -370,14 +372,14 @@ pony_ctx_t* ponyint_sched_init()
     uint32_t threads = ponyint_core_count();
     
     scheduler_count = threads;
-        
+    
     atomic_store_explicit(&active_scheduler_count, scheduler_count, memory_order_relaxed);
     atomic_store_explicit(&active_scheduler_count_check, scheduler_count, memory_order_relaxed);
     scheduler = (scheduler_t*)ponyint_pool_alloc_size(scheduler_count * sizeof(scheduler_t));
     memset(scheduler, 0, scheduler_count * sizeof(scheduler_t));
-        
+    
     pthread_once(&sched_mut_once, sched_mut_init);
-        
+    
     for(uint32_t i = 0; i < scheduler_count; i++)
     {
         // create pthread condition object
@@ -407,8 +409,8 @@ pony_ctx_t* ponyint_sched_init()
 bool ponyint_sched_start()
 {
     pony_register_thread();
-        
-    uint32_t start = 0;    
+    
+    uint32_t start = 0;
     for(uint32_t i = start; i < scheduler_count; i++)
     {
         // there was an error creating a wait event or a pthread condition object
@@ -426,7 +428,7 @@ bool ponyint_sched_start()
         if(!ponyint_thread_create(&scheduler[i].tid, run_thread, qos, &scheduler[i]))
             return false;
     }
-        
+    
     return true;
 }
 
