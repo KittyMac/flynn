@@ -74,6 +74,10 @@ public class Queue<T: AnyObject> {
         return arraySize &- (localReadIdx &- localWriteIdx)
     }
 
+    public var capacity: Int {
+        return arraySize
+    }
+
     private func grow() {
         let useReadLock = manyConsumers || underPressure
 

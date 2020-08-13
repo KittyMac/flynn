@@ -142,7 +142,7 @@ open class Actor {
         scratch.append("Message Batch Size: \(unsafeMessageBatchSize)\n")
         scratch.append("Actor Priority: \(unsafePriority)\n")
         scratch.append("Core Affinity: \(unsafeCoreAffinity)\n")
-        scratch.append("Actor Message Pool Size: \(poolMessage.count)\n")
+        scratch.append("Actor Message Pool Size: \(poolMessage.count) / \(poolMessage.capacity)\n")
         return scratch
     }
 
