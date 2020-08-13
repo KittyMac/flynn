@@ -136,4 +136,14 @@ open class Actor {
         pony_actor_send_message(ponyActorPtr, Ptr(unpoolMessage(block)), handleMessage)
     }
 
+    public var unsafeStatus: String {
+        var scratch = ""
+        scratch.append("Message Queue Count: \(unsafeMessagesCount)\n")
+        scratch.append("Message Batch Size: \(unsafeMessageBatchSize)\n")
+        scratch.append("Actor Priority: \(unsafePriority)\n")
+        scratch.append("Core Affinity: \(unsafeCoreAffinity)\n")
+        scratch.append("Actor Message Pool Size: \(poolMessage.count)\n")
+        return scratch
+    }
+
 }

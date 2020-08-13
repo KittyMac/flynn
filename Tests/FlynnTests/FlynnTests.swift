@@ -29,7 +29,7 @@ class FlynnTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Wait for counter to finish")
 
         print("start")
-        Counter()
+        let counter = Counter()
             .beInc(1)
             .beInc(10)
             .beInc(20)
@@ -39,6 +39,7 @@ class FlynnTests: XCTestCase {
                 XCTAssertEqual(value, 30, "Counter did not add up to 30")
                 expectation.fulfill()
             }
+        print(counter.unsafeStatus)
         print("end")
         wait(for: [expectation], timeout: 10.0)
     }
