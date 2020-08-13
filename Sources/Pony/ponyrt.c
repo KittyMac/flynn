@@ -142,3 +142,7 @@ int pony_actor_num_messages(void * actor) {
 void pony_actor_destroy(void * actor) {
     ponyint_destroy_actor(actor);
 }
+
+int pony_max_memory() {
+    return ponyint_max_memory();
+}
