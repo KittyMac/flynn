@@ -143,7 +143,7 @@ open class Actor {
     public var unsafeStatus: String {
         var scratch = ""
         scratch.append("Actor UUID: \(uuid)\n")
-        scratch.append("Actor Type \(type(of: self))\n")
+        scratch.append("Actor Type: \(type(of: self))\n")
         scratch.append("Message Queue Count: \(unsafeMessagesCount)\n")
         scratch.append("Message Batch Size: \(unsafeMessageBatchSize)\n")
         scratch.append("Actor Priority: \(unsafePriority)\n")
