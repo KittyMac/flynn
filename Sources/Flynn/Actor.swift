@@ -63,13 +63,17 @@ open class Actor {
     private let ponyActorPtr: AnyPtr
 
     private var poolMessage = Queue<ActorMessage>(size: 128, manyProducers: false, manyConsumers: true)
+    private var actorMessagesReused: Int = 0
+    private var actorMessagesCreated: Int = 0
 
     @inline(__always)
     private func unpoolMessage(_ block: @escaping PonyBlock) -> ActorMessage {
         if let msg = poolMessage.dequeue() {
+            actorMessagesReused += 1
             msg.set(block)
             return msg
         }
+        actorMessagesCreated += 1
         return ActorMessage(poolMessage, block)
     }
 
@@ -138,11 +142,15 @@ open class Actor {
 
     public var unsafeStatus: String {
         var scratch = ""
+        scratch.append("Actor UUID: \(uuid)\n")
+        scratch.append("Actor Type \(type(of: self))\n")
         scratch.append("Message Queue Count: \(unsafeMessagesCount)\n")
         scratch.append("Message Batch Size: \(unsafeMessageBatchSize)\n")
         scratch.append("Actor Priority: \(unsafePriority)\n")
         scratch.append("Core Affinity: \(unsafeCoreAffinity)\n")
         scratch.append("Actor Message Pool Size: \(poolMessage.count) / \(poolMessage.capacity)\n")
+        scratch.append("Actor Messages Created: \(actorMessagesCreated)\n")
+        scratch.append("Actor Messages Reused: \(actorMessagesReused)\n")
         return scratch
     }
 
