@@ -22,7 +22,11 @@ static size_t max_memory_allocated = 0;
 void ponyint_update_memory_usage() {
     struct rusage usage;
     if(0 == getrusage(RUSAGE_SELF, &usage)) {
+#ifdef PLATFORM_IS_APPLE
         total_memory_allocated = usage.ru_maxrss; // bytes
+#else
+        total_memory_allocated = usage.ru_maxrss / 1024; // on linux, this is in kilobytes
+#endif
     } else {
         total_memory_allocated = 0;
     }
