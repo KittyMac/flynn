@@ -25,7 +25,7 @@ void ponyint_update_memory_usage() {
 #ifdef PLATFORM_IS_APPLE
         total_memory_allocated = usage.ru_maxrss; // bytes
 #else
-        total_memory_allocated = usage.ru_maxrss / 1024; // on linux, this is in kilobytes
+        total_memory_allocated = usage.ru_maxrss * 1024; // on linux, this is in kilobytes
 #endif
     } else {
         total_memory_allocated = 0;
