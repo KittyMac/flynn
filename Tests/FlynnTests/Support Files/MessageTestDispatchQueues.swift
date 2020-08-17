@@ -39,7 +39,7 @@ import XCTest
 //   https://github.com/ponylang/ponyc/pull/2295
 
 enum MessageTestDispatchQueues {
-    class SyncLeader {
+    final class SyncLeader {
         // The SyncLeader actor is responsible for creating all of the Pinger
         // worker actors and coordinating their activity during each report_pings
         // interval.
@@ -178,7 +178,7 @@ enum MessageTestDispatchQueues {
         }
     }
 
-    class Pinger {
+    final class Pinger {
         private var neighbors: [Pinger] = []
         private let idx: Int
         private let leader: SyncLeader
