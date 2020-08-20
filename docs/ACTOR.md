@@ -47,7 +47,15 @@ Actor execute cooperatively on schedulers; there is one scheduler per CPU core. 
 
 As there is a scheduler per core, some CPUs support different cores for different purposes. For example, on Apple Silicon there are performance (P) cores and efficiency (E) cores. Each scheduler in Flynn is also labelled as either a performance or efficiency scheduler. An actor can then use its core affinity to hint how it should be scheduled. So if you want to maximize battery life on an iOS device, for example, you can set your actors to only run on the efficiency cores. Or, in our example of many producers to a single consumer, each producer could be set to efficiency cores while the consumer is set to a high performance core.
 
-![](../meta/critical.png)
+```swift
+class CriticalService: Actor {
+    override init() {
+        super.init()
+        unsafeCoreAffinity = .onlyPerformance
+        unsafePriority = 99
+    }
+}
+```
 
 ## Actor Yielding
 
@@ -59,7 +67,23 @@ There are situations when knowing how much work (waiting messages) an actor has 
 
 Note: Unlike other Actor-Model runtimes, Flynn does not have a built-in back pressure system. This is intentional, as we believe it is better to put the power in your hands to architect your actore networks properly.  Using message counds and yielding to slow down producers to not overload consumers is one mechanism you can use to handle this.
 
-![](../meta/yield.png)
+```swift
+class Producer: Actor {
+    private let consumer = Consumer()
+    
+    private func _beProduce() {
+        // Don't overload the consumer; check that they have a small enough
+        // message queue. If they don't then we explicitly yield execution
+        // (allowing other actors to use this scheduler) and we try again
+        // in the future.
+        if consumer.unsafeMessagesCount < 10 {
+            consumer.beConsume("some data")
+        } else {
+            unsafeYield()
+        }
+    }
+}
+```
 
 ## Using Protocols with Actors
 

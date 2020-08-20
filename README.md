@@ -94,7 +94,7 @@ If you use swiftpm, you can add Flynn as a dependency directly to your Package.s
 
 ```
 dependencies: [
-    .package(url: "https://github.com/KittyMac/Flynn.git", .upToNextMinor(from: "0.1.1")),
+    .package(url: "https://github.com/KittyMac/Flynn.git", .upToNextMajor(from: "0.1.1")),
 ],
 ```
 
@@ -127,9 +127,12 @@ else
 fi
 ```
 
+**Example:**
+
 ![](meta/runphase.png)
 
-If you use other linters (such as SwiftLint), it is recommended that FlynnLint runs before all other linters.
+* Place the FlynnLint build phase **before** the "Compile Sources" phase
+* Place the FlynnLint build phase **before** any other code linters
 
 FlynnLint processes any and all directories provided as arguments. If you want to restrict it to a subset of directories, simply list each directory after the call to FlynnLint. For example, if you use swiftpm and your source files are in /Sources and /Tests, then the following would lint just those directories:
 
