@@ -50,11 +50,7 @@ void* ponyint_virt_alloc(size_t bytes)
     void* p;
     bool ok = true;
     
-#ifdef PLATFORM_IS_APPLE
-    p = mmap(0, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON | VM_FLAGS_SUPERPAGE_SIZE_ANY, -1, 0);
-#else
     p = mmap(0, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-#endif
     
     if(p == MAP_FAILED)
         ok = false;
