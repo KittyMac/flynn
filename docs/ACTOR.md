@@ -85,6 +85,27 @@ class Producer: Actor {
 }
 ```
 
+## Blocking on Actors
+
+Similar to the scenario above where a produce is delaying producing items in order to not overwhelm a consumer, it is also sometimes advantageos to block until a certain actor has less than a certain number of messages. **Blocking actors will have unintended consequences, as blocking an Actor will also block its scheduler. You should avoid using sleep, unsafeWait, or other blocking calls inside Actors.**  In these instances, one can call ```actor.unsafeWait()```.
+
+```swift
+class Producer: Actor {
+    private let consumer = Consumer()
+    
+    private func _beProduce() {
+        // Note: you should avoid using unsafeWait() in Actors whenever possible, 
+        // this example is only here for completeness. You avoid sleeping or
+        // blocking execution in actors as that will also block the scheduler.
+        
+        // This line will block until consumer's message queue has less than 10
+        // items in it. At which point the producer will produce another item.
+        consumer.unsafeWait(10)
+        consumer.beConsume("some data")
+    }
+}
+```
+
 ## Using Protocols with Actors
 
 It is possible to perform protocol oriented programming with Actors. The only difficulty are protocols is that behaviors are not Swift functions, they are classes which utilize the ```@dynamicCallable``` feature introduced in Swift 4.2.  To fully use protocols with Actors, we need to:
