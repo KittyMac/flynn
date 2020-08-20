@@ -1,8 +1,8 @@
 # Actors
 
-Think of actors as concurrency safe Swift classes. This safety is accomplished by restricting communication with the actor to behaviors; all other members and functions on an actor should be set to private.  Behavior calls are units of execution which will be processed sequentially but concurrently. Since all functions are private and all behavior code is safely executed, all code inside of the actor is then thread safe.
+Think of actors as concurrency safe Swift classes. This safety is accomplished by restricting all communications with the actor to behavior calls only; all other members and functions on the actor should be set to private.  Behavior calls are units of execution which will be processed sequentially by the actor, but concurrently to other actors. Since all functions are private and all behavior code is safely executed, all code inside of the actor is then thread safe.
 
-This is the ideal. Unfortunately, to be 100% thread safe through access restrictions we would need to modify Swift itself.  Since we are not in a position to do that, instead we have a set of best practices which get you as close to 100% thread safe as is possible.
+This is the ideal. Unfortunately, to be 100% thread safe through access restrictions we would need to modify Swift itself, in order to prevent pass-by-reference values from being shared between actors.  Since we are not in a position to do that, we instead have a set of best practices which get you as close to 100% thread safe as is possible.
 
 ## Actor Best Practices
 
@@ -13,10 +13,10 @@ This is the ideal. Unfortunately, to be 100% thread safe through access restrict
 *Behaviors ensure code is executed safely and concurrently on your actor*
 
 **Send pass-by-value arguments to behaviors**  
-*Pass-by-value types are safe to share between threads and should be preferred use sending data to actors*
+*Pass-by-value types are safe to share between threads and should be preferred use sending data to actors. Pass-by-reference values can be used, of course, but you need to ensure that no two actors access the same pass-by-referenced value.*
 
 **Beware of closures and actors**  
-*Many APIs execute closures as callbacks; if those are executed on a different thread, then two threads are accessing the innards of an actor at the same time (which would be bad). Closure callbacks should immediately call behaviors, keeping thread safety*
+*Many APIs execute closures as callbacks; if those are executed on a different thread, then two threads are accessing the innards of an actor at the same time (which would be bad). Closure callbacks should immediately call behaviors, keeping everything thread safe*
 
 These may seem like a lot! Flynnlint will ensure you comply with these best practices at compile time. So if you forget to label an Actor variable as private, it will flag that as an error.
 
@@ -31,21 +31,21 @@ Flynnlint ensures that your actor code adheres to the best practices.  For actor
 *Covered above*
 
 **Actor variables and functions that start with "safe" are "protected"**  
-*If all variables and functions in a actor must be private, then class inheritence would be near impossible to do effectively. As such, Flynnlint provides its own implementation pf "protected" access for Actors. Simply start your variable or function with the prefix "safe" and Flynnlint will allow you to make it non-private.  Once it is non-private, it can be called by outside of the main Actor class. Flynnlint will then ensure that the safe variable is only called from a subclass of that actor class, effectively giving actors a "protected" access level*
+*If all variables and functions in a actor must be private, then class inheritance would be near impossible to do effectively. As such, Flynnlint provides its own implementation pf "protected" access for Actors. Simply start your variable or function with the prefix "safe" and Flynnlint will allow you to make it non-private.  Once it is non-private, it can be called by outside of the main Actor class. Flynnlint will then ensure that the safe variable is only called from a subclass of that actor class, effectively giving actors a "protected" access level*
 
-**Actor variables and functions that start with "unsafe" are, well, unsafe!**  
-*At the end of the day, you are the developer. If you want to expose access to a variable or function on a actor to be portentially called directly by other threads you can do this by using the prefix "unsafe". As the name implies, all Flynnlint protections are turned off for unsafe variables and functions, and it is up to you to provide any necessary measure so that these can be used safely*
+**Actor variables and functions that start with "unsafe" are... unsafe!**  
+*At the end of the day, you are the developer. If you want to expose access to a variable or function on a actor to be potentially called directly by other threads you can do this by using the prefix "unsafe". As the name implies, all Flynnlint protections are turned off for unsafe variables and functions, and it is up to you to provide any necessary measure so that these can be used safely*
 
 ![](../meta/safety.png)
 
 ## Actor Priority
 
-Actor execute cooperatively on schedulers; there is one scheduler per CPU core. For some actor configurations is may be beneficial to give and actor higher or lower priority to other actors. For example, if you have a pool of producer actors feeding a single consumer actor, you might want to give the consumer actor a higher priority to ensure it receives preferencial scheduling so it can keep up with consumption.
+Actors execute cooperatively on schedulers; there is one scheduler per CPU core. For some actor configurations, it may be beneficial to give an actor higher or lower priority to than other actors. For example, if you have a pool of producer actors feeding a single consumer actor, you might want to give the consumer actor a higher priority to ensure it receives preferencial scheduling compared to the producers.
 
 
 ## Actor Core Affinity
 
-As there is a scheduler per core, some CPUs support different cores for different purposes. For example, on Apple Silicon there are performance (P) cores and efficiency (E) cores. Each scheduler in Flynn is also labelled as either a performance or efficiency scheduler. An actor can then use its core affinity to hint how it should be scheduled. So if you want to maximize battery life on an iOS device, for example, you can set your actors to only run on the efficiency cores. Or, in our example of many producers to a single consumer, each producer could be set to efficiency cores while the consumer is set to a high performance core.
+Some CPUs support different cores for different purposes. For example, on Apple Silicon there are performance (P) cores and efficiency (E) cores. Each scheduler in Flynn is also labelled as either a performance or an efficiency scheduler. An actor can set its core affinity preference to hint how it should be scheduled. If you want to maximize battery life on an iOS device, for example, you can set your actors to only run on the efficiency cores. Or, in our example of many producers to a single consumer, each producer could be set to efficiency cores while the consumer is set to a high performance core.
 
 ```swift
 class CriticalService: Actor {
@@ -59,13 +59,13 @@ class CriticalService: Actor {
 
 ## Actor Yielding
 
-When an actor is scheduled to run, that actor then gets to execute a "batch" of messages from its message queue. In some scenarios, you might want the actor to note execute the entire batch of messages, instead yielding execution after the current behavior call ends. You can do this by calling unsafeYield() on the actor.
+When an actor is run on a scheduler it will execute one "batch" of messages from its message queue. In some scenarios, you might want the actor to execute less than the entire batch of messages, instead yielding execution after the current behavior call ends. You can do this by calling ```unsafeYield()``` on the actor.
 
 ## Actor Message Count
 
-There are situations when knowing how much work (waiting messages) an actor has can be beneficial. For example, imagine an actor network which reads in chunks of data from a big data stream and passes them through a chain of actors to transform and/or process the data. If the producers can introduce data faster than the processing actors can process it, then the messages will sit in actor messages queues bloating memory until they can get processed.
+There are situations when knowing how much work (waiting messages) an actor has can be beneficial. For example, imagine an actor network which reads in chunks of data from a big data stream and passes them through a chain of actors to transform and/or process the data. If the producers can introduce data faster than the consuming actors can process it, then the messages will sit in the consumer message queues bloating memory until they can get processed.
 
-Note: Unlike other Actor-Model runtimes, Flynn does not have a built-in back pressure system. This is intentional, as we believe it is better to put the power in your hands to architect your actore networks properly.  Using message counds and yielding to slow down producers to not overload consumers is one mechanism you can use to handle this.
+Note: Unlike other Actor-Model runtimes, Flynn does not have a built-in back pressure system. This is intentional, as we believe it is better to put the power in your hands to architect your actor networks properly.  Using message counts and yielding to slow down producers to not overload consumers is one mechanism you can use to handle this.
 
 ```swift
 class Producer: Actor {
@@ -87,7 +87,7 @@ class Producer: Actor {
 
 ## Blocking on Actors
 
-Similar to the scenario above where a produce is delaying producing items in order to not overwhelm a consumer, it is also sometimes advantageos to block until a certain actor has less than a certain number of messages. **Blocking actors will have unintended consequences, as blocking an Actor will also block its scheduler. You should avoid using sleep, unsafeWait, or other blocking calls inside Actors.**  In these instances, one can call ```actor.unsafeWait()```.
+Similar to the scenario above where a produce is delaying producing items in order to not overwhelm a consumer, it is also sometimes advantageous to block until a certain actor has less than a certain number of messages. **Blocking actors will have unintended consequences, as blocking an Actor will also block its scheduler. You should avoid using sleep, unsafeWait, or other blocking calls inside Actors.**  In these instances, one can call ```actor.unsafeWait()```.
 
 ```swift
 class Producer: Actor {
@@ -122,7 +122,7 @@ import Flynn
 import Foundation
 
 // This example shows a UI system where each view is an Actor. It utilizes protocols
-// instead of subclasses, allowing new views to mixin specific features it needs.
+// instead of subclasses, allowing new views to mix-in specific features it needs.
 // This code is snipped from the Cutlass project ( https://github.com/KittyMac/cutlass )
 
 // MARK: - VIEWABLE
@@ -136,7 +136,7 @@ public protocol Viewable: Actor {
 // MARK: - COLORABLE
 
 // A Colorable view requires state. It needs to store the color which needs to be drawn,
-// as well as the behaviors this mixin adds to the view we're creating
+// as well as the behaviors this mix-in adds to the view we're creating
 public class ColorableState {
     public var color: [Float] = [1, 1, 1, 1]
 
