@@ -44,6 +44,18 @@ It is our hope that a future version of Swift will incorporate support for funct
 
 In Flynn, we refer to the ```private func _bePrint(_ string: String)``` definition as the **internal behavior**.  The wrapper function ```public func bePrint(_ string: String) -> Self``` is referred to as the **external behavior**.  For FlynnLint to automatically generate external behaviors for your internal behaviors, your internal behaviors must start with the naming convention "**_be**"
 
+**SPECIAL NOTE**
+
+When using FlynnLint to automatically generate your external behaviors, it is advisable to do the following:
+
+1. Edit your code (add new internal behaviors, change names, arguments, etc)
+2. Save your code (so the changes are sycnhronized with the file on disk)
+3. Build with Xcode (FlynnLint will run, see the updated file on disk and re-write it with the necessary changes)
+4. See updated code in Xcode
+
+If you build without saving, then the version of the code in Xcode will not match the version of the code FlynnLint checks, thus Xcode might complain about the state of the saved file being different (asking if you want to revert or not). In short, so long as you save before building when adjusting your internal behaviors everything should work smoothly.
+
+
 ## Behaviors are chainable
 
 Notice above that the external behavior will return self. This allows for each chaining of behaviors on an actor, such as the following:
