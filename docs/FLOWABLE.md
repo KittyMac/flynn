@@ -95,7 +95,7 @@ pipeline = FindFiles(["swift"]) |>
 FlynnLint introduces actor pools to the concept of Flowable. After a file is autocorrected, the path to that file is distributed amongst a pool of ParseFile actors.  A single file is sent to a single ParseFile actor; the next file path is sent to another actor in the pool. As such, we can take advantage of many cores by having many actors in a particular actor pool.
 
 **FindFiles** - walks the target directories looking for files ending in ".swift", flows the file path  
-**AutoCorrectFile** - checks to see if the file contains ``::BEHAVIOR`` or ``::ACTOR`` and replaces with templates, flows the file path  
+**AutoCorrectFile** - checks to see if there are any automatic corrects which can be applied to the file
 **ParseFile** - uses SourceKitten to parse the Swift file into syntax structures, flows a ``FileSyntax`` with this info  
 **BuildCombinedAST** - combines all ``FileSyntax`` together into an ``AST``, which represents the syntax structure of all files in the program; flows individual files + combined AST  
 **CheckRules** - Checks the file against the entire ruleset, using file structure and combined AST, flows any errors found  
