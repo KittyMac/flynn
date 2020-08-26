@@ -58,6 +58,7 @@ class Concatenate: Actor, Flowable {
     override init() {
         super.init()
         unsafePriority = 1
+        unsafeCoreAffinity = .onlyPerformance
     }
 
     private func _beFlow(_ args: FlowableArgs) {

@@ -65,6 +65,8 @@ static uint32_t get_sys_info_by_name(const char* type_specifier, uint32_t defaul
     return result;
 }
 
+static uint32_t hybrid_cpu_enabled = 0;
+
 static uint32_t hw_core_count;
 
 static uint32_t hw_e_core_count = 0;
@@ -80,6 +82,8 @@ void ponyint_cpu_init()
             /* 2x Monsoon + 4x Mistral cores */
             hw_e_core_count = 4;
             hw_p_core_count = 2;
+            hybrid_cpu_enabled = 1;
+            break;
         case CPUFAMILY_ARM_VORTEX_TEMPEST:
         case CPUFAMILY_ARM_LIGHTNING_THUNDER:
             /* Hexa-core: 2x Vortex + 4x Tempest; Octa-core: 4x Cortex + 4x Tempest */
@@ -87,15 +91,18 @@ void ponyint_cpu_init()
             if (hw_core_count == 6) {
                 hw_e_core_count = 4;
                 hw_p_core_count = 2;
+                hybrid_cpu_enabled = 1;
             }
             if (hw_core_count == 8) {
                 hw_e_core_count = 4;
                 hw_p_core_count = 4;
+                hybrid_cpu_enabled = 1;
             }
             break;
     }
     
     if (hw_e_core_count == 0 || hw_p_core_count == 0) {
+        fprintf(stdout, "Warning: Actor core affinities have been disabled, unrecognized cpu family detected (0x%08X)\n", cpu_family);
         hw_e_core_count = hw_core_count / 2;
         hw_p_core_count = hw_core_count - hw_e_core_count;
     }
@@ -122,6 +129,11 @@ uint32_t ponyint_e_core_count()
 uint32_t ponyint_core_count()
 {
     return hw_core_count;
+}
+
+uint32_t ponyint_hybrid_cores_enabled()
+{
+    return hybrid_cpu_enabled;
 }
 
 void ponyint_cpu_sleep(int ns)

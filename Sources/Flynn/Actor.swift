@@ -85,7 +85,11 @@ open class Actor {
             return .none
         }
         set {
-            pony_actor_setcoreAffinity(ponyActorPtr, newValue.rawValue)
+            if pony_core_affinity_enabled() {
+                pony_actor_setcoreAffinity(ponyActorPtr, newValue.rawValue)
+            } else {
+                pony_actor_setcoreAffinity(ponyActorPtr, CoreAffinity.none.rawValue)
+            }
         }
     }
 

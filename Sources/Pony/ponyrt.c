@@ -52,6 +52,10 @@ int pony_p_core_count() {
     return ponyint_p_core_count();
 }
 
+bool pony_core_affinity_enabled() {
+    return ponyint_hybrid_cores_enabled() != 0;
+}
+
 void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
 }
