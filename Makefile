@@ -16,3 +16,4 @@ test:
 
 xcode:
 	swift package generate-xcodeproj
+	meta/addBuildPhase Flynn.xcodeproj/project.pbxproj "Flynn::Flynn" 'cd $${SRCROOT}; ./meta/CombinedBuildPhases.sh'

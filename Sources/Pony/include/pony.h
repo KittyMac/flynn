@@ -8,6 +8,12 @@
 
 #include <stdbool.h>
 
+void pony_master(const char * address, int port);
+void pony_slave(const char * address, int port);
+
+void pony_remote_actor_send_message_to_slave(const char * actorUUID, const char * actorType, int * slaveID, const void * bytes, int count);
+void pony_remote_actor_send_message_to_master(const char * actorUUID, const void * bytes, int count);
+
 bool pony_startup(void);
 void pony_shutdown(void);
 

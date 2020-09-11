@@ -50,15 +50,7 @@ private class ActorMessage {
 
 open class Actor {
 
-    private class func startup() {
-        Flynn.startup()
-    }
-
-    private class func shutdown() {
-        Flynn.shutdown()
-    }
-
-    private let uuid: String
+    public let unsafeUUID: String
 
     private let ponyActorPtr: AnyPtr
 
@@ -131,7 +123,7 @@ open class Actor {
 
     public init() {
         Flynn.startup()
-        uuid = UUID().uuidString
+        unsafeUUID = UUID().uuidString
         ponyActorPtr = pony_actor_create()
     }
 
@@ -146,7 +138,7 @@ open class Actor {
 
     public var unsafeStatus: String {
         var scratch = ""
-        scratch.append("Actor UUID: \(uuid)\n")
+        scratch.append("Actor UUID: \(unsafeUUID)\n")
         scratch.append("Actor Type: \(type(of: self))\n")
         scratch.append("Message Queue Count: \(unsafeMessagesCount)\n")
         scratch.append("Message Batch Size: \(unsafeMessageBatchSize)\n")
