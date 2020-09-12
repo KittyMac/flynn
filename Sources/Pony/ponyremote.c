@@ -36,6 +36,7 @@ bool read_bytecount_buffer(int socketfd, char * dst, size_t max_length);
 void send_buffer(int socketfd, char * bytes, size_t length);
 void send_version_check(int socketfd);
 void send_create_actor(int socketfd, const char * actorUUID, const char * actorType);
+void send_destroy_actor(int socketfd, const char * actorUUID);
 
 // Communication between master and slave uses the following format:
 //  bytes      meaning
@@ -391,6 +392,39 @@ void send_create_actor(int socketfd, const char * actorUUID, const char * actorT
     send_buffer(socketfd, buffer, idx);
 }
 
+void send_destroy_actor(int socketfd, const char * actorUUID) {
+    char buffer[512];
+    int idx = 0;
+    
+    buffer[idx++] = COMMAND_DESTROY_ACTOR;
+    
+    uint8_t uuid_count = strlen(actorUUID);
+    buffer[idx++] = uuid_count;
+    memcpy(buffer + idx, actorUUID, uuid_count);
+    idx += uuid_count;
+        
+    send_buffer(socketfd, buffer, idx);
+}
+
+void send_message(int socketfd, const char * actorUUID, const void * bytes, uint32_t count) {
+    char buffer[512];
+    int idx = 0;
+    
+    buffer[idx++] = COMMAND_SEND_MESSAGE;
+    
+    uint8_t uuid_count = strlen(actorUUID);
+    buffer[idx++] = uuid_count;
+    memcpy(buffer + idx, actorUUID, uuid_count);
+    idx += uuid_count;
+        
+    send_buffer(socketfd, buffer, idx);
+    
+    uint32_t net_count = htonl(count);
+    send(socketfd, &net_count, sizeof(net_count), 0);
+    
+    send_buffer(socketfd, (char *)bytes, count);
+}
+
 // MARK: - MESSAGES
 
 void pony_remote_actor_send_message_to_slave(const char * actorUUID, const char * actorType, int * slaveID, const void * bytes, int count) {
@@ -405,7 +439,12 @@ void pony_remote_actor_send_message_to_slave(const char * actorUUID, const char 
     // actor which has not been assigned to a slave yet.  If slaveID is < 0, then we need to round robin
     // pick a slave to create the paired actor on.
     
-    send_create_actor(temp_master_to_slave_socketfd, actorUUID, actorType);
+    if (*slaveID < 0) {
+        send_create_actor(temp_master_to_slave_socketfd, actorUUID, actorType);
+        *slaveID = 0;
+    }
+    
+    send_message(temp_master_to_slave_socketfd, actorUUID, bytes, count);
     
     fprintf(stderr, "[%d] master writing to socket\n", temp_master_to_slave_socketfd);
 }
@@ -413,6 +452,12 @@ void pony_remote_actor_send_message_to_slave(const char * actorUUID, const char 
 void pony_remote_actor_send_message_to_master(const char * actorUUID, const void * bytes, int count) {
     // When a slave is sending back to a master, they send a message by knowing the recipients actor uuid
     // This is easier than sending to a client, because we know the receipient exists and where it is
+}
+
+void pony_remote_destroy_actor(const char * actorUUID, int * slaveID) {
+    if (*slaveID >= 0) {
+        send_destroy_actor(temp_master_to_slave_socketfd, actorUUID);
+    }
 }
 
 // MARK: - SHUTDOWN

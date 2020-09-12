@@ -15,6 +15,7 @@ open class RemoteActor {
     }
 
     deinit {
+        pony_remote_destroy_actor(unsafeUUID, &slaveID)
         //print("deinit - RemoteActor")
     }
 

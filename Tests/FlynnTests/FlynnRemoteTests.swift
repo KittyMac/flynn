@@ -66,13 +66,10 @@ class FlynnRemoteTests: XCTestCase {
     func testSimpleRemote() {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
         
-        let hw = Echo()
-        hw.bePrint("Hello Remote Actor!")
+        Echo().bePrint("Hello Remote Actor!")
         
-        print("A")
         let start = ProcessInfo.processInfo.systemUptime
         while (ProcessInfo.processInfo.systemUptime - start) < 60 { }
-        print("B")
         
         expectation.fulfill()
     }
