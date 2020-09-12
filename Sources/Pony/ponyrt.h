@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include "atomics.h"
 
+void pony_remote_shutdown();
 
 #define kMessagePointer 1
 

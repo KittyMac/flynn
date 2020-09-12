@@ -26,10 +26,10 @@ class Echo: RemoteActor {
 extension Echo {
     
     public func bePrint(_ string: String) {
-        struct beToLowerMessage: Codable {
+        struct Message: Codable {
             let arg0: String
         }
-        let msg = beToLowerMessage(arg0: string)
+        let msg = Message(arg0: string)
         if let data = try? JSONEncoder().encode(msg) {
             unsafeSendToRemote("Echo", data, nil, nil)
         }else{
@@ -38,10 +38,10 @@ extension Echo {
     }
     
     public func beToLower(_ string: String, _ sender: Actor, _ callback: @escaping () -> Void) {
-        struct beToLowerMessage: Codable {
+        struct Message: Codable {
             let arg0: String
         }
-        let msg = beToLowerMessage(arg0: string)
+        let msg = Message(arg0: string)
         if let data = try? JSONEncoder().encode(msg) {
             unsafeSendToRemote("Echo", data, sender, callback)
         }else{
@@ -51,17 +51,29 @@ extension Echo {
 }
 
 class FlynnRemoteTests: XCTestCase {
+    
+    override func setUp() {
+        Flynn.startup()
+        
+        Flynn.master("0.0.0.0", 9875)
+        Flynn.slave("127.0.0.1", 9875)
+    }
+
+    override func tearDown() {
+        Flynn.shutdown()
+    }
 
     func testSimpleRemote() {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
         
-        // For unit tests, our executable is both master and slave
-        Flynn.master("0.0.0.0", 9875)
-        Flynn.slave("127.0.0.1", 9875)
-        
         let hw = Echo()
         hw.bePrint("Hello Remote Actor!")
-
+        
+        print("A")
+        let start = ProcessInfo.processInfo.systemUptime
+        while (ProcessInfo.processInfo.systemUptime - start) < 60 { }
+        print("B")
+        
         expectation.fulfill()
     }
 

@@ -43,6 +43,7 @@ void ponyint_thread_detach(pony_thread_id_t thread);
 
 pony_thread_id_t ponyint_thread_self(void);
 
+void ponyint_thead_setname_actual(char * thread_name);
 void ponyint_thead_setname(int schedID, int schedAffinity);
 
 #endif

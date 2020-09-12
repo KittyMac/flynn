@@ -35,6 +35,8 @@ void pony_shutdown() {
     
     ponyint_sched_stop();
     
+    pony_remote_shutdown();
+    
     //fprintf(stderr, "pony_shutdown()\n");
     
     pony_is_inited = false;

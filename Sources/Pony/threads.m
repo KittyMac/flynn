@@ -70,6 +70,17 @@ pony_thread_id_t ponyint_thread_self()
     return pthread_self();
 }
 
+void ponyint_thead_setname_actual(char * thread_name) {
+#ifdef PLATFORM_IS_APPLE
+    [[NSThread currentThread] setName:[NSString stringWithUTF8String:thread_name]];
+    pthread_setname_np(thread_name);
+#endif
+    
+#ifdef PLATFORM_IS_LINUX
+    pthread_setname_np(pthread_self(), thread_name);
+#endif
+}
+
 void ponyint_thead_setname(int schedID, int schedAffinity) {
     char thread_name[128] = {0};
     char * thread_affinity = "";
@@ -83,12 +94,5 @@ void ponyint_thead_setname(int schedID, int schedAffinity) {
     }
     snprintf(thread_name, sizeof(thread_name), "Flynn #%d %s", schedID, thread_affinity);
     
-#ifdef PLATFORM_IS_APPLE
-    [[NSThread currentThread] setName:[NSString stringWithUTF8String:thread_name]];
-    pthread_setname_np(thread_name);
-#endif
-    
-#ifdef PLATFORM_IS_LINUX
-    pthread_setname_np(pthread_self(), thread_name);
-#endif
+    ponyint_thead_setname_actual(thread_name);
 }
