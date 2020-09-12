@@ -11,10 +11,17 @@
 void pony_master(const char * address, int port);
 void pony_slave(const char * address, int port);
 
-void pony_remote_actor_send_message_to_slave(const char * actorUUID, const char * actorType, int * slaveID, const void * bytes, int count);
-void pony_remote_actor_send_message_to_master(const char * actorUUID, const void * bytes, int count);
+void pony_remote_actor_send_message_to_slave(const char * actorUUID,
+                                             const char * actorType,
+                                             const char * behaviorType,
+                                             int * slaveSocketFD,
+                                             const void * bytes,
+                                             int count);
+void pony_remote_actor_send_message_to_master(const char * actorUUID,
+                                              const void * bytes,
+                                              int count);
 
-void pony_remote_destroy_actor(const char * actorUUID, int * slaveID);
+void pony_remote_destroy_actor(const char * actorUUID, int * slaveSocketFD);
 
 bool pony_startup(void);
 void pony_shutdown(void);

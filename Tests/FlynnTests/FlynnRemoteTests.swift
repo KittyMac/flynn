@@ -24,26 +24,37 @@ class Echo: RemoteActor {
 //    closure on a receiving actor (sender and closure get added as last two arguments
 //    on the external behavior.
 extension Echo {
+    struct bePrintMessage: Codable {
+        let arg0: String
+    }
+    struct beToLowerMessage: Codable {
+        let arg0: String
+    }
+    
+    public func unsafeHandleRemoteMessage(_ behavior: String, payload: Data) {
+        switch(behavior) {
+        case "bePrint":
+            break
+        case "beToLower":
+            break
+        default:
+            fatalError()
+        }
+    }
     
     public func bePrint(_ string: String) {
-        struct Message: Codable {
-            let arg0: String
-        }
-        let msg = Message(arg0: string)
+        let msg = bePrintMessage(arg0: string)
         if let data = try? JSONEncoder().encode(msg) {
-            unsafeSendToRemote("Echo", data, nil, nil)
+            unsafeSendToRemote("Echo", "bePrint", data, nil, nil)
         }else{
             fatalError()
         }
     }
     
     public func beToLower(_ string: String, _ sender: Actor, _ callback: @escaping () -> Void) {
-        struct Message: Codable {
-            let arg0: String
-        }
-        let msg = Message(arg0: string)
+        let msg = beToLowerMessage(arg0: string)
         if let data = try? JSONEncoder().encode(msg) {
-            unsafeSendToRemote("Echo", data, sender, callback)
+            unsafeSendToRemote("Echo", "beToLower", data, sender, callback)
         }else{
             fatalError()
         }
@@ -55,8 +66,11 @@ class FlynnRemoteTests: XCTestCase {
     override func setUp() {
         Flynn.startup()
         
-        Flynn.master("0.0.0.0", 9875)
-        Flynn.slave("127.0.0.1", 9875)
+        let port = Int32.random(in: 8000..<65500)
+        Flynn.master("127.0.0.1", port)
+        Flynn.slave("127.0.0.1", port)
+        Flynn.slave("127.0.0.1", port)
+        Flynn.slave("127.0.0.1", port)
     }
 
     override func tearDown() {
@@ -66,10 +80,12 @@ class FlynnRemoteTests: XCTestCase {
     func testSimpleRemote() {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
         
-        Echo().bePrint("Hello Remote Actor!")
+        Echo().bePrint("Hello Remote Actor 1!")
+        Echo().bePrint("Hello Remote Actor 2!")
+        Echo().bePrint("Hello Remote Actor 3!")
         
         let start = ProcessInfo.processInfo.systemUptime
-        while (ProcessInfo.processInfo.systemUptime - start) < 60 { }
+        while (ProcessInfo.processInfo.systemUptime - start) < 5 { }
         
         expectation.fulfill()
     }

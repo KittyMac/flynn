@@ -21,6 +21,9 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		46086365250D484400E51D84 /* master.c in Sources */ = {isa = PBXBuildFile; fileRef = 46086361250D484400E51D84 /* master.c */; };
+		46086366250D484400E51D84 /* shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 46086363250D484400E51D84 /* shared.c */; };
+		46086367250D484400E51D84 /* slave.c in Sources */ = {isa = PBXBuildFile; fileRef = 46086364250D484400E51D84 /* slave.c */; };
 		OBJ_105 /* BadFlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_47 /* BadFlynnTests.swift */; };
 		OBJ_106 /* FlynnComponentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_48 /* FlynnComponentsTests.swift */; };
 		OBJ_107 /* FlynnMessagesBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_49 /* FlynnMessagesBenchmark.swift */; };
@@ -44,7 +47,6 @@
 		OBJ_132 /* cpu_linux.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_32 /* cpu_linux.c */; };
 		OBJ_133 /* messageq.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_33 /* messageq.c */; };
 		OBJ_134 /* mpmcq.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_34 /* mpmcq.c */; };
-		OBJ_135 /* ponyremote.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_35 /* ponyremote.c */; };
 		OBJ_136 /* ponyrt.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_36 /* ponyrt.c */; };
 		OBJ_137 /* pool.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_37 /* pool.c */; };
 		OBJ_138 /* scheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_38 /* scheduler.c */; };
@@ -93,6 +95,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		46086361250D484400E51D84 /* master.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = master.c; sourceTree = "<group>"; };
+		46086362250D484400E51D84 /* remote.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = remote.h; sourceTree = "<group>"; };
+		46086363250D484400E51D84 /* shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = shared.c; sourceTree = "<group>"; };
+		46086364250D484400E51D84 /* slave.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = slave.c; sourceTree = "<group>"; };
 		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::Pony::Product" /* Pony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Pony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,7 +126,6 @@
 		OBJ_32 /* cpu_linux.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cpu_linux.c; sourceTree = "<group>"; };
 		OBJ_33 /* messageq.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = messageq.c; sourceTree = "<group>"; };
 		OBJ_34 /* mpmcq.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = mpmcq.c; sourceTree = "<group>"; };
-		OBJ_35 /* ponyremote.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ponyremote.c; sourceTree = "<group>"; };
 		OBJ_36 /* ponyrt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ponyrt.c; sourceTree = "<group>"; };
 		OBJ_37 /* pool.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pool.c; sourceTree = "<group>"; };
 		OBJ_38 /* scheduler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = scheduler.c; sourceTree = "<group>"; };
@@ -181,6 +186,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		46086360250D484400E51D84 /* remote */ = {
+			isa = PBXGroup;
+			children = (
+				46086361250D484400E51D84 /* master.c */,
+				46086362250D484400E51D84 /* remote.h */,
+				46086363250D484400E51D84 /* shared.c */,
+				46086364250D484400E51D84 /* slave.c */,
+			);
+			path = remote;
+			sourceTree = "<group>";
+		};
 		OBJ_17 /* Pony */ = {
 			isa = PBXGroup;
 			children = (
@@ -201,7 +217,7 @@
 				OBJ_32 /* cpu_linux.c */,
 				OBJ_33 /* messageq.c */,
 				OBJ_34 /* mpmcq.c */,
-				OBJ_35 /* ponyremote.c */,
+				46086360250D484400E51D84 /* remote */,
 				OBJ_36 /* ponyrt.c */,
 				OBJ_37 /* pool.c */,
 				OBJ_38 /* scheduler.c */,
@@ -246,7 +262,7 @@
 			path = Tests/FlynnTests;
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -259,7 +275,6 @@
 				OBJ_70 /* Makefile */,
 				OBJ_71 /* README.md */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_52 /* Support Files */ = {
@@ -398,7 +413,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_63 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -460,16 +475,18 @@
 			buildActionMask = 0;
 			files = (
 				OBJ_129 /* actor.c in Sources */,
+				46086365250D484400E51D84 /* master.c in Sources */,
 				OBJ_130 /* alloc.c in Sources */,
 				OBJ_131 /* cpu_apple.c in Sources */,
+				46086366250D484400E51D84 /* shared.c in Sources */,
 				OBJ_132 /* cpu_linux.c in Sources */,
 				OBJ_133 /* messageq.c in Sources */,
 				OBJ_134 /* mpmcq.c in Sources */,
-				OBJ_135 /* ponyremote.c in Sources */,
 				OBJ_136 /* ponyrt.c in Sources */,
 				OBJ_137 /* pool.c in Sources */,
 				OBJ_138 /* scheduler.c in Sources */,
 				OBJ_139 /* threads.m in Sources */,
+				46086367250D484400E51D84 /* slave.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
