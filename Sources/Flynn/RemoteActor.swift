@@ -145,6 +145,10 @@ public final class RemoteActorManager: Actor {
             if let message = messages.dequeue() {
                 message.run(data)
             }
+
+            if messages.isEmpty {
+                waitingReply.removeValue(forKey: remoteActorUUID)
+            }
         }
     }
 }

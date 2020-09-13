@@ -6,12 +6,15 @@ import XCTest
 @testable import Flynn
 
 class Echo: RemoteActor {
+    private var count: Int = 0
+    
     private func _bePrint(_ string: String) {
-        print("from master: '\(string)'")
+        print("on slave: '\(string)'")
     }
     
     private func _beToLower(_ string: String) -> Data {
-        if let data = string.lowercased().data(using:.utf8) {
+        count += 1
+        if let data = ("\(string) [\(count)]").lowercased().data(using:.utf8) {
             return data
         }
         return Data()
@@ -95,18 +98,19 @@ class FlynnRemoteTests: XCTestCase {
         Echo().bePrint("Hello Remote Actor 2!")
         Echo().bePrint("Hello Remote Actor 3!")
         
-        
         let printReply: RemoteBehaviorReply = { (data) in
             if let lowered = String(data: data, encoding: .utf8) {
-                print(":: \(lowered)")
+                print("on master: \(lowered)")
             }
         }
         
-        let echo = Echo()
-        echo.beToLower("HELLO WORLD 1", Flynn.any, printReply)
-        echo.beToLower("HELLO WORLD 2", Flynn.any, printReply)
-        echo.beToLower("HELLO WORLD 3", Flynn.any, printReply)
-        echo.beToLower("HELLO WORLD 4", Flynn.any, printReply)
+        let echo1 = Echo()
+        echo1.beToLower("HELLO WORLD A", Flynn.any, printReply)
+        echo1.beToLower("HELLO WORLD B", Flynn.any, printReply)
+        
+        let echo2 = Echo()
+        echo2.beToLower("HELLO WORLD C", Flynn.any, printReply)
+        echo2.beToLower("HELLO WORLD D", Flynn.any, printReply)
         
         let start = ProcessInfo.processInfo.systemUptime
         while (ProcessInfo.processInfo.systemUptime - start) < 5 { }

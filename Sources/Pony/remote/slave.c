@@ -127,7 +127,9 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
     send_version_check(masterPtr->socketfd);
     
     while(masterPtr->socketfd > 0) {
+#if REMOTE_DEBUG
         fprintf(stderr, "[%d] slave reading socket\n", masterPtr->socketfd);
+#endif
         
         // read the command byte
         uint8_t command = read_command(masterPtr->socketfd);
@@ -153,7 +155,9 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
         switch (command) {
             case COMMAND_VERSION_CHECK: {
                 if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
+#if REMOTE_DEBUG
                     fprintf(stdout, "[%d] master/slave version mismatch ( %s != %s )\n", masterPtr->socketfd, uuid, BUILD_VERSION_UUID);
+#endif
                     slave_remove_master(masterPtr);
                     ponyint_pool_thread_cleanup();
                     return;
@@ -169,13 +173,17 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
                 
                 masterPtr->createActorFuncPtr(uuid, type);
                 
+#if REMOTE_DEBUG
                 fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR[%s, %s]\n", masterPtr->socketfd, uuid, type);
+#endif
             } break;
             case COMMAND_DESTROY_ACTOR:
                 
                 masterPtr->destroyActorFuncPtr(uuid);
                 
+#if REMOTE_DEBUG
                 fprintf(stdout, "[%d] COMMAND_DESTROY_ACTOR[%s]\n", masterPtr->socketfd, uuid);
+#endif
                 break;
             case COMMAND_SEND_MESSAGE: {
                 char behavior[128] = {0};
@@ -194,7 +202,9 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
                 
                 masterPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count, masterPtr->socketfd);
                 
+#if REMOTE_DEBUG
                 fprintf(stdout, "[%d] COMMAND_SEND_MESSAGE[%s, %s] %d bytes\n", masterPtr->socketfd, uuid, behavior, payload_count);
+#endif
             } break;
         }
     }
@@ -221,8 +231,6 @@ void pony_slave(const char * address,
         fprintf(stderr, "Flynn Slave failed to add master, maximum number of masters exceeded\n");
         return;
     }
-    
-    fprintf(stderr, "pony_slave connect to %s:%d\n", address, port);
 }
 
 void slave_shutdown() {

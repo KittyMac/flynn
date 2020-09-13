@@ -134,7 +134,9 @@ void send_create_actor(int socketfd, const char * actorUUID, const char * actorT
     
     send_buffer(socketfd, buffer, idx);
     
+#if REMOTE_DEBUG
     fprintf(stderr, "[%d] master sending create actor to socket\n", socketfd);
+#endif
 }
 
 void send_destroy_actor(int socketfd, const char * actorUUID) {
@@ -150,7 +152,9 @@ void send_destroy_actor(int socketfd, const char * actorUUID) {
         
     send_buffer(socketfd, buffer, idx);
     
+#if REMOTE_DEBUG
     fprintf(stderr, "[%d] master sending destroy actor to socket\n", socketfd);
+#endif
 }
 
 void send_message(int socketfd, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count) {
@@ -176,7 +180,9 @@ void send_message(int socketfd, const char * actorUUID, const char * behaviorTyp
     
     send_buffer(socketfd, (char *)bytes, count);
     
+#if REMOTE_DEBUG
     fprintf(stderr, "[%d] master sending message to socket\n", socketfd);
+#endif
 }
 
 void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32_t count) {
@@ -197,7 +203,9 @@ void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32
     
     send_buffer(socketfd, (char *)bytes, count);
     
+#if REMOTE_DEBUG
     fprintf(stderr, "[%d] slave sending reply to socket\n", socketfd);
+#endif
 }
 
 // MARK: - SHUTDOWN

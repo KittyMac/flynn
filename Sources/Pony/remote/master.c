@@ -111,7 +111,10 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
     send_version_check(slavePtr->socketfd);
     
     while(slavePtr->socketfd > 0) {
+        
+#if REMOTE_DEBUG
         fprintf(stderr, "[%d] master reading socket\n", slavePtr->socketfd);
+#endif
         
         // read the command byte
         uint8_t command = read_command(slavePtr->socketfd);
@@ -131,7 +134,9 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
         switch(command) {
             case COMMAND_VERSION_CHECK: {
                 if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
+#if REMOTE_DEBUG
                     fprintf(stdout, "[%d] master/slave version mismatch ( %s != %s )\n", slavePtr->socketfd, uuid, BUILD_VERSION_UUID);
+#endif
                     master_remove_slave(slavePtr);
                     return;
                 }
@@ -146,7 +151,9 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
                 
                 replyMessageFuncPtr(uuid, payload, payload_count);
                 
+#if REMOTE_DEBUG
                 fprintf(stdout, "[%d] COMMAND_SEND_REPLY[%s] %d bytes\n", slavePtr->socketfd, uuid, payload_count);
+#endif
             } break;
         }
     }
@@ -182,7 +189,9 @@ static DECLARE_THREAD_FN(master_thread)
         exit(1);
     }
     
+#if REMOTE_DEBUG
     fprintf(stderr, "[%d] master listen socket\n", master_listen_socket);
+#endif
     while(master_listen_socket > 0) {
         if ((listen(socketfd, 32)) != 0) {
             fprintf(stderr, "Flynn Master socket listen failed, ending master listen thread\n");
@@ -223,8 +232,6 @@ void pony_master(const char * address,
     master_tcp_port = port;
     
     ponyint_thread_create(&master_tid, master_thread, QOS_CLASS_BACKGROUND, NULL);
-    
-    fprintf(stderr, "pony_master listen on %s:%d\n", address, port);
 }
 
 void master_shutdown() {
