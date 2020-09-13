@@ -21,10 +21,6 @@
 
 #include "remote.h"
 
-typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType);
-typedef void (*DestroyActorFunc)(const char * actorUUID);
-typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize);
-
 // MARK: - SLAVE
 
 #define kMaxIPAddress 128
@@ -49,7 +45,16 @@ static bool inited = false;
 
 static DECLARE_THREAD_FN(slave_read_from_master_thread);
 
-
+static master_t * find_master_by_socket(int socketfd) {
+    master_t * ptr = masters;
+    while (ptr < (masters + kMaxMasters) && ptr->socketfd > 0) {
+        if (ptr->socketfd == socketfd) {
+            return ptr;
+        }
+        ptr++;
+    }
+    return NULL;
+}
 
 static bool slave_add_master(const char * address,
                              int port,
@@ -187,7 +192,7 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
                 uint8_t * bytes = malloc(payload_count);
                 read(masterPtr->socketfd, bytes, payload_count);
                 
-                masterPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count);
+                masterPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count, masterPtr->socketfd);
                 
                 fprintf(stdout, "[%d] COMMAND_SEND_MESSAGE[%s, %s] %d bytes\n", masterPtr->socketfd, uuid, behavior, payload_count);
             } break;
@@ -226,7 +231,9 @@ void slave_shutdown() {
 
 // MARK: - MESSAGES
 
-void pony_remote_actor_send_message_to_master(const char * actorUUID, const void * bytes, int count) {
+void pony_remote_actor_send_message_to_master(int socketfd, const char * actorUUID, const void * bytes, int count) {
     // When a slave is sending back to a master, they send a message by knowing the recipients actor uuid
-    // This is easier than sending to a client, because we know the receipient exists and where it is
+    // The master knows which messages it sent which are expecting a reply, so it is garaunteed they
+    // will be delivered back in order
+    send_reply(socketfd, actorUUID, bytes, count);
 }

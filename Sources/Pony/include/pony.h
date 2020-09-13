@@ -10,10 +10,13 @@
 
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType);
 typedef void (*DestroyActorFunc)(const char * actorUUID);
-typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize);
+typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int replySocketFD);
+typedef void (*ReplyMessageFunc)(const char * actorUUID, void * payload, int payloadSize);
 
 
-void pony_master(const char * address, int port);
+void pony_master(const char * address,
+                 int port,
+                 ReplyMessageFunc replyMessageFunc);
 void pony_slave(const char * address,
                 int port,
                 CreateActorFunc createActorFunc,
@@ -26,7 +29,8 @@ void pony_remote_actor_send_message_to_slave(const char * actorUUID,
                                              int * slaveSocketFD,
                                              const void * bytes,
                                              int count);
-void pony_remote_actor_send_message_to_master(const char * actorUUID,
+void pony_remote_actor_send_message_to_master(int socketfd,
+                                              const char * actorUUID,
                                               const void * bytes,
                                               int count);
 

@@ -25,6 +25,8 @@ open class Flynn {
     private static var timeStart: TimeInterval = 0
     private static var registeredActorsCheckRunning = false
 
+    public static let any = Actor()
+
     public class func startup() {
         running.checkInactive {
             timeStart = ProcessInfo.processInfo.systemUptime

@@ -51,15 +51,16 @@ char * BUILD_VERSION_UUID = __TIMESTAMP__;
 //   [?]        message data
 //
 //  COMMAND_SEND_REPLY (master <- slave)
-//
-//
-//
+//   [1] U8     number of bytes for actor uuid
+//   [?]        actor uuid as string
+//   [0-4]      number of bytes for message data
+//   [?]        message data
 //
 
 // MARK: - COMMANDS
 
 char * read_intcount_buffer(int socketfd, uint32_t * count) {
-    if (recv(socketfd, &count, sizeof(uint32_t), 0) <= 0) {
+    if (recv(socketfd, count, sizeof(uint32_t), 0) <= 0) {
         return NULL;
     }
     *count = ntohl(*count);
@@ -176,6 +177,27 @@ void send_message(int socketfd, const char * actorUUID, const char * behaviorTyp
     send_buffer(socketfd, (char *)bytes, count);
     
     fprintf(stderr, "[%d] master sending message to socket\n", socketfd);
+}
+
+void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32_t count) {
+    char buffer[512];
+    int idx = 0;
+    
+    buffer[idx++] = COMMAND_SEND_REPLY;
+    
+    uint8_t uuid_count = strlen(actorUUID);
+    buffer[idx++] = uuid_count;
+    memcpy(buffer + idx, actorUUID, uuid_count);
+    idx += uuid_count;
+            
+    send_buffer(socketfd, buffer, idx);
+    
+    uint32_t net_count = htonl(count);
+    send(socketfd, &net_count, sizeof(net_count), 0);
+    
+    send_buffer(socketfd, (char *)bytes, count);
+    
+    fprintf(stderr, "[%d] slave sending reply to socket\n", socketfd);
 }
 
 // MARK: - SHUTDOWN

@@ -39,7 +39,7 @@ static pthread_mutex_t slaves_mutex;
 static pony_thread_id_t master_tid;
 static char master_ip_address[128] = {0};
 static int master_tcp_port = 9999;
-
+static ReplyMessageFunc replyMessageFuncPtr = NULL;
 static int master_listen_socket = 0;
 
 static DECLARE_THREAD_FN(master_read_from_slave_thread);
@@ -143,6 +143,9 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
                     master_remove_slave(slavePtr);
                     return;
                 }
+                
+                replyMessageFuncPtr(uuid, payload, payload_count);
+                
                 fprintf(stdout, "[%d] COMMAND_SEND_REPLY[%s] %d bytes\n", slavePtr->socketfd, uuid, payload_count);
             } break;
         }
@@ -207,10 +210,14 @@ static DECLARE_THREAD_FN(master_thread)
     return 0;
 }
 
-void pony_master(const char * address, int port) {
+void pony_master(const char * address,
+                 int port,
+                 ReplyMessageFunc replyFunc) {
     if (master_listen_socket > 0) { return; }
     
     pthread_mutex_init(&slaves_mutex, NULL);
+    
+    replyMessageFuncPtr = replyFunc;
     
     strncpy(master_ip_address, address, sizeof(master_ip_address)-1);
     master_tcp_port = port;
