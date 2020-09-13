@@ -21,6 +21,10 @@
 
 #include "remote.h"
 
+typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType);
+typedef void (*DestroyActorFunc)(const char * actorUUID);
+typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize);
+
 // MARK: - SLAVE
 
 #define kMaxIPAddress 128
@@ -30,6 +34,9 @@ typedef struct master_t
     char address[kMaxIPAddress];
     int port;
     int socketfd;
+    CreateActorFunc createActorFuncPtr;
+    DestroyActorFunc destroyActorFuncPtr;
+    MessageActorFunc messageActorFuncPtr;
     pony_thread_id_t thread_tid;
 } master_t;
 
@@ -44,12 +51,19 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread);
 
 
 
-static bool slave_add_master(const char * address, int port) {
+static bool slave_add_master(const char * address,
+                             int port,
+                             CreateActorFunc createActorFuncPtr,
+                             DestroyActorFunc destroyActorFuncPtr,
+                             MessageActorFunc messageActorFuncPtr) {
     for (int i = 0; i < kMaxMasters; i++) {
         if (masters[i].socketfd == 0) {
             masters[i].socketfd = -1;
             strncpy(masters[i].address, address, kMaxIPAddress);
             masters[i].port = port;
+            masters[i].createActorFuncPtr = createActorFuncPtr;
+            masters[i].destroyActorFuncPtr = destroyActorFuncPtr;
+            masters[i].messageActorFuncPtr = messageActorFuncPtr;
             ponyint_thread_create(&masters[i].thread_tid, slave_read_from_master_thread, QOS_CLASS_BACKGROUND, masters + i);
             pthread_mutex_unlock(&masters_mutex);
             return true;
@@ -63,6 +77,9 @@ static void slave_remove_master(master_t * masterPtr) {
         close_socket(masterPtr->socketfd);
         masterPtr->thread_tid = 0;
         masterPtr->port = 0;
+        masterPtr->createActorFuncPtr = NULL;
+        masterPtr->destroyActorFuncPtr = NULL;
+        masterPtr->messageActorFuncPtr = NULL;
         masterPtr->address[0] = 0;
         masterPtr->socketfd = 0;
     }
@@ -145,9 +162,14 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
                     return;
                 }
                 
+                masterPtr->createActorFuncPtr(uuid, type);
+                
                 fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR[%s, %s]\n", masterPtr->socketfd, uuid, type);
             } break;
             case COMMAND_DESTROY_ACTOR:
+                
+                masterPtr->destroyActorFuncPtr(uuid);
+                
                 fprintf(stdout, "[%d] COMMAND_DESTROY_ACTOR[%s]\n", masterPtr->socketfd, uuid);
                 break;
             case COMMAND_SEND_MESSAGE: {
@@ -165,6 +187,8 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
                 uint8_t * bytes = malloc(payload_count);
                 read(masterPtr->socketfd, bytes, payload_count);
                 
+                masterPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count);
+                
                 fprintf(stdout, "[%d] COMMAND_SEND_MESSAGE[%s, %s] %d bytes\n", masterPtr->socketfd, uuid, behavior, payload_count);
             } break;
         }
@@ -174,13 +198,21 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
     ponyint_pool_thread_cleanup();
 }
 
-void pony_slave(const char * address, int port) {
+void pony_slave(const char * address,
+                int port,
+                CreateActorFunc createActorFuncPtr,
+                DestroyActorFunc destroyActorFuncPtr,
+                MessageActorFunc messageActorFuncPtr) {
     if (inited == false) {
         inited = true;
         pthread_mutex_init(&masters_mutex, NULL);
     }
     
-    if(!slave_add_master(address, port)) {
+    if(!slave_add_master(address,
+                         port,
+                         createActorFuncPtr,
+                         destroyActorFuncPtr,
+                         messageActorFuncPtr)) {
         fprintf(stderr, "Flynn Slave failed to add master, maximum number of masters exceeded\n");
         return;
     }

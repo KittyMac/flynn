@@ -25,14 +25,6 @@ open class Flynn {
     private static var timeStart: TimeInterval = 0
     private static var registeredActorsCheckRunning = false
 
-    public class func master(_ address: String, _ port: Int32) {
-        pony_master(address, port)
-    }
-
-    public class func slave(_ address: String, _ port: Int32) {
-        pony_slave(address, port)
-    }
-
     public class func startup() {
         running.checkInactive {
             timeStart = ProcessInfo.processInfo.systemUptime

@@ -23,25 +23,13 @@ class Echo: RemoteActor {
 //    This kind of behavior needs to serialize arguments, send, but also call a
 //    closure on a receiving actor (sender and closure get added as last two arguments
 //    on the external behavior.
+
 extension Echo {
+        
     struct bePrintMessage: Codable {
         let arg0: String
     }
-    struct beToLowerMessage: Codable {
-        let arg0: String
-    }
-    
-    public func unsafeHandleRemoteMessage(_ behavior: String, payload: Data) {
-        switch(behavior) {
-        case "bePrint":
-            break
-        case "beToLower":
-            break
-        default:
-            fatalError()
-        }
-    }
-    
+        
     public func bePrint(_ string: String) {
         let msg = bePrintMessage(arg0: string)
         if let data = try? JSONEncoder().encode(msg) {
@@ -51,12 +39,32 @@ extension Echo {
         }
     }
     
+    struct beToLowerMessage: Codable {
+        let arg0: String
+    }
+    
     public func beToLower(_ string: String, _ sender: Actor, _ callback: @escaping () -> Void) {
         let msg = beToLowerMessage(arg0: string)
         if let data = try? JSONEncoder().encode(msg) {
             unsafeSendToRemote("Echo", "beToLower", data, sender, callback)
         }else{
             fatalError()
+        }
+    }
+    
+    func unsafeRegisterAllBehaviors() {
+        safeRegisterRemoteBehavior("bePrint") { [unowned self] (data) in
+            if let msg = try? JSONDecoder().decode(bePrintMessage.self, from: data) {
+                self._bePrint(msg.arg0)
+            }
+            return nil
+        }
+        
+        safeRegisterRemoteBehavior("beToLower") { [unowned self] (data) in
+            if let msg = try? JSONDecoder().decode(beToLowerMessage.self, from: data) {
+                _ = self._beToLower(msg.arg0)
+            }
+            return nil
         }
     }
 }
@@ -79,6 +87,8 @@ class FlynnRemoteTests: XCTestCase {
 
     func testSimpleRemote() {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
+        
+        Flynn.registerRemoteActor(Echo.self)
         
         Echo().bePrint("Hello Remote Actor 1!")
         Echo().bePrint("Hello Remote Actor 2!")

@@ -8,8 +8,17 @@
 
 #include <stdbool.h>
 
+typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType);
+typedef void (*DestroyActorFunc)(const char * actorUUID);
+typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize);
+
+
 void pony_master(const char * address, int port);
-void pony_slave(const char * address, int port);
+void pony_slave(const char * address,
+                int port,
+                CreateActorFunc createActorFunc,
+                DestroyActorFunc destroyActorFunc,
+                MessageActorFunc messageActorFunc);
 
 void pony_remote_actor_send_message_to_slave(const char * actorUUID,
                                              const char * actorType,
