@@ -90,13 +90,23 @@ open class InternalRemoteActor {
 
 // MARK: - REMOTE ACTOR MANAGER
 
+// The RemoteActorManager is used both on the master and on the slaves
+//
+// On the master, it stores waiting replies for behaviors which return Data, and then executes
+// those reply closures with the returned data.
+//
+// On the slaves, it:
+// 1. Holds a registry of all RemoteActor classes by their class name as a string (beRegisterActorType)
+// 2. Holds a reference to all actors which were created remotely at the behest of the master (beCreateActor/beDestroyActor)
+// 3. Calls behaviors on said actors at the behest of the master (beHandleMessage)
+
 public final class RemoteActorManager: Actor {
     static let shared = RemoteActorManager()
     private override init() {}
 
+    // MARK: - RemoteActorManager: Slave
     private var actorTypes: [String: RemoteActor.Type] = [:]
     private var actors: [String: RemoteActor] = [:]
-    private var waitingReply: [String: Queue<MessageReply>] = [:]
 
     private func _beRegisterActorType(_ actorType: RemoteActor.Type) {
         actorTypes[String(describing: actorType)] = actorType
@@ -122,6 +132,10 @@ public final class RemoteActorManager: Actor {
             actor.unsafeExecuteBehavior(behavior, data, replySocketFD)
         }
     }
+
+    // MARK: - RemoteActorManager: Master
+
+    private var waitingReply: [String: Queue<MessageReply>] = [:]
 
     private func _beRegisterReply(_ remoteActorUUID: String,
                                   _ actor: Actor,
