@@ -24,6 +24,7 @@
 		46086365250D484400E51D84 /* master.c in Sources */ = {isa = PBXBuildFile; fileRef = 46086361250D484400E51D84 /* master.c */; };
 		46086366250D484400E51D84 /* shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 46086363250D484400E51D84 /* shared.c */; };
 		46086367250D484400E51D84 /* slave.c in Sources */ = {isa = PBXBuildFile; fileRef = 46086364250D484400E51D84 /* slave.c */; };
+		4665575B250E82E800E53269 /* Echo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4665575A250E82E100E53269 /* Echo.swift */; };
 		OBJ_105 /* BadFlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_47 /* BadFlynnTests.swift */; };
 		OBJ_106 /* FlynnComponentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_48 /* FlynnComponentsTests.swift */; };
 		OBJ_107 /* FlynnMessagesBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_49 /* FlynnMessagesBenchmark.swift */; };
@@ -99,6 +100,7 @@
 		46086362250D484400E51D84 /* remote.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = remote.h; sourceTree = "<group>"; };
 		46086363250D484400E51D84 /* shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = shared.c; sourceTree = "<group>"; };
 		46086364250D484400E51D84 /* slave.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = slave.c; sourceTree = "<group>"; };
+		4665575A250E82E100E53269 /* Echo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Echo.swift; sourceTree = "<group>"; };
 		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::Pony::Product" /* Pony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Pony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -282,6 +284,7 @@
 			children = (
 				OBJ_53 /* Color.swift */,
 				OBJ_54 /* Counter.swift */,
+				4665575A250E82E100E53269 /* Echo.swift */,
 				OBJ_55 /* Flowable.swift */,
 				OBJ_56 /* Image.swift */,
 				OBJ_57 /* MessageTestDispatchQueues.swift */,
@@ -456,6 +459,7 @@
 				OBJ_106 /* FlynnComponentsTests.swift in Sources */,
 				OBJ_107 /* FlynnMessagesBenchmark.swift in Sources */,
 				OBJ_108 /* FlynnRemoteTests.swift in Sources */,
+				4665575B250E82E800E53269 /* Echo.swift in Sources */,
 				OBJ_109 /* FlynnTests.swift in Sources */,
 				OBJ_110 /* Color.swift in Sources */,
 				OBJ_111 /* Counter.swift in Sources */,

@@ -24,11 +24,11 @@ private class MessageReply {
     }
 }
 
-public protocol Registerable {
+public protocol BehaviorRegisterable {
     func unsafeRegisterAllBehaviors()
 }
 
-public typealias RemoteActor = ( InternalRemoteActor & Registerable )
+public typealias RemoteActor = ( InternalRemoteActor & BehaviorRegisterable )
 
 open class InternalRemoteActor {
 
