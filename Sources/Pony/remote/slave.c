@@ -140,7 +140,7 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
             command != COMMAND_SEND_MESSAGE) {
             slave_remove_master(masterPtr);
             ponyint_pool_thread_cleanup();
-            return;
+            return 0;
         }
         
         // read the size of the uuid
@@ -148,7 +148,7 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
         if (!read_bytecount_buffer(masterPtr->socketfd, uuid, sizeof(uuid)-1)) {
             slave_remove_master(masterPtr);
             ponyint_pool_thread_cleanup();
-            return;
+            return 0;
         }
 
         
@@ -160,7 +160,7 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
 #endif
                     slave_remove_master(masterPtr);
                     ponyint_pool_thread_cleanup();
-                    return;
+                    return 0;
                 }
             } break;
             case COMMAND_CREATE_ACTOR: {
@@ -168,7 +168,7 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
                 if (!read_bytecount_buffer(masterPtr->socketfd, type, sizeof(type)-1)) {
                     slave_remove_master(masterPtr);
                     ponyint_pool_thread_cleanup();
-                    return;
+                    return 0;
                 }
                 
                 masterPtr->createActorFuncPtr(uuid, type);
@@ -190,7 +190,7 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
                 if (!read_bytecount_buffer(masterPtr->socketfd, behavior, sizeof(behavior)-1)) {
                     slave_remove_master(masterPtr);
                     ponyint_pool_thread_cleanup();
-                    return;
+                    return 0;
                 }
                 
                 uint32_t payload_count = 0;
@@ -211,6 +211,8 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
     
     slave_remove_master(masterPtr);
     ponyint_pool_thread_cleanup();
+    
+    return 0;
 }
 
 void pony_slave(const char * address,

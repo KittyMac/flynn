@@ -121,14 +121,14 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
         if (command != COMMAND_VERSION_CHECK &&
             command != COMMAND_SEND_REPLY) {
             master_remove_slave(slavePtr);
-            return;
+            return 0;
         }
         
         // read the size of the uuid
         char uuid[128] = {0};
         if (!read_bytecount_buffer(slavePtr->socketfd, uuid, sizeof(uuid)-1)) {
             master_remove_slave(slavePtr);
-            return;
+            return 0;
         }
         
         switch(command) {
@@ -138,7 +138,7 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
                     fprintf(stdout, "[%d] master/slave version mismatch ( %s != %s )\n", slavePtr->socketfd, uuid, BUILD_VERSION_UUID);
 #endif
                     master_remove_slave(slavePtr);
-                    return;
+                    return 0;
                 }
             } break;
             case COMMAND_SEND_REPLY: {
@@ -146,7 +146,7 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
                 char * payload = read_intcount_buffer(slavePtr->socketfd, &payload_count);
                 if (payload == NULL) {
                     master_remove_slave(slavePtr);
-                    return;
+                    return 0;
                 }
                 
                 replyMessageFuncPtr(uuid, payload, payload_count);
@@ -159,6 +159,8 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
     }
     
     master_remove_slave(slavePtr);
+    
+    return 0;
 }
 
 static DECLARE_THREAD_FN(master_thread)
