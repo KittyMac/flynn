@@ -27,6 +27,10 @@ class Counter: Actor, Timerable {
     private func _beEquals(_ callback: @escaping ((Int) -> Void)) {
         callback(self.counter)
     }
+    
+    private func _beGetValue() -> Int {
+        return counter
+    }
 }
 
 
@@ -36,7 +40,8 @@ class Counter: Actor, Timerable {
 extension Counter {
 
     @discardableResult
-    public func beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) -> Self {
+    public func beTimerFired(_ timer: Flynn.Timer,
+                             _ args: TimerArgs) -> Self {
         unsafeSend { self._beTimerFired(timer, args) }
         return self
     }
@@ -58,6 +63,15 @@ extension Counter {
     @discardableResult
     public func beEquals(_ callback: @escaping ((Int) -> Void)) -> Self {
         unsafeSend { self._beEquals(callback) }
+        return self
+    }
+    @discardableResult
+    public func beGetValue(_ sender: Actor,
+                           _ callback: @escaping ((Int) -> Void)) -> Self {
+        unsafeSend() {
+            let result = self._beGetValue()
+            sender.unsafeSend { callback(result) }
+        }
         return self
     }
 

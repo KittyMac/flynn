@@ -31,7 +31,8 @@ class StringBuilder: Actor, Timerable {
 extension StringBuilder {
 
     @discardableResult
-    public func beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) -> Self {
+    public func beTimerFired(_ timer: Flynn.Timer,
+                             _ args: TimerArgs) -> Self {
         unsafeSend { self._beTimerFired(timer, args) }
         return self
     }

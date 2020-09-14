@@ -34,11 +34,12 @@ class FlynnTests: XCTestCase {
             .beInc(10)
             .beInc(20)
             .beDec(1)
-            .beEquals { (value: Int) in
+            .beGetValue(Flynn.any) { (value) in
                 print("value: \(value)")
                 XCTAssertEqual(value, 30, "Counter did not add up to 30")
                 expectation.fulfill()
             }
+
         print(counter.unsafeStatus)
         print("end")
         wait(for: [expectation], timeout: 10.0)

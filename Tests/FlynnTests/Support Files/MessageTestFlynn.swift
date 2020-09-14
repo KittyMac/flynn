@@ -252,7 +252,8 @@ extension MessageTestFlynn.SyncLeader {
         return self
     }
     @discardableResult
-    public func beReportPings(_ idx: Int, _ count: UInt64) -> Self {
+    public func beReportPings(_ idx: Int,
+                              _ count: UInt64) -> Self {
         unsafeSend { self._beReportPings(idx, count) }
         return self
     }
