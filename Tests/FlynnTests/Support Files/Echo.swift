@@ -25,16 +25,16 @@ class Echo: RemoteActor {
 
 extension Echo {
 
-    struct bePrintMessage: Codable {
+    struct BePrintCodable: Codable {
         let arg0: String
     }
-    struct beToLowerMessage: Codable {
+    struct BeToLowerCodable: Codable {
         let arg0: String
     }
 
     @discardableResult
     public func bePrint(_ string: String ) -> Self {
-        let msg = bePrintMessage(arg0: string)
+        let msg = BePrintCodable(arg0: string)
         if let data = try? JSONEncoder().encode(msg) {
             unsafeSendToRemote("Echo", "bePrint", data, nil, nil)
         } else {
@@ -46,7 +46,7 @@ extension Echo {
     public func beToLower(_ string: String,
                           _ sender: Actor,
                           _ callback: @escaping RemoteBehaviorReply ) -> Self {
-        let msg = beToLowerMessage(arg0: string)
+        let msg = BeToLowerCodable(arg0: string)
         if let data = try? JSONEncoder().encode(msg) {
             unsafeSendToRemote("Echo", "beToLower", data, sender, callback)
         } else {
@@ -57,13 +57,13 @@ extension Echo {
 
     public func unsafeRegisterAllBehaviors() {
         safeRegisterRemoteBehavior("bePrint") { [unowned self] (data) in
-            if let msg = try? JSONDecoder().decode(bePrintMessage.self, from: data) {
+            if let msg = try? JSONDecoder().decode(BePrintCodable.self, from: data) {
                 self._bePrint(msg.arg0)
             }
             return nil
         }
         safeRegisterRemoteBehavior("beToLower") { [unowned self] (data) in
-            if let msg = try? JSONDecoder().decode(beToLowerMessage.self, from: data) {
+            if let msg = try? JSONDecoder().decode(BeToLowerCodable.self, from: data) {
                 return self._beToLower(msg.arg0)
             }
             return nil
