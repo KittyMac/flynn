@@ -55,7 +55,7 @@ extension Echo {
         return self
     }
 
-    func unsafeRegisterAllBehaviors() {
+    public func unsafeRegisterAllBehaviors() {
         safeRegisterRemoteBehavior("bePrint") { [unowned self] (data) in
             if let msg = try? JSONDecoder().decode(bePrintMessage.self, from: data) {
                 self._bePrint(msg.arg0)
