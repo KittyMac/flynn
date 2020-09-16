@@ -107,109 +107,114 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
     socklen_t len;
     struct sockaddr_in servaddr = {0};
     struct sockaddr_in clientaddr = {0};
-
-    // socket create and verification
-    masterPtr->socketfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (masterPtr->socketfd == -1) {
-        fprintf(stderr, "Flynn Slave socket creation failed, exiting...\n");
-        exit(1);
-    }
-
+    
     servaddr.sin_family = AF_INET;
     inet_pton(AF_INET, masterPtr->address, &(servaddr.sin_addr));
     servaddr.sin_port = htons(masterPtr->port);
     
-    if (connect(masterPtr->socketfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
-        printf("Flynn Slave connect to master failed, exiting...\n");
-        exit(1);
-    }
+    while (masterPtr->thread_tid != 0) {
         
-    send_version_check(masterPtr->socketfd);
-    
-    while(masterPtr->socketfd > 0) {
+        // socket create and verification
+        masterPtr->socketfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (masterPtr->socketfd == -1) {
+            fprintf(stderr, "Flynn Slave socket creation failed, exiting...\n");
+            exit(1);
+        }
+        
+        if (connect(masterPtr->socketfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
 #if REMOTE_DEBUG
-        fprintf(stderr, "[%d] slave reading socket\n", masterPtr->socketfd);
+            fprintf(stderr, "[%d] attempting to reconnect to master\n", masterPtr->socketfd);
 #endif
-        
-        // read the command byte
-        uint8_t command = read_command(masterPtr->socketfd);
-        
-        if (command != COMMAND_VERSION_CHECK &&
-            command != COMMAND_CREATE_ACTOR &&
-            command != COMMAND_DESTROY_ACTOR &&
-            command != COMMAND_SEND_MESSAGE) {
-            slave_remove_master(masterPtr);
-            ponyint_pool_thread_cleanup();
-            return 0;
+            close(masterPtr->socketfd);
+            sleep(1);
+            continue;
         }
+            
+        send_version_check(masterPtr->socketfd);
         
-        // read the size of the uuid
-        char uuid[128] = {0};
-        if (!read_bytecount_buffer(masterPtr->socketfd, uuid, sizeof(uuid)-1)) {
-            slave_remove_master(masterPtr);
-            ponyint_pool_thread_cleanup();
-            return 0;
-        }
+        while(masterPtr->socketfd > 0) {
+#if REMOTE_DEBUG
+            fprintf(stderr, "[%d] slave reading socket\n", masterPtr->socketfd);
+#endif
+            
+            // read the command byte
+            uint8_t command = read_command(masterPtr->socketfd);
+            
+            if (command != COMMAND_VERSION_CHECK &&
+                command != COMMAND_CREATE_ACTOR &&
+                command != COMMAND_DESTROY_ACTOR &&
+                command != COMMAND_SEND_MESSAGE) {
+                slave_remove_master(masterPtr);
+                ponyint_pool_thread_cleanup();
+                return 0;
+            }
+            
+            // read the size of the uuid
+            char uuid[128] = {0};
+            if (!read_bytecount_buffer(masterPtr->socketfd, uuid, sizeof(uuid)-1)) {
+                slave_remove_master(masterPtr);
+                ponyint_pool_thread_cleanup();
+                return 0;
+            }
 
-        
-        switch (command) {
-            case COMMAND_VERSION_CHECK: {
-                if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
+            
+            switch (command) {
+                case COMMAND_VERSION_CHECK: {
+                    if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
 #if REMOTE_DEBUG
-                    fprintf(stdout, "[%d] master/slave version mismatch ( %s != %s )\n", masterPtr->socketfd, uuid, BUILD_VERSION_UUID);
+                        fprintf(stdout, "[%d] master/slave version mismatch ( %s != %s )\n", masterPtr->socketfd, uuid, BUILD_VERSION_UUID);
 #endif
-                    slave_remove_master(masterPtr);
-                    ponyint_pool_thread_cleanup();
-                    return 0;
-                }
-            } break;
-            case COMMAND_CREATE_ACTOR: {
-                char type[128] = {0};
-                if (!read_bytecount_buffer(masterPtr->socketfd, type, sizeof(type)-1)) {
-                    slave_remove_master(masterPtr);
-                    ponyint_pool_thread_cleanup();
-                    return 0;
-                }
-                
-                masterPtr->createActorFuncPtr(uuid, type);
-                
+                        continue;
+                    }
+                } break;
+                case COMMAND_CREATE_ACTOR: {
+                    char type[128] = {0};
+                    if (!read_bytecount_buffer(masterPtr->socketfd, type, sizeof(type)-1)) {
+                        slave_remove_master(masterPtr);
+                        ponyint_pool_thread_cleanup();
+                        return 0;
+                    }
+                    
+                    masterPtr->createActorFuncPtr(uuid, type);
+                    
 #if REMOTE_DEBUG
-                fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR[%s, %s]\n", masterPtr->socketfd, uuid, type);
+                    fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR[%s, %s]\n", masterPtr->socketfd, uuid, type);
 #endif
-            } break;
-            case COMMAND_DESTROY_ACTOR:
-                
-                masterPtr->destroyActorFuncPtr(uuid);
-                
+                } break;
+                case COMMAND_DESTROY_ACTOR:
+                    
+                    masterPtr->destroyActorFuncPtr(uuid);
+                    
 #if REMOTE_DEBUG
-                fprintf(stdout, "[%d] COMMAND_DESTROY_ACTOR[%s]\n", masterPtr->socketfd, uuid);
+                    fprintf(stdout, "[%d] COMMAND_DESTROY_ACTOR[%s]\n", masterPtr->socketfd, uuid);
 #endif
-                break;
-            case COMMAND_SEND_MESSAGE: {
-                char behavior[128] = {0};
-                if (!read_bytecount_buffer(masterPtr->socketfd, behavior, sizeof(behavior)-1)) {
-                    slave_remove_master(masterPtr);
-                    ponyint_pool_thread_cleanup();
-                    return 0;
-                }
-                
-                uint32_t payload_count = 0;
-                read(masterPtr->socketfd, &payload_count, sizeof(uint32_t));
-                payload_count = ntohl(payload_count);
-                
-                uint8_t * bytes = malloc(payload_count);
-                read(masterPtr->socketfd, bytes, payload_count);
-                
-                masterPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count, masterPtr->socketfd);
-                
-#if REMOTE_DEBUG
-                fprintf(stdout, "[%d] COMMAND_SEND_MESSAGE[%s, %s] %d bytes\n", masterPtr->socketfd, uuid, behavior, payload_count);
-#endif
-            } break;
+                    break;
+                case COMMAND_SEND_MESSAGE: {
+                    char behavior[128] = {0};
+                    if (!read_bytecount_buffer(masterPtr->socketfd, behavior, sizeof(behavior)-1)) {
+                        slave_remove_master(masterPtr);
+                        ponyint_pool_thread_cleanup();
+                        return 0;
+                    }
+                    
+                    uint32_t payload_count = 0;
+                    read(masterPtr->socketfd, &payload_count, sizeof(uint32_t));
+                    payload_count = ntohl(payload_count);
+                    
+                    uint8_t * bytes = malloc(payload_count);
+                    read(masterPtr->socketfd, bytes, payload_count);
+                    
+                    masterPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count, masterPtr->socketfd);
+                    
+    #if REMOTE_DEBUG
+                    fprintf(stdout, "[%d] COMMAND_SEND_MESSAGE[%s, %s] %d bytes\n", masterPtr->socketfd, uuid, behavior, payload_count);
+    #endif
+                } break;
+            }
         }
+        slave_remove_master(masterPtr);
     }
     
-    slave_remove_master(masterPtr);
     ponyint_pool_thread_cleanup();
     
     return 0;

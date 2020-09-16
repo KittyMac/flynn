@@ -4,7 +4,7 @@
 
 extern char * BUILD_VERSION_UUID;
 
-#define REMOTE_DEBUG 0
+#define REMOTE_DEBUG 1
 
 #define COMMAND_NULL 0
 #define COMMAND_VERSION_CHECK 1

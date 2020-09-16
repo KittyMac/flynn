@@ -8,21 +8,21 @@ import XCTest
 class FlynnRemoteTests: XCTestCase {
     
     override func setUp() {
-        Flynn.startup()
+        
+    }
+
+    override func tearDown() {
+        
+    }
+
+    func testSimpleRemote() {
+        let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
         
         let port = Int32.random(in: 8000..<65500)
         Flynn.master("127.0.0.1", port)
         Flynn.slave("127.0.0.1", port, [Echo.self])
         Flynn.slave("127.0.0.1", port, [Echo.self])
         Flynn.slave("127.0.0.1", port, [Echo.self])
-    }
-
-    override func tearDown() {
-        Flynn.shutdown()
-    }
-
-    func testSimpleRemote() {
-        let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
                 
         Echo().bePrint("Hello Remote Actor 1!")
         Echo().bePrint("Hello Remote Actor 2!")
@@ -46,6 +46,31 @@ class FlynnRemoteTests: XCTestCase {
         while (ProcessInfo.processInfo.systemUptime - start) < 5 { }
         
         expectation.fulfill()
+        
+        Flynn.shutdown()
+    }
+    
+    func testSlaveReconnect() {
+        let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
+        
+        let port = Int32.random(in: 8000..<65500)
+        
+        Flynn.slave("127.0.0.1", port, [Echo.self])
+        sleep(2)
+        Flynn.master("127.0.0.1", port)
+        sleep(2)
+        
+        Echo().beToLower("HELLO WORLD", Flynn.any) { (data) in
+            if let lowered = String(data: data, encoding: .utf8) {
+                if lowered == "hello world [1]" {
+                    expectation.fulfill()
+                }
+            }
+        }
+        
+        wait(for: [expectation], timeout: 10.0)
+        
+        Flynn.shutdown()
     }
 
     static var allTests = [
