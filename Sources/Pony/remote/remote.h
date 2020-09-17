@@ -1,6 +1,9 @@
 
 #include "platform.h"
 
+#ifndef PLATFORM_IS_APPLE
+#define QOS_CLASS_BACKGROUND 0
+#endif
 
 extern char * BUILD_VERSION_UUID;
 
