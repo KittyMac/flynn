@@ -11,7 +11,11 @@ public class MasterCounter: Actor {
         Flynn.Timer(timeInterval: 1.0, repeats: true, self) { (_) in
             self.total = 0
 
-            // send to all existing remotes
+            let remoteCores = Flynn.remoteCores
+
+            // send to all existing remotes (if a slave node drops, this
+            // will clear their socket and allow unsafeIsConnected() to
+            // know they are no longer connected
             for counter in self.remotes {
                 counter.beIncrement(10, self) {
                     self.total += $0.withUnsafeBytes { $0.load(as: Int.self) }
@@ -21,8 +25,11 @@ public class MasterCounter: Actor {
             // remove any RemoteCounters who are no longer connected
             self.remotes.removeAll { $0.unsafeIsConnected() == false }
 
-            // add new remote counters until we saturate all of the remote cores
-            for _ in self.remotes.count..<Flynn.remoteCores {
+            // add or remove new remote counters until equal the number of remote cores
+            while self.remotes.count > remoteCores {
+                self.remotes.removeFirst()
+            }
+            while self.remotes.count < remoteCores {
                 self.remotes.append(RemoteCounter())
             }
 
