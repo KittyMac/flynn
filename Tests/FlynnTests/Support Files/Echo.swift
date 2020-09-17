@@ -7,6 +7,7 @@ class Echo: RemoteActor {
     
     private func _bePrintThreadName() -> Data {
         if let name = Thread.current.name {
+            sleep(1)
             print("Echo running on \(name)")
         }
         return Data()

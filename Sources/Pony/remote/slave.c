@@ -63,6 +63,7 @@ static bool slave_add_master(const char * address,
                              MessageActorFunc messageActorFuncPtr) {
     for (int i = 0; i < kMaxMasters; i++) {
         if (masters[i].socketfd == 0) {
+            pthread_mutex_lock(&masters_mutex);
             masters[i].socketfd = -1;
             strncpy(masters[i].address, address, kMaxIPAddress);
             masters[i].port = port;
@@ -251,5 +252,8 @@ void pony_remote_actor_send_message_to_master(int socketfd, const char * actorUU
     // When a slave is sending back to a master, they send a message by knowing the recipients actor uuid
     // The master knows which messages it sent which are expecting a reply, so it is garaunteed they
     // will be delivered back in order
+    
+    pthread_mutex_lock(&masters_mutex);
     send_reply(socketfd, actorUUID, bytes, count);
+    pthread_mutex_unlock(&masters_mutex);
 }

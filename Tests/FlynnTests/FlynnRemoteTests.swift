@@ -52,12 +52,12 @@ class FlynnRemoteTests: XCTestCase {
     }
     
     func testSlaveReconnect() {
-        let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
+        let expectation = XCTestExpectation(description: "Confirm slaves continuously try to connect")
         
         let port = Int32.random(in: 8000..<65500)
         
         Flynn.slave("127.0.0.1", port, [Echo.self])
-        sleep(5)
+        sleep(2)
         Flynn.master("127.0.0.1", port)
         
         // Right now this is necessary, we need to wait until
@@ -65,8 +65,6 @@ class FlynnRemoteTests: XCTestCase {
         while (Flynn.remoteCores == 0) {
             usleep(500)
         }
-        print("Flynn.remoteCores: \(Flynn.remoteCores)")
-        
         
         Echo().beToLower("HELLO WORLD", Flynn.any) { (data) in
             if let lowered = String(data: data, encoding: .utf8) {
@@ -82,25 +80,21 @@ class FlynnRemoteTests: XCTestCase {
     }
     
     func testSlaveRunOnAllCores() {
-        let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
+        let expectation = XCTestExpectation(description: "Confirm remote actors use all cores on remote node")
         
         let port = Int32.random(in: 8000..<65500)
         
         Flynn.slave("127.0.0.1", port, [Echo.self])
         Flynn.master("127.0.0.1", port)
         
-        // Right now this is necessary, we need to wait until
-        // we know the slave is connected before using remote actors
         while (Flynn.remoteCores == 0) {
             usleep(500)
         }
-        print("Flynn.remoteCores: \(Flynn.remoteCores)")
         
         var n = 0
         for _ in 0..<Flynn.remoteCores {
             Echo().bePrintThreadName(Flynn.any) { (data) in
                 n += 1
-                print(n)
                 if n >= Flynn.remoteCores {
                     expectation.fulfill()
                 }
