@@ -70,7 +70,7 @@ int recvall(int fd, void * ptr, int size) {
     
     while (cptr < end_ptr) {
         int bytes_read = recv(fd, cptr, end_ptr - cptr, 0);
-        if (bytes_read < 0) {
+        if (bytes_read <= 0) {
             return -1;
         }
         cptr += bytes_read;
@@ -87,7 +87,7 @@ int sendall(int fd, void * ptr, int size) {
     
     while (cptr < end_ptr) {
         int bytes_read = send(fd, cptr, end_ptr - cptr, 0);
-        if (bytes_read < 0) {
+        if (bytes_read <= 0) {
             return -1;
         }
         cptr += bytes_read;
