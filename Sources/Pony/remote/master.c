@@ -108,6 +108,7 @@ static void master_remove_slave(slave_t * slavePtr) {
         close_socket(slavePtr->socketfd);
         slavePtr->thread_tid = 0;
         slavePtr->socketfd = 0;
+        number_of_cores -= slavePtr->core_count;
         number_of_slaves--;
         pthread_mutex_unlock(&slaves_mutex);
     }
