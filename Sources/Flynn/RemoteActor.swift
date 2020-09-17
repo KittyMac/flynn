@@ -46,6 +46,10 @@ open class InternalRemoteActor {
         unsafeUUID = uuid
     }
 
+    public func unsafeIsConnected() -> Bool {
+        return slaveSocketFD > 0
+    }
+
     deinit {
         pony_remote_destroy_actor(unsafeUUID, &slaveSocketFD)
         //print("deinit - RemoteActor [\(slaveSocketFD)]")

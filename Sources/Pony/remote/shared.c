@@ -194,7 +194,7 @@ void send_destroy_actor(int socketfd, const char * actorUUID) {
 #endif
 }
 
-void send_message(int socketfd, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count) {
+int send_message(int socketfd, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count) {
     char buffer[512];
     int idx = 0;
     
@@ -210,16 +210,24 @@ void send_message(int socketfd, const char * actorUUID, const char * behaviorTyp
     memcpy(buffer + idx, behaviorType, behavior_count);
     idx += behavior_count;
         
-    sendall(socketfd, buffer, idx);
+    if (sendall(socketfd, buffer, idx) < 0) {
+        return -1;
+    }
     
     uint32_t net_count = htonl(count);
-    sendall(socketfd, &net_count, sizeof(net_count));
+    if (sendall(socketfd, &net_count, sizeof(net_count)) < 0) {
+        return -1;
+    }
     
-    sendall(socketfd, (char *)bytes, count);
+    if (sendall(socketfd, (char *)bytes, count) < 0) {
+        return -1;
+    }
     
 #if REMOTE_DEBUG
     fprintf(stderr, "[%d] master sending message to socket\n", socketfd);
 #endif
+    
+    return idx + sizeof(net_count) + count;
 }
 
 void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32_t count) {

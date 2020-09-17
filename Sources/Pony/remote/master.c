@@ -287,7 +287,10 @@ void pony_remote_actor_send_message_to_slave(const char * actorUUID, const char 
         send_create_actor(*slaveSocketFD, actorUUID, actorType);
     }
     
-    send_message(*slaveSocketFD, actorUUID, behaviorType, bytes, count);
+    if (send_message(*slaveSocketFD, actorUUID, behaviorType, bytes, count) < 0) {
+        // we lost connection with this remote actor
+        *slaveSocketFD = -1;
+    }
 }
 
 void pony_remote_destroy_actor(const char * actorUUID, int * slaveSocketFD) {

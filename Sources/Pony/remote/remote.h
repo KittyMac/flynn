@@ -35,7 +35,7 @@ extern void send_core_count(int socketfd);
 extern void send_create_actor(int socketfd, const char * actorUUID, const char * actorType);
 extern void send_destroy_actor(int socketfd, const char * actorUUID);
 
-extern void send_message(int socketfd, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count);
+extern int send_message(int socketfd, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count);
 extern void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32_t count);
 
 extern void close_socket(int fd);
