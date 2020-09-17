@@ -156,11 +156,9 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
         switch(command) {
             case COMMAND_VERSION_CHECK: {
                 if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
-#if REMOTE_DEBUG
-                    fprintf(stdout, "[%d] master/slave version mismatch ( %s != %s )\n", slavePtr->socketfd, uuid, BUILD_VERSION_UUID);
-#endif
-                    master_remove_slave(slavePtr);
-                    return 0;
+                    fprintf(stdout, "warning: master/slave version mismatch ( %s != %s )\n", uuid, BUILD_VERSION_UUID);
+                    //master_remove_slave(slavePtr);
+                    //return 0;
                 }
             } break;
             case COMMAND_CORE_COUNT: {
