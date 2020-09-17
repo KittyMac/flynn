@@ -105,11 +105,13 @@ static bool master_add_slave(int socketfd) {
 static void master_remove_slave(slave_t * slavePtr) {
     if (slavePtr->socketfd > 0) {
         pthread_mutex_lock(&slaves_mutex);
+        number_of_cores -= slavePtr->core_count;
+        number_of_slaves--;
+        
         close_socket(slavePtr->socketfd);
         slavePtr->thread_tid = 0;
         slavePtr->socketfd = 0;
-        number_of_cores -= slavePtr->core_count;
-        number_of_slaves--;
+        slavePtr->core_count = 0;
         pthread_mutex_unlock(&slaves_mutex);
     }
 }
