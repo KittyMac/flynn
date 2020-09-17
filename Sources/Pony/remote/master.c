@@ -1,6 +1,7 @@
 
 #include "platform.h"
 
+#include <signal.h>
 #include <stdlib.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -253,6 +254,8 @@ void pony_master(const char * address,
                  int port,
                  ReplyMessageFunc replyFunc) {
     if (master_listen_socket > 0) { return; }
+    
+    sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
     
     pthread_mutex_init(&slaves_mutex, NULL);
     
