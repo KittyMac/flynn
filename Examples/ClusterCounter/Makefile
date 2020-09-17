@@ -29,3 +29,6 @@ master: build
 slave: build
 	./.build/release/server slave
 
+rocco: build
+	./.build/release/server slave 192.168.1.72
+
