@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "Flynn",
-        "repositoryURL": "https://github.com/KittyMac/Flynn.git",
-        "state": {
-          "branch": "remote_actors",
-          "revision": "06d4b4e8b2c5789702a3694c120c32f35073f8b4",
-          "version": null
-        }
-      },
-      {
         "package": "swift-argument-parser",
         "repositoryURL": "https://github.com/apple/swift-argument-parser",
         "state": {

@@ -11,20 +11,19 @@ public class MasterCounter: Actor {
         Flynn.Timer(timeInterval: 1.0, repeats: true, self) { (_) in
             self.total = 0
 
-            for idx in 0..<Flynn.remoteCores {
-                var counter: RemoteCounter?
-                if idx < self.remotes.count {
-                    counter = self.remotes[idx]
-                } else {
-                    counter = RemoteCounter()
-                    self.remotes.append(counter!)
+            // send to all existing remotes
+            for counter in self.remotes {
+                counter.beIncrement(10, self) {
+                    self.total += $0.withUnsafeBytes { $0.load(as: Int.self) }
                 }
+            }
 
-                if let counter = counter {
-                    counter.beIncrement(10, self) {
-                        self.total += $0.withUnsafeBytes { $0.load(as: Int.self) }
-                    }
-                }
+            // remove any RemoteCounters who are no longer connected
+            self.remotes.removeAll { $0.unsafeIsConnected() == false }
+
+            // add new remote counters until we saturate all of the remote cores
+            for _ in self.remotes.count..<Flynn.remoteCores {
+                self.remotes.append(RemoteCounter())
             }
 
         }

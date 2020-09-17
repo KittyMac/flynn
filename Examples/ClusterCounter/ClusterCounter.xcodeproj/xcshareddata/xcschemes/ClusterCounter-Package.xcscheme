@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "ClusterCounter::ClusterCounter"
-               BuildableName = "ClusterCounter"
-               BlueprintName = "ClusterCounter"
+               BlueprintIdentifier = "ClusterCounter::ClusterCounterFramework"
+               BuildableName = "ClusterCounterFramework.framework"
+               BlueprintName = "ClusterCounterFramework"
                ReferencedContainer = "container:ClusterCounter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,9 +28,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "ClusterCounter::ClusterCounterFramework"
-               BuildableName = "ClusterCounterFramework.framework"
-               BlueprintName = "ClusterCounterFramework"
+               BlueprintIdentifier = "ClusterCounter::ClusterCounter"
+               BuildableName = "ClusterCounter"
+               BlueprintName = "ClusterCounter"
                ReferencedContainer = "container:ClusterCounter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>

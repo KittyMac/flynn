@@ -13,7 +13,8 @@ let package = Package(
         .library(name: "ClusterCounterFramework", targets: ["ClusterCounterFramework"])
     ],
     dependencies: [
-        .package(url: "https://github.com/KittyMac/Flynn.git", .branch("remote_actors")),
+		.package(name: "Flynn", path: "../../"),
+        //.package(url: "https://github.com/KittyMac/Flynn.git", .branch("remote_actors")),
 		.package(url: "https://github.com/apple/swift-argument-parser", .upToNextMinor(from: "0.2.0")),
     ],
     targets: [
