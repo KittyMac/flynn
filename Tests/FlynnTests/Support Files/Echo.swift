@@ -4,7 +4,7 @@ import XCTest
 
 class Echo: RemoteActor {
     private var count: Int = 0
-    
+        
     private func _bePrintThreadName() -> Data {
         if let name = Thread.current.name {
             sleep(1)
@@ -14,7 +14,7 @@ class Echo: RemoteActor {
     }
     
     private func _bePrint(_ string: String) {
-        print("on slave: '\(string)'")
+        print("on node: '\(string)'")
     }
     
     private func _beToLower(_ string: String) -> Data {

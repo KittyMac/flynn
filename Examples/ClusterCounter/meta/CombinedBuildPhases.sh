@@ -12,7 +12,7 @@ set -e
 
 # FlynnLint - Confirms all Flynn code is concurrently safe
 FLYNNLINTSWIFTPM=./.build/checkouts/flynn/meta/FlynnLint
-FLYNNLINTLOCAL=./../../flynn/meta/FlynnLint
+FLYNNLINTLOCAL=./../../meta/FlynnLint
 
 if [ -f "${FLYNNLINTSWIFTPM}" ]; then
     ${FLYNNLINTSWIFTPM} ./

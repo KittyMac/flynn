@@ -63,7 +63,7 @@ open class Flynn {
     }
 
     public static var remoteNodes: Int {
-        return Int(pony_remote_slaves_count())
+        return Int(pony_remote_nodes_count())
     }
 
     public static var remoteCores: Int {

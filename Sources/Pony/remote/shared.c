@@ -21,39 +21,39 @@
 
 #include "remote.h"
 
-extern void master_shutdown();
-extern void slave_shutdown();
+extern void root_shutdown();
+extern void node_shutdown();
 
 char * BUILD_VERSION_UUID = __TIMESTAMP__;
 
-// Communication between master and slave uses the following format:
+// Communication between root and node uses the following format:
 //  bytes      meaning
 //   [0] U8     type of command this is
 //
-//  COMMAND_CORE_COUNT (slave -> master)
+//  COMMAND_CORE_COUNT (node -> root)
 //   [0-4]      number of cores this node has
 //
-//  COMMAND_VERSION_CHECK (master -> slave)
+//  COMMAND_VERSION_CHECK (root -> node)
 //   [1] U8     number of bytes for version uuid
 //   [?]        version uuid as string
 //
-//  COMMAND_CREATE_ACTOR (master -> slave)
+//  COMMAND_CREATE_ACTOR (root -> node)
 //   [1] U8     number of bytes for actor uuid
 //   [?]        actor uuid as string
 //   [1] U8     number of bytes for actor class name
 //   [?]        actor class name
 //
-//  COMMAND_DESTROY_ACTOR (master -> slave)
+//  COMMAND_DESTROY_ACTOR (root -> node)
 //   [1] U8     number of bytes for actor uuid
 //   [?]        actor uuid as string
 //
-//  COMMAND_SEND_MESSAGE (master -> slave)
+//  COMMAND_SEND_MESSAGE (root -> node)
 //   [1] U8     number of bytes for actor uuid
 //   [?]        actor uuid as string
 //   [0-4]      number of bytes for message data
 //   [?]        message data
 //
-//  COMMAND_SEND_REPLY (master <- slave)
+//  COMMAND_SEND_REPLY (root <- node)
 //   [1] U8     number of bytes for actor uuid
 //   [?]        actor uuid as string
 //   [0-4]      number of bytes for message data
@@ -172,7 +172,7 @@ void send_create_actor(int socketfd, const char * actorUUID, const char * actorT
     sendall(socketfd, buffer, idx);
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] master sending create actor to socket\n", socketfd);
+    fprintf(stderr, "[%d] root sending create actor to socket\n", socketfd);
 #endif
 }
 
@@ -190,7 +190,7 @@ void send_destroy_actor(int socketfd, const char * actorUUID) {
     sendall(socketfd, buffer, idx);
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] master sending destroy actor to socket\n", socketfd);
+    fprintf(stderr, "[%d] root sending destroy actor to socket\n", socketfd);
 #endif
 }
 
@@ -224,7 +224,7 @@ int send_message(int socketfd, const char * actorUUID, const char * behaviorType
     }
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] master sending message to socket\n", socketfd);
+    fprintf(stderr, "[%d] root sending message to socket\n", socketfd);
 #endif
     
     return idx + sizeof(net_count) + count;
@@ -249,15 +249,15 @@ void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32
     sendall(socketfd, (char *)bytes, count);
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] slave sending reply to socket\n", socketfd);
+    fprintf(stderr, "[%d] node sending reply to socket\n", socketfd);
 #endif
 }
 
 // MARK: - SHUTDOWN
 
 void pony_remote_shutdown() {
-    master_shutdown();
-    slave_shutdown();
+    root_shutdown();
+    node_shutdown();
 }
 
 void close_socket(int fd) {

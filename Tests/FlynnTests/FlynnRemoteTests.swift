@@ -19,10 +19,10 @@ class FlynnRemoteTests: XCTestCase {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
         
         let port = Int32.random(in: 8000..<65500)
-        Flynn.master("127.0.0.1", port)
-        Flynn.slave("127.0.0.1", port, [Echo.self])
-        Flynn.slave("127.0.0.1", port, [Echo.self])
-        Flynn.slave("127.0.0.1", port, [Echo.self])
+        Flynn.root("127.0.0.1", port)
+        Flynn.node("127.0.0.1", port, [Echo.self])
+        Flynn.node("127.0.0.1", port, [Echo.self])
+        Flynn.node("127.0.0.1", port, [Echo.self])
                 
         Echo().bePrint("Hello Remote Actor 1!")
         Echo().bePrint("Hello Remote Actor 2!")
@@ -30,7 +30,7 @@ class FlynnRemoteTests: XCTestCase {
         
         let printReply: RemoteBehaviorReply = { (data) in
             if let lowered = String(data: data, encoding: .utf8) {
-                print("on master: \(lowered)")
+                print("on root: \(lowered)")
                 
                 if lowered.hasPrefix("hello world d") {
                     expectation.fulfill()
@@ -51,17 +51,17 @@ class FlynnRemoteTests: XCTestCase {
         Flynn.shutdown()
     }
     
-    func testSlaveReconnect() {
-        let expectation = XCTestExpectation(description: "Confirm slaves continuously try to connect")
+    func testNodeReconnect() {
+        let expectation = XCTestExpectation(description: "Confirm nodes continuously try to connect")
         
         let port = Int32.random(in: 8000..<65500)
         
-        Flynn.slave("127.0.0.1", port, [Echo.self])
+        Flynn.node("127.0.0.1", port, [Echo.self])
         sleep(2)
-        Flynn.master("127.0.0.1", port)
+        Flynn.root("127.0.0.1", port)
         
         // Right now this is necessary, we need to wait until
-        // we know the slave is connected before using remote actors
+        // we know the node is connected before using remote actors
         while (Flynn.remoteCores == 0) {
             usleep(500)
         }
@@ -79,13 +79,13 @@ class FlynnRemoteTests: XCTestCase {
         Flynn.shutdown()
     }
     
-    func testSlaveRunOnAllCores() {
+    func testNodeRunOnAllCores() {
         let expectation = XCTestExpectation(description: "Confirm remote actors use all cores on remote node")
         
         let port = Int32.random(in: 8000..<65500)
         
-        Flynn.slave("127.0.0.1", port, [Echo.self])
-        Flynn.master("127.0.0.1", port)
+        Flynn.node("127.0.0.1", port, [Echo.self])
+        Flynn.root("127.0.0.1", port)
         
         while (Flynn.remoteCores == 0) {
             usleep(500)

@@ -14,30 +14,30 @@ typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, 
 typedef void (*ReplyMessageFunc)(const char * actorUUID, void * payload, int payloadSize);
 
 
-void pony_master(const char * address,
-                 int port,
-                 ReplyMessageFunc replyMessageFunc);
-void pony_slave(const char * address,
-                int port,
-                CreateActorFunc createActorFunc,
-                DestroyActorFunc destroyActorFunc,
-                MessageActorFunc messageActorFunc);
+void pony_root(const char * address,
+               int port,
+               ReplyMessageFunc replyMessageFunc);
+void pony_node(const char * address,
+               int port,
+               CreateActorFunc createActorFunc,
+               DestroyActorFunc destroyActorFunc,
+               MessageActorFunc messageActorFunc);
 
-int pony_remote_slaves_count();
+int pony_remote_nodes_count();
 int pony_remote_core_count();
 
-void pony_remote_actor_send_message_to_slave(const char * actorUUID,
-                                             const char * actorType,
-                                             const char * behaviorType,
-                                             int * slaveSocketFD,
-                                             const void * bytes,
-                                             int count);
-void pony_remote_actor_send_message_to_master(int socketfd,
-                                              const char * actorUUID,
-                                              const void * bytes,
-                                              int count);
+void pony_remote_actor_send_message_to_node(const char * actorUUID,
+                                            const char * actorType,
+                                            const char * behaviorType,
+                                            int * nodeSocketFD,
+                                            const void * bytes,
+                                            int count);
+void pony_remote_actor_send_message_to_root(int socketfd,
+                                            const char * actorUUID,
+                                            const void * bytes,
+                                            int count);
 
-void pony_remote_destroy_actor(const char * actorUUID, int * slaveSocketFD);
+void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD);
 
 bool pony_startup(void);
 void pony_shutdown(void);

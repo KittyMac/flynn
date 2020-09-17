@@ -2,27 +2,27 @@ import Flynn
 import Foundation
 
 public enum ClusterCounter {
-    public static func runAsSlave(_ address: String, _ port: Int32) {
-        print("run as slave")
+    public static func runAsNode(_ address: String, _ port: Int32) {
+        print("run as node")
 
-        Flynn.slave(address, port, [RemoteCounter.self])
+        Flynn.node(address, port, [RemoteCounter.self])
 
         while true {
             sleep(100)
         }
     }
 
-    public static func runAsMaster(_ address: String, _ port: Int32) {
-        print("run as master")
+    public static func runAsRoot(_ address: String, _ port: Int32) {
+        print("run as root")
 
-        Flynn.master(address, port)
+        Flynn.root(address, port)
 
-        let master = MasterCounter()
+        let root = RootCounter()
 
-        // wait until the master counts to 1_000_000
+        // wait until the root counts to 1_000_000
         var done = false
         while !done {
-            master.beGetTotal(Flynn.any) { (value) in
+            root.beGetTotal(Flynn.any) { (value) in
                 print("total: \(value)")
                 if value > 1_000_000 {
                     done = true

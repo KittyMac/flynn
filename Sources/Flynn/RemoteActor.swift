@@ -34,7 +34,7 @@ open class InternalRemoteActor {
 
     public let unsafeUUID: String
 
-    private var slaveSocketFD: Int32 = -1
+    private var nodeSocketFD: Int32 = -1
 
     private var remoteBehaviors: [String: (Data) -> Data?] = [:]
 
@@ -47,12 +47,12 @@ open class InternalRemoteActor {
     }
 
     public func unsafeIsConnected() -> Bool {
-        return slaveSocketFD > 0
+        return nodeSocketFD > 0
     }
 
     deinit {
-        pony_remote_destroy_actor(unsafeUUID, &slaveSocketFD)
-        //print("deinit - RemoteActor [\(slaveSocketFD)]")
+        pony_remote_destroy_actor(unsafeUUID, &nodeSocketFD)
+        //print("deinit - RemoteActor [\(nodeSocketFD)]")
     }
 
     public func safeRegisterRemoteBehavior(_ name: String, behavior: @escaping RemoteBehavior) {
@@ -63,10 +63,10 @@ open class InternalRemoteActor {
         if let behavior = remoteBehaviors[name] {
             if let data = behavior(payload) {
                 data.withUnsafeBytes {
-                    pony_remote_actor_send_message_to_master(replySocketFD,
-                                                             unsafeUUID,
-                                                             $0.baseAddress,
-                                                             Int32(data.count))
+                    pony_remote_actor_send_message_to_root(replySocketFD,
+                                                           unsafeUUID,
+                                                           $0.baseAddress,
+                                                           Int32(data.count))
                 }
             }
         }
@@ -82,12 +82,12 @@ open class InternalRemoteActor {
                 RemoteActorManager.shared.beRegisterReply(unsafeUUID, sender, callback)
             }
 
-            pony_remote_actor_send_message_to_slave(unsafeUUID,
-                                                    actorType,
-                                                    behaviorType,
-                                                    &slaveSocketFD,
-                                                    $0.baseAddress,
-                                                    Int32(jsonData.count))
+            pony_remote_actor_send_message_to_node(unsafeUUID,
+                                                   actorType,
+                                                   behaviorType,
+                                                   &nodeSocketFD,
+                                                   $0.baseAddress,
+                                                   Int32(jsonData.count))
         }
     }
 }
@@ -95,7 +95,7 @@ open class InternalRemoteActor {
 // MARK: - REMOTE ACTOR RUNNER
 
 // A pool of RemoteActorRunners is utilized by the RemoteActorManager to make use
-// of all of the cores on a slave node for running behaviors of remote actors
+// of all of the cores on a node for running behaviors of remote actors
 public final class RemoteActorRunner: Actor {
     private func _beHandleMessage(_ actor: RemoteActor,
                                   _ behavior: String,
@@ -107,15 +107,15 @@ public final class RemoteActorRunner: Actor {
 
 // MARK: - REMOTE ACTOR MANAGER
 
-// The RemoteActorManager is used both on the master and on the slaves
+// The RemoteActorManager is used both on the root and on the nodes
 //
-// On the master, it stores waiting replies for behaviors which return Data, and then executes
+// On the root, it stores waiting replies for behaviors which return Data, and then executes
 // those reply closures with the returned data.
 //
-// On the slaves, it:
+// On the nodes, it:
 // 1. Holds a registry of all RemoteActor classes by their class name as a string (beRegisterActorType)
-// 2. Holds a reference to all actors which were created remotely at the behest of the master (beCreateActor/beDestroyActor)
-// 3. Calls behaviors on said actors at the behest of the master (beHandleMessage)
+// 2. Holds a reference to all actors which were created remotely at the behest of the root (beCreateActor/beDestroyActor)
+// 3. Calls behaviors on said actors at the behest of the root (beHandleMessage)
 
 public final class RemoteActorManager: Actor {
     static let shared = RemoteActorManager()
@@ -127,7 +127,7 @@ public final class RemoteActorManager: Actor {
         }
     }
 
-    // MARK: - RemoteActorManager: Slave
+    // MARK: - RemoteActorManager: Node
     private var actorTypes: [String: RemoteActor.Type] = [:]
     private var actors: [String: RemoteActor] = [:]
 
@@ -160,7 +160,7 @@ public final class RemoteActorManager: Actor {
         }
     }
 
-    // MARK: - RemoteActorManager: Master
+    // MARK: - RemoteActorManager: Root
 
     private var waitingReply: [String: Queue<MessageReply>] = [:]
 
@@ -196,7 +196,7 @@ public final class RemoteActorManager: Actor {
 
 // MARK: - FLYNN EXTENSION / PONY SHIMS
 
-private func slaveCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?, _ actorTypePtr: UnsafePointer<Int8>?) {
+private func nodeCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?, _ actorTypePtr: UnsafePointer<Int8>?) {
     guard let actorUUIDPtr = actorUUIDPtr else { return }
     guard let actorTypePtr = actorTypePtr else { return }
 
@@ -205,17 +205,17 @@ private func slaveCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?, _ actorTypeP
 
 }
 
-private func slaveDestroyActor(_ actorUUIDPtr: UnsafePointer<Int8>?) {
+private func nodeDestroyActor(_ actorUUIDPtr: UnsafePointer<Int8>?) {
     guard let actorUUIDPtr = actorUUIDPtr else { return }
 
     RemoteActorManager.shared.beDestroyActor(String(cString: actorUUIDPtr))
 }
 
-private func slaveHandleMessage(_ actorUUIDPtr: UnsafePointer<Int8>?,
-                                _ behaviorPtr: UnsafePointer<Int8>?,
-                                _ payload: AnyPtr,
-                                _ payloadSize: Int32,
-                                _ replySocketFD: Int32) {
+private func nodeHandleMessage(_ actorUUIDPtr: UnsafePointer<Int8>?,
+                               _ behaviorPtr: UnsafePointer<Int8>?,
+                               _ payload: AnyPtr,
+                               _ payloadSize: Int32,
+                               _ replySocketFD: Int32) {
     guard let actorUUIDPtr = actorUUIDPtr else { return }
     guard let behaviorPtr = behaviorPtr else { return }
     guard let payload = payload else { return }
@@ -226,9 +226,9 @@ private func slaveHandleMessage(_ actorUUIDPtr: UnsafePointer<Int8>?,
                                               replySocketFD)
 }
 
-private func masterHandleMessageReply(_ actorUUIDPtr: UnsafePointer<Int8>?,
-                                      _ payload: AnyPtr,
-                                      _ payloadSize: Int32) {
+private func rootHandleMessageReply(_ actorUUIDPtr: UnsafePointer<Int8>?,
+                                    _ payload: AnyPtr,
+                                    _ payloadSize: Int32) {
     guard let actorUUIDPtr = actorUUIDPtr else { return }
     if let payload = payload {
         RemoteActorManager.shared.beHandleMessageReply(String(cString: actorUUIDPtr),
@@ -241,20 +241,20 @@ private func masterHandleMessageReply(_ actorUUIDPtr: UnsafePointer<Int8>?,
 }
 
 extension Flynn {
-    public class func master(_ address: String, _ port: Int32) {
-        pony_master(address,
+    public class func root(_ address: String, _ port: Int32) {
+        pony_root(address,
                     port,
-                    masterHandleMessageReply)
+                    rootHandleMessageReply)
     }
 
-    public class func slave(_ address: String, _ port: Int32, _ actorTypes: [RemoteActor.Type]) {
+    public class func node(_ address: String, _ port: Int32, _ actorTypes: [RemoteActor.Type]) {
         Flynn.startup()
 
-        pony_slave(address,
-                   port,
-                   slaveCreateActor,
-                   slaveDestroyActor,
-                   slaveHandleMessage)
+        pony_node(address,
+                  port,
+                  nodeCreateActor,
+                  nodeDestroyActor,
+                  nodeHandleMessage)
 
         for actorType in actorTypes {
             RemoteActorManager.shared.beRegisterActorType(actorType)

@@ -7,11 +7,11 @@ import ClusterCounterFramework
 struct ClusterCounterCLI: ParsableCommand {
     static var configuration = CommandConfiguration(
         abstract: "Example showing Flynn RemoteActors",
-        subcommands: [Master.self, Slave.self],
-        defaultSubcommand: Master.self)
+        subcommands: [Root.self, Node.self],
+        defaultSubcommand: Root.self)
 
-    struct Master: ParsableCommand {
-        static var configuration = CommandConfiguration(abstract: "Master node to which slaves will connect")
+    struct Root: ParsableCommand {
+        static var configuration = CommandConfiguration(abstract: "Root to which nodes will connect")
 
         @Argument(help: "IP address to listen on")
         var address: String = "0.0.0.0"
@@ -20,12 +20,12 @@ struct ClusterCounterCLI: ParsableCommand {
         var port: Int32 = 9090
 
         mutating func run() throws {
-            ClusterCounter.runAsMaster(address, port)
+            ClusterCounter.runAsRoot(address, port)
         }
     }
 
-    struct Slave: ParsableCommand {
-        static var configuration = CommandConfiguration(abstract: "Salve nodes on which RemoteActors will run")
+    struct Node: ParsableCommand {
+        static var configuration = CommandConfiguration(abstract: "Remote nodes on which remote actors will run")
 
         @Argument(help: "IP address to connect to")
         var address: String = "0.0.0.0"
@@ -34,7 +34,7 @@ struct ClusterCounterCLI: ParsableCommand {
         var port: Int32 = 9090
 
         mutating func run() {
-            ClusterCounter.runAsSlave(address, port)
+            ClusterCounter.runAsNode(address, port)
         }
     }
 

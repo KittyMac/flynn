@@ -23,12 +23,12 @@ xcode:
 	swift package generate-xcodeproj
 	meta/addBuildPhase ClusterCounter.xcodeproj/project.pbxproj 'ClusterCounter::ClusterCounterFramework' 'cd $${SRCROOT}; ./meta/CombinedBuildPhases.sh'
 
-master: build
-	./.build/release/server master
+root: build
+	./.build/release/server root
 
-slave: build
-	./.build/release/server slave
+node: build
+	./.build/release/server node
 
 rocco: build
-	./.build/release/server slave 192.168.1.72
+	./.build/release/server node 192.168.1.72
 
