@@ -5,6 +5,13 @@ import XCTest
 class Echo: RemoteActor {
     private var count: Int = 0
     
+    private func _bePrintThreadName() -> Data {
+        if let name = Thread.current.name {
+            print("Echo running on \(name)")
+        }
+        return Data()
+    }
+    
     private func _bePrint(_ string: String) {
         print("on slave: '\(string)'")
     }
@@ -33,6 +40,11 @@ extension Echo {
     }
 
     @discardableResult
+    public func bePrintThreadName(_ sender: Actor, _ callback: @escaping RemoteBehaviorReply) -> Self {
+        unsafeSendToRemote("Echo", "bePrintThreadName", Data(), sender, callback)
+        return self
+    }
+    @discardableResult
     public func bePrint(_ string: String ) -> Self {
         let msg = BePrintCodable(arg0: string)
         if let data = try? JSONEncoder().encode(msg) {
@@ -56,6 +68,9 @@ extension Echo {
     }
 
     public func unsafeRegisterAllBehaviors() {
+        safeRegisterRemoteBehavior("bePrintThreadName") { [unowned self] (data) in
+            return self._bePrintThreadName()
+        }
         safeRegisterRemoteBehavior("bePrint") { [unowned self] (data) in
             if let msg = try? JSONDecoder().decode(BePrintCodable.self, from: data) {
                 self._bePrint(msg.arg0)

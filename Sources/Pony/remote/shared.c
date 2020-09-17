@@ -102,6 +102,10 @@ char * read_intcount_buffer(int socketfd, uint32_t * count) {
     }
     *count = ntohl(*count);
     
+    if (*count == 0) {
+        return NULL;
+    }
+    
     char * bytes = malloc(*count);
     if (recvall(socketfd, bytes, *count) <= 0) {
         return NULL;

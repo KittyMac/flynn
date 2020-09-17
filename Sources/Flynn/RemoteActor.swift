@@ -203,12 +203,14 @@ private func masterHandleMessageReply(_ actorUUIDPtr: UnsafePointer<Int8>?,
                                       _ payload: AnyPtr,
                                       _ payloadSize: Int32) {
     guard let actorUUIDPtr = actorUUIDPtr else { return }
-    guard let payload = payload else { return }
-
-    RemoteActorManager.shared.beHandleMessageReply(String(cString: actorUUIDPtr),
-                                                   Data(bytesNoCopy: payload,
-                                                        count: Int(payloadSize),
-                                                        deallocator: .free))
+    if let payload = payload {
+        RemoteActorManager.shared.beHandleMessageReply(String(cString: actorUUIDPtr),
+                                                       Data(bytesNoCopy: payload,
+                                                            count: Int(payloadSize),
+                                                            deallocator: .free))
+    } else {
+        RemoteActorManager.shared.beHandleMessageReply(String(cString: actorUUIDPtr), Data())
+    }
 }
 
 extension Flynn {

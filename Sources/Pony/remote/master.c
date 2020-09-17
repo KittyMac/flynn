@@ -176,12 +176,7 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
             } break;
             case COMMAND_SEND_REPLY: {
                 uint32_t payload_count = 0;
-                char * payload = read_intcount_buffer(slavePtr->socketfd, &payload_count);
-                if (payload == NULL) {
-                    master_remove_slave(slavePtr);
-                    return 0;
-                }
-                
+                char * payload = read_intcount_buffer(slavePtr->socketfd, &payload_count);                
                 replyMessageFuncPtr(uuid, payload, payload_count);
                 
 #if REMOTE_DEBUG
