@@ -21,6 +21,10 @@
 
 #include "remote.h"
 
+#ifndef PLATFORM_IS_APPLE
+#define QOS_CLASS_BACKGROUND 0
+#endif
+
 // MARK: - SLAVE
 
 #define kMaxIPAddress 128
