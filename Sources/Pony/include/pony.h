@@ -23,6 +23,9 @@ void pony_slave(const char * address,
                 DestroyActorFunc destroyActorFunc,
                 MessageActorFunc messageActorFunc);
 
+int pony_remote_slaves_count();
+int pony_remote_core_count();
+
 void pony_remote_actor_send_message_to_slave(const char * actorUUID,
                                              const char * actorType,
                                              const char * behaviorType,

@@ -31,6 +31,10 @@ class FlynnRemoteTests: XCTestCase {
         let printReply: RemoteBehaviorReply = { (data) in
             if let lowered = String(data: data, encoding: .utf8) {
                 print("on master: \(lowered)")
+                
+                if lowered.hasPrefix("hello world d") {
+                    expectation.fulfill()
+                }
             }
         }
         
@@ -42,10 +46,7 @@ class FlynnRemoteTests: XCTestCase {
         echo2.beToLower("HELLO WORLD C", Flynn.any, printReply)
         echo2.beToLower("HELLO WORLD D", Flynn.any, printReply)
         
-        let start = ProcessInfo.processInfo.systemUptime
-        while (ProcessInfo.processInfo.systemUptime - start) < 5 { }
-        
-        expectation.fulfill()
+        wait(for: [expectation], timeout: 10.0)
         
         Flynn.shutdown()
     }
@@ -56,9 +57,16 @@ class FlynnRemoteTests: XCTestCase {
         let port = Int32.random(in: 8000..<65500)
         
         Flynn.slave("127.0.0.1", port, [Echo.self])
-        sleep(2)
+        sleep(5)
         Flynn.master("127.0.0.1", port)
-        sleep(2)
+        
+        // Right now this is necessary, we need to wait until
+        // we know the slave is connected before using remote actors
+        while (Flynn.remoteCores == 0) {
+            usleep(500)
+        }
+        print("Flynn.remoteCores: \(Flynn.remoteCores)")
+        
         
         Echo().beToLower("HELLO WORLD", Flynn.any) { (data) in
             if let lowered = String(data: data, encoding: .utf8) {

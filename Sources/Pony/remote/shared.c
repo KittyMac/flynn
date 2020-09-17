@@ -30,6 +30,9 @@ char * BUILD_VERSION_UUID = __TIMESTAMP__;
 //  bytes      meaning
 //   [0] U8     type of command this is
 //
+//  COMMAND_CORE_COUNT (slave -> master)
+//   [0-4]      number of cores this node has
+//
 //  COMMAND_VERSION_CHECK (master -> slave)
 //   [1] U8     number of bytes for version uuid
 //   [?]        version uuid as string
@@ -59,14 +62,48 @@ char * BUILD_VERSION_UUID = __TIMESTAMP__;
 
 // MARK: - COMMANDS
 
+int recvall(int fd, void * ptr, int size) {
+    // keep reading until we receive all of the data we asked for. Fail if we fail.
+    char * cptr = ptr;
+    char * start_ptr = ptr;
+    char * end_ptr = ptr + size;
+    
+    while (cptr < end_ptr) {
+        int bytes_read = recv(fd, cptr, end_ptr - cptr, 0);
+        if (bytes_read < 0) {
+            return -1;
+        }
+        cptr += bytes_read;
+    }
+    
+    return size;
+}
+
+int sendall(int fd, void * ptr, int size) {
+    // keep sending until we send all of the data we asked for. Fail if we fail.
+    char * cptr = ptr;
+    char * start_ptr = ptr;
+    char * end_ptr = ptr + size;
+    
+    while (cptr < end_ptr) {
+        int bytes_read = send(fd, cptr, end_ptr - cptr, 0);
+        if (bytes_read < 0) {
+            return -1;
+        }
+        cptr += bytes_read;
+    }
+    
+    return size;
+}
+
 char * read_intcount_buffer(int socketfd, uint32_t * count) {
-    if (recv(socketfd, count, sizeof(uint32_t), 0) <= 0) {
+    if (recvall(socketfd, count, sizeof(uint32_t)) <= 0) {
         return NULL;
     }
     *count = ntohl(*count);
     
     char * bytes = malloc(*count);
-    if (recv(socketfd, bytes, *count, 0) <= 0) {
+    if (recvall(socketfd, bytes, *count) <= 0) {
         return NULL;
     }
     return bytes;
@@ -74,32 +111,20 @@ char * read_intcount_buffer(int socketfd, uint32_t * count) {
 
 bool read_bytecount_buffer(int socketfd, char * dst, size_t max_length) {
     uint8_t count = 0;
-    recv(socketfd, &count, 1, 0);
+    recvall(socketfd, &count, 1);
     
     if (count >= max_length) {
         close_socket(socketfd);
         return false;
     }
-    recv(socketfd, dst, count, 0);
+    recvall(socketfd, dst, count);
     return true;
 }
 
 uint8_t read_command(int socketfd) {
     uint8_t command = COMMAND_NULL;
-    recv(socketfd, &command, 1, 0);
+    recvall(socketfd, &command, 1);
     return command;
-}
-
-void send_buffer(int socketfd, char * bytes, size_t length) {
-    int bytes_sent;
-    while (length > 0) {
-        bytes_sent = send(socketfd, bytes, length, 0);
-        if (bytes_sent < 0) {
-            return;
-        }
-        bytes += bytes_sent;
-        length -= bytes_sent;
-    }
 }
 
 void send_version_check(int socketfd) {
@@ -113,7 +138,15 @@ void send_version_check(int socketfd) {
     memcpy(buffer + idx, BUILD_VERSION_UUID, uuid_count);
     idx += uuid_count;
         
-    send_buffer(socketfd, buffer, idx);
+    sendall(socketfd, buffer, idx);
+}
+
+void send_core_count(int socketfd) {
+    char command = COMMAND_CORE_COUNT;
+    sendall(socketfd, &command, sizeof(command));
+    uint32_t core_count = ponyint_core_count();
+    core_count = htonl(core_count);
+    sendall(socketfd, &core_count, sizeof(core_count));
 }
 
 void send_create_actor(int socketfd, const char * actorUUID, const char * actorType) {
@@ -132,7 +165,7 @@ void send_create_actor(int socketfd, const char * actorUUID, const char * actorT
     memcpy(buffer + idx, actorType, type_count);
     idx += type_count;
     
-    send_buffer(socketfd, buffer, idx);
+    sendall(socketfd, buffer, idx);
     
 #if REMOTE_DEBUG
     fprintf(stderr, "[%d] master sending create actor to socket\n", socketfd);
@@ -150,7 +183,7 @@ void send_destroy_actor(int socketfd, const char * actorUUID) {
     memcpy(buffer + idx, actorUUID, uuid_count);
     idx += uuid_count;
         
-    send_buffer(socketfd, buffer, idx);
+    sendall(socketfd, buffer, idx);
     
 #if REMOTE_DEBUG
     fprintf(stderr, "[%d] master sending destroy actor to socket\n", socketfd);
@@ -173,12 +206,12 @@ void send_message(int socketfd, const char * actorUUID, const char * behaviorTyp
     memcpy(buffer + idx, behaviorType, behavior_count);
     idx += behavior_count;
         
-    send_buffer(socketfd, buffer, idx);
+    sendall(socketfd, buffer, idx);
     
     uint32_t net_count = htonl(count);
-    send(socketfd, &net_count, sizeof(net_count), 0);
+    sendall(socketfd, &net_count, sizeof(net_count));
     
-    send_buffer(socketfd, (char *)bytes, count);
+    sendall(socketfd, (char *)bytes, count);
     
 #if REMOTE_DEBUG
     fprintf(stderr, "[%d] master sending message to socket\n", socketfd);
@@ -196,12 +229,12 @@ void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32
     memcpy(buffer + idx, actorUUID, uuid_count);
     idx += uuid_count;
             
-    send_buffer(socketfd, buffer, idx);
+    sendall(socketfd, buffer, idx);
     
     uint32_t net_count = htonl(count);
-    send(socketfd, &net_count, sizeof(net_count), 0);
+    sendall(socketfd, &net_count, sizeof(net_count));
     
-    send_buffer(socketfd, (char *)bytes, count);
+    sendall(socketfd, (char *)bytes, count);
     
 #if REMOTE_DEBUG
     fprintf(stderr, "[%d] slave sending reply to socket\n", socketfd);

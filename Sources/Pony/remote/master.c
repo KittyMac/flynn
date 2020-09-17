@@ -23,11 +23,24 @@
 
 // MARK: - MASTER
 
+static int number_of_slaves = 0;
+static int number_of_cores = 0;
+
+int ponyint_remote_slaves_count() {
+    return number_of_slaves;
+}
+
+int ponyint_remote_core_count()
+{
+    return number_of_cores;
+}
+
 // Kept by the master to know which slaves are actively connected
 typedef struct slave_t
 {
     int socketfd;
     pony_thread_id_t thread_tid;
+    uint32_t core_count;
 } slave_t;
 
 #define kMaxSlaves 2048
@@ -79,6 +92,7 @@ static bool master_add_slave(int socketfd) {
         if (slaves[i].socketfd == 0) {
             slaves[i].socketfd = socketfd;
             ponyint_thread_create(&slaves[i].thread_tid, master_read_from_slave_thread, QOS_CLASS_BACKGROUND, slaves + i);
+            number_of_slaves++;
             pthread_mutex_unlock(&slaves_mutex);
             return true;
         }
@@ -89,9 +103,12 @@ static bool master_add_slave(int socketfd) {
 
 static void master_remove_slave(slave_t * slavePtr) {
     if (slavePtr->socketfd > 0) {
+        pthread_mutex_lock(&slaves_mutex);
         close_socket(slavePtr->socketfd);
         slavePtr->thread_tid = 0;
         slavePtr->socketfd = 0;
+        number_of_slaves--;
+        pthread_mutex_unlock(&slaves_mutex);
     }
 }
 
@@ -119,6 +136,7 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
         // read the command byte
         uint8_t command = read_command(slavePtr->socketfd);
         if (command != COMMAND_VERSION_CHECK &&
+            command != COMMAND_CORE_COUNT &&
             command != COMMAND_SEND_REPLY) {
             master_remove_slave(slavePtr);
             return 0;
@@ -126,9 +144,12 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
         
         // read the size of the uuid
         char uuid[128] = {0};
-        if (!read_bytecount_buffer(slavePtr->socketfd, uuid, sizeof(uuid)-1)) {
-            master_remove_slave(slavePtr);
-            return 0;
+        if (command == COMMAND_VERSION_CHECK ||
+            command == COMMAND_SEND_REPLY) {
+            if (!read_bytecount_buffer(slavePtr->socketfd, uuid, sizeof(uuid)-1)) {
+                master_remove_slave(slavePtr);
+                return 0;
+            }
         }
         
         switch(command) {
@@ -140,6 +161,18 @@ static DECLARE_THREAD_FN(master_read_from_slave_thread)
                     master_remove_slave(slavePtr);
                     return 0;
                 }
+            } break;
+            case COMMAND_CORE_COUNT: {
+                uint32_t core_count = 0;
+                recvall(slavePtr->socketfd, &core_count, sizeof(core_count));
+                core_count = ntohl(core_count);
+                
+                pthread_mutex_lock(&slaves_mutex);
+                number_of_cores = number_of_cores - slavePtr->core_count + core_count;
+                pthread_mutex_unlock(&slaves_mutex);
+
+                slavePtr->core_count = core_count;
+                
             } break;
             case COMMAND_SEND_REPLY: {
                 uint32_t payload_count = 0;

@@ -129,8 +129,9 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
             sleep(1);
             continue;
         }
-            
+        
         send_version_check(masterPtr->socketfd);
+        send_core_count(masterPtr->socketfd);
         
         while(masterPtr->socketfd > 0) {
 #if REMOTE_DEBUG
@@ -198,11 +199,11 @@ static DECLARE_THREAD_FN(slave_read_from_master_thread)
                     }
                     
                     uint32_t payload_count = 0;
-                    read(masterPtr->socketfd, &payload_count, sizeof(uint32_t));
+                    recvall(masterPtr->socketfd, &payload_count, sizeof(uint32_t));
                     payload_count = ntohl(payload_count);
                     
                     uint8_t * bytes = malloc(payload_count);
-                    read(masterPtr->socketfd, bytes, payload_count);
+                    recvall(masterPtr->socketfd, bytes, payload_count);
                     
                     masterPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count, masterPtr->socketfd);
                     

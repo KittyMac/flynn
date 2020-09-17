@@ -14,6 +14,9 @@
 #include "alloc.h"
 #include "pool.h"
 
+extern int ponyint_remote_slaves_count();
+extern int ponyint_remote_core_count();
+
 static bool pony_is_inited = false;
 
 bool pony_startup() {
@@ -52,6 +55,14 @@ int pony_e_core_count() {
 
 int pony_p_core_count() {
     return ponyint_p_core_count();
+}
+
+int pony_remote_core_count() {
+    return ponyint_remote_core_count();
+}
+
+int pony_remote_slaves_count() {
+    return ponyint_remote_slaves_count();
 }
 
 bool pony_core_affinity_enabled() {

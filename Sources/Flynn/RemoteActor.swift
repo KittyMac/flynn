@@ -219,6 +219,8 @@ extension Flynn {
     }
 
     public class func slave(_ address: String, _ port: Int32, _ actorTypes: [RemoteActor.Type]) {
+        Flynn.startup()
+
         pony_slave(address,
                    port,
                    slaveCreateActor,
