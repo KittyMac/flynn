@@ -281,6 +281,11 @@ void root_shutdown() {
 
 void pony_remote_actor_send_message_to_node(const char * actorUUID, const char * actorType, const char * behaviorType, int * nodeSocketFD, const void * bytes, int count) {
     if (*nodeSocketFD < 0) {
+        
+        // TODO: If we are a named service, then we need to use the socket of the node
+        // who is connected which has said named service.  In this scenario, we
+        // DO NOT NEED TO CREATE THE ACTOR
+        
         node_t * nodePtr = root_get_next_node();
         if (nodePtr == NULL) {
             fprintf(stderr, "error: RemoteActor behavior called but no nodes are connected to root\n");

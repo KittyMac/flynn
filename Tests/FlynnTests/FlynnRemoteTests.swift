@@ -19,10 +19,12 @@ class FlynnRemoteTests: XCTestCase {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
         
         let port = Int32.random(in: 8000..<65500)
-        Flynn.root("127.0.0.1", port)
-        Flynn.node("127.0.0.1", port, [Echo.self])
-        Flynn.node("127.0.0.1", port, [Echo.self])
-        Flynn.node("127.0.0.1", port, [Echo.self])
+        Flynn.Root.listen("127.0.0.1", port)
+        
+        Flynn.Node.connect("127.0.0.1", port)
+        Flynn.Node.connect("127.0.0.1", port)
+        Flynn.Node.connect("127.0.0.1", port)
+        Flynn.Node.registerActorTypes([Echo.self])
                 
         Echo().bePrint("Hello Remote Actor 1!")
         Echo().bePrint("Hello Remote Actor 2!")
@@ -56,9 +58,10 @@ class FlynnRemoteTests: XCTestCase {
         
         let port = Int32.random(in: 8000..<65500)
         
-        Flynn.node("127.0.0.1", port, [Echo.self])
+        Flynn.Node.connect("127.0.0.1", port)
+        Flynn.Node.registerActorTypes([Echo.self])
         sleep(2)
-        Flynn.root("127.0.0.1", port)
+        Flynn.Root.listen("127.0.0.1", port)
         
         // Right now this is necessary, we need to wait until
         // we know the node is connected before using remote actors
@@ -84,8 +87,10 @@ class FlynnRemoteTests: XCTestCase {
         
         let port = Int32.random(in: 8000..<65500)
         
-        Flynn.node("127.0.0.1", port, [Echo.self])
-        Flynn.root("127.0.0.1", port)
+        Flynn.Root.listen("127.0.0.1", port)
+        
+        Flynn.Node.connect("127.0.0.1", port)
+        Flynn.Node.registerActorTypes([Echo.self])
         
         while (Flynn.remoteCores == 0) {
             usleep(500)
@@ -105,6 +110,47 @@ class FlynnRemoteTests: XCTestCase {
         
         Flynn.shutdown()
     }
+    
+    func testRemoteService() {
+        let expectation = XCTestExpectation(description: "RemoteActor as a service")
+        
+        // The idea behind remote services is that you have a single, shared actor
+        // running on a remote node.  The remote node connects to multiple roots, and
+        // actors on those roots can message the same remote service.
+        
+        let echoServiceName = "SHARED ECHO SERVICE"
+        
+        let port = Int32.random(in: 8000..<65500)
+        
+        Flynn.Node.connect("127.0.0.1", port)
+        Flynn.Node.registerActors([Echo(echoServiceName)])
+        
+        Flynn.Root.listen("127.0.0.1", port)
+        
+        while (Flynn.remoteCores == 0) {
+            usleep(500)
+        }
+        
+        let printReply: RemoteBehaviorReply = { (data) in
+            if let lowered = String(data: data, encoding: .utf8) {
+                print("on root: \(lowered)")
+                
+                if lowered.hasPrefix("hello world d") {
+                    expectation.fulfill()
+                }
+            }
+        }
+        
+        Echo(echoServiceName).beToLower("HELLO WORLD A", Flynn.any, printReply)
+        Echo(echoServiceName).beToLower("HELLO WORLD B", Flynn.any, printReply)
+        Echo(echoServiceName).beToLower("HELLO WORLD C", Flynn.any, printReply)
+        Echo(echoServiceName).beToLower("HELLO WORLD D", Flynn.any, printReply)
+        
+        wait(for: [expectation], timeout: 10.0)
+        
+        Flynn.shutdown()
+    }
+    
 
     static var allTests = [
         ("testSimpleRemote", testSimpleRemote),
