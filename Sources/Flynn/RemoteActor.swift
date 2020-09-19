@@ -132,7 +132,6 @@ public final class RemoteActorManager: Actor {
     private var actors: [String: RemoteActor] = [:]
 
     private var runnerPool: [RemoteActorRunner] = []
-    private var runnerIdx = 0
 
     private func _beRegisterActorType(_ actorType: RemoteActor.Type) {
         actorTypes[String(describing: actorType)] = actorType
@@ -155,7 +154,13 @@ public final class RemoteActorManager: Actor {
                                   _ data: Data,
                                   _ replySocketFD: Int32) {
         if let actor = actors[actorUUID] {
-            runnerIdx = (runnerIdx + 1) % runnerPool.count
+            // To preserve causal messaging, we need to ensure that the behaviors for
+            // a specific actor are always run on the same runner in the pool.
+
+            // Ok, this has pros and cons
+            // pro: its quick, easy, and gaurantees causal messaging
+            // con: we won't get amazing distribution across all cores
+            let runnerIdx = abs(actorUUID.hashValue) % runnerPool.count
             runnerPool[runnerIdx].beHandleMessage(actor, behavior, data, replySocketFD)
         }
     }
