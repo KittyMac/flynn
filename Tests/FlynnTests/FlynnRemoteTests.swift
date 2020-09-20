@@ -24,6 +24,10 @@ class FlynnRemoteTests: XCTestCase {
         Flynn.Node.connect("127.0.0.1", port, [Echo.self])
         Flynn.Node.connect("127.0.0.1", port, [Echo.self])
         Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+        
+        while (Flynn.remoteCores == 0) {
+            usleep(500)
+        }
                 
         Echo().bePrint("Hello Remote Actor 1!")
         Echo().bePrint("Hello Remote Actor 2!")

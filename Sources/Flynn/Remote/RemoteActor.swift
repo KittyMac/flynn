@@ -36,7 +36,7 @@ open class InternalRemoteActor {
     }
 
     public func unsafeIsConnected() -> Bool {
-        return nodeSocketFD > 0
+        return nodeSocketFD >= 0
     }
 
     deinit {

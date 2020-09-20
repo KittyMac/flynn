@@ -46,9 +46,17 @@ static bool inited = false;
 
 static DECLARE_THREAD_FN(node_read_from_root_thread);
 
+static void init_all_roots() {
+    root_t * ptr = roots;
+    while (ptr < (roots + kMaxRoots)) {
+        ptr->socketfd = -1;
+        ptr++;
+    }
+}
+
 static root_t * find_root_by_socket(int socketfd) {
     root_t * ptr = roots;
-    while (ptr < (roots + kMaxRoots) && ptr->socketfd > 0) {
+    while (ptr < (roots + kMaxRoots) && ptr->socketfd >= 0) {
         if (ptr->socketfd == socketfd) {
             return ptr;
         }
@@ -64,9 +72,8 @@ static bool node_add_root(const char * address,
                           MessageActorFunc messageActorFuncPtr,
                           RegisterActorsOnRootFunc registerActorsOnRootFuncPtr) {
     for (int i = 0; i < kMaxRoots; i++) {
-        if (roots[i].socketfd == 0) {
+        if (roots[i].thread_tid == 0) {
             pthread_mutex_lock(&roots_mutex);
-            roots[i].socketfd = -1;
             strncpy(roots[i].address, address, kMaxIPAddress);
             roots[i].port = port;
             roots[i].createActorFuncPtr = createActorFuncPtr;
@@ -82,8 +89,9 @@ static bool node_add_root(const char * address,
 }
 
 static void node_remove_root(root_t * rootPtr) {
-    if (rootPtr->socketfd != 0) {
+    if (rootPtr->thread_tid != 0) {
         close_socket(rootPtr->socketfd);
+        ponyint_thread_join(rootPtr->thread_tid);
         rootPtr->thread_tid = 0;
         rootPtr->port = 0;
         rootPtr->createActorFuncPtr = NULL;
@@ -91,7 +99,7 @@ static void node_remove_root(root_t * rootPtr) {
         rootPtr->messageActorFuncPtr = NULL;
         rootPtr->registerActorsOnRootFuncPtr = NULL;
         rootPtr->address[0] = 0;
-        rootPtr->socketfd = 0;
+        rootPtr->socketfd = -1;
     }
 }
 
@@ -121,7 +129,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
         
         // socket create and verification
         rootPtr->socketfd = socket(AF_INET, SOCK_STREAM, 0);
-        if (rootPtr->socketfd == -1) {
+        if (rootPtr->socketfd < 0) {
             fprintf(stderr, "Flynn Node socket creation failed, exiting...\n");
             exit(1);
         }
@@ -130,7 +138,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
 #if REMOTE_DEBUG
             fprintf(stderr, "[%d] attempting to reconnect to root\n", rootPtr->socketfd);
 #endif
-            close(rootPtr->socketfd);
+            close_socket(rootPtr->socketfd);
             sleep(1);
             continue;
         }
@@ -141,7 +149,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
         
         send_core_count(rootPtr->socketfd);
         
-        while(rootPtr->socketfd > 0) {
+        while(rootPtr->socketfd >= 0) {
 #if REMOTE_DEBUG
             fprintf(stderr, "[%d] node reading socket\n", rootPtr->socketfd);
 #endif
@@ -157,7 +165,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                 ponyint_pool_thread_cleanup();
                 return 0;
             }
-            
+                        
             // read the size of the uuid
             char uuid[128] = {0};
             if (!read_bytecount_buffer(rootPtr->socketfd, uuid, sizeof(uuid)-1)) {
@@ -171,9 +179,8 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                 case COMMAND_VERSION_CHECK: {
                     if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
 #if REMOTE_DEBUG
-                        fprintf(stdout, "[%d] root/node version mismatch ( %s != %s )\n", rootPtr->socketfd, uuid, BUILD_VERSION_UUID);
+                        fprintf(stdout, "[%d] node -> root version mismatch ( [%s] != [%s] )\n", rootPtr->socketfd, uuid, BUILD_VERSION_UUID);
 #endif
-                        continue;
                     }
                 } break;
                 case COMMAND_CREATE_ACTOR: {
@@ -237,6 +244,7 @@ void pony_node(const char * address,
                RegisterActorsOnRootFunc registerActorsOnRootFuncPtr) {
     if (inited == false) {
         inited = true;
+        init_all_roots();
         pthread_mutex_init(&roots_mutex, NULL);
     }
     

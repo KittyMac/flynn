@@ -35,10 +35,7 @@ internal final class RemoteActorManager: Actor {
     static let shared = RemoteActorManager()
     private override init() {
         super.init()
-
-        for _ in 0..<Flynn.cores {
-            runnerPool.append(RemoteActorRunner())
-        }
+        _beClear()
     }
 
     // MARK: - RemoteActorManager: Node
@@ -46,6 +43,12 @@ internal final class RemoteActorManager: Actor {
     private var actors: [String: RemoteActor] = [:]
 
     private var runnerPool: [RemoteActorRunner] = []
+
+    private func _beClear() {
+        actors.removeAll()
+        actorTypes.removeAll()
+        runnerPool.removeAll()
+    }
 
     private func _beGetActor(_ actorUUID: String) -> RemoteActor? {
         return actors[actorUUID]
@@ -98,6 +101,12 @@ internal final class RemoteActorManager: Actor {
             // To preserve causal messaging, we need to ensure that the behaviors for
             // a specific actor are always run on the same runner in the pool.
 
+            if runnerPool.count == 0 {
+                for _ in 0..<Flynn.cores {
+                    runnerPool.append(RemoteActorRunner())
+                }
+            }
+
             // Ok, this has pros and cons
             // pro: its quick, easy, and gaurantees causal messaging
             // con: we won't get amazing distribution across all cores
@@ -145,6 +154,11 @@ internal final class RemoteActorManager: Actor {
 
 extension RemoteActorManager {
 
+    @discardableResult
+    public func beClear() -> Self {
+        unsafeSend(_beClear)
+        return self
+    }
     @discardableResult
     public func beGetActor(_ actorUUID: String,
                            _ sender: Actor,

@@ -48,6 +48,7 @@ typedef struct node_t
 
 static node_t nodes[kMaxNodes+1] = {0};
 
+static bool inited = false;
 static pthread_mutex_t nodes_mutex;
 
 static pony_thread_id_t root_tid;
@@ -55,13 +56,21 @@ static char root_ip_address[128] = {0};
 static int root_tcp_port = 9999;
 static ReplyMessageFunc replyMessageFuncPtr = NULL;
 static CreateActorFunc createActorFuncPtr = NULL;
-static int root_listen_socket = 0;
+static int root_listen_socket = -1;
 
 static DECLARE_THREAD_FN(root_read_from_node_thread);
 
+static void init_all_nodes() {
+    node_t * ptr = nodes;
+    while (ptr < (nodes + kMaxNodes)) {
+        ptr->socketfd = -1;
+        ptr++;
+    }
+}
+
 static node_t * find_node_by_socket(int socketfd) {
     node_t * ptr = nodes;
-    while (ptr < (nodes + kMaxNodes) && ptr->socketfd > 0) {
+    while (ptr < (nodes + kMaxNodes) && ptr->thread_tid != 0) {
         if (ptr->socketfd == socketfd) {
             return ptr;
         }
@@ -79,7 +88,7 @@ static node_t * root_get_next_node() {
         if (nodePtr >= nodes + kMaxNodes) {
             nodePtr = nodes;
         }
-        if (nodePtr->socketfd > 0) {
+        if (nodePtr->thread_tid != 0) {
             next_node_index = nodePtr - nodes;
             return nodePtr;
         }
@@ -91,7 +100,7 @@ static node_t * root_get_next_node() {
 static bool root_add_node(int socketfd) {
     pthread_mutex_lock(&nodes_mutex);
     for (int i = 0; i < kMaxNodes; i++) {
-        if (nodes[i].socketfd == 0) {
+        if (nodes[i].thread_tid == 0) {
             nodes[i].socketfd = socketfd;
             ponyint_thread_create(&nodes[i].thread_tid, root_read_from_node_thread, QOS_CLASS_BACKGROUND, nodes + i);
             number_of_nodes++;
@@ -104,14 +113,18 @@ static bool root_add_node(int socketfd) {
 }
 
 static void root_remove_node(node_t * nodePtr) {
-    if (nodePtr->socketfd > 0) {
+    if (nodePtr->thread_tid != 0) {
         pthread_mutex_lock(&nodes_mutex);
         number_of_cores -= nodePtr->core_count;
         number_of_nodes--;
+        pthread_mutex_unlock(&nodes_mutex);
         
         close_socket(nodePtr->socketfd);
+        ponyint_thread_join(nodePtr->thread_tid);
+        
+        pthread_mutex_lock(&nodes_mutex);
         nodePtr->thread_tid = 0;
-        nodePtr->socketfd = 0;
+        nodePtr->socketfd = -1;
         nodePtr->core_count = 0;
         pthread_mutex_unlock(&nodes_mutex);
     }
@@ -132,7 +145,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
     
     send_version_check(nodePtr->socketfd);
     
-    while(nodePtr->socketfd > 0) {
+    while(nodePtr->socketfd >= 0) {
         
 #if REMOTE_DEBUG
         fprintf(stderr, "[%d] root reading socket\n", nodePtr->socketfd);
@@ -162,9 +175,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
         switch(command) {
             case COMMAND_VERSION_CHECK: {
                 if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
-                    fprintf(stdout, "warning: root/node version mismatch ( %s != %s )\n", uuid, BUILD_VERSION_UUID);
-                    //root_remove_node(nodePtr);
-                    //return 0;
+                    fprintf(stdout, "warning: root -> node version mismatch ( [%s] != [%s] )\n", uuid, BUILD_VERSION_UUID);
                 }
             } break;
             case COMMAND_CREATE_ACTOR: {
@@ -221,7 +232,7 @@ static DECLARE_THREAD_FN(root_thread)
 
     // socket create and verification
     socketfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socketfd == -1) {
+    if (socketfd < 0) {
         fprintf(stderr, "Flynn Root socket creation failed, exiting...\n");
         exit(1);
     }
@@ -241,7 +252,7 @@ static DECLARE_THREAD_FN(root_thread)
 #if REMOTE_DEBUG
     fprintf(stderr, "[%d] root listen socket\n", root_listen_socket);
 #endif
-    while(root_listen_socket > 0) {
+    while(root_listen_socket >= 0) {
         if ((listen(socketfd, 32)) != 0) {
             fprintf(stderr, "Flynn Root socket listen failed, ending root listen thread\n");
             close_socket(socketfd);
@@ -272,11 +283,14 @@ void pony_root(const char * address,
                int port,
                CreateActorFunc createActorFunc,
                ReplyMessageFunc replyFunc) {
-    if (root_listen_socket > 0) { return; }
+    if (root_listen_socket >= 0) { return; }
     
-    sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
-    
-    pthread_mutex_init(&nodes_mutex, NULL);
+    if (!inited) {
+        inited = true;
+        pthread_mutex_init(&nodes_mutex, NULL);
+        sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
+        init_all_nodes();
+    }
     
     replyMessageFuncPtr = replyFunc;
     createActorFuncPtr = createActorFunc;
@@ -289,10 +303,13 @@ void pony_root(const char * address,
 
 void root_shutdown() {
     close_socket(root_listen_socket);
-    root_listen_socket = 0;
+    root_listen_socket = -1;
     ponyint_thread_join(root_tid);
     
     root_remove_all_nodes();
+    
+    number_of_nodes = 0;
+    number_of_cores = 0;
 }
 
 
