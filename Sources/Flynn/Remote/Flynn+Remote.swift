@@ -3,12 +3,15 @@ import Pony
 
 // MARK: - FLYNN EXTENSION
 
-private func nodeCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?, _ actorTypePtr: UnsafePointer<Int8>?) {
+private func nodeCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?,
+                             _ actorTypePtr: UnsafePointer<Int8>?,
+                             _ socketFD: Int32) {
     guard let actorUUIDPtr = actorUUIDPtr else { return }
     guard let actorTypePtr = actorTypePtr else { return }
 
     RemoteActorManager.shared.beCreateActor(String(cString: actorUUIDPtr),
-                                            String(cString: actorTypePtr))
+                                            String(cString: actorTypePtr),
+                                            socketFD)
 
 }
 
@@ -33,6 +36,15 @@ private func nodeHandleMessage(_ actorUUIDPtr: UnsafePointer<Int8>?,
                                               replySocketFD)
 }
 
+private func nodeRegisterActorsOnRoot(_ replySocketFD: Int32) {
+    // We are a node and we've just connected to a root. We need to ask the
+    // root to create any actors we currently have in existance on our
+    // RemoteActorManager (so the root knows that a remote service exists
+    // on this remote, for example).
+    RemoteActorManager.shared.unsafeRegisterActorsOnRoot(replySocketFD)
+
+}
+
 private func rootHandleMessageReply(_ actorUUIDPtr: UnsafePointer<Int8>?,
                                     _ payload: AnyPtr,
                                     _ payloadSize: Int32) {
@@ -49,32 +61,45 @@ private func rootHandleMessageReply(_ actorUUIDPtr: UnsafePointer<Int8>?,
 
 extension Flynn {
     public enum Root {
-        public static func listen(_ address: String, _ port: Int32) {
+        public static func listen(_ address: String,
+                                  _ port: Int32,
+                                  _ actorTypes: [RemoteActor.Type]) {
             pony_root(address,
-                        port,
-                        rootHandleMessageReply)
+                      port,
+                      nodeCreateActor,
+                      rootHandleMessageReply)
+
+            for actorType in actorTypes {
+                RemoteActorManager.shared.beRegisterActorType(actorType)
+            }
+        }
+
+        public static func remoteActorByUUID(_ actorUUID: String,
+                                             _ sender: Actor,
+                                             _ callback: @escaping (RemoteActor?) -> Void) {
+            RemoteActorManager.shared.beGetActor(actorUUID, sender, callback)
         }
     }
 
     public enum Node {
         public static func connect(_ address: String,
-                                   _ port: Int32) {
+                                   _ port: Int32,
+                                   _ actorTypes: [RemoteActor.Type]) {
             Flynn.startup()
 
             pony_node(address,
                       port,
                       nodeCreateActor,
                       nodeDestroyActor,
-                      nodeHandleMessage)
-        }
+                      nodeHandleMessage,
+                      nodeRegisterActorsOnRoot)
 
-        public static func registerActorTypes(_ actorTypes: [RemoteActor.Type]) {
             for actorType in actorTypes {
                 RemoteActorManager.shared.beRegisterActorType(actorType)
             }
         }
 
-        public static func registerActors(_ actors: [RemoteActor]) {
+        public static func registerActorsWithRoot(_ actors: [RemoteActor]) {
             for actor in actors {
                 RemoteActorManager.shared.beRegisterActor(actor)
             }

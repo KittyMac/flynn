@@ -172,7 +172,7 @@ void send_create_actor(int socketfd, const char * actorUUID, const char * actorT
     sendall(socketfd, buffer, idx);
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] root sending create actor to socket\n", socketfd);
+    fprintf(stderr, "[%d] sending create actor to socket\n", socketfd);
 #endif
 }
 

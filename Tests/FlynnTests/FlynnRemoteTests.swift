@@ -19,12 +19,11 @@ class FlynnRemoteTests: XCTestCase {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
         
         let port = Int32.random(in: 8000..<65500)
-        Flynn.Root.listen("127.0.0.1", port)
+        Flynn.Root.listen("127.0.0.1", port, [])
         
-        Flynn.Node.connect("127.0.0.1", port)
-        Flynn.Node.connect("127.0.0.1", port)
-        Flynn.Node.connect("127.0.0.1", port)
-        Flynn.Node.registerActorTypes([Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
                 
         Echo().bePrint("Hello Remote Actor 1!")
         Echo().bePrint("Hello Remote Actor 2!")
@@ -58,10 +57,9 @@ class FlynnRemoteTests: XCTestCase {
         
         let port = Int32.random(in: 8000..<65500)
         
-        Flynn.Node.connect("127.0.0.1", port)
-        Flynn.Node.registerActorTypes([Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
         sleep(2)
-        Flynn.Root.listen("127.0.0.1", port)
+        Flynn.Root.listen("127.0.0.1", port, [])
         
         // Right now this is necessary, we need to wait until
         // we know the node is connected before using remote actors
@@ -87,10 +85,9 @@ class FlynnRemoteTests: XCTestCase {
         
         let port = Int32.random(in: 8000..<65500)
         
-        Flynn.Root.listen("127.0.0.1", port)
+        Flynn.Root.listen("127.0.0.1", port, [])
         
-        Flynn.Node.connect("127.0.0.1", port)
-        Flynn.Node.registerActorTypes([Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
         
         while (Flynn.remoteCores == 0) {
             usleep(500)
@@ -114,22 +111,33 @@ class FlynnRemoteTests: XCTestCase {
     func testRemoteService() {
         let expectation = XCTestExpectation(description: "RemoteActor as a service")
         
-        // The idea behind remote services is that you have a single, shared actor
-        // running on a remote node.  The remote node connects to multiple roots, and
-        // actors on those roots can message the same remote service.
+        // The idea behind remote services is that you can have a single, shared actor
+        // pre-existing on a remote node. The remote node then shares this existing actor
+        // with root nodes that it connects to, allowing code on that root node to
+        // access that specific RemoteActor remotely.
         
         let echoServiceName = "SHARED ECHO SERVICE"
         
         let port = Int32.random(in: 8000..<65500)
         
-        Flynn.Node.connect("127.0.0.1", port)
-        Flynn.Node.registerActors([Echo(echoServiceName)])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+        Flynn.Node.registerActorsWithRoot([Echo(echoServiceName)])
         
-        Flynn.Root.listen("127.0.0.1", port)
+        Flynn.Root.listen("127.0.0.1", port, [Echo.self])
         
+        // Wait until the node has connected
         while (Flynn.remoteCores == 0) {
             usleep(500)
         }
+        
+        // Wait until the shared service has been
+        // communicated to the root node
+        var echoService: Echo?
+        while (echoService == nil) {
+            Flynn.Root.remoteActorByUUID(echoServiceName, Flynn.any) { echoService = $0 as? Echo }
+            usleep(500)
+        }
+        
         
         let printReply: RemoteBehaviorReply = { (data) in
             if let lowered = String(data: data, encoding: .utf8) {
@@ -140,11 +148,13 @@ class FlynnRemoteTests: XCTestCase {
                 }
             }
         }
-        
-        Echo(echoServiceName).beToLower("HELLO WORLD A", Flynn.any, printReply)
-        Echo(echoServiceName).beToLower("HELLO WORLD B", Flynn.any, printReply)
-        Echo(echoServiceName).beToLower("HELLO WORLD C", Flynn.any, printReply)
-        Echo(echoServiceName).beToLower("HELLO WORLD D", Flynn.any, printReply)
+                
+        if let echoService = echoService {
+            echoService.beToLower("HELLO WORLD A", Flynn.any, printReply)
+            echoService.beToLower("HELLO WORLD B", Flynn.any, printReply)
+            echoService.beToLower("HELLO WORLD C", Flynn.any, printReply)
+            echoService.beToLower("HELLO WORLD D", Flynn.any, printReply)
+        }
         
         wait(for: [expectation], timeout: 10.0)
         

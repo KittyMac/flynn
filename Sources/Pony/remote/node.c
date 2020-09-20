@@ -33,6 +33,7 @@ typedef struct root_t
     CreateActorFunc createActorFuncPtr;
     DestroyActorFunc destroyActorFuncPtr;
     MessageActorFunc messageActorFuncPtr;
+    RegisterActorsOnRootFunc registerActorsOnRootFuncPtr;
     pony_thread_id_t thread_tid;
 } root_t;
 
@@ -60,7 +61,8 @@ static bool node_add_root(const char * address,
                           int port,
                           CreateActorFunc createActorFuncPtr,
                           DestroyActorFunc destroyActorFuncPtr,
-                          MessageActorFunc messageActorFuncPtr) {
+                          MessageActorFunc messageActorFuncPtr,
+                          RegisterActorsOnRootFunc registerActorsOnRootFuncPtr) {
     for (int i = 0; i < kMaxRoots; i++) {
         if (roots[i].socketfd == 0) {
             pthread_mutex_lock(&roots_mutex);
@@ -70,6 +72,7 @@ static bool node_add_root(const char * address,
             roots[i].createActorFuncPtr = createActorFuncPtr;
             roots[i].destroyActorFuncPtr = destroyActorFuncPtr;
             roots[i].messageActorFuncPtr = messageActorFuncPtr;
+            roots[i].registerActorsOnRootFuncPtr = registerActorsOnRootFuncPtr;
             ponyint_thread_create(&roots[i].thread_tid, node_read_from_root_thread, QOS_CLASS_BACKGROUND, roots + i);
             pthread_mutex_unlock(&roots_mutex);
             return true;
@@ -86,6 +89,7 @@ static void node_remove_root(root_t * rootPtr) {
         rootPtr->createActorFuncPtr = NULL;
         rootPtr->destroyActorFuncPtr = NULL;
         rootPtr->messageActorFuncPtr = NULL;
+        rootPtr->registerActorsOnRootFuncPtr = NULL;
         rootPtr->address[0] = 0;
         rootPtr->socketfd = 0;
     }
@@ -132,6 +136,9 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
         }
         
         send_version_check(rootPtr->socketfd);
+        
+        rootPtr->registerActorsOnRootFuncPtr(rootPtr->socketfd);
+        
         send_core_count(rootPtr->socketfd);
         
         while(rootPtr->socketfd > 0) {
@@ -177,10 +184,10 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                         return 0;
                     }
                     
-                    rootPtr->createActorFuncPtr(uuid, type);
+                    rootPtr->createActorFuncPtr(uuid, type, rootPtr->socketfd);
                     
 #if REMOTE_DEBUG
-                    fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR[%s, %s]\n", rootPtr->socketfd, uuid, type);
+                    fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR(node)[%s, %s]\n", rootPtr->socketfd, uuid, type);
 #endif
                 } break;
                 case COMMAND_DESTROY_ACTOR:
@@ -226,7 +233,8 @@ void pony_node(const char * address,
                int port,
                CreateActorFunc createActorFuncPtr,
                DestroyActorFunc destroyActorFuncPtr,
-               MessageActorFunc messageActorFuncPtr) {
+               MessageActorFunc messageActorFuncPtr,
+               RegisterActorsOnRootFunc registerActorsOnRootFuncPtr) {
     if (inited == false) {
         inited = true;
         pthread_mutex_init(&roots_mutex, NULL);
@@ -236,7 +244,8 @@ void pony_node(const char * address,
                       port,
                       createActorFuncPtr,
                       destroyActorFuncPtr,
-                      messageActorFuncPtr)) {
+                      messageActorFuncPtr,
+                      registerActorsOnRootFuncPtr)) {
         fprintf(stderr, "Flynn node failed to add root, maximum number of roots exceeded\n");
         return;
     }
@@ -255,5 +264,11 @@ void pony_remote_actor_send_message_to_root(int socketfd, const char * actorUUID
     
     pthread_mutex_lock(&roots_mutex);
     send_reply(socketfd, actorUUID, bytes, count);
+    pthread_mutex_unlock(&roots_mutex);
+}
+
+void pony_send_remote_actor_to_root(int socketfd, const char * actorUUID, const char * actorType) {
+    pthread_mutex_lock(&roots_mutex);
+    send_create_actor(socketfd, actorUUID, actorType);
     pthread_mutex_unlock(&roots_mutex);
 }

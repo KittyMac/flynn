@@ -29,6 +29,12 @@ open class InternalRemoteActor {
         isNamedService = true
     }
 
+    public required init(_ uuid: String, _ socketFD: Int32) {
+        unsafeUUID = uuid
+        nodeSocketFD = socketFD
+        isNamedService = true
+    }
+
     public func unsafeIsConnected() -> Bool {
         return nodeSocketFD > 0
     }

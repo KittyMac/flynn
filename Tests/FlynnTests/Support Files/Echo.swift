@@ -3,6 +3,7 @@ import XCTest
 @testable import Flynn
 
 class Echo: RemoteActor {
+    private let echoUUID = UUID().uuidString
     private var count: Int = 0
         
     private func _bePrintThreadName() -> Data {

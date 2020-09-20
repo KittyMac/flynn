@@ -47,6 +47,10 @@ internal final class RemoteActorManager: Actor {
 
     private var runnerPool: [RemoteActorRunner] = []
 
+    private func _beGetActor(_ actorUUID: String) -> RemoteActor? {
+        return actors[actorUUID]
+    }
+
     private func _beRegisterActorType(_ actorType: RemoteActor.Type) {
         actorTypes[String(describing: actorType)] = actorType
     }
@@ -56,9 +60,27 @@ internal final class RemoteActorManager: Actor {
         actors[actor.unsafeUUID] = actor
     }
 
-    private func _beCreateActor(_ actorUUID: String, _ actorType: String) {
+    public func unsafeRegisterActorsOnRoot(_ socketFD: Int32) {
+        for actor in actors.values {
+            let actorTypeWithModule = String(describing: actor)
+
+            // actorType will contain the module name as the first part
+            // ie: FlynnTests.Echo
+            // For remote actor types, we ignore the module name and just
+            // use the rest of the full path
+            let actorType = actorTypeWithModule.components(separatedBy: ".").dropFirst().joined(separator: ".")
+
+            // call into pony, send our actor UUIDs and type information over the supplied socket
+            // (which is directly linked to a specific root node).
+            pony_send_remote_actor_to_root(socketFD, actor.unsafeUUID, actorType)
+        }
+    }
+
+    private func _beCreateActor(_ actorUUID: String,
+                                _ actorType: String,
+                                _ socketFD: Int32) {
         if let actorType = actorTypes[actorType] {
-            let actor = actorType.init(actorUUID)
+            let actor = actorType.init(actorUUID, socketFD)
             actor.unsafeRegisterAllBehaviors()
             actors[actorUUID] = actor
         }
@@ -124,6 +146,16 @@ internal final class RemoteActorManager: Actor {
 extension RemoteActorManager {
 
     @discardableResult
+    public func beGetActor(_ actorUUID: String,
+                           _ sender: Actor,
+                           _ callback: @escaping ((RemoteActor?) -> Void)) -> Self {
+        unsafeSend {
+            let result = self._beGetActor(actorUUID)
+            sender.unsafeSend { callback(result) }
+        }
+        return self
+    }
+    @discardableResult
     public func beRegisterActorType(_ actorType: RemoteActor.Type) -> Self {
         unsafeSend { self._beRegisterActorType(actorType) }
         return self
@@ -135,8 +167,9 @@ extension RemoteActorManager {
     }
     @discardableResult
     public func beCreateActor(_ actorUUID: String,
-                              _ actorType: String) -> Self {
-        unsafeSend { self._beCreateActor(actorUUID, actorType) }
+                              _ actorType: String,
+                              _ socketFD: Int32) -> Self {
+        unsafeSend { self._beCreateActor(actorUUID, actorType, socketFD) }
         return self
     }
     @discardableResult

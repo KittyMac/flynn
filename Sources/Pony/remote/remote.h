@@ -17,9 +17,11 @@ extern char * BUILD_VERSION_UUID;
 #define COMMAND_SEND_REPLY 5
 #define COMMAND_CORE_COUNT 6
 
-typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType);
+typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);
 typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int replySocketFD);
+typedef void (*RegisterActorsOnRootFunc)(int replySocketFD);
+
 typedef void (*ReplyMessageFunc)(const char * actorUUID, void * payload, int payloadSize);
 
 extern int recvall(int fd, void * ptr, int size);
@@ -31,6 +33,7 @@ extern bool read_bytecount_buffer(int socketfd, char * dst, size_t max_length);
 
 extern void send_buffer(int socketfd, char * bytes, size_t length);
 extern void send_version_check(int socketfd);
+extern void send_existing_actors(int socketfd);
 extern void send_core_count(int socketfd);
 extern void send_create_actor(int socketfd, const char * actorUUID, const char * actorType);
 extern void send_destroy_actor(int socketfd, const char * actorUUID);

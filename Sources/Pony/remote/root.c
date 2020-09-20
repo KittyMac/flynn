@@ -54,6 +54,7 @@ static pony_thread_id_t root_tid;
 static char root_ip_address[128] = {0};
 static int root_tcp_port = 9999;
 static ReplyMessageFunc replyMessageFuncPtr = NULL;
+static CreateActorFunc createActorFuncPtr = NULL;
 static int root_listen_socket = 0;
 
 static DECLARE_THREAD_FN(root_read_from_node_thread);
@@ -141,6 +142,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
         uint8_t command = read_command(nodePtr->socketfd);
         if (command != COMMAND_VERSION_CHECK &&
             command != COMMAND_CORE_COUNT &&
+            command != COMMAND_CREATE_ACTOR &&
             command != COMMAND_SEND_REPLY) {
             root_remove_node(nodePtr);
             return 0;
@@ -149,7 +151,8 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
         // read the size of the uuid
         char uuid[128] = {0};
         if (command == COMMAND_VERSION_CHECK ||
-            command == COMMAND_SEND_REPLY) {
+            command == COMMAND_SEND_REPLY ||
+            command == COMMAND_CREATE_ACTOR) {
             if (!read_bytecount_buffer(nodePtr->socketfd, uuid, sizeof(uuid)-1)) {
                 root_remove_node(nodePtr);
                 return 0;
@@ -163,6 +166,20 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                     //root_remove_node(nodePtr);
                     //return 0;
                 }
+            } break;
+            case COMMAND_CREATE_ACTOR: {
+                char type[128] = {0};
+                if (!read_bytecount_buffer(nodePtr->socketfd, type, sizeof(type)-1)) {
+                    root_remove_node(nodePtr);
+                    ponyint_pool_thread_cleanup();
+                    return 0;
+                }
+                
+                createActorFuncPtr(uuid, type, nodePtr->socketfd);
+                
+#if REMOTE_DEBUG
+                fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR(root)[%s, %s]\n", nodePtr->socketfd, uuid, type);
+#endif
             } break;
             case COMMAND_CORE_COUNT: {
                 uint32_t core_count = 0;
@@ -253,6 +270,7 @@ static DECLARE_THREAD_FN(root_thread)
 
 void pony_root(const char * address,
                int port,
+               CreateActorFunc createActorFunc,
                ReplyMessageFunc replyFunc) {
     if (root_listen_socket > 0) { return; }
     
@@ -261,6 +279,7 @@ void pony_root(const char * address,
     pthread_mutex_init(&nodes_mutex, NULL);
     
     replyMessageFuncPtr = replyFunc;
+    createActorFuncPtr = createActorFunc;
     
     strncpy(root_ip_address, address, sizeof(root_ip_address)-1);
     root_tcp_port = port;
@@ -280,12 +299,11 @@ void root_shutdown() {
 // MARK: - MESSAGES
 
 void pony_remote_actor_send_message_to_node(const char * actorUUID, const char * actorType, const char * behaviorType, int * nodeSocketFD, const void * bytes, int count) {
+    
+    // Note: this is not optimal; we should have a mutext per socket
+    pthread_mutex_lock(&nodes_mutex);
+    
     if (*nodeSocketFD < 0) {
-        
-        // TODO: If we are a named service, then we need to use the socket of the node
-        // who is connected which has said named service.  In this scenario, we
-        // DO NOT NEED TO CREATE THE ACTOR
-        
         node_t * nodePtr = root_get_next_node();
         if (nodePtr == NULL) {
             fprintf(stderr, "error: RemoteActor behavior called but no nodes are connected to root\n");
@@ -299,6 +317,8 @@ void pony_remote_actor_send_message_to_node(const char * actorUUID, const char *
         // we lost connection with this remote actor
         *nodeSocketFD = -1;
     }
+    
+    pthread_mutex_unlock(&nodes_mutex);
 }
 
 void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD) {
