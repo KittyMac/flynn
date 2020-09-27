@@ -164,7 +164,6 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
         // read the size of the uuid
         char uuid[128] = {0};
         if (command == COMMAND_VERSION_CHECK ||
-            command == COMMAND_SEND_REPLY ||
             command == COMMAND_CREATE_ACTOR) {
             if (!read_bytecount_buffer(nodePtr->socketfd, uuid, sizeof(uuid)-1)) {
                 root_remove_node(nodePtr);
@@ -205,9 +204,16 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 
             } break;
             case COMMAND_SEND_REPLY: {
+                uint32_t messageID = 0;
+                if (!read_int(nodePtr->socketfd, &messageID)) {
+                    root_remove_node(nodePtr);
+                    ponyint_pool_thread_cleanup();
+                    return 0;
+                }
+                
                 uint32_t payload_count = 0;
                 char * payload = read_intcount_buffer(nodePtr->socketfd, &payload_count);
-                replyMessageFuncPtr(uuid, payload, payload_count);
+                replyMessageFuncPtr(messageID, payload, payload_count);
                 
 #if REMOTE_DEBUG
                 fprintf(stdout, "[%d] COMMAND_SEND_REPLY[%s] %d bytes\n", nodePtr->socketfd, uuid, payload_count);
@@ -315,7 +321,9 @@ void root_shutdown() {
 
 // MARK: - MESSAGES
 
-void pony_remote_actor_send_message_to_node(const char * actorUUID, const char * actorType, const char * behaviorType, int * nodeSocketFD, const void * bytes, int count) {
+static uint32_t messageID = 1;
+
+int pony_remote_actor_send_message_to_node(const char * actorUUID, const char * actorType, const char * behaviorType, int * nodeSocketFD, const void * bytes, int count) {
     
     // Note: this is not optimal; we should have a mutext per socket
     pthread_mutex_lock(&nodes_mutex);
@@ -330,12 +338,16 @@ void pony_remote_actor_send_message_to_node(const char * actorUUID, const char *
         send_create_actor(*nodeSocketFD, actorUUID, actorType);
     }
     
-    if (send_message(*nodeSocketFD, actorUUID, behaviorType, bytes, count) < 0) {
+    messageID += 1;
+    
+    if (send_message(*nodeSocketFD, messageID, actorUUID, behaviorType, bytes, count) < 0) {
         // we lost connection with this remote actor
         *nodeSocketFD = -1;
     }
     
     pthread_mutex_unlock(&nodes_mutex);
+    
+    return messageID;
 }
 
 void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD) {

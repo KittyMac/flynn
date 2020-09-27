@@ -50,6 +50,8 @@ char * BUILD_VERSION_UUID = __TIMESTAMP__;
 //  COMMAND_SEND_MESSAGE (root -> node)
 //   [1] U8     number of bytes for actor uuid
 //   [?]        actor uuid as string
+//   [?]        behavior type as string
+//   [0-4]      messageID
 //   [0-4]      number of bytes for message data
 //   [?]        message data
 //
@@ -94,6 +96,14 @@ int sendall(int fd, void * ptr, int size) {
     }
     
     return size;
+}
+
+bool read_int(int socketfd, uint32_t * count) {
+    if (recvall(socketfd, count, sizeof(uint32_t)) <= 0) {
+        return false;
+    }
+    *count = ntohl(*count);
+    return true;
 }
 
 char * read_intcount_buffer(int socketfd, uint32_t * count) {
@@ -194,7 +204,7 @@ void send_destroy_actor(int socketfd, const char * actorUUID) {
 #endif
 }
 
-int send_message(int socketfd, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count) {
+int send_message(int socketfd, int messageID, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count) {
     char buffer[512];
     int idx = 0;
     
@@ -214,6 +224,11 @@ int send_message(int socketfd, const char * actorUUID, const char * behaviorType
         return -1;
     }
     
+    uint32_t net_messageID = htonl(messageID);
+    if (sendall(socketfd, &net_messageID, sizeof(net_messageID)) < 0) {
+        return -1;
+    }
+    
     uint32_t net_count = htonl(count);
     if (sendall(socketfd, &net_count, sizeof(net_count)) < 0) {
         return -1;
@@ -224,24 +239,21 @@ int send_message(int socketfd, const char * actorUUID, const char * behaviorType
     }
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] root sending message to socket\n", socketfd);
+    fprintf(stderr, "[%d] root sending message id %d to socket\n", socketfd, messageID);
 #endif
     
     return idx + sizeof(net_count) + count;
 }
 
-void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32_t count) {
+void send_reply(int socketfd, uint32_t messageID, const void * bytes, uint32_t count) {
     char buffer[512];
     int idx = 0;
     
     buffer[idx++] = COMMAND_SEND_REPLY;
-    
-    uint8_t uuid_count = strlen(actorUUID);
-    buffer[idx++] = uuid_count;
-    memcpy(buffer + idx, actorUUID, uuid_count);
-    idx += uuid_count;
-            
     sendall(socketfd, buffer, idx);
+    
+    uint32_t net_messageID = htonl(messageID);
+    sendall(socketfd, &net_messageID, sizeof(net_messageID));
     
     uint32_t net_count = htonl(count);
     sendall(socketfd, &net_count, sizeof(net_count));
@@ -249,7 +261,7 @@ void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32
     sendall(socketfd, (char *)bytes, count);
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] node sending reply to socket\n", socketfd);
+    fprintf(stderr, "[%d] node sending reply to messageID %d\n", socketfd, messageID);
 #endif
 }
 

@@ -1,6 +1,7 @@
 import Foundation
 import Pony
 
+public typealias DelayedRemoteBehavior = (Data, @escaping (Data) -> Void) -> Void
 public typealias RemoteBehavior = (Data) -> Data?
 public typealias RemoteBehaviorReply = (Data) -> Void
 
@@ -17,7 +18,9 @@ open class InternalRemoteActor {
 
     private var nodeSocketFD: Int32 = -1
 
-    private var remoteBehaviors: [String: (Data) -> Data?] = [:]
+    private var remoteBehaviors: [String: RemoteBehavior] = [:]
+    private var delayedRemoteBehaviors: [String: DelayedRemoteBehavior] = [:]
+    
 
     public required init() {
         unsafeUUID = UUID().uuidString
@@ -49,15 +52,34 @@ open class InternalRemoteActor {
     public func safeRegisterRemoteBehavior(_ name: String, behavior: @escaping RemoteBehavior) {
         remoteBehaviors[name] = behavior
     }
+    
+    public func safeRegisterDelayedRemoteBehavior(_ name: String, behavior: @escaping DelayedRemoteBehavior) {
+        delayedRemoteBehaviors[name] = behavior
+    }
 
-    public func unsafeExecuteBehavior(_ name: String, _ payload: Data, _ replySocketFD: Int32) {
+    public func unsafeExecuteBehavior(_ name: String, _ payload: Data, _ messageID: Int32, _ replySocketFD: Int32) {
+        // regular remote behaviors either return nothing (nil) or
+        // return data to be sent back immediately
         if let behavior = remoteBehaviors[name] {
             if let data = behavior(payload) {
                 data.withUnsafeBytes {
                     pony_remote_actor_send_message_to_root(replySocketFD,
-                                                           unsafeUUID,
+                                                           messageID,
                                                            $0.baseAddress,
                                                            Int32(data.count))
+                }
+            }
+        }
+        
+        // delayed remote behaviors are given a closure to call when
+        // they are ready to respond to a message
+        if let behavior = delayedRemoteBehaviors[name] {
+            behavior(payload) {
+                $0.withUnsafeBytes {
+                    pony_remote_actor_send_message_to_root(replySocketFD,
+                                                           messageID,
+                                                           $0.baseAddress,
+                                                           Int32($0.count))
                 }
             }
         }
@@ -69,16 +91,17 @@ open class InternalRemoteActor {
                                    _ sender: Actor?,
                                    _ callback: RemoteBehaviorReply?) {
         _ = jsonData.withUnsafeBytes {
-            if let sender = sender, let callback = callback {
-                RemoteActorManager.shared.beRegisterReply(unsafeUUID, sender, callback)
-            }
+            
 
-            pony_remote_actor_send_message_to_node(unsafeUUID,
-                                                   actorType,
-                                                   behaviorType,
-                                                   &nodeSocketFD,
-                                                   $0.baseAddress,
-                                                   Int32(jsonData.count))
+            let messageID = pony_remote_actor_send_message_to_node(unsafeUUID,
+                                                                   actorType,
+                                                                   behaviorType,
+                                                                   &nodeSocketFD,
+                                                                   $0.baseAddress,
+                                                                   Int32(jsonData.count))
+            if let sender = sender, let callback = callback {
+                RemoteActorManager.shared.beRegisterReply(unsafeUUID, messageID, sender, callback)
+            }
         }
     }
 }

@@ -10,10 +10,10 @@
 
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);
-typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int replySocketFD);
+typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int messageID, int replySocketFD);
 typedef void (*RegisterActorsOnRootFunc)(int replySocketFD);
 
-typedef void (*ReplyMessageFunc)(const char * actorUUID, void * payload, int payloadSize);
+typedef void (*ReplyMessageFunc)(int messageID, void * payload, int payloadSize);
 
 void pony_root(const char * address,
                int port,
@@ -29,14 +29,14 @@ void pony_node(const char * address,
 int pony_remote_nodes_count();
 int pony_remote_core_count();
 
-void pony_remote_actor_send_message_to_node(const char * actorUUID,
-                                            const char * actorType,
-                                            const char * behaviorType,
-                                            int * nodeSocketFD,
-                                            const void * bytes,
-                                            int count);
+int pony_remote_actor_send_message_to_node(const char * actorUUID,
+                                           const char * actorType,
+                                           const char * behaviorType,
+                                           int * nodeSocketFD,
+                                           const void * bytes,
+                                           int count);
 void pony_remote_actor_send_message_to_root(int socketfd,
-                                            const char * actorUUID,
+                                            int messageID,
                                             const void * bytes,
                                             int count);
 void pony_send_remote_actor_to_root(int socketfd,

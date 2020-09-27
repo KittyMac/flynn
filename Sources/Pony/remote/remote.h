@@ -19,15 +19,16 @@ extern char * BUILD_VERSION_UUID;
 
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);
-typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int replySocketFD);
+typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int messageID, int replySocketFD);
 typedef void (*RegisterActorsOnRootFunc)(int replySocketFD);
 
-typedef void (*ReplyMessageFunc)(const char * actorUUID, void * payload, int payloadSize);
+typedef void (*ReplyMessageFunc)(uint32_t messageID, void * payload, int payloadSize);
 
 extern int recvall(int fd, void * ptr, int size);
 extern int sendall(int fd, void * ptr, int size);
 
 extern uint8_t read_command(int socketfd);
+extern bool read_int(int socketfd, uint32_t * count);
 extern char * read_intcount_buffer(int socketfd, uint32_t * count);
 extern bool read_bytecount_buffer(int socketfd, char * dst, size_t max_length);
 
@@ -38,7 +39,7 @@ extern void send_core_count(int socketfd);
 extern void send_create_actor(int socketfd, const char * actorUUID, const char * actorType);
 extern void send_destroy_actor(int socketfd, const char * actorUUID);
 
-extern int send_message(int socketfd, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count);
-extern void send_reply(int socketfd, const char * actorUUID, const void * bytes, uint32_t count);
+extern int send_message(int socketfd, int messageID, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count);
+extern void send_reply(int socketfd, uint32_t messageID, const void * bytes, uint32_t count);
 
 extern void close_socket(int fd);

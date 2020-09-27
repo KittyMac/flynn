@@ -206,8 +206,16 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
 #endif
                     break;
                 case COMMAND_SEND_MESSAGE: {
+                    
                     char behavior[128] = {0};
                     if (!read_bytecount_buffer(rootPtr->socketfd, behavior, sizeof(behavior)-1)) {
+                        node_remove_root(rootPtr);
+                        ponyint_pool_thread_cleanup();
+                        return 0;
+                    }
+                    
+                    uint32_t messageID = 0;
+                    if (!read_int(rootPtr->socketfd, &messageID)) {
                         node_remove_root(rootPtr);
                         ponyint_pool_thread_cleanup();
                         return 0;
@@ -220,7 +228,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                     uint8_t * bytes = malloc(payload_count);
                     recvall(rootPtr->socketfd, bytes, payload_count);
                     
-                    rootPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count, rootPtr->socketfd);
+                    rootPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count, messageID, rootPtr->socketfd);
                     
     #if REMOTE_DEBUG
                     fprintf(stdout, "[%d] COMMAND_SEND_MESSAGE[%s, %s] %d bytes\n", rootPtr->socketfd, uuid, behavior, payload_count);
@@ -265,13 +273,13 @@ void node_shutdown() {
 
 // MARK: - MESSAGES
 
-void pony_remote_actor_send_message_to_root(int socketfd, const char * actorUUID, const void * bytes, int count) {
+void pony_remote_actor_send_message_to_root(int socketfd, int messageID, const void * bytes, int count) {
     // When a node is sending back to a root, they send a message by knowing the recipients actor uuid
     // The root knows which messages it sent which are expecting a reply, so it is garaunteed they
     // will be delivered back in order
     
     pthread_mutex_lock(&roots_mutex);
-    send_reply(socketfd, actorUUID, bytes, count);
+    send_reply(socketfd, messageID, bytes, count);
     pthread_mutex_unlock(&roots_mutex);
 }
 

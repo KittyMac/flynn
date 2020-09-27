@@ -25,6 +25,7 @@ private func nodeHandleMessage(_ actorUUIDPtr: UnsafePointer<Int8>?,
                                _ behaviorPtr: UnsafePointer<Int8>?,
                                _ payload: AnyPtr,
                                _ payloadSize: Int32,
+                               _ messageID: Int32,
                                _ replySocketFD: Int32) {
     guard let actorUUIDPtr = actorUUIDPtr else { return }
     guard let behaviorPtr = behaviorPtr else { return }
@@ -33,6 +34,7 @@ private func nodeHandleMessage(_ actorUUIDPtr: UnsafePointer<Int8>?,
     RemoteActorManager.shared.beHandleMessage(String(cString: actorUUIDPtr),
                                               String(cString: behaviorPtr),
                                               Data(bytesNoCopy: payload, count: Int(payloadSize), deallocator: .free),
+                                              messageID,
                                               replySocketFD)
 }
 
@@ -45,17 +47,16 @@ private func nodeRegisterActorsOnRoot(_ replySocketFD: Int32) {
 
 }
 
-private func rootHandleMessageReply(_ actorUUIDPtr: UnsafePointer<Int8>?,
+private func rootHandleMessageReply(_ messageID: Int32,
                                     _ payload: AnyPtr,
                                     _ payloadSize: Int32) {
-    guard let actorUUIDPtr = actorUUIDPtr else { return }
     if let payload = payload {
-        RemoteActorManager.shared.beHandleMessageReply(String(cString: actorUUIDPtr),
+        RemoteActorManager.shared.beHandleMessageReply(messageID,
                                                        Data(bytesNoCopy: payload,
                                                             count: Int(payloadSize),
                                                             deallocator: .free))
     } else {
-        RemoteActorManager.shared.beHandleMessageReply(String(cString: actorUUIDPtr), Data())
+        RemoteActorManager.shared.beHandleMessageReply(messageID, Data())
     }
 }
 

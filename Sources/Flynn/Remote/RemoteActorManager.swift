@@ -96,6 +96,7 @@ internal final class RemoteActorManager: Actor {
     private func _beHandleMessage(_ actorUUID: String,
                                   _ behavior: String,
                                   _ data: Data,
+                                  _ messageID: Int32,
                                   _ replySocketFD: Int32) {
         if let actor = actors[actorUUID] {
             // To preserve causal messaging, we need to ensure that the behaviors for
@@ -111,40 +112,25 @@ internal final class RemoteActorManager: Actor {
             // pro: its quick, easy, and gaurantees causal messaging
             // con: we won't get amazing distribution across all cores
             let runnerIdx = abs(actorUUID.hashValue) % runnerPool.count
-            runnerPool[runnerIdx].beHandleMessage(actor, behavior, data, replySocketFD)
+            runnerPool[runnerIdx].beHandleMessage(actor, behavior, data, messageID, replySocketFD)
         }
     }
 
     // MARK: - RemoteActorManager: Root
 
-    private var waitingReply: [String: Queue<MessageReply>] = [:]
+    private var waitingReplies: [Int32: MessageReply] = [:]
 
     private func _beRegisterReply(_ remoteActorUUID: String,
+                                  _ messageID: Int32,
                                   _ actor: Actor,
                                   _ block: @escaping RemoteBehaviorReply) {
-        let msg = MessageReply(actor, block)
-
-        if let messages = waitingReply[remoteActorUUID] {
-            messages.enqueue(msg)
-        } else {
-            let messages = Queue<MessageReply>(size: 512,
-                                               manyProducers: false,
-                                               manyConsumers: false)
-            messages.enqueue(msg)
-            waitingReply[remoteActorUUID] = messages
-        }
+        waitingReplies[messageID] = MessageReply(actor, block)
     }
 
-    private func _beHandleMessageReply(_ remoteActorUUID: String,
+    private func _beHandleMessageReply(_ messageID: Int32,
                                        _ data: Data) {
-        if let messages = waitingReply[remoteActorUUID] {
-            if let message = messages.dequeue() {
-                message.run(data)
-            }
-
-            if messages.isEmpty {
-                waitingReply.removeValue(forKey: remoteActorUUID)
-            }
+        if let message = waitingReplies.removeValue(forKey: messageID) {
+            message.run(data)
         }
     }
 }
@@ -195,21 +181,23 @@ extension RemoteActorManager {
     public func beHandleMessage(_ actorUUID: String,
                                 _ behavior: String,
                                 _ data: Data,
+                                _ messageID: Int32,
                                 _ replySocketFD: Int32) -> Self {
-        unsafeSend { self._beHandleMessage(actorUUID, behavior, data, replySocketFD) }
+        unsafeSend { self._beHandleMessage(actorUUID, behavior, data, messageID, replySocketFD) }
         return self
     }
     @discardableResult
     public func beRegisterReply(_ remoteActorUUID: String,
+                                _ messageID: Int32,
                                 _ actor: Actor,
                                 _ block: @escaping RemoteBehaviorReply) -> Self {
-        unsafeSend { self._beRegisterReply(remoteActorUUID, actor, block) }
+        unsafeSend { self._beRegisterReply(remoteActorUUID, messageID, actor, block) }
         return self
     }
     @discardableResult
-    public func beHandleMessageReply(_ remoteActorUUID: String,
+    public func beHandleMessageReply(_ messageID: Int32,
                                      _ data: Data) -> Self {
-        unsafeSend { self._beHandleMessageReply(remoteActorUUID, data) }
+        unsafeSend { self._beHandleMessageReply(messageID, data) }
         return self
     }
 

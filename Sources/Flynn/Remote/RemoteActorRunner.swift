@@ -7,8 +7,9 @@ public final class RemoteActorRunner: Actor {
     private func _beHandleMessage(_ actor: RemoteActor,
                                   _ behavior: String,
                                   _ data: Data,
+                                  _ messageID: Int32,
                                   _ replySocketFD: Int32) {
-        actor.unsafeExecuteBehavior(behavior, data, replySocketFD)
+        actor.unsafeExecuteBehavior(behavior, data, messageID, replySocketFD)
     }
 }
 
@@ -21,8 +22,9 @@ extension RemoteActorRunner {
     public func beHandleMessage(_ actor: RemoteActor,
                                 _ behavior: String,
                                 _ data: Data,
+                                _ messageID: Int32,
                                 _ replySocketFD: Int32) -> Self {
-        unsafeSend { self._beHandleMessage(actor, behavior, data, replySocketFD) }
+        unsafeSend { self._beHandleMessage(actor, behavior, data, messageID, replySocketFD) }
         return self
     }
 

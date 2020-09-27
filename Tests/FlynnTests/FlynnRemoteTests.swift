@@ -33,7 +33,7 @@ class FlynnRemoteTests: XCTestCase {
         let printReply = { (lowered: String) in
             print("on root: \(lowered)")
 
-            if lowered.hasPrefix("hello world d") {
+            if lowered.hasPrefix("HELLO WORLD E") {
                 expectation.fulfill()
             }
         }
@@ -45,6 +45,9 @@ class FlynnRemoteTests: XCTestCase {
         let echo2 = Echo()
         echo2.beToLower("HELLO WORLD C", Flynn.any, printReply)
         echo2.beToLower("HELLO WORLD D", Flynn.any, printReply)
+
+        let echo3 = Echo()
+        echo3.beTestDelayedReturn("hello world e", Flynn.any, printReply)
 
         wait(for: [expectation], timeout: 10.0)
 
@@ -151,6 +154,36 @@ class FlynnRemoteTests: XCTestCase {
         }
 
         wait(for: [expectation], timeout: 10.0)
+
+        Flynn.shutdown()
+    }
+
+    func testDelayedReturnsForRemoteBehaviors() {
+        // RemoteActors can now have behaviors which can make their response to the other
+        // node on the network out-of-order. This test ensures that the correct return
+        // callbacks are made to the correct behavior calls.
+        let port = Int32.random(in: 8000..<65500)
+        Flynn.Root.listen("127.0.0.1", port, [])
+
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+
+        while Flynn.remoteCores == 0 {
+            usleep(500)
+        }
+
+        let echo = Echo()
+        var numCorrect = 0
+        echo.beTestDelayedReturn("hello world a", Flynn.any) { if $0 == "HELLO WORLD A" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world b", Flynn.any) { if $0 == "HELLO WORLD B" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world c", Flynn.any) { if $0 == "HELLO WORLD C" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world d", Flynn.any) { if $0 == "HELLO WORLD D" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world e", Flynn.any) { if $0 == "HELLO WORLD E" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world f", Flynn.any) { if $0 == "HELLO WORLD F" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world g", Flynn.any) { if $0 == "HELLO WORLD G" { numCorrect += 1 } }
+
+        sleep(4)
+
+        XCTAssert(numCorrect == 7)
 
         Flynn.shutdown()
     }
