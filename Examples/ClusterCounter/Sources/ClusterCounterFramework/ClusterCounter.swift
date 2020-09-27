@@ -5,7 +5,7 @@ public enum ClusterCounter {
     public static func runAsNode(_ address: String, _ port: Int32) {
         print("run as node")
 
-        Flynn.node(address, port, [RemoteCounter.self])
+        Flynn.Node.connect(address, port, [RemoteCounter.self])
 
         while true {
             sleep(100)
@@ -15,7 +15,7 @@ public enum ClusterCounter {
     public static func runAsRoot(_ address: String, _ port: Int32) {
         print("run as root")
 
-        Flynn.root(address, port)
+        Flynn.Root.listen(address, port, [])
 
         let root = RootCounter()
 

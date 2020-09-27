@@ -18,7 +18,7 @@ public class RootCounter: Actor {
             // know they are no longer connected
             for counter in self.remotes {
                 counter.beIncrement(10, self) {
-                    self.total += $0.withUnsafeBytes { $0.load(as: Int.self) }
+                    self.total += $0
                 }
             }
 

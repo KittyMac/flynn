@@ -5,12 +5,12 @@ class Echo: RemoteActor {
     private let echoUUID = UUID().uuidString
     private var count: Int = 0
 
-    private func _bePrintThreadName() -> Data {
+    private func _bePrintThreadName() -> Int {
         if let name = Thread.current.name {
             sleep(1)
             print("Echo running on \(name)")
         }
-        return Data()
+        return 0
     }
 
     private func _bePrint(_ string: String) {
@@ -29,7 +29,7 @@ class Echo: RemoteActor {
 extension Echo {
 
     struct BePrintThreadNameCodableResponse: Codable {
-        let response: Data
+        let response: Int
     }
     struct BePrintCodableRequest: Codable {
         let arg0: String
@@ -42,7 +42,7 @@ extension Echo {
     }
 
     @discardableResult
-    public func bePrintThreadName(_ sender: Actor, _ callback: @escaping (Data) -> Void) -> Self {
+    public func bePrintThreadName(_ sender: Actor, _ callback: @escaping (Int) -> Void) -> Self {
         unsafeSendToRemote("Echo", "bePrintThreadName", Data(), sender) {
             callback(
                 // swiftlint:disable:next force_try

@@ -4,11 +4,11 @@ import Foundation
 public class RemoteCounter: RemoteActor {
     private var count: Int = 0
 
-    private func _beIncrement(_ amount: Int) -> Data {
+    private func _beIncrement(_ amount: Int) -> Int {
         for _ in 0..<amount {
             count += 1
         }
-        return Data(bytes: &count, count: MemoryLayout.size(ofValue: count))
+        return count
     }
 }
 
@@ -17,29 +17,36 @@ public class RemoteCounter: RemoteActor {
 
 extension RemoteCounter {
 
-    struct BeIncrementCodable: Codable {
+    struct BeIncrementCodableResponse: Codable {
+        let response: Int
+    }
+    struct BeIncrementCodableRequest: Codable {
         let arg0: Int
     }
 
     @discardableResult
     public func beIncrement(_ amount: Int,
                             _ sender: Actor,
-                            _ callback: @escaping RemoteBehaviorReply ) -> Self {
-        let msg = BeIncrementCodable(arg0: amount)
-        if let data = try? JSONEncoder().encode(msg) {
-            unsafeSendToRemote("RemoteCounter", "beIncrement", data, sender, callback)
-        } else {
-            fatalError()
+                            _ callback: @escaping (Int) -> Void ) -> Self {
+        let msg = BeIncrementCodableRequest(arg0: amount)
+        // swiftlint:disable:next force_try
+        let data = try! JSONEncoder().encode(msg)
+        unsafeSendToRemote("RemoteCounter", "beIncrement", data, sender) {
+            callback(
+                // swiftlint:disable:next force_try
+                (try! JSONDecoder().decode(BeIncrementCodableResponse.self, from: $0).response)
+            )
         }
         return self
     }
 
     public func unsafeRegisterAllBehaviors() {
         safeRegisterRemoteBehavior("beIncrement") { [unowned self] (data) in
-            if let msg = try? JSONDecoder().decode(BeIncrementCodable.self, from: data) {
-                return self._beIncrement(msg.arg0)
-            }
-            return nil
+            // swiftlint:disable:next force_try
+            let msg = try! JSONDecoder().decode(BeIncrementCodableRequest.self, from: data)
+            // swiftlint:disable:next force_try
+            return try! JSONEncoder().encode(
+                BeIncrementCodableResponse(response: self._beIncrement(msg.arg0)))
         }
     }
 }
