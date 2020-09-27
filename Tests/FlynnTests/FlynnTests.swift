@@ -1,4 +1,3 @@
-
 // swiftlint:disable line_length
 
 import XCTest
@@ -76,7 +75,7 @@ class FlynnTests: XCTestCase {
         color.beGetColor { (color) in
             print("color is \(color)")
         }
-        
+
         color.beRender()
 
         expectation.fulfill()
@@ -235,10 +234,10 @@ class FlynnTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Repeating Timer")
 
         let counter = Counter()
-        
+
         Flynn.Timer(timeInterval: 0.01, repeats: true, counter, [1])
 
-        Flynn.Timer(timeInterval: 1, repeats: false, counter, { (timer) in
+        Flynn.Timer(timeInterval: 1, repeats: false, counter, { (_) in
             counter.beEquals { (value) in
                 print(value)
                 XCTAssert(value >= 99)
@@ -254,7 +253,7 @@ class FlynnTests: XCTestCase {
 
         let builder = StringBuilder()
 
-        Flynn.Timer(timeInterval: 0.010, repeats: false, builder, { (timer) in
+        Flynn.Timer(timeInterval: 0.010, repeats: false, builder, { (_) in
             builder.beResult { (value) in
                 XCTAssertEqual(value, "123456789", "string did not append in the correct order")
                 expectation.fulfill()

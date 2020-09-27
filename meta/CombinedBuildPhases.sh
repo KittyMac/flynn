@@ -17,8 +17,8 @@ fi
 
 # SwiftLint - Confirms all swift code meets basic formatting standards
 if which swiftlint >/dev/null; then
-  swiftlint autocorrect --path ${SRCROOT}/Sources/
-  swiftlint --path ${SRCROOT}/Sources/
+  swiftlint autocorrect --path ${SRCROOT}/Sources/ --path ${SRCROOT}/Tests/
+  swiftlint --path ${SRCROOT}/Sources/ --path ${SRCROOT}/Tests/
 else
   echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint"
 fi

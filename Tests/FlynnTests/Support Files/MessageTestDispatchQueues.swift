@@ -1,3 +1,4 @@
+// swiftlint:disable identifier_name
 
 import XCTest
 @testable import Flynn
@@ -115,7 +116,7 @@ enum MessageTestDispatchQueues {
                 // The interval timer has fired.  Stop all Pingers and start
                 // waiting for confirmation that they have stopped.
                 self.done = done
-                
+
                 self.reportCount += 1
 
                 self.currentT = self.now()

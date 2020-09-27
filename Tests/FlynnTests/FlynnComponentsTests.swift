@@ -1,4 +1,3 @@
-
 // swiftlint:disable nesting
 
 import XCTest

@@ -1,8 +1,3 @@
-
-// swiftlint:disable nesting
-// swiftlint:disable function_body_length
-// swiftlint:disable file_length
-
 import XCTest
 
 @testable import Flynn
