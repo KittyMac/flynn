@@ -85,11 +85,13 @@ extension Flynn {
     public enum Node {
         public static func connect(_ address: String,
                                    _ port: Int32,
-                                   _ actorTypes: [RemoteActor.Type]) {
+                                   _ actorTypes: [RemoteActor.Type],
+                                   _ automaticReconnect: Bool = true) {
             Flynn.startup()
 
             pony_node(address,
                       port,
+                      automaticReconnect,
                       nodeCreateActor,
                       nodeDestroyActor,
                       nodeHandleMessage,

@@ -18,9 +18,9 @@ class FlynnRemoteTests: XCTestCase {
         let port = Int32.random(in: 8000..<65500)
         Flynn.Root.listen("127.0.0.1", port, [])
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
 
         while Flynn.remoteCores == 0 {
             usleep(500)
@@ -59,7 +59,7 @@ class FlynnRemoteTests: XCTestCase {
 
         let port = Int32.random(in: 8000..<65500)
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
         sleep(2)
         Flynn.Root.listen("127.0.0.1", port, [])
 
@@ -87,7 +87,7 @@ class FlynnRemoteTests: XCTestCase {
 
         Flynn.Root.listen("127.0.0.1", port, [])
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
 
         while Flynn.remoteCores == 0 {
             usleep(500)
@@ -120,7 +120,7 @@ class FlynnRemoteTests: XCTestCase {
 
         let port = Int32.random(in: 8000..<65500)
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
         Flynn.Node.registerActorsWithRoot([Echo(echoServiceName)])
 
         Flynn.Root.listen("127.0.0.1", port, [Echo.self])
@@ -165,7 +165,7 @@ class FlynnRemoteTests: XCTestCase {
         let port = Int32.random(in: 8000..<65500)
         Flynn.Root.listen("127.0.0.1", port, [])
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self])
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
 
         while Flynn.remoteCores == 0 {
             usleep(500)

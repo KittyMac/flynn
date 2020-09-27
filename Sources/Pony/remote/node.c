@@ -29,6 +29,7 @@ typedef struct root_t
 {
     char address[kMaxIPAddress];
     int port;
+    bool automaticReconnect;
     int socketfd;
     CreateActorFunc createActorFuncPtr;
     DestroyActorFunc destroyActorFuncPtr;
@@ -67,6 +68,7 @@ static root_t * find_root_by_socket(int socketfd) {
 
 static bool node_add_root(const char * address,
                           int port,
+                          bool automaticReconnect,
                           CreateActorFunc createActorFuncPtr,
                           DestroyActorFunc destroyActorFuncPtr,
                           MessageActorFunc messageActorFuncPtr,
@@ -76,6 +78,7 @@ static bool node_add_root(const char * address,
             pthread_mutex_lock(&roots_mutex);
             strncpy(roots[i].address, address, kMaxIPAddress);
             roots[i].port = port;
+            roots[i].automaticReconnect = automaticReconnect;
             roots[i].createActorFuncPtr = createActorFuncPtr;
             roots[i].destroyActorFuncPtr = destroyActorFuncPtr;
             roots[i].messageActorFuncPtr = messageActorFuncPtr;
@@ -94,6 +97,7 @@ static void node_remove_root(root_t * rootPtr) {
         ponyint_thread_join(rootPtr->thread_tid);
         rootPtr->thread_tid = 0;
         rootPtr->port = 0;
+        rootPtr->automaticReconnect = false;
         rootPtr->createActorFuncPtr = NULL;
         rootPtr->destroyActorFuncPtr = NULL;
         rootPtr->messageActorFuncPtr = NULL;
@@ -165,15 +169,16 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
             
             // read the command byte
             uint8_t command = read_command(rootPtr->socketfd);
-            
+                        
             if (command == COMMAND_NULL) {
-                send_version_check(rootPtr->socketfd);
-                continue;
-            }
-            
-            if (command == COMMAND_ROOT_DISCONNECT) {
-                close_socket(rootPtr->socketfd);
-                rootPtr->socketfd = -1;
+                // At this point, we don't know if we timed out reading data or the server
+                // disconnected. So we send a heartbeat to the root, and if that fails we know
+                pthread_mutex_lock(&roots_mutex);
+                if (send_heartbeat(rootPtr->socketfd) <= 0) {
+                    close_socket(rootPtr->socketfd);
+                    rootPtr->socketfd = -1;
+                }
+                pthread_mutex_unlock(&roots_mutex);
                 continue;
             }
             
@@ -256,6 +261,10 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                 } break;
             }
         }
+        
+        if (rootPtr->automaticReconnect == false) {
+            break;
+        }
     }
     
     node_remove_root(rootPtr);
@@ -266,6 +275,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
 
 void pony_node(const char * address,
                int port,
+               bool automaticReconnect,
                CreateActorFunc createActorFuncPtr,
                DestroyActorFunc destroyActorFuncPtr,
                MessageActorFunc messageActorFuncPtr,
@@ -273,11 +283,13 @@ void pony_node(const char * address,
     if (inited == false) {
         inited = true;
         init_all_roots();
+        sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
         pthread_mutex_init(&roots_mutex, NULL);
     }
     
     if(!node_add_root(address,
                       port,
+                      automaticReconnect,
                       createActorFuncPtr,
                       destroyActorFuncPtr,
                       messageActorFuncPtr,

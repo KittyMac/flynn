@@ -16,7 +16,7 @@ extern char * BUILD_VERSION_UUID;
 #define COMMAND_SEND_MESSAGE 4
 #define COMMAND_SEND_REPLY 5
 #define COMMAND_CORE_COUNT 6
-#define COMMAND_ROOT_DISCONNECT 7
+#define COMMAND_HEARTBEAT 7
 
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);
@@ -39,6 +39,8 @@ extern void send_existing_actors(int socketfd);
 extern void send_core_count(int socketfd);
 extern void send_create_actor(int socketfd, const char * actorUUID, const char * actorType);
 extern void send_destroy_actor(int socketfd, const char * actorUUID);
+
+extern int send_heartbeat(int socketfd);
 
 extern int send_message(int socketfd, int messageID, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count);
 extern void send_reply(int socketfd, uint32_t messageID, const void * bytes, uint32_t count);

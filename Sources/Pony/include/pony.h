@@ -21,6 +21,7 @@ void pony_root(const char * address,
                ReplyMessageFunc replyMessageFunc);
 void pony_node(const char * address,
                int port,
+               bool automaticReconnect,
                CreateActorFunc createActorFunc,
                DestroyActorFunc destroyActorFunc,
                MessageActorFunc messageActorFunc,

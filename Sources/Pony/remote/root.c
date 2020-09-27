@@ -155,6 +155,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
         uint8_t command = read_command(nodePtr->socketfd);
         if (command != COMMAND_VERSION_CHECK &&
             command != COMMAND_CORE_COUNT &&
+            command != COMMAND_HEARTBEAT &&
             command != COMMAND_CREATE_ACTOR &&
             command != COMMAND_SEND_REPLY) {
             root_remove_node(nodePtr);

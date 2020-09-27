@@ -33,6 +33,8 @@ char * BUILD_VERSION_UUID = __TIMESTAMP__;
 //  COMMAND_CORE_COUNT (node -> root)
 //   [0-4]      number of cores this node has
 //
+//  COMMAND_HEARTBEAT (node -> root)
+//
 //  COMMAND_VERSION_CHECK (root -> node)
 //   [1] U8     number of bytes for version uuid
 //   [?]        version uuid as string
@@ -73,7 +75,7 @@ int recvall(int fd, void * ptr, int size) {
     while (cptr < end_ptr) {
         int bytes_read = recv(fd, cptr, end_ptr - cptr, 0);
         if (bytes_read <= 0) {
-            return -1;
+            return bytes_read;
         }
         cptr += bytes_read;
     }
@@ -137,8 +139,9 @@ bool read_bytecount_buffer(int socketfd, char * dst, size_t max_length) {
 
 uint8_t read_command(int socketfd) {
     uint8_t command = COMMAND_NULL;
-    if (recvall(socketfd, &command, 1) < 0) {
-        return COMMAND_ROOT_DISCONNECT;
+    int result = recvall(socketfd, &command, 1);
+    if(result <= 0) {
+        return COMMAND_NULL;
     }
     return command;
 }
@@ -163,6 +166,11 @@ void send_core_count(int socketfd) {
     uint32_t core_count = ponyint_core_count();
     core_count = htonl(core_count);
     sendall(socketfd, &core_count, sizeof(core_count));
+}
+
+int send_heartbeat(int socketfd) {
+    char command = COMMAND_HEARTBEAT;
+    return sendall(socketfd, &command, sizeof(command));
 }
 
 void send_create_actor(int socketfd, const char * actorUUID, const char * actorType) {
