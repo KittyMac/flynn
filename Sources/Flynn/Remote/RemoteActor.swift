@@ -22,7 +22,7 @@ open class InternalRemoteActor {
     private var delayedRemoteBehaviors: [String: DelayedRemoteBehavior] = [:]
     
     
-    public func safeInit() {
+    open func safeInit() {
         
     }
 
