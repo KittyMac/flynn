@@ -16,6 +16,7 @@ extern char * BUILD_VERSION_UUID;
 #define COMMAND_SEND_MESSAGE 4
 #define COMMAND_SEND_REPLY 5
 #define COMMAND_CORE_COUNT 6
+#define COMMAND_ROOT_DISCONNECT 7
 
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);

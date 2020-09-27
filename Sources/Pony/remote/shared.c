@@ -137,7 +137,9 @@ bool read_bytecount_buffer(int socketfd, char * dst, size_t max_length) {
 
 uint8_t read_command(int socketfd) {
     uint8_t command = COMMAND_NULL;
-    recvall(socketfd, &command, 1);
+    if (recvall(socketfd, &command, 1) < 0) {
+        return COMMAND_ROOT_DISCONNECT;
+    }
     return command;
 }
 

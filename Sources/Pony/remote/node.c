@@ -125,6 +125,8 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
     inet_pton(AF_INET, rootPtr->address, &(servaddr.sin_addr));
     servaddr.sin_port = htons(rootPtr->port);
     
+    int connectAttemptCount = 0;
+    
     while (rootPtr->thread_tid != 0) {
         
         // socket create and verification
@@ -134,11 +136,9 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
             exit(1);
         }
         
-        fprintf(stdout, "attempting to connect to root %s:%d\n", rootPtr->address, rootPtr->port);
+        connectAttemptCount += 1;
+        fprintf(stdout, "reconnect attempt %d to root %s:%d\n", connectAttemptCount, rootPtr->address, rootPtr->port);
         if (connect(rootPtr->socketfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
-#if REMOTE_DEBUG
-            fprintf(stderr, "[%d] attempting to reconnect to root\n", rootPtr->socketfd);
-#endif
             close_socket(rootPtr->socketfd);
             sleep(1);
             continue;
@@ -150,6 +150,13 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
         
         send_core_count(rootPtr->socketfd);
         
+        // set the 5 second timeout on reads from the root
+        struct timeval timeout;
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+        setsockopt (rootPtr->socketfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+        
+        connectAttemptCount = 0;
         fprintf(stdout, "connected to root %s:%d\n", rootPtr->address, rootPtr->port);
         while(rootPtr->socketfd >= 0) {
 #if REMOTE_DEBUG
@@ -158,6 +165,17 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
             
             // read the command byte
             uint8_t command = read_command(rootPtr->socketfd);
+            
+            if (command == COMMAND_NULL) {
+                send_version_check(rootPtr->socketfd);
+                continue;
+            }
+            
+            if (command == COMMAND_ROOT_DISCONNECT) {
+                close_socket(rootPtr->socketfd);
+                rootPtr->socketfd = -1;
+                continue;
+            }
             
             if (command != COMMAND_VERSION_CHECK &&
                 command != COMMAND_CREATE_ACTOR &&
@@ -238,9 +256,9 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                 } break;
             }
         }
-        node_remove_root(rootPtr);
     }
     
+    node_remove_root(rootPtr);
     ponyint_pool_thread_cleanup();
     
     return 0;
