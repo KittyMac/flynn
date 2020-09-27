@@ -134,6 +134,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
             exit(1);
         }
         
+        fprintf(stdout, "attempting to connect to root %s:%d\n", rootPtr->address, rootPtr->port);
         if (connect(rootPtr->socketfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
 #if REMOTE_DEBUG
             fprintf(stderr, "[%d] attempting to reconnect to root\n", rootPtr->socketfd);
@@ -149,6 +150,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
         
         send_core_count(rootPtr->socketfd);
         
+        fprintf(stdout, "connected to root %s:%d\n", rootPtr->address, rootPtr->port);
         while(rootPtr->socketfd >= 0) {
 #if REMOTE_DEBUG
             fprintf(stderr, "[%d] node reading socket\n", rootPtr->socketfd);
