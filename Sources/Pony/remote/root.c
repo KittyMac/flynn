@@ -332,7 +332,7 @@ int pony_remote_actor_send_message_to_node(const char * actorUUID, const char * 
         node_t * nodePtr = root_get_next_node();
         if (nodePtr == NULL) {
             fprintf(stderr, "error: RemoteActor behavior called but no nodes are connected to root\n");
-            return;
+            return 0;
         }
         *nodeSocketFD = nodePtr->socketfd;
         send_create_actor(*nodeSocketFD, actorUUID, actorType);
