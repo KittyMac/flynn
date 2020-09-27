@@ -5,6 +5,10 @@ class Echo: RemoteActor {
     private let echoUUID = UUID().uuidString
     private var count: Int = 0
 
+    override func safeInit() {
+        count = 0
+    }
+
     private func _bePrintThreadName() -> Int {
         if let name = Thread.current.name {
             sleep(1)

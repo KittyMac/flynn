@@ -21,21 +21,28 @@ open class InternalRemoteActor {
     private var remoteBehaviors: [String: RemoteBehavior] = [:]
     private var delayedRemoteBehaviors: [String: DelayedRemoteBehavior] = [:]
     
+    
+    public func safeInit() {
+        
+    }
 
     public required init() {
         unsafeUUID = UUID().uuidString
         isNamedService = false
+        safeInit()
     }
 
     public required init(_ uuid: String) {
         unsafeUUID = uuid
         isNamedService = true
+        safeInit()
     }
 
     public required init(_ uuid: String, _ socketFD: Int32) {
         unsafeUUID = uuid
         nodeSocketFD = socketFD
         isNamedService = true
+        safeInit()
     }
 
     public func unsafeIsConnected() -> Bool {
