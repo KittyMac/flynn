@@ -101,6 +101,7 @@ static bool root_add_node(int socketfd) {
     pthread_mutex_lock(&nodes_mutex);
     for (int i = 0; i < kMaxNodes; i++) {
         if (nodes[i].thread_tid == 0) {
+            disableSIGPIPE(socketfd);
             nodes[i].socketfd = socketfd;
             ponyint_thread_create(&nodes[i].thread_tid, root_read_from_node_thread, QOS_CLASS_BACKGROUND, nodes + i);
             number_of_nodes++;
@@ -244,6 +245,8 @@ static DECLARE_THREAD_FN(root_thread)
         exit(1);
     }
     
+    disableSIGPIPE(socketfd);
+    
     root_listen_socket = socketfd;
 
     servaddr.sin_family = AF_INET;
@@ -295,7 +298,6 @@ void pony_root(const char * address,
     if (!inited) {
         inited = true;
         pthread_mutex_init(&nodes_mutex, NULL);
-        sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
         init_all_nodes();
     }
     

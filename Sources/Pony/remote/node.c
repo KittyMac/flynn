@@ -140,6 +140,8 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
             exit(1);
         }
         
+        disableSIGPIPE(rootPtr->socketfd);
+        
         connectAttemptCount += 1;
         fprintf(stdout, "reconnect attempt %d to root %s:%d\n", connectAttemptCount, rootPtr->address, rootPtr->port);
         if (connect(rootPtr->socketfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
@@ -283,7 +285,6 @@ void pony_node(const char * address,
     if (inited == false) {
         inited = true;
         init_all_roots();
-        sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
         pthread_mutex_init(&roots_mutex, NULL);
     }
     

@@ -26,6 +26,21 @@ extern void node_shutdown();
 
 char * BUILD_VERSION_UUID = __TIMESTAMP__;
 
+#ifdef PLATFORM_IS_APPLE
+int sendFlags = 0;
+#else
+int sendFlags = MSG_NOSIGNAL;
+#endif
+
+
+
+int disableSIGPIPE(int fd) {
+#ifdef PLATFORM_IS_APPLE
+    int on = 1;
+    setsockopt (fd, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on));
+#endif
+}
+
 // Communication between root and node uses the following format:
 //  bytes      meaning
 //   [0] U8     type of command this is
@@ -90,7 +105,7 @@ int sendall(int fd, void * ptr, int size) {
     char * end_ptr = ptr + size;
     
     while (cptr < end_ptr) {
-        int bytes_read = send(fd, cptr, end_ptr - cptr, 0);
+        int bytes_read = send(fd, cptr, end_ptr - cptr, sendFlags);
         if (bytes_read <= 0) {
             return -1;
         }

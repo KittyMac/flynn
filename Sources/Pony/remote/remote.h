@@ -46,3 +46,5 @@ extern int send_message(int socketfd, int messageID, const char * actorUUID, con
 extern void send_reply(int socketfd, uint32_t messageID, const void * bytes, uint32_t count);
 
 extern void close_socket(int fd);
+
+extern int disableSIGPIPE(int fd);
