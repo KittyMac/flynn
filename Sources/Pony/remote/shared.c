@@ -34,7 +34,7 @@ int sendFlags = MSG_NOSIGNAL;
 
 
 
-int disableSIGPIPE(int fd) {
+void disableSIGPIPE(int fd) {
 #ifdef PLATFORM_IS_APPLE
     int on = 1;
     setsockopt (fd, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on));

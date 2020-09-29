@@ -47,4 +47,4 @@ extern void send_reply(int socketfd, uint32_t messageID, const void * bytes, uin
 
 extern void close_socket(int fd);
 
-extern int disableSIGPIPE(int fd);
+extern void disableSIGPIPE(int fd);
