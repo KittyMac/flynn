@@ -14,6 +14,17 @@ class FlynnTests: XCTestCase {
         Flynn.shutdown()
     }
 
+    func testMultipleDelayedReturns() {
+        let expectation = XCTestExpectation(description: "Mutliple delayed returns from Actor behavior")
+
+        ActorExhaustive().beNoArgsTwoDelayedReturn(Flynn.any) { (string, int) in
+            if string == "Hello World" && int == 42 {
+                expectation.fulfill()
+            }
+        }
+        wait(for: [expectation], timeout: 10.0)
+    }
+
     func test0() {
         let expectation = XCTestExpectation(description: "Warning when passing reference values")
 

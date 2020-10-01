@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		46EA7F0F25258B670028DF23 /* ActorExhaustive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EA7F0E25258B600028DF23 /* ActorExhaustive.swift */; };
 		46EBA8A925204E4A0086C45E /* RemoteActorExhaustive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EBA8A825204E440086C45E /* RemoteActorExhaustive.swift */; };
 		OBJ_105 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
 		OBJ_116 /* BadFlynnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_54 /* BadFlynnTests.swift */; };
@@ -93,6 +94,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		46EA7F0E25258B600028DF23 /* ActorExhaustive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorExhaustive.swift; sourceTree = "<group>"; };
 		46EBA8A825204E440086C45E /* RemoteActorExhaustive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteActorExhaustive.swift; sourceTree = "<group>"; };
 		"Flynn::Flynn::Product" /* Flynn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Flynn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Flynn::FlynnTests::Product" /* FlynnTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlynnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -250,7 +252,7 @@
 			path = include;
 			sourceTree = "<group>";
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -263,7 +265,6 @@
 				OBJ_78 /* Makefile */,
 				OBJ_79 /* README.md */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_51 /* Tests */ = {
@@ -296,6 +297,7 @@
 				OBJ_60 /* Color.swift */,
 				OBJ_61 /* Counter.swift */,
 				OBJ_62 /* Echo.swift */,
+				46EA7F0E25258B600028DF23 /* ActorExhaustive.swift */,
 				46EBA8A825204E440086C45E /* RemoteActorExhaustive.swift */,
 				OBJ_63 /* Flowable.swift */,
 				OBJ_64 /* Image.swift */,
@@ -428,7 +430,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_71 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -480,6 +482,7 @@
 				OBJ_118 /* FlynnMessagesBenchmark.swift in Sources */,
 				OBJ_119 /* FlynnRemoteTests.swift in Sources */,
 				OBJ_120 /* FlynnTests.swift in Sources */,
+				46EA7F0F25258B670028DF23 /* ActorExhaustive.swift in Sources */,
 				OBJ_121 /* Color.swift in Sources */,
 				OBJ_122 /* Counter.swift in Sources */,
 				OBJ_123 /* Echo.swift in Sources */,
