@@ -5,12 +5,14 @@ import Pony
 
 private func nodeCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?,
                              _ actorTypePtr: UnsafePointer<Int8>?,
+                             _ shouldBeProxy: Bool,
                              _ socketFD: Int32) {
     guard let actorUUIDPtr = actorUUIDPtr else { return }
     guard let actorTypePtr = actorTypePtr else { return }
 
     RemoteActorManager.shared.beCreateActor(String(cString: actorUUIDPtr),
                                             String(cString: actorTypePtr),
+                                            shouldBeProxy,
                                             socketFD)
 
 }

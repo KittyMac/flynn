@@ -3,10 +3,9 @@ import XCTest
 
 class Echo: RemoteActor {
     private let echoUUID = UUID().uuidString
-    private var count: Int = 0
+    private var count: Int = 999
 
     override func safeInit() {
-        print("ECHO ACTOR INIT")
         count = 0
     }
 

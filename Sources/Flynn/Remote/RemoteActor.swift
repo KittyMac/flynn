@@ -14,6 +14,9 @@ public typealias RemoteActor = ( InternalRemoteActor & BehaviorRegisterable )
 open class InternalRemoteActor {
 
     public let unsafeUUID: String
+    
+    public let unsafeIsProxy: Bool
+    
     private let isNamedService: Bool
 
     private var nodeSocketFD: Int32 = -1
@@ -29,18 +32,24 @@ open class InternalRemoteActor {
     public required init() {
         unsafeUUID = UUID().uuidString
         isNamedService = false
+        unsafeIsProxy = true
     }
 
     public required init(_ uuid: String) {
         unsafeUUID = uuid
         isNamedService = true
+        unsafeIsProxy = false
         safeInit()
     }
 
-    public required init(_ uuid: String, _ socketFD: Int32) {
+    public required init(_ uuid: String, _ socketFD: Int32, _ shouldBeProxy: Bool) {
         unsafeUUID = uuid
         nodeSocketFD = socketFD
         isNamedService = true
+        unsafeIsProxy = shouldBeProxy
+        if !shouldBeProxy {
+            safeInit()
+        }
     }
 
     public func unsafeIsConnected() -> Bool {

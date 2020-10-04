@@ -70,6 +70,7 @@ class FlynnRemoteTests: XCTestCase {
         }
 
         Echo().beToLower("HELLO WORLD", Flynn.any) { (lowered) in
+            print(lowered)
             if lowered == "hello world [1]" {
                 expectation.fulfill()
             }
@@ -141,7 +142,7 @@ class FlynnRemoteTests: XCTestCase {
         let printReply = { (lowered: String) in
             print("on root: \(lowered)")
 
-            if lowered.hasPrefix("hello world d") {
+            if lowered.hasPrefix("hello world d [4]") {
                 expectation.fulfill()
             }
         }

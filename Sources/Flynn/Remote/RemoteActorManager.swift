@@ -81,9 +81,21 @@ internal final class RemoteActorManager: Actor {
 
     private func _beCreateActor(_ actorUUID: String,
                                 _ actorType: String,
+                                _ shouldBeProxy: Bool,
                                 _ socketFD: Int32) {
+        // Tricky: if we're on the root, then we want this to be a proxy. But if we're
+        // on the node then we want it to be the real one
+        
+        
         if let actorType = actorTypes[actorType] {
-            let actor = actorType.init(actorUUID, socketFD)
+            // If an actor exists and it is not a proxy, then we don't want to replace it with a proxy...
+            if let existingActor = actors[actorUUID] {
+                if existingActor.unsafeIsProxy == false {
+                    return
+                }
+            }
+            
+            let actor = actorType.init(actorUUID, socketFD, shouldBeProxy)
             actor.unsafeRegisterAllBehaviors()
             actors[actorUUID] = actor
         }
@@ -168,8 +180,9 @@ extension RemoteActorManager {
     @discardableResult
     public func beCreateActor(_ actorUUID: String,
                               _ actorType: String,
+                              _ shouldBeProxy: Bool,
                               _ socketFD: Int32) -> Self {
-        unsafeSend { self._beCreateActor(actorUUID, actorType, socketFD) }
+        unsafeSend { self._beCreateActor(actorUUID, actorType, shouldBeProxy, socketFD) }
         return self
     }
     @discardableResult

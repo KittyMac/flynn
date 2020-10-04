@@ -187,7 +187,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                     return 0;
                 }
                 
-                createActorFuncPtr(uuid, type, nodePtr->socketfd);
+                createActorFuncPtr(uuid, type, true, nodePtr->socketfd);
                 
 #if REMOTE_DEBUG
                 fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR(root)[%s, %s]\n", nodePtr->socketfd, uuid, type);

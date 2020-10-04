@@ -8,7 +8,7 @@
 
 #include <stdbool.h>
 
-typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, int socketFD);
+typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, bool shouldBeProxy, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);
 typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int messageID, int replySocketFD);
 typedef void (*RegisterActorsOnRootFunc)(int replySocketFD);
