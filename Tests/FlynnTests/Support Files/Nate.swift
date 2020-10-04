@@ -18,8 +18,8 @@ extension Nate {
     public func beToLower(_ string: String,
                           _ sender: Actor,
                           _ callback: @escaping ((String) -> Void)) -> Self {
-        unsafeSend {
-            let result = self._beToLower(string)
+        unsafeSend { [weak self] in
+            let result = self!._beToLower(string)
             sender.unsafeSend { callback(result) }
         }
         return self

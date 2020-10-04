@@ -242,7 +242,7 @@ extension MessageTestFlynn.SyncLeader {
 
     @discardableResult
     public func beTimerFired(_ done: Bool) -> Self {
-        unsafeSend { self._beTimerFired(done) }
+        unsafeSend { [weak self] in self!._beTimerFired(done) }
         return self
     }
     @discardableResult
@@ -253,7 +253,7 @@ extension MessageTestFlynn.SyncLeader {
     @discardableResult
     public func beReportPings(_ idx: Int,
                               _ count: UInt64) -> Self {
-        unsafeSend { self._beReportPings(idx, count) }
+        unsafeSend { [weak self] in self!._beReportPings(idx, count) }
         return self
     }
 
@@ -263,7 +263,7 @@ extension MessageTestFlynn.Pinger {
 
     @discardableResult
     public func beSetNeighbors(_ neighbors: [MessageTestFlynn.Pinger]) -> Self {
-        unsafeSend { self._beSetNeighbors(neighbors) }
+        unsafeSend { [weak self] in self!._beSetNeighbors(neighbors) }
         return self
     }
     @discardableResult
@@ -283,7 +283,7 @@ extension MessageTestFlynn.Pinger {
     }
     @discardableResult
     public func bePing(_ payload: Int) -> Self {
-        unsafeSend { self._bePing(payload) }
+        unsafeSend { [weak self] in self!._bePing(payload) }
         return self
     }
 

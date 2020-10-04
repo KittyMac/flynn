@@ -40,34 +40,34 @@ extension Counter {
     @discardableResult
     public func beTimerFired(_ timer: Flynn.Timer,
                              _ args: TimerArgs) -> Self {
-        unsafeSend { self._beTimerFired(timer, args) }
+        unsafeSend { [weak self] in self!._beTimerFired(timer, args) }
         return self
     }
     @discardableResult
     public func beHello(_ string: String) -> Self {
-        unsafeSend { self._beHello(string) }
+        unsafeSend { [weak self] in self!._beHello(string) }
         return self
     }
     @discardableResult
     public func beInc(_ value: Int) -> Self {
-        unsafeSend { self._beInc(value) }
+        unsafeSend { [weak self] in self!._beInc(value) }
         return self
     }
     @discardableResult
     public func beDec(_ value: Int) -> Self {
-        unsafeSend { self._beDec(value) }
+        unsafeSend { [weak self] in self!._beDec(value) }
         return self
     }
     @discardableResult
     public func beEquals(_ callback: @escaping ((Int) -> Void)) -> Self {
-        unsafeSend { self._beEquals(callback) }
+        unsafeSend { [weak self] in self!._beEquals(callback) }
         return self
     }
     @discardableResult
     public func beGetValue(_ sender: Actor,
                            _ callback: @escaping ((Int) -> Void)) -> Self {
-        unsafeSend {
-            let result = self._beGetValue()
+        unsafeSend { [weak self] in
+            let result = self!._beGetValue()
             sender.unsafeSend { callback(result) }
         }
         return self

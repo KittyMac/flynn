@@ -30,12 +30,12 @@ extension PassToMe {
     }
     @discardableResult
     public func beString(_ string: String) -> Self {
-        unsafeSend { self._beString(string) }
+        unsafeSend { [weak self] in self!._beString(string) }
         return self
     }
     @discardableResult
     public func beNSString(_ string: NSString) -> Self {
-        unsafeSend { self._beNSString(string) }
+        unsafeSend { [weak self] in self!._beNSString(string) }
         return self
     }
 
