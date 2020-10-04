@@ -34,13 +34,13 @@ open class InternalRemoteActor {
     public required init(_ uuid: String) {
         unsafeUUID = uuid
         isNamedService = true
+        safeInit()
     }
 
     public required init(_ uuid: String, _ socketFD: Int32) {
         unsafeUUID = uuid
         nodeSocketFD = socketFD
         isNamedService = true
-        safeInit()
     }
 
     public func unsafeIsConnected() -> Bool {
