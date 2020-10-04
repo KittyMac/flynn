@@ -6,6 +6,7 @@ class Echo: RemoteActor {
     private var count: Int = 0
 
     override func safeInit() {
+        print("ECHO ACTOR INIT")
         count = 0
     }
 

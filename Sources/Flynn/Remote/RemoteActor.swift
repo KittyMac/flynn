@@ -29,13 +29,11 @@ open class InternalRemoteActor {
     public required init() {
         unsafeUUID = UUID().uuidString
         isNamedService = false
-        safeInit()
     }
 
     public required init(_ uuid: String) {
         unsafeUUID = uuid
         isNamedService = true
-        safeInit()
     }
 
     public required init(_ uuid: String, _ socketFD: Int32) {
