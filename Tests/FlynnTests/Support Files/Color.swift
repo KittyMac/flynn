@@ -54,17 +54,17 @@ extension Colorable {
     }
     @discardableResult
     public func beGetColor(_ callback: @escaping ([Float]) -> Void) -> Self {
-        unsafeSend { [weak self] in self!._beGetColor(callback) }
+        unsafeSend { self._beGetColor(callback) }
         return self
     }
     @discardableResult
     public func beGetColor2(_ callback: @escaping ColorCallback) -> Self {
-        unsafeSend { [weak self] in self!._beGetColor2(callback) }
+        unsafeSend { self._beGetColor2(callback) }
         return self
     }
     @discardableResult
     public func beSetColor(_ color: [Float]) -> Self {
-        unsafeSend { [weak self] in self!._beSetColor(color) }
+        unsafeSend { self._beSetColor(color) }
         return self
     }
 

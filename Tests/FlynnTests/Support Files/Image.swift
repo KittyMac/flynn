@@ -27,7 +27,7 @@ extension Imageable {
 
     @discardableResult
     public func bePath(_ path: String) -> Self {
-        unsafeSend { [weak self] in self!._bePath(path) }
+        unsafeSend { self._bePath(path) }
         return self
     }
 

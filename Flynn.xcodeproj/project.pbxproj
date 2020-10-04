@@ -70,13 +70,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		4669E28D252A8C9A004BABAA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = OBJ_1 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = "Flynn::FlynnTests";
-			remoteInfo = FlynnTests;
-		};
 		46EBA8992520405B0086C45E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
@@ -467,7 +460,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd ${SRCROOT}; ./meta/CombinedBuildPhases.sh\n";
+			shellScript = "cd ${SRCROOT}; ./meta/CombinedBuildPhases.sh";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -549,7 +542,7 @@
 		OBJ_110 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Flynn::FlynnTests" /* FlynnTests */;
-			targetProxy = 4669E28D252A8C9A004BABAA /* PBXContainerItemProxy */;
+			targetProxy = "Flynn::FlynnTests" /* FlynnTests */;
 		};
 		OBJ_135 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

@@ -47,23 +47,23 @@ extension ActorExhaustive {
     @discardableResult
     public func beNoArgsOneReturn(_ sender: Actor,
                                   _ callback: @escaping ((Int) -> Void)) -> Self {
-        unsafeSend { [weak self] in
-            let result = self!._beNoArgsOneReturn()
+        unsafeSend {
+            let result = self._beNoArgsOneReturn()
             sender.unsafeSend { callback(result) }
         }
         return self
     }
     @discardableResult
     public func beOneArgNoReturn(_ arg0: Int) -> Self {
-        unsafeSend { [weak self] in self!._beOneArgNoReturn(arg0) }
+        unsafeSend { self._beOneArgNoReturn(arg0) }
         return self
     }
     @discardableResult
     public func beOneArgOneReturn(_ arg0: Int,
                                   _ sender: Actor,
                                   _ callback: @escaping ((Int) -> Void)) -> Self {
-        unsafeSend { [weak self] in
-            let result = self!._beOneArgOneReturn(arg0)
+        unsafeSend {
+            let result = self._beOneArgOneReturn(arg0)
             sender.unsafeSend { callback(result) }
         }
         return self
@@ -71,7 +71,7 @@ extension ActorExhaustive {
     @discardableResult
     public func beTwoArgsNoReturn(_ arg0: Int,
                                   _ arg1: String?) -> Self {
-        unsafeSend { [weak self] in self!._beTwoArgsNoReturn(arg0, arg1) }
+        unsafeSend { self._beTwoArgsNoReturn(arg0, arg1) }
         return self
     }
     @discardableResult
@@ -79,8 +79,8 @@ extension ActorExhaustive {
                                         _ arg1: String?,
                                         _ sender: Actor,
                                         _ callback: @escaping ((String?) -> Void)) -> Self {
-        unsafeSend { [weak self] in
-            let result = self!._beTwoArgsOptionalReturn(arg0, arg1)
+        unsafeSend {
+            let result = self._beTwoArgsOptionalReturn(arg0, arg1)
             sender.unsafeSend { callback(result) }
         }
         return self
@@ -88,8 +88,8 @@ extension ActorExhaustive {
     @discardableResult
     public func beNoArgsDelayedReturn(_ sender: Actor,
                                       _ callback: @escaping ((String) -> Void)) -> Self {
-        unsafeSend { [weak self] in
-            self!._beNoArgsDelayedReturn { arg0 in
+        unsafeSend {
+            self._beNoArgsDelayedReturn { arg0 in
                 sender.unsafeSend {
                     callback(arg0)
                 }
@@ -101,8 +101,8 @@ extension ActorExhaustive {
     public func beOneArgDelayedReturn(_ string: String,
                                       _ sender: Actor,
                                       _ callback: @escaping ((String) -> Void)) -> Self {
-        unsafeSend { [weak self] in
-            self!._beOneArgDelayedReturn(string) { arg0 in
+        unsafeSend {
+            self._beOneArgDelayedReturn(string) { arg0 in
                 sender.unsafeSend {
                     callback(arg0)
                 }
@@ -113,8 +113,8 @@ extension ActorExhaustive {
     @discardableResult
     public func beNoArgsTwoDelayedReturn(_ sender: Actor,
                                          _ callback: @escaping ((String, Int) -> Void)) -> Self {
-        unsafeSend { [weak self] in
-            self!._beNoArgsTwoDelayedReturn { arg0, arg1 in
+        unsafeSend {
+            self._beNoArgsTwoDelayedReturn { arg0, arg1 in
                 sender.unsafeSend {
                     callback(arg0, arg1)
                 }
@@ -126,8 +126,8 @@ extension ActorExhaustive {
     public func beOneArgTwoDelayedReturn(_ string: String,
                                          _ sender: Actor,
                                          _ callback: @escaping ((String, Int) -> Void)) -> Self {
-        unsafeSend { [weak self] in
-            self!._beOneArgTwoDelayedReturn(string) { arg0, arg1 in
+        unsafeSend {
+            self._beOneArgTwoDelayedReturn(string) { arg0, arg1 in
                 sender.unsafeSend {
                     callback(arg0, arg1)
                 }

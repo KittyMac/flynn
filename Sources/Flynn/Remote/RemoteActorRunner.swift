@@ -24,7 +24,7 @@ extension RemoteActorRunner {
                                 _ data: Data,
                                 _ messageID: Int32,
                                 _ replySocketFD: Int32) -> Self {
-        unsafeSend { [weak self] in self!._beHandleMessage(actor, behavior, data, messageID, replySocketFD) }
+        unsafeSend { self._beHandleMessage(actor, behavior, data, messageID, replySocketFD) }
         return self
     }
 

@@ -161,20 +161,20 @@ extension RemoteActorManager {
     public func beGetActor(_ actorUUID: String,
                            _ sender: Actor,
                            _ callback: @escaping ((RemoteActor?) -> Void)) -> Self {
-        unsafeSend() { [weak self] in
-            let result = self!._beGetActor(actorUUID)
+        unsafeSend() {
+            let result = self._beGetActor(actorUUID)
             sender.unsafeSend { callback(result) }
         }
         return self
     }
     @discardableResult
     public func beRegisterActorType(_ actorType: RemoteActor.Type) -> Self {
-        unsafeSend { [weak self] in self!._beRegisterActorType(actorType) }
+        unsafeSend { self._beRegisterActorType(actorType) }
         return self
     }
     @discardableResult
     public func beRegisterActor(_ actor: RemoteActor) -> Self {
-        unsafeSend { [weak self] in self!._beRegisterActor(actor) }
+        unsafeSend { self._beRegisterActor(actor) }
         return self
     }
     @discardableResult
@@ -182,12 +182,12 @@ extension RemoteActorManager {
                               _ actorType: String,
                               _ shouldBeProxy: Bool,
                               _ socketFD: Int32) -> Self {
-        unsafeSend { [weak self] in self!._beCreateActor(actorUUID, actorType, shouldBeProxy, socketFD) }
+        unsafeSend { self._beCreateActor(actorUUID, actorType, shouldBeProxy, socketFD) }
         return self
     }
     @discardableResult
     public func beDestroyActor(_ actorUUID: String) -> Self {
-        unsafeSend { [weak self] in self!._beDestroyActor(actorUUID) }
+        unsafeSend { self._beDestroyActor(actorUUID) }
         return self
     }
     @discardableResult
@@ -196,7 +196,7 @@ extension RemoteActorManager {
                                 _ data: Data,
                                 _ messageID: Int32,
                                 _ replySocketFD: Int32) -> Self {
-        unsafeSend { [weak self] in self!._beHandleMessage(actorUUID, behavior, data, messageID, replySocketFD) }
+        unsafeSend { self._beHandleMessage(actorUUID, behavior, data, messageID, replySocketFD) }
         return self
     }
     @discardableResult
@@ -204,13 +204,13 @@ extension RemoteActorManager {
                                 _ messageID: Int32,
                                 _ actor: Actor,
                                 _ block: @escaping RemoteBehaviorReply) -> Self {
-        unsafeSend { [weak self] in self!._beRegisterReply(remoteActorUUID, messageID, actor, block) }
+        unsafeSend { self._beRegisterReply(remoteActorUUID, messageID, actor, block) }
         return self
     }
     @discardableResult
     public func beHandleMessageReply(_ messageID: Int32,
                                      _ data: Data) -> Self {
-        unsafeSend { [weak self] in self!._beHandleMessageReply(messageID, data) }
+        unsafeSend { self._beHandleMessageReply(messageID, data) }
         return self
     }
 

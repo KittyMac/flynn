@@ -25,25 +25,21 @@ private func handleMessage(_ argumentPtr: AnyPtr) {
 private class ActorMessage {
     weak var pool: Queue<ActorMessage>?
     var block: PonyBlock?
-    var actor: Actor?
 
-    init(_ pool: Queue<ActorMessage>?, _ actor: Actor, _ block: @escaping PonyBlock) {
+    init(_ pool: Queue<ActorMessage>?, _ block: @escaping PonyBlock) {
         self.pool = pool
         self.block = block
-        self.actor = actor
     }
 
     @inline(__always)
-    func set(_ actor: Actor, _ block: @escaping PonyBlock) {
+    func set(_ block: @escaping PonyBlock) {
         self.block = block
-        self.actor = actor
     }
 
     @inline(__always)
     func run() {
         block?()
         block = nil
-        actor = nil
         pool?.enqueue(self)
     }
 
@@ -63,14 +59,14 @@ open class Actor {
     private var actorMessagesCreated: Int = 0
 
     @inline(__always)
-    private func unpoolMessage(_ actor: Actor, _ block: @escaping PonyBlock) -> ActorMessage {
+    private func unpoolMessage(_ block: @escaping PonyBlock) -> ActorMessage {
         if let msg = poolMessage.dequeue() {
             actorMessagesReused += 1
-            msg.set(actor, block)
+            msg.set(block)
             return msg
         }
         actorMessagesCreated += 1
-        return ActorMessage(poolMessage, actor, block)
+        return ActorMessage(poolMessage, block)
     }
 
     public var unsafeCoreAffinity: CoreAffinity {
@@ -137,7 +133,7 @@ open class Actor {
     }
 
     public func unsafeSend(_ block: @escaping PonyBlock) {
-        pony_actor_send_message(ponyActorPtr, Ptr(unpoolMessage(self, block)), handleMessage)
+        pony_actor_send_message(ponyActorPtr, Ptr(unpoolMessage(block)), handleMessage)
     }
 
     public var unsafeStatus: String {

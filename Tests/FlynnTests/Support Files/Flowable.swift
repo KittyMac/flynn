@@ -99,7 +99,7 @@ extension Uppercase {
 
     @discardableResult
     public func beFlow(_ args: FlowableArgs) -> Self {
-        unsafeSend { [weak self] in self!._beFlow(args) }
+        unsafeSend { self._beFlow(args) }
         return self
     }
 
@@ -109,7 +109,7 @@ extension Print {
 
     @discardableResult
     public func beFlow(_ args: FlowableArgs) -> Self {
-        unsafeSend { [weak self] in self!._beFlow(args) }
+        unsafeSend { self._beFlow(args) }
         return self
     }
 
@@ -119,7 +119,7 @@ extension Passthrough {
 
     @discardableResult
     public func beFlow(_ args: FlowableArgs) -> Self {
-        unsafeSend { [weak self] in self!._beFlow(args) }
+        unsafeSend { self._beFlow(args) }
         return self
     }
 
@@ -129,7 +129,7 @@ extension Concatenate {
 
     @discardableResult
     public func beFlow(_ args: FlowableArgs) -> Self {
-        unsafeSend { [weak self] in self!._beFlow(args) }
+        unsafeSend { self._beFlow(args) }
         return self
     }
 
@@ -139,7 +139,7 @@ extension Callback {
 
     @discardableResult
     public func beFlow(_ args: FlowableArgs) -> Self {
-        unsafeSend { [weak self] in self!._beFlow(args) }
+        unsafeSend { self._beFlow(args) }
         return self
     }
 

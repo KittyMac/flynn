@@ -31,12 +31,12 @@ extension StringBuilder {
     @discardableResult
     public func beTimerFired(_ timer: Flynn.Timer,
                              _ args: TimerArgs) -> Self {
-        unsafeSend { [weak self] in self!._beTimerFired(timer, args) }
+        unsafeSend { self._beTimerFired(timer, args) }
         return self
     }
     @discardableResult
     public func beAppend(_ value: String) -> Self {
-        unsafeSend { [weak self] in self!._beAppend(value) }
+        unsafeSend { self._beAppend(value) }
         return self
     }
     @discardableResult
@@ -46,7 +46,7 @@ extension StringBuilder {
     }
     @discardableResult
     public func beResult(_ callback: @escaping ((String) -> Void)) -> Self {
-        unsafeSend { [weak self] in self!._beResult(callback) }
+        unsafeSend { self._beResult(callback) }
         return self
     }
 
