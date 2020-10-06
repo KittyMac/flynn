@@ -101,6 +101,7 @@ public extension Flynn {
         var nextTimerMinTime: TimeInterval = 10.0
 
         var completedTimers: [Flynn.Timer] = []
+        completedTimers.reserveCapacity(registeredTimersQueue.count)
 
         registeredTimersQueue.dequeueAny { (timer) in
             let timeDelta = timer.fireTime - currentTime
@@ -114,15 +115,9 @@ public extension Flynn {
             return false
         }
 
-        for timer in completedTimers {
-            timer.fire()
-        }
+        completedTimers.forEach { $0.fire() }
 
-        if nextTimerMinTime < 0 {
-            nextTimerMinTime = 0
-        }
-
-        return nextTimerMinTime / 2
+        return max(nextTimerMinTime / 2, 0)
     }
 
     internal class TimerLoop {
