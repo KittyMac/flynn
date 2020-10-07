@@ -148,7 +148,7 @@ public extension Flynn {
 
         @objc func run() {
             while running {
-                let timeout = Flynn.checkRegisteredTimers()
+                let timeout = max(min(Flynn.checkRegisteredTimers(), 1), 0)
                 _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
             }
         }
