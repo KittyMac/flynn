@@ -27,8 +27,7 @@ class Echo: RemoteActor {
     }
 
     private func _beTestDelayedReturn(_ string: String, _ returnCallback: @escaping (String) -> Void) {
-        DispatchQueue.global(qos: .background).async {
-            sleep(UInt32.random(in: 0..<3))
+        Flynn.Timer(timeInterval: Double.random(in: 0..<3), repeats: false, safeActor) { (_) in
             returnCallback(string.uppercased())
         }
     }

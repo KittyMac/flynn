@@ -17,6 +17,8 @@ open class InternalRemoteActor {
     
     public let unsafeIsProxy: Bool
     
+    public let safeActor: Actor
+    
     private let isNamedService: Bool
 
     private var nodeSocketFD: Int32 = -1
@@ -33,12 +35,14 @@ open class InternalRemoteActor {
         unsafeUUID = UUID().uuidString
         isNamedService = false
         unsafeIsProxy = true
+        safeActor = Flynn.any
     }
 
     public required init(_ uuid: String) {
         unsafeUUID = uuid
         isNamedService = true
         unsafeIsProxy = false
+        safeActor = RemoteActorManager.shared.unsafeGetRunnerForActor(unsafeUUID)
         safeInit()
     }
 
@@ -48,7 +52,10 @@ open class InternalRemoteActor {
         isNamedService = true
         unsafeIsProxy = shouldBeProxy
         if !shouldBeProxy {
+            safeActor = RemoteActorManager.shared.unsafeGetRunnerForActor(unsafeUUID)
             safeInit()
+        } else {
+            safeActor = Flynn.any
         }
     }
 
