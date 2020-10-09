@@ -149,7 +149,7 @@ public extension Flynn {
         @objc func run() {
             while running {
                 let timeout = max(min(Flynn.checkRegisteredTimers(), 1), 0)
-                lock.lock(before: Date.init(timeIntervalSinceNow: timeout))
+                _ = lock.lock(before: Date.init(timeIntervalSinceNow: timeout))
             }
         }
 

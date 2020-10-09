@@ -241,6 +241,18 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
 
+    func testTimerInterrupt() {
+        let expectation = XCTestExpectation(description: "Repeating Timer")
+
+        Flynn.Timer(timeInterval: 20.0, repeats: false, Flynn.any, { (_) in })
+        sleep(1)
+        Flynn.Timer(timeInterval: 1.0, repeats: false, Flynn.any, { (_) in
+            expectation.fulfill()
+        })
+
+        wait(for: [expectation], timeout: 10.0)
+    }
+
     func testTimerResolution() {
         let expectation = XCTestExpectation(description: "Repeating Timer")
 
