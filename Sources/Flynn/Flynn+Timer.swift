@@ -131,7 +131,7 @@ public extension Flynn {
         private lazy var thread = Thread(target: self, selector: #selector(run), object: nil)
     #endif
 
-        private var waitingForWorkSemaphore = DispatchSemaphore(value: 0)
+        private var lock = NSLock()
 
         init() {
             running = true
@@ -143,19 +143,20 @@ public extension Flynn {
         }
 
         func wake() {
-            waitingForWorkSemaphore.signal()
+            lock.unlock()
         }
 
         @objc func run() {
             while running {
                 let timeout = max(min(Flynn.checkRegisteredTimers(), 1), 0)
-                _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
+                lock.lock(before: Date.init(timeIntervalSinceNow: timeout))
             }
         }
 
         public func join() {
             running = false
-            waitingForWorkSemaphore.signal()
+            
+            lock.unlock()
             while thread.isFinished == false {
                 usleep(1000)
             }

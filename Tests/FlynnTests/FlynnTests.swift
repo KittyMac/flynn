@@ -241,6 +241,33 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
 
+    func testTimerResolution() {
+        let expectation = XCTestExpectation(description: "Repeating Timer")
+
+        var count = 0
+
+        var totalTime: TimeInterval = 0
+        var startTime = ProcessInfo.processInfo.systemUptime
+
+        Flynn.Timer(timeInterval: 0.2, repeats: true, Flynn.any, { (timer) in
+
+            let now = ProcessInfo.processInfo.systemUptime
+            totalTime += now - startTime
+            startTime = now
+
+            count += 1
+            if count >= 5 {
+                timer.cancel()
+
+                print(totalTime)
+                XCTAssert(abs(totalTime - 1.0) < 0.001)
+                expectation.fulfill()
+            }
+        })
+
+        wait(for: [expectation], timeout: 2.0)
+    }
+
     func testRepeatingTimer() {
         let expectation = XCTestExpectation(description: "Repeating Timer")
 
