@@ -131,8 +131,6 @@ public extension Flynn {
         private lazy var thread = Thread(target: self, selector: #selector(run), object: nil)
     #endif
 
-        private var lock = NSLock()
-
         init() {
             running = true
             idle = false
@@ -143,20 +141,18 @@ public extension Flynn {
         }
 
         func wake() {
-            lock.unlock()
+            
         }
 
         @objc func run() {
             while running {
-                let timeout = max(min(Flynn.checkRegisteredTimers(), 1), 0)
-                _ = lock.lock(before: Date.init(timeIntervalSinceNow: timeout))
+                let timeout = max(min(Flynn.checkRegisteredTimers(), 1.0), 0)
+                usleep(UInt32(timeout * 1_000_000 / 64))
             }
         }
 
         public func join() {
             running = false
-            
-            lock.unlock()
             while thread.isFinished == false {
                 usleep(1000)
             }

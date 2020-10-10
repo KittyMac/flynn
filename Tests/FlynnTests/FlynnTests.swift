@@ -245,7 +245,11 @@ class FlynnTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Repeating Timer")
 
         Flynn.Timer(timeInterval: 20.0, repeats: false, Flynn.any, { (_) in })
-        sleep(1)
+
+        // Note: why does sleep() not work in unit tests...
+        let start = ProcessInfo.processInfo.systemUptime
+        while ProcessInfo.processInfo.systemUptime - start < 1.0 { }
+
         Flynn.Timer(timeInterval: 1.0, repeats: false, Flynn.any, { (_) in
             expectation.fulfill()
         })
