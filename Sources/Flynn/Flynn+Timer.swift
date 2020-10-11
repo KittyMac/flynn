@@ -87,7 +87,7 @@ public extension Flynn {
 
     private static var registeredTimersQueue = Queue<Timer>(size: 1024,
                                                             manyProducers: true,
-                                                            manyConsumers: false)
+                                                            manyConsumers: true)
     internal static func register(_ timer: Timer) {
         registeredTimersQueue.enqueue(timer, sortedBy: { (lhs, rhs) in
             return lhs.fireTime > rhs.fireTime
@@ -131,6 +131,8 @@ public extension Flynn {
         private lazy var thread = Thread(target: self, selector: #selector(run), object: nil)
     #endif
 
+        private var waitingForWorkSemaphore = DispatchSemaphore(value: 0)
+
         init() {
             running = true
             idle = false
@@ -141,18 +143,19 @@ public extension Flynn {
         }
 
         func wake() {
-            
+            waitingForWorkSemaphore.signal()
         }
 
         @objc func run() {
             while running {
-                let timeout = max(min(Flynn.checkRegisteredTimers(), 1.0), 0)
-                usleep(UInt32(timeout * 1_000_000 / 64))
+                let timeout = Flynn.checkRegisteredTimers()
+                _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
             }
         }
 
         public func join() {
             running = false
+            waitingForWorkSemaphore.signal()
             while thread.isFinished == false {
                 usleep(1000)
             }
