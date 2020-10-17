@@ -21,6 +21,7 @@ class RemoteActorExhaustive: RemoteActor {
     // what to do.
     private func _beNoArgsDelayedReturn(_ returnCallback: (String) -> Void) { returnCallback("Hello World") }
     private func _beOneArgDelayedReturn(_ string: String, _ returnCallback: (String) -> Void) { returnCallback(string) }
+    private func _beNoArgsDelayedReturnNoArgs(_ returnCallback: () -> Void) { returnCallback() }
 
 }
 
@@ -155,6 +156,11 @@ extension RemoteActorExhaustive {
         }
         return self
     }
+    @discardableResult
+    public func beNoArgsDelayedReturnNoArgs() -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsDelayedReturnNoArgs", Data(), nil, nil)
+        return self
+    }
 
     public func unsafeRegisterAllBehaviors() {
         safeRegisterRemoteBehavior("beNoArgsNoReturn") { [unowned self] (_) in
@@ -214,6 +220,11 @@ extension RemoteActorExhaustive {
                     try! JSONEncoder().encode(
                         BeOneArgDelayedReturnCodableResponse(response: returnValue))
                 )
+            }
+        }
+        safeRegisterDelayedRemoteBehavior("beNoArgsDelayedReturnNoArgs") { [unowned self] (_, callback) in
+            self._beNoArgsDelayedReturnNoArgs {
+                callback(Data())
             }
         }
     }

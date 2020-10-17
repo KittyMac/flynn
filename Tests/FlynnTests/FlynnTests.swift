@@ -1,4 +1,5 @@
 // swiftlint:disable line_length
+// swiftlint:disable type_body_length
 
 import XCTest
 

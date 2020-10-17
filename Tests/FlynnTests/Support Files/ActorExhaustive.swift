@@ -21,6 +21,8 @@ class ActorExhaustive: Actor {
     // (and not with a direct return value). Simply including this parameter
     // as the last parameter to the behavior is enough to let FlynnLint know
     // what to do.
+    private func _beNoArgsDelayedReturnNoArgs(_ returnCallback: () -> Void) { returnCallback() }
+
     private func _beNoArgsDelayedReturn(_ returnCallback: (String) -> Void) { returnCallback("Hello World") }
     private func _beOneArgDelayedReturn(_ string: String, _ returnCallback: (String) -> Void) { returnCallback(string) }
 
@@ -82,6 +84,18 @@ extension ActorExhaustive {
         unsafeSend {
             let result = self._beTwoArgsOptionalReturn(arg0, arg1)
             sender.unsafeSend { callback(result) }
+        }
+        return self
+    }
+    @discardableResult
+    public func beNoArgsDelayedReturnNoArgs(_ sender: Actor,
+                                            _ callback: @escaping (() -> Void)) -> Self {
+        unsafeSend {
+            self._beNoArgsDelayedReturnNoArgs {
+                sender.unsafeSend {
+                    callback()
+                }
+            }
         }
         return self
     }
