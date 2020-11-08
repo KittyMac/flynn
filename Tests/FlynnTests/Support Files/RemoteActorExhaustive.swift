@@ -226,8 +226,9 @@ extension RemoteActorExhaustive {
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeOneArgOneReturnCodableRequest.self, from: data)
             let response = self._beOneArgOneReturn(msg.arg0)
+            let boxedResponse = BeOneArgOneReturnCodableResponse(response: response)
             // swiftlint:disable:next force_try
-            return try! JSONEncoder().encode(response)
+            return try! JSONEncoder().encode(boxedResponse)
         }
         safeRegisterRemoteBehavior("beTwoArgsNoReturn") { [unowned self] (data) in
             // swiftlint:disable:next force_try
@@ -239,19 +240,20 @@ extension RemoteActorExhaustive {
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeTwoArgsOptionalReturnCodableRequest.self, from: data)
             let response = self._beTwoArgsOptionalReturn(msg.arg0, msg.arg1)
+            let boxedResponse = BeTwoArgsOptionalReturnCodableResponse(response: response)
             // swiftlint:disable:next force_try
-            return try! JSONEncoder().encode(response)
+            return try! JSONEncoder().encode(boxedResponse)
         }
         safeRegisterRemoteBehavior("beOneArgTwoReturn") { [unowned self] (data) in
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeOneArgTwoReturnCodableRequest.self, from: data)
             let response = self._beOneArgTwoReturn(msg.arg0)
-            let nonTupleResponse = BeOneArgTwoReturnCodableResponse(
+            let boxedResponse = BeOneArgTwoReturnCodableResponse(
                 response0: response.0,
                 response1: response.1
             )
             // swiftlint:disable:next force_try
-            return try! JSONEncoder().encode(nonTupleResponse)
+            return try! JSONEncoder().encode(boxedResponse)
         }
         safeRegisterDelayedRemoteBehavior("beNoArgsDelayedReturn") { [unowned self] (_, callback) in
             self._beNoArgsDelayedReturn { (returnValue: String) in

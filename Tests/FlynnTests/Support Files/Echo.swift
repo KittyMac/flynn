@@ -122,8 +122,9 @@ extension Echo {
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeToLowerCodableRequest.self, from: data)
             let response = self._beToLower(msg.arg0)
+            let boxedResponse = BeToLowerCodableResponse(response: response)
             // swiftlint:disable:next force_try
-            return try! JSONEncoder().encode(response)
+            return try! JSONEncoder().encode(boxedResponse)
         }
         safeRegisterDelayedRemoteBehavior("beTestDelayedReturn") { [unowned self] (data, callback) in
             // swiftlint:disable:next force_try
