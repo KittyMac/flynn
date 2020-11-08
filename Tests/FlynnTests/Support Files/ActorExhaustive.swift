@@ -16,6 +16,8 @@ class ActorExhaustive: Actor {
     private func _beTwoArgsNoReturn(_ arg0: Int, _ arg1: String?) { }
     private func _beTwoArgsOptionalReturn(_ arg0: Int, _ arg1: String?) -> String? { return arg1 }
 
+    private func _beOneArgTwoReturn(_ arg0: Int) -> (Int, String?) { return (arg0, nil) }
+
     // adding a returnCallback to your behavior signals FlynnLint that this
     // behavior you want to be able to respond to at some point in the future
     // (and not with a direct return value). Simply including this parameter
@@ -85,6 +87,16 @@ extension ActorExhaustive {
                                         _ callback: @escaping ((String?) -> Void)) -> Self {
         unsafeSend {
             let result = self._beTwoArgsOptionalReturn(arg0, arg1)
+            sender.unsafeSend { callback(result) }
+        }
+        return self
+    }
+    @discardableResult
+    public func beOneArgTwoReturn(_ arg0: Int,
+                                  _ sender: Actor,
+                                  _ callback: @escaping (((Int, String?)) -> Void)) -> Self {
+        unsafeSend {
+            let result = self._beOneArgTwoReturn(arg0)
             sender.unsafeSend { callback(result) }
         }
         return self

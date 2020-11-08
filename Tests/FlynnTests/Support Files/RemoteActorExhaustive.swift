@@ -14,6 +14,8 @@ class RemoteActorExhaustive: RemoteActor {
     private func _beTwoArgsNoReturn(_ arg0: Int, _ arg1: String?) { }
     private func _beTwoArgsOptionalReturn(_ arg0: Int, _ arg1: String?) -> String? { return arg1 }
 
+    private func _beOneArgTwoReturn(_ arg0: Int) -> (Int, String?) { return (arg0, nil) }
+
     // adding a returnCallback to your behavior signals FlynnLint that this
     // behavior you want to be able to respond to at some point in the future
     // (and not with a direct return value). Simply including this parameter
@@ -53,6 +55,13 @@ extension RemoteActorExhaustive {
     struct BeTwoArgsOptionalReturnCodableRequest: Codable {
         let arg0: Int
         let arg1: String?
+    }
+    struct BeOneArgTwoReturnCodableResponse: Codable {
+        let response0: Int
+        let response1: String?
+    }
+    struct BeOneArgTwoReturnCodableRequest: Codable {
+        let arg0: Int
     }
     struct BeNoArgsDelayedReturnCodableResponse: Codable {
         let response: String
@@ -136,6 +145,23 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
+    public func beOneArgTwoReturn(_ arg0: Int,
+                                  _ sender: Actor,
+                                  _ callback: @escaping ((Int, String?)) -> Void ) -> Self {
+        let msg = BeOneArgTwoReturnCodableRequest(arg0: arg0)
+        // swiftlint:disable:next force_try
+        let data = try! JSONEncoder().encode(msg)
+        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgTwoReturn", data, sender) {
+            // swiftlint:disable:next force_try
+            let msg = try! JSONDecoder().decode(BeOneArgTwoReturnCodableResponse.self, from: $0)
+            callback((
+                msg.response0,
+                msg.response1
+            ))
+        }
+        return self
+    }
+    @discardableResult
     public func beNoArgsDelayedReturn(_ sender: Actor, _ callback: @escaping (String) -> Void) -> Self {
         unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsDelayedReturn", Data(), sender) {
             callback(
@@ -199,9 +225,9 @@ extension RemoteActorExhaustive {
         safeRegisterRemoteBehavior("beOneArgOneReturn") { [unowned self] (data) in
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeOneArgOneReturnCodableRequest.self, from: data)
+            let response = self._beOneArgOneReturn(msg.arg0)
             // swiftlint:disable:next force_try
-            return try! JSONEncoder().encode(
-                BeOneArgOneReturnCodableResponse(response: self._beOneArgOneReturn(msg.arg0)))
+            return try! JSONEncoder().encode(response)
         }
         safeRegisterRemoteBehavior("beTwoArgsNoReturn") { [unowned self] (data) in
             // swiftlint:disable:next force_try
@@ -212,9 +238,20 @@ extension RemoteActorExhaustive {
         safeRegisterRemoteBehavior("beTwoArgsOptionalReturn") { [unowned self] (data) in
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeTwoArgsOptionalReturnCodableRequest.self, from: data)
+            let response = self._beTwoArgsOptionalReturn(msg.arg0, msg.arg1)
             // swiftlint:disable:next force_try
-            return try! JSONEncoder().encode(
-                BeTwoArgsOptionalReturnCodableResponse(response: self._beTwoArgsOptionalReturn(msg.arg0, msg.arg1)))
+            return try! JSONEncoder().encode(response)
+        }
+        safeRegisterRemoteBehavior("beOneArgTwoReturn") { [unowned self] (data) in
+            // swiftlint:disable:next force_try
+            let msg = try! JSONDecoder().decode(BeOneArgTwoReturnCodableRequest.self, from: data)
+            let response = self._beOneArgTwoReturn(msg.arg0)
+            let nonTupleResponse = BeOneArgTwoReturnCodableResponse(
+                response0: response.0,
+                response1: response.1
+            )
+            // swiftlint:disable:next force_try
+            return try! JSONEncoder().encode(nonTupleResponse)
         }
         safeRegisterDelayedRemoteBehavior("beNoArgsDelayedReturn") { [unowned self] (_, callback) in
             self._beNoArgsDelayedReturn { (returnValue: String) in
