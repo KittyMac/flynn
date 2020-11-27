@@ -7,8 +7,8 @@ private func nodeRegisterWithRoot(_ registrationString: UnsafePointer<Int8>?,
                                   _ socketFD: Int32) {
     guard let registrationString = registrationString else { return }
 
-    Flynn.remotes.beRegisterRemoteNode(String(cString: registrationString),
-                                                   socketFD)
+    Flynn.remotes.beRegisterRemoteNodeOnRoot(String(cString: registrationString),
+                                                    socketFD)
 
 }
 
@@ -19,10 +19,9 @@ private func nodeCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?,
     guard let actorUUIDPtr = actorUUIDPtr else { return }
     guard let actorTypePtr = actorTypePtr else { return }
 
-    Flynn.remotes.beCreateActor(String(cString: actorUUIDPtr),
-                                            String(cString: actorTypePtr),
-                                            shouldBeProxy,
-                                            socketFD)
+    Flynn.remotes.beCreateActorOnNode(String(cString: actorUUIDPtr),
+                                      String(cString: actorTypePtr),
+                                      socketFD)
 
 }
 
@@ -76,10 +75,15 @@ extension Flynn {
     public enum Root {
         public static func listen(_ address: String,
                                   _ port: Int32,
-                                  _ actorTypes: [RemoteActor.Type]) {
+                                  remoteActorTypes: [RemoteActor.Type],
+                                  fallbackRemoteActorTypes: [RemoteActor.Type],
+                                  namedRemoteActorTypes: [RemoteActor.Type]) {
             Flynn.startup()
                         
-            Flynn.remotes.beRegisterActorTypes(actorTypes, Flynn.any) { (_) in
+            Flynn.remotes.beRegisterActorTypesForRoot(remoteActorTypes,
+                                                      fallbackRemoteActorTypes,
+                                                      namedRemoteActorTypes,
+                                                      Flynn.any) { (_) in
                 pony_root(address,
                           port,
                           nodeRegisterWithRoot,
@@ -98,11 +102,15 @@ extension Flynn {
     public enum Node {
         public static func connect(_ address: String,
                                    _ port: Int32,
-                                   _ actorTypes: [RemoteActor.Type],
-                                   _ automaticReconnect: Bool = true) {
+                                   _ automaticReconnect: Bool,
+                                   remoteActorTypes: [RemoteActor.Type],
+                                   namedRemoteActors: [RemoteActor]) {
             Flynn.startup()
             
-            Flynn.remotes.beRegisterActorTypes(actorTypes, Flynn.any) { (_) in
+            Flynn.remotes.beRegisterActorTypesForNode(remoteActorTypes,
+                                                      namedRemoteActors,
+                                                      Flynn.any) { (_) in
+                
                 pony_node(address,
                           port,
                           automaticReconnect,
@@ -110,12 +118,6 @@ extension Flynn {
                           nodeDestroyActor,
                           nodeHandleMessage,
                           nodeRegisterActorsOnRoot)
-            }
-        }
-
-        public static func registerActorsWithRoot(_ actors: [RemoteActor]) {
-            for actor in actors {
-                Flynn.remotes.beRegisterActor(actor)
             }
         }
     }

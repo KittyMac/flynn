@@ -16,7 +16,10 @@ class FlynnRemoteTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Multiple nodes which service different RemoteActor types")
 
         let port = Int32.random(in: 8000..<65500)
-        Flynn.Root.listen("127.0.0.1", port, [MultiEchoA.self])
+        Flynn.Root.listen("127.0.0.1", port,
+                          remoteActorTypes: [MultiEchoA.self],
+                          fallbackRemoteActorTypes: [MultiEchoA.self],
+                          namedRemoteActorTypes: [])
 
         var numSuccess = 0
 
@@ -38,55 +41,18 @@ class FlynnRemoteTests: XCTestCase {
         Flynn.shutdown()
     }
 
-    func testHeterogenousNodes() {
-        let expectation = XCTestExpectation(description: "Multiple nodes which service different RemoteActor types")
-
-        let port = Int32.random(in: 8000..<65500)
-        Flynn.Root.listen("127.0.0.1", port, [MultiEchoA.self, MultiEchoB.self, MultiEchoC.self])
-
-        Flynn.Node.connect("127.0.0.1", port, [MultiEchoA.self], false)
-        Flynn.Node.connect("127.0.0.1", port, [MultiEchoB.self], false)
-        Flynn.Node.connect("127.0.0.1", port, [MultiEchoC.self], false)
-
-        while Flynn.remoteCores == 0 {
-            usleep(500)
-        }
-
-        var numSuccess = 0
-
-        let check: (String, String) -> Void = { (string1, string2) in
-            if string1 == string2 {
-                numSuccess += 1
-            }
-            if numSuccess == 9 {
-                expectation.fulfill()
-            }
-        }
-
-        MultiEchoA().beEcho("Hello 0", Flynn.any) { check("[A] Hello 0", $0) }
-        MultiEchoA().beEcho("Hello 1", Flynn.any) { check("[A] Hello 1", $0) }
-        MultiEchoA().beEcho("Hello 2", Flynn.any) { check("[A] Hello 2", $0) }
-
-        MultiEchoB().beEcho("Hello 0", Flynn.any) { check("[B] Hello 0", $0) }
-        MultiEchoB().beEcho("Hello 1", Flynn.any) { check("[B] Hello 1", $0) }
-        MultiEchoB().beEcho("Hello 2", Flynn.any) { check("[B] Hello 2", $0) }
-
-        MultiEchoC().beEcho("Hello 0", Flynn.any) { check("[C] Hello 0", $0) }
-        MultiEchoC().beEcho("Hello 1", Flynn.any) { check("[C] Hello 1", $0) }
-        MultiEchoC().beEcho("Hello 2", Flynn.any) { check("[C] Hello 2", $0) }
-
-        wait(for: [expectation], timeout: 2.0)
-
-        Flynn.shutdown()
-    }
-
     func testVerySimpleRemote() {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
 
         let port = Int32.random(in: 8000..<65500)
-        Flynn.Root.listen("127.0.0.1", port, [])
+        Flynn.Root.listen("127.0.0.1", port,
+                          remoteActorTypes: [Echo.self],
+                          fallbackRemoteActorTypes: [],
+                          namedRemoteActorTypes: [])
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [Echo.self],
+                           namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
             usleep(500)
@@ -107,11 +73,20 @@ class FlynnRemoteTests: XCTestCase {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
 
         let port = Int32.random(in: 8000..<65500)
-        Flynn.Root.listen("127.0.0.1", port, [])
+        Flynn.Root.listen("127.0.0.1", port,
+                          remoteActorTypes: [Echo.self],
+                          fallbackRemoteActorTypes: [],
+                          namedRemoteActorTypes: [])
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [Echo.self],
+                           namedRemoteActors: [])
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [Echo.self],
+                           namedRemoteActors: [])
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [Echo.self],
+                           namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
             usleep(500)
@@ -145,14 +120,70 @@ class FlynnRemoteTests: XCTestCase {
         Flynn.shutdown()
     }
 
+    func testHeterogenousNodes() {
+        let expectation = XCTestExpectation(description: "Multiple nodes which service different RemoteActor types")
+
+        let port = Int32.random(in: 8000..<65500)
+        Flynn.Root.listen("127.0.0.1", port,
+                          remoteActorTypes: [MultiEchoA.self, MultiEchoB.self, MultiEchoC.self],
+                          fallbackRemoteActorTypes: [],
+                          namedRemoteActorTypes: [])
+
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [MultiEchoA.self],
+                           namedRemoteActors: [])
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [MultiEchoB.self],
+                           namedRemoteActors: [])
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [MultiEchoC.self],
+                           namedRemoteActors: [])
+
+        while Flynn.remoteCores == 0 {
+            usleep(500)
+        }
+
+        var numSuccess = 0
+
+        let check: (String, String) -> Void = { (string1, string2) in
+            if string1 == string2 {
+                numSuccess += 1
+            }
+            if numSuccess == 9 {
+                expectation.fulfill()
+            }
+        }
+
+        MultiEchoA().beEcho("Hello 0", Flynn.any) { check("[A] Hello 0", $0) }
+        MultiEchoA().beEcho("Hello 1", Flynn.any) { check("[A] Hello 1", $0) }
+        MultiEchoA().beEcho("Hello 2", Flynn.any) { check("[A] Hello 2", $0) }
+
+        MultiEchoB().beEcho("Hello 0", Flynn.any) { check("[B] Hello 0", $0) }
+        MultiEchoB().beEcho("Hello 1", Flynn.any) { check("[B] Hello 1", $0) }
+        MultiEchoB().beEcho("Hello 2", Flynn.any) { check("[B] Hello 2", $0) }
+
+        MultiEchoC().beEcho("Hello 0", Flynn.any) { check("[C] Hello 0", $0) }
+        MultiEchoC().beEcho("Hello 1", Flynn.any) { check("[C] Hello 1", $0) }
+        MultiEchoC().beEcho("Hello 2", Flynn.any) { check("[C] Hello 2", $0) }
+
+        wait(for: [expectation], timeout: 2.0)
+
+        Flynn.shutdown()
+    }
+
     func testNodeReconnect() {
         let expectation = XCTestExpectation(description: "Confirm nodes continuously try to connect")
 
         let port = Int32.random(in: 8000..<65500)
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [Echo.self],
+                           namedRemoteActors: [])
         sleep(2)
-        Flynn.Root.listen("127.0.0.1", port, [])
+        Flynn.Root.listen("127.0.0.1", port,
+                          remoteActorTypes: [Echo.self],
+                          fallbackRemoteActorTypes: [],
+                          namedRemoteActorTypes: [])
 
         // Right now this is necessary, we need to wait until
         // we know the node is connected before using remote actors
@@ -177,9 +208,14 @@ class FlynnRemoteTests: XCTestCase {
 
         let port = Int32.random(in: 8000..<65500)
 
-        Flynn.Root.listen("127.0.0.1", port, [])
+        Flynn.Root.listen("127.0.0.1", port,
+                          remoteActorTypes: [Echo.self],
+                          fallbackRemoteActorTypes: [],
+                          namedRemoteActorTypes: [])
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [Echo.self],
+                           namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
             usleep(500)
@@ -212,10 +248,14 @@ class FlynnRemoteTests: XCTestCase {
 
         let port = Int32.random(in: 8000..<65500)
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
-        Flynn.Node.registerActorsWithRoot([Echo(echoServiceName)])
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [],
+                           namedRemoteActors: [ Echo(echoServiceName) ])
 
-        Flynn.Root.listen("127.0.0.1", port, [Echo.self])
+        Flynn.Root.listen("127.0.0.1", port,
+                          remoteActorTypes: [],
+                          fallbackRemoteActorTypes: [],
+                          namedRemoteActorTypes: [Echo.self])
 
         // Wait until the node has connected
         while Flynn.remoteCores == 0 {
@@ -255,9 +295,15 @@ class FlynnRemoteTests: XCTestCase {
         // node on the network out-of-order. This test ensures that the correct return
         // callbacks are made to the correct behavior calls.
         let port = Int32.random(in: 8000..<65500)
-        Flynn.Root.listen("127.0.0.1", port, [])
 
-        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
+        Flynn.Root.listen("127.0.0.1", port,
+                          remoteActorTypes: [Echo.self],
+                          fallbackRemoteActorTypes: [],
+                          namedRemoteActorTypes: [])
+
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [Echo.self],
+                           namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
             usleep(500)
@@ -275,7 +321,7 @@ class FlynnRemoteTests: XCTestCase {
 
         sleep(4)
 
-        XCTAssert(numCorrect == 7)
+        XCTAssertEqual(numCorrect, 7)
 
         Flynn.shutdown()
     }
