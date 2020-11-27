@@ -280,6 +280,18 @@ internal final class RemoteActorManager: Actor {
                 nodeSocketFD = fallbackRunRemoteActorLocally()
             } else {
                 finishSendingToRemoteActor()
+                
+                // we tried to send to a disconnected node; try again to
+                // either get an active node or a local fallback.
+                if nodeSocketFD == -1 {
+                    return _beSendToRemote(actorUUID,
+                                           actorTypeString,
+                                           behaviorType,
+                                           nodeSocketFD,
+                                           jsonData,
+                                           replySender,
+                                           replyCallback)
+                }
             }
         } else if let _ = namedActorTypes[actorTypeString] {
             finishSendingToRemoteActor()
