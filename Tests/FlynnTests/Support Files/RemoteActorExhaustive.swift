@@ -1,6 +1,8 @@
 import XCTest
 @testable import Flynn
 
+// swiftlint:disable function_body_length
+
 // The only purpose of this file is to have one of all combinations of remote
 // behaviors to help ensure flynnlint generates them all correctly
 class RemoteActorExhaustive: RemoteActor {

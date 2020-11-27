@@ -3,6 +3,15 @@ import Pony
 
 // MARK: - FLYNN EXTENSION
 
+private func nodeRegisterWithRoot(_ registrationString: UnsafePointer<Int8>?,
+                                  _ socketFD: Int32) {
+    guard let registrationString = registrationString else { return }
+
+    RemoteActorManager.shared.beRegisterRemoteNode(String(cString: registrationString),
+                                                   socketFD)
+
+}
+
 private func nodeCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?,
                              _ actorTypePtr: UnsafePointer<Int8>?,
                              _ shouldBeProxy: Bool,
@@ -41,11 +50,12 @@ private func nodeHandleMessage(_ actorUUIDPtr: UnsafePointer<Int8>?,
 }
 
 private func nodeRegisterActorsOnRoot(_ replySocketFD: Int32) {
-    // We are a node and we've just connected to a root. We need to ask the
-    // root to create any actors we currently have in existance on our
+    // We are a node and we've just connected to a root. We need to let the
+    // root know the actor types of remote actors we support. We also need to
+    // ask the root to create any actors we currently have in existance on our
     // RemoteActorManager (so the root knows that a remote service exists
     // on this remote, for example).
-    RemoteActorManager.shared.unsafeRegisterActorsOnRoot(replySocketFD)
+    RemoteActorManager.shared.unsafeRegisterNodeWithRoot(replySocketFD)
 
 }
 
@@ -67,13 +77,16 @@ extension Flynn {
         public static func listen(_ address: String,
                                   _ port: Int32,
                                   _ actorTypes: [RemoteActor.Type]) {
-            pony_root(address,
-                      port,
-                      nodeCreateActor,
-                      rootHandleMessageReply)
-
-            for actorType in actorTypes {
-                RemoteActorManager.shared.beRegisterActorType(actorType)
+            Flynn.startup()
+            
+            RemoteActorManager.shared.unsafeCheckValidity()
+            
+            RemoteActorManager.shared.beRegisterActorTypes(actorTypes, Flynn.any) { (_) in
+                pony_root(address,
+                          port,
+                          nodeRegisterWithRoot,
+                          nodeCreateActor,
+                          rootHandleMessageReply)
             }
         }
 
@@ -90,17 +103,17 @@ extension Flynn {
                                    _ actorTypes: [RemoteActor.Type],
                                    _ automaticReconnect: Bool = true) {
             Flynn.startup()
+            
+            RemoteActorManager.shared.unsafeCheckValidity()
 
-            pony_node(address,
-                      port,
-                      automaticReconnect,
-                      nodeCreateActor,
-                      nodeDestroyActor,
-                      nodeHandleMessage,
-                      nodeRegisterActorsOnRoot)
-
-            for actorType in actorTypes {
-                RemoteActorManager.shared.beRegisterActorType(actorType)
+            RemoteActorManager.shared.beRegisterActorTypes(actorTypes, Flynn.any) { (_) in
+                pony_node(address,
+                          port,
+                          automaticReconnect,
+                          nodeCreateActor,
+                          nodeDestroyActor,
+                          nodeHandleMessage,
+                          nodeRegisterActorsOnRoot)
             }
         }
 

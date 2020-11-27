@@ -21,7 +21,7 @@ open class InternalRemoteActor {
     
     private let isNamedService: Bool
 
-    private var nodeSocketFD: Int32 = -1
+    private var nodeSocketFD: Int32 = kUnregistedSocketFD
 
     private var remoteBehaviors: [String: RemoteBehavior] = [:]
     private var delayedRemoteBehaviors: [String: DelayedRemoteBehavior] = [:]
@@ -60,11 +60,11 @@ open class InternalRemoteActor {
     }
 
     public func unsafeIsConnected() -> Bool {
-        return nodeSocketFD >= 0
+        return nodeSocketFD >= 0 || nodeSocketFD == kLocalSocketFD
     }
 
     deinit {
-        if isNamedService == false {
+        if isNamedService == false && nodeSocketFD != kLocalSocketFD {
             pony_remote_destroy_actor(unsafeUUID, &nodeSocketFD)
         }
         //print("deinit - RemoteActor [\(nodeSocketFD)]")
@@ -83,11 +83,16 @@ open class InternalRemoteActor {
         // return data to be sent back immediately
         if let behavior = remoteBehaviors[name] {
             if let data = behavior(payload) {
-                data.withUnsafeBytes {
-                    pony_remote_actor_send_message_to_root(replySocketFD,
-                                                           messageID,
-                                                           $0.baseAddress,
-                                                           Int32(data.count))
+                if replySocketFD == kLocalSocketFD {
+                    RemoteActorManager.shared.beHandleMessageReply(messageID,
+                                                                   data)
+                } else {
+                    data.withUnsafeBytes {
+                        pony_remote_actor_send_message_to_root(replySocketFD,
+                                                               messageID,
+                                                               $0.baseAddress,
+                                                               Int32(data.count))
+                    }
                 }
             }
         }
@@ -96,11 +101,15 @@ open class InternalRemoteActor {
         // they are ready to respond to a message
         if let behavior = delayedRemoteBehaviors[name] {
             behavior(payload) {
-                $0.withUnsafeBytes {
-                    pony_remote_actor_send_message_to_root(replySocketFD,
-                                                           messageID,
-                                                           $0.baseAddress,
-                                                           Int32($0.count))
+                if replySocketFD == kLocalSocketFD {
+                    RemoteActorManager.shared.beHandleMessageReply(messageID, $0)
+                } else {
+                    $0.withUnsafeBytes {
+                        pony_remote_actor_send_message_to_root(replySocketFD,
+                                                               messageID,
+                                                               $0.baseAddress,
+                                                               Int32($0.count))
+                    }
                 }
             }
         }
@@ -110,19 +119,17 @@ open class InternalRemoteActor {
                                    _ behaviorType: String,
                                    _ jsonData: Data,
                                    _ sender: Actor?,
-                                   _ callback: RemoteBehaviorReply?) {
-        _ = jsonData.withUnsafeBytes {
-            
-
-            let messageID = pony_remote_actor_send_message_to_node(unsafeUUID,
-                                                                   actorType,
-                                                                   behaviorType,
-                                                                   &nodeSocketFD,
-                                                                   $0.baseAddress,
-                                                                   Int32(jsonData.count))
-            if let sender = sender, let callback = callback {
-                RemoteActorManager.shared.beRegisterReply(unsafeUUID, messageID, sender, callback)
-            }
+                                   _ callback: RemoteBehaviorReply?) {        
+        RemoteActorManager.shared.beSendToRemote(unsafeUUID,
+                                                 actorType,
+                                                 behaviorType,
+                                                 nodeSocketFD,
+                                                 jsonData,
+                                                 sender,
+                                                 callback,
+                                                 safeActor)
+        {
+            self.nodeSocketFD = $0
         }
     }
 }

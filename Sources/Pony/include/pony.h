@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 
+typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, bool shouldBeProxy, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);
 typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int messageID, int replySocketFD);
@@ -17,6 +18,7 @@ typedef void (*ReplyMessageFunc)(int messageID, void * payload, int payloadSize)
 
 void pony_root(const char * address,
                int port,
+               RegisterWithRootFunc registerWithRootPtr,
                CreateActorFunc createActorFunc,
                ReplyMessageFunc replyMessageFunc);
 void pony_node(const char * address,
@@ -33,16 +35,16 @@ int pony_remote_core_count();
 int pony_remote_actor_send_message_to_node(const char * actorUUID,
                                            const char * actorType,
                                            const char * behaviorType,
-                                           int * nodeSocketFD,
+                                           bool actorNeedsCreated,
+                                           int nodeSocketFD,
                                            const void * bytes,
                                            int count);
 void pony_remote_actor_send_message_to_root(int socketfd,
                                             int messageID,
                                             const void * bytes,
                                             int count);
-void pony_send_remote_actor_to_root(int socketfd,
-                                    const char * actorUUID,
-                                    const char * actorType);
+void pony_register_node_to_root(int socketfd,
+                                const char * actorRegistrationString);
 
 void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD);
 

@@ -12,6 +12,74 @@ class FlynnRemoteTests: XCTestCase {
 
     }
 
+    func testLocalExecutionFallback() {
+        let expectation = XCTestExpectation(description: "Multiple nodes which service different RemoteActor types")
+
+        let port = Int32.random(in: 8000..<65500)
+        Flynn.Root.listen("127.0.0.1", port, [MultiEchoA.self])
+
+        var numSuccess = 0
+
+        let check: (String, String) -> Void = { (string1, string2) in
+            if string1 == string2 {
+                numSuccess += 1
+            }
+            if numSuccess == 3 {
+                expectation.fulfill()
+            }
+        }
+
+        MultiEchoA().beEcho("Hello 0", Flynn.any) { check("[A] Hello 0", $0) }
+        MultiEchoA().beEcho("Hello 1", Flynn.any) { check("[A] Hello 1", $0) }
+        MultiEchoA().beEcho("Hello 2", Flynn.any) { check("[A] Hello 2", $0) }
+
+        wait(for: [expectation], timeout: 2.0)
+
+        Flynn.shutdown()
+    }
+
+    func testHeterogenousNodes() {
+        let expectation = XCTestExpectation(description: "Multiple nodes which service different RemoteActor types")
+
+        let port = Int32.random(in: 8000..<65500)
+        Flynn.Root.listen("127.0.0.1", port, [MultiEchoA.self, MultiEchoB.self, MultiEchoC.self])
+
+        Flynn.Node.connect("127.0.0.1", port, [MultiEchoA.self], false)
+        Flynn.Node.connect("127.0.0.1", port, [MultiEchoB.self], false)
+        Flynn.Node.connect("127.0.0.1", port, [MultiEchoC.self], false)
+
+        while Flynn.remoteCores == 0 {
+            usleep(500)
+        }
+
+        var numSuccess = 0
+
+        let check: (String, String) -> Void = { (string1, string2) in
+            if string1 == string2 {
+                numSuccess += 1
+            }
+            if numSuccess == 9 {
+                expectation.fulfill()
+            }
+        }
+
+        MultiEchoA().beEcho("Hello 0", Flynn.any) { check("[A] Hello 0", $0) }
+        MultiEchoA().beEcho("Hello 1", Flynn.any) { check("[A] Hello 1", $0) }
+        MultiEchoA().beEcho("Hello 2", Flynn.any) { check("[A] Hello 2", $0) }
+
+        MultiEchoB().beEcho("Hello 0", Flynn.any) { check("[B] Hello 0", $0) }
+        MultiEchoB().beEcho("Hello 1", Flynn.any) { check("[B] Hello 1", $0) }
+        MultiEchoB().beEcho("Hello 2", Flynn.any) { check("[B] Hello 2", $0) }
+
+        MultiEchoC().beEcho("Hello 0", Flynn.any) { check("[C] Hello 0", $0) }
+        MultiEchoC().beEcho("Hello 1", Flynn.any) { check("[C] Hello 1", $0) }
+        MultiEchoC().beEcho("Hello 2", Flynn.any) { check("[C] Hello 2", $0) }
+
+        wait(for: [expectation], timeout: 2.0)
+
+        Flynn.shutdown()
+    }
+
     func testSimpleRemote() {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
 

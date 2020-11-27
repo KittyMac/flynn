@@ -47,6 +47,8 @@ open class Flynn {
 
             // wait until the registered actors thread ends
             clearRegisteredTimers()
+            
+            RemoteActorManager.shared.unsafeDestroy()
         }
     }
 

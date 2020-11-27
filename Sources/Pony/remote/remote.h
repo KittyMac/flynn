@@ -11,13 +11,15 @@ extern char * BUILD_VERSION_UUID;
 
 #define COMMAND_NULL 0
 #define COMMAND_VERSION_CHECK 1
-#define COMMAND_CREATE_ACTOR 2
-#define COMMAND_DESTROY_ACTOR 3
-#define COMMAND_SEND_MESSAGE 4
-#define COMMAND_SEND_REPLY 5
-#define COMMAND_CORE_COUNT 6
-#define COMMAND_HEARTBEAT 7
+#define COMMAND_REGISTER_WITH_ROOT 2
+#define COMMAND_CREATE_ACTOR 3
+#define COMMAND_DESTROY_ACTOR 4
+#define COMMAND_SEND_MESSAGE 5
+#define COMMAND_SEND_REPLY 6
+#define COMMAND_CORE_COUNT 7
+#define COMMAND_HEARTBEAT 8
 
+typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, bool, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);
 typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int messageID, int replySocketFD);
@@ -37,6 +39,7 @@ extern void send_buffer(int socketfd, char * bytes, size_t length);
 extern void send_version_check(int socketfd);
 extern void send_existing_actors(int socketfd);
 extern void send_core_count(int socketfd);
+extern void send_register_with_root(int socketfd, const char * registrationString);
 extern void send_create_actor(int socketfd, const char * actorUUID, const char * actorType);
 extern void send_destroy_actor(int socketfd, const char * actorUUID);
 

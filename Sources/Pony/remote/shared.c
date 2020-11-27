@@ -54,6 +54,10 @@ void disableSIGPIPE(int fd) {
 //   [1] U8     number of bytes for version uuid
 //   [?]        version uuid as string
 //
+//  COMMAND_REGISTER_WITH_ROOT (node -> root)
+//   [0-4]     number of bytes for registration string
+//   [?]        registration string
+//
 //  COMMAND_CREATE_ACTOR (root -> node)
 //   [1] U8     number of bytes for actor uuid
 //   [?]        actor uuid as string
@@ -186,6 +190,29 @@ void send_core_count(int socketfd) {
 int send_heartbeat(int socketfd) {
     char command = COMMAND_HEARTBEAT;
     return sendall(socketfd, &command, sizeof(command));
+}
+
+void send_register_with_root(int socketfd, const char * registrationString) {
+    char buffer[512];
+    int idx = 0;
+    
+    buffer[idx++] = COMMAND_REGISTER_WITH_ROOT;
+    sendall(socketfd, buffer, idx);
+    
+    uint32_t count = strnlen(registrationString, 4090);
+    
+    uint32_t net_count = htonl(count);
+    if (sendall(socketfd, &net_count, sizeof(net_count)) < 0) {
+        return -1;
+    }
+    
+    if (sendall(socketfd, (char *)registrationString, count) < 0) {
+        return -1;
+    }
+        
+#if REMOTE_DEBUG
+    fprintf(stderr, "[%d] registering with root on socket\n", socketfd);
+#endif
 }
 
 void send_create_actor(int socketfd, const char * actorUUID, const char * actorType) {

@@ -56,6 +56,7 @@ static char root_ip_address[128] = {0};
 static int root_tcp_port = 9999;
 static ReplyMessageFunc replyMessageFuncPtr = NULL;
 static CreateActorFunc createActorFuncPtr = NULL;
+static RegisterWithRootFunc registerWithRootPtr = NULL;
 static int root_listen_socket = -1;
 
 static DECLARE_THREAD_FN(root_read_from_node_thread);
@@ -158,6 +159,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
             command != COMMAND_CORE_COUNT &&
             command != COMMAND_HEARTBEAT &&
             command != COMMAND_CREATE_ACTOR &&
+            command != COMMAND_REGISTER_WITH_ROOT &&
             command != COMMAND_SEND_REPLY) {
             root_remove_node(nodePtr);
             return 0;
@@ -178,6 +180,12 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
                     fprintf(stdout, "warning: root -> node version mismatch ( [%s] != [%s] )\n", uuid, BUILD_VERSION_UUID);
                 }
+            } break;
+            case COMMAND_REGISTER_WITH_ROOT: {
+                uint32_t payload_count = 0;
+                char * payload = read_intcount_buffer(nodePtr->socketfd, &payload_count);
+                registerWithRootPtr(payload, nodePtr->socketfd);
+                free(payload);
             } break;
             case COMMAND_CREATE_ACTOR: {
                 char type[128] = {0};
@@ -291,6 +299,7 @@ static DECLARE_THREAD_FN(root_thread)
 
 void pony_root(const char * address,
                int port,
+               RegisterWithRootFunc registerWithRoot,
                CreateActorFunc createActorFunc,
                ReplyMessageFunc replyFunc) {
     if (root_listen_socket >= 0) { return; }
@@ -303,6 +312,7 @@ void pony_root(const char * address,
     
     replyMessageFuncPtr = replyFunc;
     createActorFuncPtr = createActorFunc;
+    registerWithRootPtr = registerWithRoot;
     
     strncpy(root_ip_address, address, sizeof(root_ip_address)-1);
     root_tcp_port = port;
@@ -326,27 +336,29 @@ void root_shutdown() {
 
 static uint32_t messageID = 1;
 
-int pony_remote_actor_send_message_to_node(const char * actorUUID, const char * actorType, const char * behaviorType, int * nodeSocketFD, const void * bytes, int count) {
+int pony_remote_actor_send_message_to_node(const char * actorUUID,
+                                           const char * actorType,
+                                           const char * behaviorType,
+                                           bool actorNeedsCreated,
+                                           int nodeSocketFD,
+                                           const void * bytes,
+                                           int count) {
     
     // Note: this is not optimal; we should have a mutext per socket
     pthread_mutex_lock(&nodes_mutex);
     
-    if (*nodeSocketFD < 0) {
-        node_t * nodePtr = root_get_next_node();
-        if (nodePtr == NULL) {
-            fprintf(stderr, "error: RemoteActor behavior called but no nodes are connected to root\n");
-            pthread_mutex_unlock(&nodes_mutex);
-            return 0;
-        }
-        *nodeSocketFD = nodePtr->socketfd;
-        send_create_actor(*nodeSocketFD, actorUUID, actorType);
+    if (actorNeedsCreated) {
+        send_create_actor(nodeSocketFD, actorUUID, actorType);
     }
     
     messageID += 1;
+    if (messageID < 0) {
+        messageID = 1;
+    }
     
-    if (send_message(*nodeSocketFD, messageID, actorUUID, behaviorType, bytes, count) < 0) {
+    if (send_message(nodeSocketFD, messageID, actorUUID, behaviorType, bytes, count) < 0) {
         // we lost connection with this remote actor
-        *nodeSocketFD = -1;
+        return -1;
     }
     
     pthread_mutex_unlock(&nodes_mutex);

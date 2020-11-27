@@ -316,8 +316,8 @@ void pony_remote_actor_send_message_to_root(int socketfd, int messageID, const v
     pthread_mutex_unlock(&roots_mutex);
 }
 
-void pony_send_remote_actor_to_root(int socketfd, const char * actorUUID, const char * actorType) {
+void pony_register_node_to_root(int socketfd, const char * actorRegistrationString) {
     pthread_mutex_lock(&roots_mutex);
-    send_create_actor(socketfd, actorUUID, actorType);
+    send_register_with_root(socketfd, actorRegistrationString);
     pthread_mutex_unlock(&roots_mutex);
 }
