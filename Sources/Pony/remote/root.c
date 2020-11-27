@@ -186,6 +186,9 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 char * payload = read_intcount_buffer(nodePtr->socketfd, &payload_count);
                 registerWithRootPtr(payload, nodePtr->socketfd);
                 free(payload);
+#if REMOTE_DEBUG
+                fprintf(stdout, "[%d] COMMAND_REGISTER_WITH_ROOT(root)[%s]\n", nodePtr->socketfd, uuid);
+#endif
             } break;
             case COMMAND_CREATE_ACTOR: {
                 char type[128] = {0};
@@ -344,6 +347,7 @@ int pony_remote_actor_send_message_to_node(const char * actorUUID,
                                            const void * bytes,
                                            int count) {
     
+    
     // Note: this is not optimal; we should have a mutext per socket
     pthread_mutex_lock(&nodes_mutex);
     
@@ -358,6 +362,7 @@ int pony_remote_actor_send_message_to_node(const char * actorUUID,
     
     if (send_message(nodeSocketFD, messageID, actorUUID, behaviorType, bytes, count) < 0) {
         // we lost connection with this remote actor
+        pthread_mutex_unlock(&nodes_mutex);
         return -1;
     }
     
@@ -367,10 +372,14 @@ int pony_remote_actor_send_message_to_node(const char * actorUUID,
 }
 
 void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD) {
+    pthread_mutex_lock(&nodes_mutex);
+    
     if (*nodeSocketFD >= 0) {
         node_t * ptr = find_node_by_socket(*nodeSocketFD);
         if (ptr != NULL) {
             send_destroy_actor(ptr->socketfd, actorUUID);
         }
     }
+    
+    pthread_mutex_unlock(&nodes_mutex);
 }

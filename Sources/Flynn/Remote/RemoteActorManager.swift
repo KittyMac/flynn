@@ -39,9 +39,7 @@ internal final class RemoteActorManager: Actor {
     static var shared: RemoteActorManager { return _shared }
     private override init() {
         super.init()
-        
-        print("*******************************************************")
-                
+                        
         // To preserve causal messaging, we need to ensure that the behaviors for
         // a specific actor are always run on the same runner in the pool.
         if runnerPool.count == 0 {
@@ -201,7 +199,7 @@ internal final class RemoteActorManager: Actor {
             self.localRunnerMessageId += 1
             
             if let replySender = replySender, let replyCallback = replyCallback {
-                self._beRegisterReply(self.unsafeUUID, self.localRunnerMessageId, replySender, replyCallback)
+                self._beRegisterReply(self.localRunnerMessageId, replySender, replyCallback)
             }
             
             RemoteActorManager.shared.beHandleMessage(actorUUID,
@@ -219,31 +217,31 @@ internal final class RemoteActorManager: Actor {
         
         
         if let actorType = actorTypes[actorTypeString] {
-            _ = jsonData.withUnsafeBytes {
-                
-                // if inNodeSocketFD is kUnregistedSocketFD, then we are not attached to a node yet.
-                // round robin choose the next node which supports this actor type
-                if nodeSocketFD == kUnregistedSocketFD {
-                    var allSockets:[Int32] = []
-                    for socket in actorTypesBySocket.keys {
-                        if let types = actorTypesBySocket[socket] {
-                            for type in types {
-                                if type == actorType {
-                                    allSockets.append(socket)
-                                    break
-                                }
+
+            // if inNodeSocketFD is kUnregistedSocketFD, then we are not attached to a node yet.
+            // round robin choose the next node which supports this actor type
+            if nodeSocketFD == kUnregistedSocketFD {
+                var allSockets:[Int32] = []
+                for socket in actorTypesBySocket.keys {
+                    if let types = actorTypesBySocket[socket] {
+                        for type in types {
+                            if type == actorType {
+                                allSockets.append(socket)
+                                break
                             }
                         }
                     }
-                    if allSockets.count > 0 {
-                        remoteNodeRoundRobinIndex += 1
-                        nodeSocketFD = allSockets[remoteNodeRoundRobinIndex % allSockets.count]
-                    }
                 }
-                
-                if nodeSocketFD == -1 {
-                    nodeSocketFD = fallbackRunRemoteActorLocally()
-                } else {
+                if allSockets.count > 0 {
+                    remoteNodeRoundRobinIndex += 1
+                    nodeSocketFD = allSockets[remoteNodeRoundRobinIndex % allSockets.count]
+                }
+            }
+            
+            if nodeSocketFD == -1 {
+                nodeSocketFD = fallbackRunRemoteActorLocally()
+            } else {
+                _ = jsonData.withUnsafeBytes {
                     let messageID = pony_remote_actor_send_message_to_node(actorUUID,
                                                                            actorTypeString,
                                                                            behaviorType,
@@ -257,7 +255,7 @@ internal final class RemoteActorManager: Actor {
                         nodeSocketFD = -1
                     } else {
                         if let replySender = replySender, let replyCallback = replyCallback {
-                            _beRegisterReply(unsafeUUID, messageID, replySender, replyCallback)
+                            _beRegisterReply(messageID, replySender, replyCallback)
                         }
                     }
                 }
@@ -293,8 +291,7 @@ internal final class RemoteActorManager: Actor {
 
     private var waitingReplies: [Int32: MessageReply] = [:]
 
-    private func _beRegisterReply(_ remoteActorUUID: String,
-                                  _ messageID: Int32,
+    private func _beRegisterReply(_ messageID: Int32,
                                   _ actor: Actor,
                                   _ block: @escaping RemoteBehaviorReply) {
         waitingReplies[messageID] = MessageReply(actor, block)
@@ -304,6 +301,8 @@ internal final class RemoteActorManager: Actor {
                                        _ data: Data) {
         if let message = waitingReplies.removeValue(forKey: messageID) {
             message.run(data)
+        } else {
+            fatalError("Remote message received for message id \(messageID) which does not exist")
         }
     }
 }
@@ -394,11 +393,10 @@ extension RemoteActorManager {
         return self
     }
     @discardableResult
-    public func beRegisterReply(_ remoteActorUUID: String,
-                                _ messageID: Int32,
+    public func beRegisterReply(_ messageID: Int32,
                                 _ actor: Actor,
                                 _ block: @escaping RemoteBehaviorReply) -> Self {
-        unsafeSend { self._beRegisterReply(remoteActorUUID, messageID, actor, block) }
+        unsafeSend { self._beRegisterReply(messageID, actor, block) }
         return self
     }
     @discardableResult

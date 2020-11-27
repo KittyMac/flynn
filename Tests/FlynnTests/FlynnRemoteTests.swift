@@ -80,6 +80,29 @@ class FlynnRemoteTests: XCTestCase {
         Flynn.shutdown()
     }
 
+    func testVerySimpleRemote() {
+        let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
+
+        let port = Int32.random(in: 8000..<65500)
+        Flynn.Root.listen("127.0.0.1", port, [])
+
+        Flynn.Node.connect("127.0.0.1", port, [Echo.self], false)
+
+        while Flynn.remoteCores == 0 {
+            usleep(500)
+        }
+
+        Echo().beToLower("HELLO WORLD", Flynn.any) { (result) in
+            if "hello world [1]" == result {
+                expectation.fulfill()
+            }
+        }
+
+        wait(for: [expectation], timeout: 0.25)
+
+        Flynn.shutdown()
+    }
+
     func testSimpleRemote() {
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
 
