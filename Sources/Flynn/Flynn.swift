@@ -26,9 +26,12 @@ open class Flynn {
     private static var registeredActorsCheckRunning = false
 
     public static let any = Actor()
+    
+    static var remotes = RemoteActorManager()
 
     public class func startup() {
         running.checkInactive {
+                        
             timeStart = ProcessInfo.processInfo.systemUptime
 
             timerLoop = TimerLoop()
@@ -38,8 +41,9 @@ open class Flynn {
     }
 
     public class func shutdown() {
+        remotes = RemoteActorManager()
+        
         running.checkActive {
-
             pony_shutdown()
 
             timerLoop?.join()
@@ -47,8 +51,6 @@ open class Flynn {
 
             // wait until the registered actors thread ends
             clearRegisteredTimers()
-            
-            RemoteActorManager.shared.unsafeDestroy()
         }
     }
 

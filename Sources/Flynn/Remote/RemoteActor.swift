@@ -42,7 +42,7 @@ open class InternalRemoteActor {
         unsafeUUID = uuid
         isNamedService = true
         unsafeIsProxy = false
-        safeActor = RemoteActorManager.shared.unsafeGetRunnerForActor(unsafeUUID)
+        safeActor = Flynn.remotes.unsafeGetRunnerForActor(unsafeUUID)
         safeInit()
     }
 
@@ -52,7 +52,7 @@ open class InternalRemoteActor {
         isNamedService = true
         unsafeIsProxy = shouldBeProxy
         if !shouldBeProxy {
-            safeActor = RemoteActorManager.shared.unsafeGetRunnerForActor(unsafeUUID)
+            safeActor = Flynn.remotes.unsafeGetRunnerForActor(unsafeUUID)
             safeInit()
         } else {
             safeActor = Flynn.any
@@ -84,7 +84,7 @@ open class InternalRemoteActor {
         if let behavior = remoteBehaviors[name] {
             if let data = behavior(payload) {
                 if replySocketFD == kLocalSocketFD {
-                    RemoteActorManager.shared.beHandleMessageReply(messageID,
+                    Flynn.remotes.beHandleMessageReply(messageID,
                                                                    data)
                 } else {
                     data.withUnsafeBytes {
@@ -102,7 +102,7 @@ open class InternalRemoteActor {
         if let behavior = delayedRemoteBehaviors[name] {
             behavior(payload) {
                 if replySocketFD == kLocalSocketFD {
-                    RemoteActorManager.shared.beHandleMessageReply(messageID, $0)
+                    Flynn.remotes.beHandleMessageReply(messageID, $0)
                 } else {
                     $0.withUnsafeBytes {
                         pony_remote_actor_send_message_to_root(replySocketFD,
@@ -120,14 +120,14 @@ open class InternalRemoteActor {
                                    _ jsonData: Data,
                                    _ sender: Actor?,
                                    _ callback: RemoteBehaviorReply?) {        
-        RemoteActorManager.shared.beSendToRemote(unsafeUUID,
-                                                 actorType,
-                                                 behaviorType,
-                                                 nodeSocketFD,
-                                                 jsonData,
-                                                 sender,
-                                                 callback,
-                                                 safeActor)
+        Flynn.remotes.beSendToRemote(unsafeUUID,
+                                     actorType,
+                                     behaviorType,
+                                     nodeSocketFD,
+                                     jsonData,
+                                     sender,
+                                     callback,
+                                     safeActor)
         {
             self.nodeSocketFD = $0
         }

@@ -35,9 +35,7 @@ let kUnregistedSocketFD: Int32 = -1
 let kLocalSocketFD: Int32 = -99
 
 internal final class RemoteActorManager: Actor {
-    private static var _shared = RemoteActorManager()
-    static var shared: RemoteActorManager { return _shared }
-    private override init() {
+    override init() {
         super.init()
                         
         // To preserve causal messaging, we need to ensure that the behaviors for
@@ -49,20 +47,6 @@ internal final class RemoteActorManager: Actor {
         }
     }
     
-    private var destroyed = false
-    func unsafeDestroy() {
-        // Called internally by Flynn.shutdown()...
-        destroyed = true
-    }
-    
-    func unsafeCheckValidity() {
-        // Called internally by Flynn.Root and Flynn.Node
-        if destroyed {
-            destroyed = false
-            RemoteActorManager._shared = RemoteActorManager()
-        }
-    }
-
     // MARK: - RemoteActorManager: Node
     
     private var actorTypesBySocket: [Int32: [RemoteActor.Type]] = [:]
@@ -202,11 +186,11 @@ internal final class RemoteActorManager: Actor {
                 self._beRegisterReply(self.localRunnerMessageId, replySender, replyCallback)
             }
             
-            RemoteActorManager.shared.beHandleMessage(actorUUID,
-                                                      behaviorType,
-                                                      jsonData,
-                                                      self.localRunnerMessageId,
-                                                      kLocalSocketFD)
+            Flynn.remotes.beHandleMessage(actorUUID,
+                                          behaviorType,
+                                          jsonData,
+                                          self.localRunnerMessageId,
+                                          kLocalSocketFD)
             
             return nodeSocketFD
         }

@@ -7,7 +7,7 @@ private func nodeRegisterWithRoot(_ registrationString: UnsafePointer<Int8>?,
                                   _ socketFD: Int32) {
     guard let registrationString = registrationString else { return }
 
-    RemoteActorManager.shared.beRegisterRemoteNode(String(cString: registrationString),
+    Flynn.remotes.beRegisterRemoteNode(String(cString: registrationString),
                                                    socketFD)
 
 }
@@ -19,7 +19,7 @@ private func nodeCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?,
     guard let actorUUIDPtr = actorUUIDPtr else { return }
     guard let actorTypePtr = actorTypePtr else { return }
 
-    RemoteActorManager.shared.beCreateActor(String(cString: actorUUIDPtr),
+    Flynn.remotes.beCreateActor(String(cString: actorUUIDPtr),
                                             String(cString: actorTypePtr),
                                             shouldBeProxy,
                                             socketFD)
@@ -29,7 +29,7 @@ private func nodeCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?,
 private func nodeDestroyActor(_ actorUUIDPtr: UnsafePointer<Int8>?) {
     guard let actorUUIDPtr = actorUUIDPtr else { return }
 
-    RemoteActorManager.shared.beDestroyActor(String(cString: actorUUIDPtr))
+    Flynn.remotes.beDestroyActor(String(cString: actorUUIDPtr))
 }
 
 private func nodeHandleMessage(_ actorUUIDPtr: UnsafePointer<Int8>?,
@@ -42,7 +42,7 @@ private func nodeHandleMessage(_ actorUUIDPtr: UnsafePointer<Int8>?,
     guard let behaviorPtr = behaviorPtr else { return }
     guard let payload = payload else { return }
 
-    RemoteActorManager.shared.beHandleMessage(String(cString: actorUUIDPtr),
+    Flynn.remotes.beHandleMessage(String(cString: actorUUIDPtr),
                                               String(cString: behaviorPtr),
                                               Data(bytesNoCopy: payload, count: Int(payloadSize), deallocator: .free),
                                               messageID,
@@ -55,7 +55,7 @@ private func nodeRegisterActorsOnRoot(_ replySocketFD: Int32) {
     // ask the root to create any actors we currently have in existance on our
     // RemoteActorManager (so the root knows that a remote service exists
     // on this remote, for example).
-    RemoteActorManager.shared.unsafeRegisterNodeWithRoot(replySocketFD)
+    Flynn.remotes.unsafeRegisterNodeWithRoot(replySocketFD)
 
 }
 
@@ -63,12 +63,12 @@ private func rootHandleMessageReply(_ messageID: Int32,
                                     _ payload: AnyPtr,
                                     _ payloadSize: Int32) {
     if let payload = payload {
-        RemoteActorManager.shared.beHandleMessageReply(messageID,
+        Flynn.remotes.beHandleMessageReply(messageID,
                                                        Data(bytesNoCopy: payload,
                                                             count: Int(payloadSize),
                                                             deallocator: .free))
     } else {
-        RemoteActorManager.shared.beHandleMessageReply(messageID, Data())
+        Flynn.remotes.beHandleMessageReply(messageID, Data())
     }
 }
 
@@ -78,10 +78,8 @@ extension Flynn {
                                   _ port: Int32,
                                   _ actorTypes: [RemoteActor.Type]) {
             Flynn.startup()
-            
-            RemoteActorManager.shared.unsafeCheckValidity()
-            
-            RemoteActorManager.shared.beRegisterActorTypes(actorTypes, Flynn.any) { (_) in
+                        
+            Flynn.remotes.beRegisterActorTypes(actorTypes, Flynn.any) { (_) in
                 pony_root(address,
                           port,
                           nodeRegisterWithRoot,
@@ -93,7 +91,7 @@ extension Flynn {
         public static func remoteActorByUUID(_ actorUUID: String,
                                              _ sender: Actor,
                                              _ callback: @escaping (RemoteActor?) -> Void) {
-            RemoteActorManager.shared.beGetActor(actorUUID, sender, callback)
+            Flynn.remotes.beGetActor(actorUUID, sender, callback)
         }
     }
 
@@ -104,9 +102,7 @@ extension Flynn {
                                    _ automaticReconnect: Bool = true) {
             Flynn.startup()
             
-            RemoteActorManager.shared.unsafeCheckValidity()
-
-            RemoteActorManager.shared.beRegisterActorTypes(actorTypes, Flynn.any) { (_) in
+            Flynn.remotes.beRegisterActorTypes(actorTypes, Flynn.any) { (_) in
                 pony_node(address,
                           port,
                           automaticReconnect,
@@ -119,7 +115,7 @@ extension Flynn {
 
         public static func registerActorsWithRoot(_ actors: [RemoteActor]) {
             for actor in actors {
-                RemoteActorManager.shared.beRegisterActor(actor)
+                Flynn.remotes.beRegisterActor(actor)
             }
         }
     }
