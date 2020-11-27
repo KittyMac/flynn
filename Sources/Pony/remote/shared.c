@@ -203,11 +203,11 @@ void send_register_with_root(int socketfd, const char * registrationString) {
     
     uint32_t net_count = htonl(count);
     if (sendall(socketfd, &net_count, sizeof(net_count)) < 0) {
-        return -1;
+        return;
     }
     
     if (sendall(socketfd, (char *)registrationString, count) < 0) {
-        return -1;
+        return;
     }
         
 #if REMOTE_DEBUG
