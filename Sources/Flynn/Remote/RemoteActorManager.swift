@@ -169,8 +169,6 @@ internal final class RemoteActorManager: Actor {
     private func _beCreateActorOnRoot(_ actorUUID: String,
                                       _ actorType: String,
                                       _ socketFD: Int32) {
-        guard rootActors[actorUUID] == nil else { return }
-        
         if let actorType = namedActorTypes[actorType] {
             let actor = actorType.init(actorUUID, socketFD, true)
             actor.unsafeRegisterAllBehaviors()
@@ -231,7 +229,6 @@ internal final class RemoteActorManager: Actor {
             return fallbackRunRemoteActorLocally()
         }
         
-        
         let finishSendingToRemoteActor: (() -> Void) = {
             _ = jsonData.withUnsafeBytes {
                 let messageID = pony_remote_actor_send_message_to_node(actorUUID,
@@ -244,7 +241,7 @@ internal final class RemoteActorManager: Actor {
                 if messageID < 0 {
                     // we're no longer connected to this socket
                     self.didDisconnectFromSocket(nodeSocketFD)
-                    nodeSocketFD = -1
+                    nodeSocketFD = kUnregistedSocketFD
                 } else {
                     if let replySender = replySender, let replyCallback = replyCallback {
                         self._beRegisterReply(messageID, replySender, replyCallback)
@@ -276,14 +273,14 @@ internal final class RemoteActorManager: Actor {
                 }
             }
             
-            if nodeSocketFD == -1 {
+            if nodeSocketFD == kUnregistedSocketFD {
                 nodeSocketFD = fallbackRunRemoteActorLocally()
             } else {
                 finishSendingToRemoteActor()
                 
                 // we tried to send to a disconnected node; try again to
                 // either get an active node or a local fallback.
-                if nodeSocketFD == -1 {
+                if nodeSocketFD == kUnregistedSocketFD {
                     return _beSendToRemote(actorUUID,
                                            actorTypeString,
                                            behaviorType,
@@ -294,9 +291,13 @@ internal final class RemoteActorManager: Actor {
                 }
             }
         } else if let _ = namedActorTypes[actorTypeString] {
-            finishSendingToRemoteActor()
+            if nodeSocketFD != kUnregistedSocketFD {
+                finishSendingToRemoteActor()
+            } else {
+                print("attempting to send behavior to disconnected named remote actor \(actorTypeString)")
+            }
         } else {
-            if nodeSocketFD == -1 {
+            if nodeSocketFD == kUnregistedSocketFD {
                 nodeSocketFD = fallbackRunRemoteActorLocally()
             }
         }
