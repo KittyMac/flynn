@@ -199,7 +199,7 @@ void send_register_with_root(int socketfd, const char * registrationString) {
     buffer[idx++] = COMMAND_REGISTER_WITH_ROOT;
     sendall(socketfd, buffer, idx);
     
-    uint32_t count = strnlen(registrationString, 4090);
+    uint32_t count = strnlen(registrationString, 4090) + 1;
     
     uint32_t net_count = htonl(count);
     if (sendall(socketfd, &net_count, sizeof(net_count)) < 0) {
