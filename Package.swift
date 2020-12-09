@@ -13,7 +13,10 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Pony"
+            name: "Pony",
+            linkerSettings: [
+                .linkedLibrary("atomic", .when(platforms: [.linux]))
+            ]
         ),
         .target(
             name: "Flynn",
