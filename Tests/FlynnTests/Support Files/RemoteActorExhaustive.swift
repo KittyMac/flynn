@@ -27,6 +27,9 @@ class RemoteActorExhaustive: RemoteActor {
     private func _beOneArgDelayedReturn(_ string: String, _ returnCallback: (String) -> Void) { returnCallback(string) }
     private func _beNoArgsDelayedReturnNoArgs(_ returnCallback: () -> Void) { returnCallback() }
 
+    private func _beOneArgTwoDelayedReturn(_ arg0: Int,
+                                           _ returnCallback: (Int, String?) -> Void) { returnCallback(arg0, nil) }
+
     private func _beArrayReturn(_ returnCallback: ([String]) -> Void) { returnCallback(["hello", "world"]) }
 }
 
@@ -66,16 +69,23 @@ extension RemoteActorExhaustive {
         let arg0: Int
     }
     struct BeNoArgsDelayedReturnCodableResponse: Codable {
-        let response: String
+        let response0: String
     }
     struct BeOneArgDelayedReturnCodableResponse: Codable {
-        let response: String
+        let response0: String
     }
     struct BeOneArgDelayedReturnCodableRequest: Codable {
         let arg0: String
     }
+    struct BeOneArgTwoDelayedReturnCodableResponse: Codable {
+        let response0: Int
+        let response1: String?
+    }
+    struct BeOneArgTwoDelayedReturnCodableRequest: Codable {
+        let arg0: Int
+    }
     struct BeArrayReturnCodableResponse: Codable {
-        let response: [String]
+        let response0: [String]
     }
 
     @discardableResult
@@ -166,9 +176,10 @@ extension RemoteActorExhaustive {
     @discardableResult
     public func beNoArgsDelayedReturn(_ sender: Actor, _ callback: @escaping (String) -> Void) -> Self {
         unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsDelayedReturn", Data(), sender) {
+            // swiftlint:disable:next force_try
+            let response = (try! JSONDecoder().decode(BeNoArgsDelayedReturnCodableResponse.self, from: $0))
             callback(
-                // swiftlint:disable:next force_try
-                (try! JSONDecoder().decode(BeNoArgsDelayedReturnCodableResponse.self, from: $0)).response
+                response.response0
             )
         }
         return self
@@ -183,7 +194,7 @@ extension RemoteActorExhaustive {
         unsafeSendToRemote("RemoteActorExhaustive", "beOneArgDelayedReturn", data, sender) {
             callback(
                 // swiftlint:disable:next force_try
-                (try! JSONDecoder().decode(BeOneArgDelayedReturnCodableResponse.self, from: $0).response)
+                (try! JSONDecoder().decode(BeOneArgDelayedReturnCodableResponse.self, from: $0).response0)
             )
         }
         return self
@@ -194,11 +205,27 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beArrayReturn(_ sender: Actor, _ callback: @escaping ([String]) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beArrayReturn", Data(), sender) {
+    public func beOneArgTwoDelayedReturn(_ arg0: Int,
+                                         _ sender: Actor,
+                                         _ callback: @escaping (Int) -> Void ) -> Self {
+        let msg = BeOneArgTwoDelayedReturnCodableRequest(arg0: arg0)
+        // swiftlint:disable:next force_try
+        let data = try! JSONEncoder().encode(msg)
+        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgTwoDelayedReturn", data, sender) {
             callback(
                 // swiftlint:disable:next force_try
-                (try! JSONDecoder().decode(BeArrayReturnCodableResponse.self, from: $0)).response
+                (try! JSONDecoder().decode(BeOneArgTwoDelayedReturnCodableResponse.self, from: $0).response0)
+            )
+        }
+        return self
+    }
+    @discardableResult
+    public func beArrayReturn(_ sender: Actor, _ callback: @escaping ([String]) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beArrayReturn", Data(), sender) {
+            // swiftlint:disable:next force_try
+            let response = (try! JSONDecoder().decode(BeArrayReturnCodableResponse.self, from: $0))
+            callback(
+                response.response0
             )
         }
         return self
@@ -258,22 +285,28 @@ extension RemoteActorExhaustive {
             return try! JSONEncoder().encode(boxedResponse)
         }
         safeRegisterDelayedRemoteBehavior("beNoArgsDelayedReturn") { [unowned self] (_, callback) in
-            self._beNoArgsDelayedReturn { (returnValue: String) in
+            self._beNoArgsDelayedReturn {
                 callback(
                     // swiftlint:disable:next force_try
                     try! JSONEncoder().encode(
-                        BeNoArgsDelayedReturnCodableResponse(response: returnValue))
+                        BeNoArgsDelayedReturnCodableResponse(
+                            response0: $0
+                        )
+                    )
                 )
             }
         }
         safeRegisterDelayedRemoteBehavior("beOneArgDelayedReturn") { [unowned self] (data, callback) in
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeOneArgDelayedReturnCodableRequest.self, from: data)
-            self._beOneArgDelayedReturn(msg.arg0) { (returnValue: String) in
+            self._beOneArgDelayedReturn(msg.arg0) {
                 callback(
                     // swiftlint:disable:next force_try
                     try! JSONEncoder().encode(
-                        BeOneArgDelayedReturnCodableResponse(response: returnValue))
+                        BeOneArgDelayedReturnCodableResponse(
+                            response0: $0
+                        )
+                    )
                 )
             }
         }
@@ -282,12 +315,30 @@ extension RemoteActorExhaustive {
                 callback(Data())
             }
         }
-        safeRegisterDelayedRemoteBehavior("beArrayReturn") { [unowned self] (_, callback) in
-            self._beArrayReturn { (returnValue: [String]) in
+        safeRegisterDelayedRemoteBehavior("beOneArgTwoDelayedReturn") { [unowned self] (data, callback) in
+            // swiftlint:disable:next force_try
+            let msg = try! JSONDecoder().decode(BeOneArgTwoDelayedReturnCodableRequest.self, from: data)
+            self._beOneArgTwoDelayedReturn(msg.arg0) {
                 callback(
                     // swiftlint:disable:next force_try
                     try! JSONEncoder().encode(
-                        BeArrayReturnCodableResponse(response: returnValue))
+                        BeOneArgTwoDelayedReturnCodableResponse(
+                            response0: $0,
+                            response1: $1
+                        )
+                    )
+                )
+            }
+        }
+        safeRegisterDelayedRemoteBehavior("beArrayReturn") { [unowned self] (_, callback) in
+            self._beArrayReturn {
+                callback(
+                    // swiftlint:disable:next force_try
+                    try! JSONEncoder().encode(
+                        BeArrayReturnCodableResponse(
+                            response0: $0
+                        )
+                    )
                 )
             }
         }

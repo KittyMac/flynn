@@ -51,7 +51,7 @@ extension Echo {
         let arg0: String
     }
     struct BeTestDelayedReturnCodableResponse: Codable {
-        let response: String
+        let response0: String
     }
     struct BeTestDelayedReturnCodableRequest: Codable {
         let arg0: String
@@ -100,7 +100,7 @@ extension Echo {
         unsafeSendToRemote("Echo", "beTestDelayedReturn", data, sender) {
             callback(
                 // swiftlint:disable:next force_try
-                (try! JSONDecoder().decode(BeTestDelayedReturnCodableResponse.self, from: $0).response)
+                (try! JSONDecoder().decode(BeTestDelayedReturnCodableResponse.self, from: $0).response0)
             )
         }
         return self
@@ -129,11 +129,14 @@ extension Echo {
         safeRegisterDelayedRemoteBehavior("beTestDelayedReturn") { [unowned self] (data, callback) in
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeTestDelayedReturnCodableRequest.self, from: data)
-            self._beTestDelayedReturn(msg.arg0) { (returnValue: String) in
+            self._beTestDelayedReturn(msg.arg0) {
                 callback(
                     // swiftlint:disable:next force_try
                     try! JSONEncoder().encode(
-                        BeTestDelayedReturnCodableResponse(response: returnValue))
+                        BeTestDelayedReturnCodableResponse(
+                            response0: $0
+                        )
+                    )
                 )
             }
         }
