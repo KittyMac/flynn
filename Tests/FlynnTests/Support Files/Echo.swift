@@ -98,9 +98,10 @@ extension Echo {
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
         unsafeSendToRemote("Echo", "beTestDelayedReturn", data, sender) {
+            // swiftlint:disable:next force_try
+            let msg = try! JSONDecoder().decode(BeTestDelayedReturnCodableResponse.self, from: $0)
             callback(
-                // swiftlint:disable:next force_try
-                (try! JSONDecoder().decode(BeTestDelayedReturnCodableResponse.self, from: $0).response0)
+                msg.response0
             )
         }
         return self
