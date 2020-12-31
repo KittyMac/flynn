@@ -62,7 +62,6 @@ internal final class RemoteActorManager: Actor {
 
     private var runnerPool: [RemoteActorRunner] = []
     
-    private var localRunnerMessageId: Int32 = 0
     private var remoteNodeRoundRobinIndex = 0
     
     private func didDisconnectFromSocket(_ socket: Int32) {
@@ -210,16 +209,16 @@ internal final class RemoteActorManager: Actor {
                                           nodeSocketFD)
             }
             
-            self.localRunnerMessageId += 1
+            let messageId = pony_next_messageId()
             
             if let replySender = replySender, let replyCallback = replyCallback {
-                self._beRegisterReply(self.localRunnerMessageId, replySender, replyCallback)
+                self._beRegisterReply(messageId, replySender, replyCallback)
             }
             
             Flynn.remotes.beHandleMessage(actorUUID,
                                           behaviorType,
                                           jsonData,
-                                          self.localRunnerMessageId,
+                                          messageId,
                                           kLocalSocketFD)
             
             return nodeSocketFD
