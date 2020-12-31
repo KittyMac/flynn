@@ -32,6 +32,8 @@ void pony_node(const char * address,
 int pony_remote_nodes_count();
 int pony_remote_core_count();
 
+int pony_next_messageId();
+
 int pony_remote_actor_send_message_to_node(const char * actorUUID,
                                            const char * actorType,
                                            const char * behaviorType,

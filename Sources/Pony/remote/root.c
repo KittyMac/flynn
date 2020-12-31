@@ -50,6 +50,7 @@ static node_t nodes[kMaxNodes+1] = {0};
 
 static bool inited = false;
 static pthread_mutex_t nodes_mutex;
+static pthread_mutex_t messageId_mutex;
 
 static pony_thread_id_t root_tid;
 static char root_ip_address[128] = {0};
@@ -310,6 +311,7 @@ void pony_root(const char * address,
     if (!inited) {
         inited = true;
         pthread_mutex_init(&nodes_mutex, NULL);
+        pthread_mutex_init(&messageId_mutex, NULL);
         init_all_nodes();
     }
     
@@ -337,7 +339,16 @@ void root_shutdown() {
 
 // MARK: - MESSAGES
 
-static uint32_t messageID = 1;
+int pony_next_messageId() {
+    static uint32_t messageID = 1;
+    pthread_mutex_lock(&messageId_mutex);
+    messageID += 1;
+    if (messageID < 0) {
+        messageID = 1;
+    }
+    pthread_mutex_unlock(&messageId_mutex);
+    return messageID;
+}
 
 int pony_remote_actor_send_message_to_node(const char * actorUUID,
                                            const char * actorType,
@@ -355,12 +366,9 @@ int pony_remote_actor_send_message_to_node(const char * actorUUID,
         send_create_actor(nodeSocketFD, actorUUID, actorType);
     }
     
-    messageID += 1;
-    if (messageID < 0) {
-        messageID = 1;
-    }
+    uint32_t messageId = pony_next_messageId();
     
-    if (send_message(nodeSocketFD, messageID, actorUUID, behaviorType, bytes, count) < 0) {
+    if (send_message(nodeSocketFD, messageId, actorUUID, behaviorType, bytes, count) < 0) {
         // we lost connection with this remote actor
         pthread_mutex_unlock(&nodes_mutex);
         return -1;
@@ -368,7 +376,7 @@ int pony_remote_actor_send_message_to_node(const char * actorUUID,
     
     pthread_mutex_unlock(&nodes_mutex);
     
-    return messageID;
+    return messageId;
 }
 
 void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD) {
