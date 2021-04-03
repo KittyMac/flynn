@@ -223,8 +223,8 @@ enum MessageTestFlynn {
             if go {
                 count += 1
                 neighbor?.bePing(42)
-                //neighborIdx = (neighborIdx &+ 1) % neighbors.count
-                //neighbors[neighborIdx].bePing(42)
+                // neighborIdx = (neighborIdx &+ 1) % neighbors.count
+                // neighbors[neighborIdx].bePing(42)
             } else {
                 if report == true {
                     fatalError("Late message, what???")

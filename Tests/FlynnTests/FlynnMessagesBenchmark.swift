@@ -60,7 +60,7 @@ class FlynnMessagesBenchmark: XCTestCase {
         }
         syncLeader.beTimerFired(true)
 
-        //Flynn.Timer(timeInterval: reportInterval, repeats: true, syncLeader.beTimerFired, [])
+        // Flynn.Timer(timeInterval: reportInterval, repeats: true, syncLeader.beTimerFired, [])
 
         Flynn.shutdown()
     }

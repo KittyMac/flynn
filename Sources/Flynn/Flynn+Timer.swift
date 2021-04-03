@@ -146,12 +146,21 @@ public extension Flynn {
             waitingForWorkSemaphore.signal()
         }
 
+        #if os(Linux)
+        func run() {
+            while running {
+                let timeout = Flynn.checkRegisteredTimers()
+                _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
+            }
+        }
+        #else
         @objc func run() {
             while running {
                 let timeout = Flynn.checkRegisteredTimers()
                 _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
             }
         }
+        #endif
 
         public func join() {
             running = false
