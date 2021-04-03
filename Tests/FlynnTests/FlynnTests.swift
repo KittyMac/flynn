@@ -104,7 +104,7 @@ class FlynnTests: XCTestCase {
             .beColor()
             .beAlpha()
             .bePath("bundle://image.png")
-        //print(color.safeColorable._color)
+        // print(color.safeColorable._color)
         expectation.fulfill()
     }
 
@@ -207,8 +207,8 @@ class FlynnTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Memory overhead in calling behaviors")
 
         let pipeline = Passthrough() |> Array(count: Flynn.cores) { Passthrough() } |> Passthrough() |> Callback({ (args: FlowableArgs) in
-            //let s:String = args[x:0]
-            //XCTAssertEqual(s.count, 22250000, "load balancing did not contain the expected number of characters")
+            // let s:String = args[x:0]
+            // XCTAssertEqual(s.count, 22250000, "load balancing did not contain the expected number of characters")
             if args.isEmpty {
                 expectation.fulfill()
             }
