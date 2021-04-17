@@ -55,6 +55,8 @@ bool ponyint_sched_start(void);
 
 void ponyint_sched_stop(void);
 
+void ponyint_sched_wait();
+
 void ponyint_sched_add(pony_ctx_t* ctx, pony_actor_t* actor);
 
 uint32_t ponyint_sched_cores(void);

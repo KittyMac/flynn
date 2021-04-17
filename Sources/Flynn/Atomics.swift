@@ -23,8 +23,8 @@ class AtomicContidion {
         if _value == true {
             lock.lock()
             if _value == true {
-                _value = false
                 block()
+                _value = false
             }
             lock.unlock()
         }

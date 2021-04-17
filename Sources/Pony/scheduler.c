@@ -432,6 +432,32 @@ bool ponyint_sched_start()
     return true;
 }
 
+void ponyint_sched_wait()
+{
+    // block current thread until there are no more actors running
+    int32_t times = 99;
+    
+    while(true) {
+        uint32_t active = 0;
+        
+        for(uint32_t i = 0; i < scheduler_count; i++) {
+            if (scheduler[i].idle == false) {
+                active += 1;
+            }
+        }
+        
+        if (active == 0) {
+            times--;
+            if (times <= 0) {
+                fprintf(stderr, "pony shutting down\n");
+                break;
+            }
+        }
+        
+        ponyint_cpu_sleep(5000);
+    }
+}
+
 void ponyint_sched_stop()
 {
     ponyint_sched_shutdown();
