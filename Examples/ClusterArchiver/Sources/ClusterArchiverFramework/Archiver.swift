@@ -4,25 +4,76 @@ import Flynn
 import Foundation
 
 private class FileArchiver: Actor {
-    private func _beArchive(file: URL, _ returnCallback: @escaping (Bool) -> Void) {
-        guard let data = try? Data(contentsOf: file) else { return returnCallback(false) }
+    private var fileHandle: FileHandle?
+    private var fileURL: URL
+    private let bufferSize = 16384 * 8
+    private var remoteCompressor: RemoteCompressor?
+    private var remoteDecompressor: RemoteDecompressor?
+    private var nextChunk = Data()
 
-        let support = Support()
-        support.beArchive(data, self) { (result) in
-            if result.isLzipped {
-                let outFile = file.appendingPathExtension("lz")
-                if let _ = try? result.write(to: outFile) {
-                    try? FileManager.default.removeItem(at: file)
+    init(file: URL) {
+        fileURL = file
+
+        super.init()
+
+        fileHandle = try? FileHandle(forReadingFrom: file)
+    }
+
+    private func _beArchive(_ returnCallback: @escaping (Bool) -> Void) {
+        guard let fileHandle = fileHandle else { return returnCallback(false) }
+
+        // Read the first bit from the file to know if it is compressed lzip or not
+        nextChunk = fileHandle.readData(ofLength: bufferSize)
+        guard nextChunk.count > 0 else { return returnCallback(false) }
+
+        if nextChunk.isLzipped {
+            remoteDecompressor = RemoteDecompressor()
+        } else {
+            remoteCompressor = RemoteCompressor()
+        }
+
+        processNextChunk(returnCallback)
+    }
+
+    private func processNextChunk(_ returnCallback: @escaping (Bool) -> Void) {
+        guard let fileHandle = fileHandle else { return returnCallback(false) }
+
+        if nextChunk.count == 0 {
+
+            if let remoteDecompressor = remoteDecompressor {
+                remoteDecompressor.beFinish(self) { (data) in
+                    let outFile = self.fileURL.deletingPathExtension()
+                    if let _ = try? data.write(to: outFile) {
+                        try? FileManager.default.removeItem(at: self.fileURL)
+                    }
+                    self.remoteDecompressor = nil
                 }
-            } else {
-                let outFile = file.deletingPathExtension()
-                if let _ = try? result.write(to: outFile) {
-                    try? FileManager.default.removeItem(at: file)
+            } else if let remoteCompressor = remoteCompressor {
+                remoteCompressor.beFinish(self) { (data) in
+                    let outFile = self.fileURL.appendingPathExtension("lz")
+                    if let _ = try? data.write(to: outFile) {
+                        try? FileManager.default.removeItem(at: self.fileURL)
+                    }
+                    self.remoteCompressor = nil
                 }
             }
 
             return returnCallback(true)
         }
+
+        if let remoteDecompressor = remoteDecompressor {
+            remoteDecompressor.beArchive(nextChunk, self) { (result) in
+                guard result == true else { return returnCallback(false) }
+                self.processNextChunk(returnCallback)
+            }
+        } else if let remoteCompressor = remoteCompressor {
+            remoteCompressor.beArchive(nextChunk, self) { (result) in
+                guard result == true else { return returnCallback(false) }
+                self.processNextChunk(returnCallback)
+            }
+        }
+
+        nextChunk = fileHandle.readData(ofLength: bufferSize)
     }
 }
 
@@ -59,9 +110,6 @@ public class Archiver: Actor {
     }
 
     private func _beArchiveMore() {
-        // TODO: Rework this so that it processes files in discrete
-        // chunks to keep memory usage at a minimum
-
         // Ensure we have as many files being archived as we have cores to process on
         while active < (Flynn.remoteCores + Flynn.cores) {
             // 0. pop the next file url from files
@@ -72,8 +120,8 @@ public class Archiver: Actor {
                 maxActive = active
             }
 
-            let fileArchiver = FileArchiver()
-            fileArchiver.beArchive(file: file, self) { (_) in
+            let fileArchiver = FileArchiver(file: file)
+            fileArchiver.beArchive(self) { (_) in
                 self.active -= 1
                 self.completed += 1
 
@@ -89,11 +137,10 @@ public class Archiver: Actor {
 extension FileArchiver {
 
     @discardableResult
-    public func beArchive(file: URL,
-                          _ sender: Actor,
+    public func beArchive(_ sender: Actor,
                           _ callback: @escaping ((Bool) -> Void)) -> Self {
         unsafeSend {
-            self._beArchive(file: file) { arg0 in
+            self._beArchive { arg0 in
                 sender.unsafeSend {
                     callback(arg0)
                 }
