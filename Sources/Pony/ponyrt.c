@@ -36,6 +36,8 @@ bool pony_startup() {
 void pony_shutdown() {
     if (!pony_is_inited) { return; }
     
+    ponyint_sched_wait();
+    
     ponyint_sched_stop();
     
     pony_remote_shutdown();

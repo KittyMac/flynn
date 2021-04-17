@@ -41,10 +41,10 @@ open class Flynn {
     }
 
     public class func shutdown() {
-        remotes = RemoteActorManager()
-        
         running.checkActive {
             pony_shutdown()
+            
+            remotes = RemoteActorManager()
 
             timerLoop?.join()
             timerLoop = nil
