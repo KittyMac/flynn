@@ -1,14 +1,17 @@
 import Flynn
 import Foundation
 
+private let remoteActorManifest: [RemoteActor.Type] = [RemoteCompressor.self, RemoteDecompressor.self]
+
 public enum ClusterArchiver {
+
     public static func support(address: String,
                                port: Int32) {
 
         Flynn.Node.connect(address,
                            port,
                            true,
-                           remoteActorTypes: [Support.self],
+                           remoteActorTypes: remoteActorManifest,
                            namedRemoteActors: [])
 
         while true {
@@ -24,8 +27,8 @@ public enum ClusterArchiver {
 
         Flynn.Root.listen(address,
                           port,
-                          remoteActorTypes: [Support.self],
-                          fallbackRemoteActorTypes: [Support.self],
+                          remoteActorTypes: remoteActorManifest,
+                          fallbackRemoteActorTypes: remoteActorManifest,
                           namedRemoteActorTypes: [])
 
         Archiver.init(directory: directory)
