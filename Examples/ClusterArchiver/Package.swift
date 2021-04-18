@@ -3,17 +3,23 @@
 
 import PackageDescription
 
+#if os(Linux)
+    let flynnPackage = Package.Dependency.package(url: "https://github.com/KittyMac/Flynn.git", .branch("cluster_archiver"))
+#else
+    let flynnPackage = Package.Dependency.package(name: "Flynn", path: "../../")
+#endif
+
 let package = Package(
     name: "ClusterArchiver",
     platforms: [
         .macOS(.v10_12)
     ],
     products: [
-        .executable(name: "server", targets: ["ClusterArchiver"]),
+        .executable(name: "ClusterArchiver", targets: ["ClusterArchiver"]),
         .library(name: "ClusterArchiverFramework", targets: ["ClusterArchiverFramework"])
     ],
     dependencies: [
-		.package(name: "Flynn", path: "../../"),
+        flynnPackage,
         .package(url: "https://github.com/KittyMac/LzSwift.git", .branch("vendored")),
 		.package(url: "https://github.com/apple/swift-argument-parser", .upToNextMinor(from: "0.2.0")),
     ],
