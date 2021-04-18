@@ -34,6 +34,8 @@ int pony_remote_core_count();
 
 int pony_next_messageId();
 
+bool pony_root_finished();
+
 int pony_remote_actor_send_message_to_node(const char * actorUUID,
                                            const char * actorType,
                                            const char * behaviorType,
