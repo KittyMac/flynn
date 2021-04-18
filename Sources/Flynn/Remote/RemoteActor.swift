@@ -21,7 +21,8 @@ open class InternalRemoteActor {
     
     private let isNamedService: Bool
 
-    private var nodeSocketFD: Int32 = kUnregistedSocketFD
+    var nodeSocketFD: Int32 = kUnregistedSocketFD
+    var createdNodeSocketFD: Int32 = kUnregistedSocketFD
 
     private var remoteBehaviors: [String: RemoteBehavior] = [:]
     private var delayedRemoteBehaviors: [String: DelayedRemoteBehavior] = [:]
@@ -120,16 +121,12 @@ open class InternalRemoteActor {
                                    _ jsonData: Data,
                                    _ sender: Actor?,
                                    _ callback: RemoteBehaviorReply?) {        
-        Flynn.remotes.beSendToRemote(unsafeUUID,
+        Flynn.remotes.beSendToRemote(self,
+                                     unsafeUUID,
                                      actorType,
                                      behaviorType,
-                                     nodeSocketFD,
                                      jsonData,
                                      sender,
-                                     callback,
-                                     safeActor)
-        {
-            self.nodeSocketFD = $0
-        }
+                                     callback)
     }
 }

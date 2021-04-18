@@ -25,6 +25,8 @@ extern void *objc_autoreleasePoolPush();
 extern void objc_autoreleasePoolPop(void *);
 #endif
 
+extern bool pony_root_finished();
+
 static DECLARE_THREAD_FN(run_thread);
 
 // Scheduler global data.
@@ -446,7 +448,7 @@ void ponyint_sched_wait()
             }
         }
         
-        if (active == 0) {
+        if (active == 0 && pony_root_finished()) {
             times--;
             if (times <= 0) {
                 fprintf(stderr, "pony shutting down\n");

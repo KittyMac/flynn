@@ -42,6 +42,7 @@ typedef struct node_t
     int socketfd;
     pony_thread_id_t thread_tid;
     uint32_t core_count;
+    uint32_t active_actors;
 } node_t;
 
 #define kMaxNodes 2048
@@ -129,6 +130,7 @@ static void root_remove_node(node_t * nodePtr) {
         nodePtr->thread_tid = 0;
         nodePtr->socketfd = -1;
         nodePtr->core_count = 0;
+        nodePtr->active_actors = 0;
         pthread_mutex_unlock(&nodes_mutex);
     }
 }
@@ -336,6 +338,16 @@ void root_shutdown() {
     number_of_cores = 0;
 }
 
+bool pony_root_finished() {
+    node_t * ptr = nodes;
+    uint32_t total = 0;
+    while (ptr < (nodes + kMaxNodes) && ptr->thread_tid != 0) {
+        total += ptr->active_actors;
+        ptr++;
+    }
+    return total == 0;
+}
+
 
 // MARK: - MESSAGES
 
@@ -363,6 +375,10 @@ int pony_remote_actor_send_message_to_node(const char * actorUUID,
     pthread_mutex_lock(&nodes_mutex);
     
     if (actorNeedsCreated) {
+        node_t * ptr = find_node_by_socket(nodeSocketFD);
+        if (ptr != NULL) {
+            ptr->active_actors += 1;
+        }
         send_create_actor(nodeSocketFD, actorUUID, actorType);
     }
     
@@ -385,6 +401,7 @@ void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD) {
     if (*nodeSocketFD >= 0) {
         node_t * ptr = find_node_by_socket(*nodeSocketFD);
         if (ptr != NULL) {
+            ptr->active_actors -= 1;
             send_destroy_actor(ptr->socketfd, actorUUID);
         }
     }

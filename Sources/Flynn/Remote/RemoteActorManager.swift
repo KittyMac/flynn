@@ -186,27 +186,25 @@ internal final class RemoteActorManager: Actor {
         nodeActors.removeValue(forKey: actorUUID)
     }
     
-    private func _beSendToRemote(_ actorUUID: String,
+    private func _beSendToRemote(_ internalRemoteActor: InternalRemoteActor,
+                                 _ actorUUID: String,
                                  _ actorTypeString: String,
                                  _ behaviorType: String,
-                                 _ inNodeSocketFD: Int32,
                                  _ jsonData: Data,
                                  _ replySender: Actor?,
-                                 _ replyCallback: RemoteBehaviorReply?) -> Int32 {
-        
-        var nodeSocketFD: Int32 = inNodeSocketFD
-                
-        let fallbackRunRemoteActorLocally: (() -> Int32) = {
+                                 _ replyCallback: RemoteBehaviorReply?) {
+                        
+        let fallbackRunRemoteActorLocally: (() -> Void) = {
             guard let _ = self.fallbackActorTypes[actorTypeString] else {
                 fatalError("Unregistered remote actor of type \(actorTypeString); properly include all valid types in Flynn.Root.listen()")
             }
             
-            if nodeSocketFD == kUnregistedSocketFD {
-                nodeSocketFD = kLocalSocketFD
+            if internalRemoteActor.nodeSocketFD == kUnregistedSocketFD {
+                internalRemoteActor.nodeSocketFD = kLocalSocketFD
                 
                 self._beCreateActorOnRoot(actorUUID,
                                           actorTypeString,
-                                          nodeSocketFD)
+                                          internalRemoteActor.nodeSocketFD)
             }
             
             let messageId = pony_next_messageId()
@@ -220,11 +218,9 @@ internal final class RemoteActorManager: Actor {
                                           jsonData,
                                           messageId,
                                           kLocalSocketFD)
-            
-            return nodeSocketFD
         }
         
-        if nodeSocketFD == kLocalSocketFD {
+        if internalRemoteActor.nodeSocketFD == kLocalSocketFD {
             return fallbackRunRemoteActorLocally()
         }
         
@@ -233,15 +229,17 @@ internal final class RemoteActorManager: Actor {
                 let messageID = pony_remote_actor_send_message_to_node(actorUUID,
                                                                        actorTypeString,
                                                                        behaviorType,
-                                                                       (inNodeSocketFD < 0),
-                                                                       nodeSocketFD,
+                                                                       (internalRemoteActor.nodeSocketFD != internalRemoteActor.createdNodeSocketFD),
+                                                                       internalRemoteActor.nodeSocketFD,
                                                                        $0.baseAddress,
                                                                        Int32(jsonData.count))
                 if messageID < 0 {
                     // we're no longer connected to this socket
-                    self.didDisconnectFromSocket(nodeSocketFD)
-                    nodeSocketFD = kUnregistedSocketFD
+                    self.didDisconnectFromSocket(internalRemoteActor.nodeSocketFD)
+                    internalRemoteActor.nodeSocketFD = kUnregistedSocketFD
+                    internalRemoteActor.createdNodeSocketFD = internalRemoteActor.nodeSocketFD
                 } else {
+                    internalRemoteActor.createdNodeSocketFD = internalRemoteActor.nodeSocketFD
                     if let replySender = replySender, let replyCallback = replyCallback {
                         self._beRegisterReply(messageID, replySender, replyCallback)
                     }
@@ -254,7 +252,7 @@ internal final class RemoteActorManager: Actor {
 
             // if inNodeSocketFD is kUnregistedSocketFD, then we are not attached to a node yet.
             // round robin choose the next node which supports this actor type
-            if nodeSocketFD == kUnregistedSocketFD {
+            if internalRemoteActor.nodeSocketFD == kUnregistedSocketFD {
                 var allSockets:[Int32] = []
                 for socket in actorTypesBySocket.keys {
                     if let types = actorTypesBySocket[socket] {
@@ -268,40 +266,38 @@ internal final class RemoteActorManager: Actor {
                 }
                 if allSockets.count > 0 {
                     remoteNodeRoundRobinIndex += 1
-                    nodeSocketFD = allSockets[remoteNodeRoundRobinIndex % allSockets.count]
+                    internalRemoteActor.nodeSocketFD = allSockets[remoteNodeRoundRobinIndex % allSockets.count]
                 }
             }
             
-            if nodeSocketFD == kUnregistedSocketFD {
-                nodeSocketFD = fallbackRunRemoteActorLocally()
+            if internalRemoteActor.nodeSocketFD == kUnregistedSocketFD {
+                fallbackRunRemoteActorLocally()
             } else {
                 finishSendingToRemoteActor()
                 
                 // we tried to send to a disconnected node; try again to
                 // either get an active node or a local fallback.
-                if nodeSocketFD == kUnregistedSocketFD {
-                    return _beSendToRemote(actorUUID,
+                if internalRemoteActor.nodeSocketFD == kUnregistedSocketFD {
+                    return _beSendToRemote(internalRemoteActor,
+                                           actorUUID,
                                            actorTypeString,
                                            behaviorType,
-                                           nodeSocketFD,
                                            jsonData,
                                            replySender,
                                            replyCallback)
                 }
             }
         } else if let _ = namedActorTypes[actorTypeString] {
-            if nodeSocketFD != kUnregistedSocketFD {
+            if internalRemoteActor.nodeSocketFD != kUnregistedSocketFD {
                 finishSendingToRemoteActor()
             } else {
                 print("attempting to send behavior to disconnected named remote actor \(actorTypeString)")
             }
         } else {
-            if nodeSocketFD == kUnregistedSocketFD {
-                nodeSocketFD = fallbackRunRemoteActorLocally()
+            if internalRemoteActor.nodeSocketFD == kUnregistedSocketFD {
+                fallbackRunRemoteActorLocally()
             }
         }
-        
-        return nodeSocketFD
     }
 
     private func _beHandleMessage(_ actorUUID: String,
@@ -409,18 +405,16 @@ extension RemoteActorManager {
         return self
     }
     @discardableResult
-    public func beSendToRemote(_ actorUUID: String,
+    public func beSendToRemote(_ internalRemoteActor: InternalRemoteActor,
+                               _ actorUUID: String,
                                _ actorTypeString: String,
                                _ behaviorType: String,
-                               _ inNodeSocketFD: Int32,
                                _ jsonData: Data,
                                _ replySender: Actor?,
-                               _ replyCallback: RemoteBehaviorReply?,
-                               _ sender: Actor,
-                               _ callback: @escaping ((Int32) -> Void)) -> Self {
-        unsafeSend() {
-            let result = self._beSendToRemote(actorUUID, actorTypeString, behaviorType, inNodeSocketFD, jsonData, replySender, replyCallback)
-            sender.unsafeSend { callback(result) }
+                               _ replyCallback: RemoteBehaviorReply?) -> Self {
+        unsafeSend {
+            self._beSendToRemote(internalRemoteActor, actorUUID, actorTypeString, behaviorType, jsonData, replySender, replyCallback)
+            
         }
         return self
     }
