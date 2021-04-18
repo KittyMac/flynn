@@ -14,17 +14,22 @@ final class ClusterArchiverTests: XCTestCase {
     }
     
     func testLargeArchive() throws {
-        // lzip command on corpus of 5065 files:
-        // find . -type f -exec lzip {} \;  248.63s user 20.61s system 98% cpu 4:32.57 total
-        // find . -type f -exec lzip -d {} \;  28.71s user 11.07s system 94% cpu 41.911 total
+        // lzip command on corpus of 9450 files (sequential):
+        // time find . -type f -exec lzip {} \;  370.36s user 30.42s system 97% cpu 6:49.87 total
+        // time find . -type f -exec lzip -d {} \;  47.55s user 19.89s system 93% cpu 1:11.85 total
+        
+        // lzip command parallelized on corpus of 9450 files
+        // time sh -c 'find . -type f | xargs -I{} -P 28 lzip {}'  475.42s user 39.78s system 2673% cpu 19.268 total
+        // time sh -c 'find . -type f | xargs -I{} -P 28 lzip -d {}'  46.49s user 18.56s system 950% cpu 6.846 total
+        
 
         // 28 local cores, no remotes
         // compression: 5065 files in 5065 files in 25.013348937034607s, max concurrent 28
         // decompression: 5065 files in 4.0041139125823975s, max concurrent 28
         
         // 172 remote cores
-        // compression: 9451 files in 35.789366006851196s, max concurrent 172
-        // decompression:
+        // compression: 9450 files in 31.72487998008728s, max concurrent 172
+        // decompression: 9450 files in 19.5029399394989s, max concurrent 172
         
         ClusterArchiver.archive(directory: "/Users/rjbowli/Desktop/TESTARCHIVE",
                                 address: "0.0.0.0",
