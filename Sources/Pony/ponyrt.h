@@ -15,6 +15,10 @@
 void pony_remote_shutdown();
 
 #define kMessagePointer 1
+#define kRemote_Version 2
+#define kRemote_CreateActor 3
+#define kRemote_DestroyActor 4
+#define kRemote_SendMessage 5
 
 typedef struct pony_actor_t pony_actor_t;
 
@@ -65,5 +69,33 @@ typedef struct pony_msgfunc_t
     void (*func)(void * message);
 } pony_msgfunc_t;
 
+/// Convenience message for sending remote message.
+typedef struct pony_msg_remote_version_t
+{
+    pony_msg_t msg;
+} pony_msg_remote_version_t;
+
+typedef struct pony_msg_remote_createactor_t
+{
+    pony_msg_t msg;
+    char actorUUID[128];
+    char actorType[128];
+} pony_msg_remote_createactor_t;
+
+typedef struct pony_msg_remote_destroyactor_t
+{
+    pony_msg_t msg;
+    char actorUUID[128];
+} pony_msg_remote_destroyactor_t;
+
+typedef struct pony_msg_remote_sendmessage_t
+{
+    pony_msg_t msg;
+    uint32_t messageId;
+    char actorUUID[128];
+    char behaviorType[128];
+    void * payload;
+    uint32_t length;
+} pony_msg_remote_sendmessage_t;
 
 #endif /* ponyrt_h */

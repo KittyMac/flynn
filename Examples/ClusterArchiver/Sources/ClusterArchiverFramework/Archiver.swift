@@ -20,19 +20,20 @@ private class FileArchiver: Actor {
         fileHandle = try? FileHandle(forReadingFrom: file)
     }
 
-    private func fail(_ returnCallback: @escaping (Bool) -> Void) {
-        print("failed to process \(fileURL)")
+    private func fail(_ reason: String,
+                      _ returnCallback: @escaping (Bool) -> Void) {
+        print("\(reason): \(fileURL)")
         remoteCompressor = nil
         remoteDecompressor = nil
         returnCallback(false)
     }
 
     private func _beArchive(_ returnCallback: @escaping (Bool) -> Void) {
-        guard let fileHandle = fileHandle else { return fail(returnCallback) }
+        guard let fileHandle = fileHandle else { return fail("FileHandle is null", returnCallback) }
 
         // Read the first bit from the file to know if it is compressed lzip or not
         nextChunk = fileHandle.readData(ofLength: bufferSize)
-        guard nextChunk.count > 0 else { return fail(returnCallback) }
+        guard nextChunk.count > 0 else { return fail("First chunk is empty", returnCallback) }
 
         if nextChunk.isLzipped {
             remoteDecompressor = RemoteDecompressor()
@@ -44,7 +45,7 @@ private class FileArchiver: Actor {
     }
 
     private func processNextChunk(_ returnCallback: @escaping (Bool) -> Void) {
-        guard let fileHandle = fileHandle else { return fail(returnCallback) }
+        guard let fileHandle = fileHandle else { return fail("FileHandle is null", returnCallback) }
 
         if nextChunk.count == 0 {
 
@@ -57,7 +58,7 @@ private class FileArchiver: Actor {
                         }
                         returnCallback(true)
                     } else {
-                        returnCallback(false)
+                        return self.fail("RemoteDecompressor finish empty data", returnCallback)
                     }
                 }
                 self.remoteDecompressor = nil
@@ -70,7 +71,7 @@ private class FileArchiver: Actor {
                         }
                         returnCallback(true)
                     } else {
-                        returnCallback(false)
+                        return self.fail("RemoteCompressor finish empty data", returnCallback)
                     }
                 }
                 self.remoteCompressor = nil
@@ -81,12 +82,12 @@ private class FileArchiver: Actor {
 
         if let remoteDecompressor = remoteDecompressor {
             remoteDecompressor.beArchive(nextChunk, self) { (result) in
-                guard result == true else { return self.fail(returnCallback) }
+                guard result == true else { return self.fail("RemoteDecompressor returned false", returnCallback) }
                 self.processNextChunk(returnCallback)
             }
         } else if let remoteCompressor = remoteCompressor {
             remoteCompressor.beArchive(nextChunk, self) { (result) in
-                guard result == true else { return self.fail(returnCallback) }
+                guard result == true else { return self.fail("RemoteCompressor returned false", returnCallback) }
                 self.processNextChunk(returnCallback)
             }
         }
@@ -128,6 +129,11 @@ public class Archiver: Actor {
     }
 
     private func _beArchiveMore() {
+
+        while Flynn.remoteCores <= 0 {
+            sleep(1)
+        }
+
         while active < max(Flynn.cores, Flynn.remoteCores) {
             guard let file = files.popLast() else { return checkDone() }
 
@@ -137,14 +143,9 @@ public class Archiver: Actor {
             }
 
             let fileArchiver = FileArchiver(file: file)
-            fileArchiver.beArchive(self) { (success) in
-                if success == false {
-                    // if we failed, put it back in the queue to try again
-                    self.files.append(file)
-                } else {
-                    self.active -= 1
-                    self.completed += 1
-                }
+            fileArchiver.beArchive(self) { (_) in
+                self.active -= 1
+                self.completed += 1
 
                 self.beArchiveMore()
             }
