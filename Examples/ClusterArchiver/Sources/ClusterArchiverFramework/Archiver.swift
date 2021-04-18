@@ -1,4 +1,5 @@
 // swiftlint:disable unused_optional_binding
+// swiftlint:disable cyclomatic_complexity
 
 import Flynn
 import Foundation
@@ -19,12 +20,19 @@ private class FileArchiver: Actor {
         fileHandle = try? FileHandle(forReadingFrom: file)
     }
 
+    private func fail(_ returnCallback: @escaping (Bool) -> Void) {
+        print("failed to process \(fileURL)")
+        remoteCompressor = nil
+        remoteDecompressor = nil
+        returnCallback(false)
+    }
+
     private func _beArchive(_ returnCallback: @escaping (Bool) -> Void) {
-        guard let fileHandle = fileHandle else { return returnCallback(false) }
+        guard let fileHandle = fileHandle else { return fail(returnCallback) }
 
         // Read the first bit from the file to know if it is compressed lzip or not
         nextChunk = fileHandle.readData(ofLength: bufferSize)
-        guard nextChunk.count > 0 else { return returnCallback(false) }
+        guard nextChunk.count > 0 else { return fail(returnCallback) }
 
         if nextChunk.isLzipped {
             remoteDecompressor = RemoteDecompressor()
@@ -36,39 +44,49 @@ private class FileArchiver: Actor {
     }
 
     private func processNextChunk(_ returnCallback: @escaping (Bool) -> Void) {
-        guard let fileHandle = fileHandle else { return returnCallback(false) }
+        guard let fileHandle = fileHandle else { return fail(returnCallback) }
 
         if nextChunk.count == 0 {
 
             if let remoteDecompressor = remoteDecompressor {
                 remoteDecompressor.beFinish(self) { (data) in
-                    let outFile = self.fileURL.deletingPathExtension()
-                    if let _ = try? data.write(to: outFile) {
-                        try? FileManager.default.removeItem(at: self.fileURL)
+                    if data.count > 0 {
+                        let outFile = self.fileURL.deletingPathExtension()
+                        if let _ = try? data.write(to: outFile) {
+                            try? FileManager.default.removeItem(at: self.fileURL)
+                        }
+                        returnCallback(true)
+                    } else {
+                        returnCallback(false)
                     }
-                    self.remoteDecompressor = nil
                 }
+                self.remoteDecompressor = nil
             } else if let remoteCompressor = remoteCompressor {
                 remoteCompressor.beFinish(self) { (data) in
-                    let outFile = self.fileURL.appendingPathExtension("lz")
-                    if let _ = try? data.write(to: outFile) {
-                        try? FileManager.default.removeItem(at: self.fileURL)
+                    if data.count > 0 {
+                        let outFile = self.fileURL.appendingPathExtension("lz")
+                        if let _ = try? data.write(to: outFile) {
+                            try? FileManager.default.removeItem(at: self.fileURL)
+                        }
+                        returnCallback(true)
+                    } else {
+                        returnCallback(false)
                     }
-                    self.remoteCompressor = nil
                 }
+                self.remoteCompressor = nil
             }
 
-            return returnCallback(true)
+            return
         }
 
         if let remoteDecompressor = remoteDecompressor {
             remoteDecompressor.beArchive(nextChunk, self) { (result) in
-                guard result == true else { return returnCallback(false) }
+                guard result == true else { return self.fail(returnCallback) }
                 self.processNextChunk(returnCallback)
             }
         } else if let remoteCompressor = remoteCompressor {
             remoteCompressor.beArchive(nextChunk, self) { (result) in
-                guard result == true else { return returnCallback(false) }
+                guard result == true else { return self.fail(returnCallback) }
                 self.processNextChunk(returnCallback)
             }
         }
@@ -110,9 +128,7 @@ public class Archiver: Actor {
     }
 
     private func _beArchiveMore() {
-        // Ensure we have as many files being archived as we have cores to process on
-        while active < (Flynn.remoteCores + Flynn.cores) {
-            // 0. pop the next file url from files
+        while active < max(Flynn.cores, Flynn.remoteCores) {
             guard let file = files.popLast() else { return checkDone() }
 
             active += 1
@@ -121,9 +137,14 @@ public class Archiver: Actor {
             }
 
             let fileArchiver = FileArchiver(file: file)
-            fileArchiver.beArchive(self) { (_) in
-                self.active -= 1
-                self.completed += 1
+            fileArchiver.beArchive(self) { (success) in
+                if success == false {
+                    // if we failed, put it back in the queue to try again
+                    self.files.append(file)
+                } else {
+                    self.active -= 1
+                    self.completed += 1
+                }
 
                 self.beArchiveMore()
             }
