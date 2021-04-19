@@ -324,7 +324,7 @@ extension RemoteActorExhaustive {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response0.count)
+            try container.encode(UInt32(response0.count))
             for item in response0 {
                 try container.encode(item, encoding: .utf8, terminator: 0)
             }
@@ -332,7 +332,7 @@ extension RemoteActorExhaustive {
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            let response0Count: Int = try container.decode(Int.self)
+            let response0Count: Int = Int(try container.decode(UInt32.self))
             var response0Array: [String] = []
             for _ in 0..<response0Count {
                 response0Array.append(try container.decodeString(encoding: .utf8, terminator: 0))
@@ -349,13 +349,13 @@ extension RemoteActorExhaustive {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response0.count)
+            try container.encode(UInt32(response0.count))
             try container.encode(sequence: response0)
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            let response0Count = try container.decode(Int.self)
+            let response0Count = Int(try container.decode(UInt32.self))
             response0 = try container.decode(length: response0Count)
         }
     }
@@ -368,19 +368,19 @@ extension RemoteActorExhaustive {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response0.count)
+            try container.encode(UInt32(response0.count))
             for item in response0 {
-                try container.encode(item.count)
+                try container.encode(UInt32(item.count))
                 try container.encode(sequence: item)
             }
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            let response0Count: Int = try container.decode(Int.self)
+            let response0Count: Int = Int(try container.decode(UInt32.self))
             var response0Array: [Data] = []
             for _ in 0..<response0Count {
-                let response0Count = try container.decode(Int.self)
+                let response0Count = Int(try container.decode(UInt32.self))
                 response0Array.append(try container.decode(length: response0Count))
             }
             response0 = response0Array
@@ -395,12 +395,12 @@ extension RemoteActorExhaustive {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response0 ? 1 : 0)
+            try container.encode(UInt8(response0 ? 1 : 0))
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            response0 = try container.decode(Int.self) == 0 ? false : true
+            response0 = try container.decode(UInt8.self) == 0 ? false : true
         }
     }
     struct BeBoolArrayReturnCodableResponse: BinaryEncodable, BinaryDecodable {
@@ -412,18 +412,18 @@ extension RemoteActorExhaustive {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response0.count)
+            try container.encode(UInt32(response0.count))
             for item in response0 {
-                try container.encode(item ? 1 : 0)
+                try container.encode(UInt8(item ? 1 : 0))
             }
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            let response0Count: Int = try container.decode(Int.self)
+            let response0Count: Int = Int(try container.decode(UInt32.self))
             var response0Array: [Bool] = []
             for _ in 0..<response0Count {
-                response0Array.append(try container.decode(Int.self) == 0 ? false : true)
+                response0Array.append(try container.decode(UInt8.self) == 0 ? false : true)
             }
             response0 = response0Array
         }
@@ -454,7 +454,7 @@ extension RemoteActorExhaustive {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response0.count)
+            try container.encode(UInt32(response0.count))
             for item in response0 {
                 try container.encode(item)
             }
@@ -462,7 +462,7 @@ extension RemoteActorExhaustive {
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            let response0Count: Int = try container.decode(Int.self)
+            let response0Count: Int = Int(try container.decode(UInt32.self))
             var response0Array: [Float] = []
             for _ in 0..<response0Count {
                 response0Array.append(try container.decode(Float.self))
