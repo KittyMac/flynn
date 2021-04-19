@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "Flynn", targets: ["Flynn"])
     ],
     dependencies: [
+        .package(url: "https://github.com/KittyMac/BinaryCodable.git", .branch("develop")),
     ],
     targets: [
         .target(
@@ -20,7 +21,7 @@ let package = Package(
         ),
         .target(
             name: "Flynn",
-            dependencies: [ "Pony" ]
+            dependencies: [ "Pony", "BinaryCodable" ]
         ),
         .testTarget(
             name: "FlynnTests",

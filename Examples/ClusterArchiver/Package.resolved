@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "BinaryCodable",
+        "repositoryURL": "https://github.com/KittyMac/BinaryCodable.git",
+        "state": {
+          "branch": "develop",
+          "revision": "4caa9de7d9c51b0777fc4524a6c19221fa42538f",
+          "version": null
+        }
+      },
+      {
         "package": "LzSwift",
         "repositoryURL": "https://github.com/KittyMac/LzSwift.git",
         "state": {
