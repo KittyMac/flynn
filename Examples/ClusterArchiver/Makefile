@@ -49,4 +49,4 @@ docker-shell-arm64:
 	docker run --platform linux/arm64/v8 -it kittymac/clusterarchiver:latest sh
 
 docker-update:
-	ssh ubuntu@192.168.1.215 "sudo docker service update --update-order stop-first --with-registry-auth clusterArchive"
+	ssh ubuntu@192.168.1.150 "/home/ubuntu/update_service.sh kittymac/clusterarchiver"

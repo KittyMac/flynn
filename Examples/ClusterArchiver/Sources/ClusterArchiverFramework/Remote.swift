@@ -58,12 +58,12 @@ extension RemoteDecompressor {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response ? 1 : 0)
+            try container.encode(UInt8(response ? 1 : 0))
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            response = try container.decode(Int.self) == 0 ? false : true
+            response = try container.decode(UInt8.self) == 0 ? false : true
         }
     }
     struct BeArchiveCodableRequest: BinaryEncodable, BinaryDecodable {
@@ -75,13 +75,13 @@ extension RemoteDecompressor {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(arg0.count)
+            try container.encode(UInt32(arg0.count))
             try container.encode(sequence: arg0)
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            let arg0Count = try container.decode(Int.self)
+            let arg0Count = Int(try container.decode(UInt32.self))
             arg0 = try container.decode(length: arg0Count)
         }
     }
@@ -94,13 +94,13 @@ extension RemoteDecompressor {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response.count)
+            try container.encode(UInt32(response.count))
             try container.encode(sequence: response)
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            let responseCount = try container.decode(Int.self)
+            let responseCount = Int(try container.decode(UInt32.self))
             response = try container.decode(length: responseCount)
         }
     }
@@ -159,12 +159,12 @@ extension RemoteCompressor {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response ? 1 : 0)
+            try container.encode(UInt8(response ? 1 : 0))
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            response = try container.decode(Int.self) == 0 ? false : true
+            response = try container.decode(UInt8.self) == 0 ? false : true
         }
     }
     struct BeArchiveCodableRequest: BinaryEncodable, BinaryDecodable {
@@ -176,13 +176,13 @@ extension RemoteCompressor {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(arg0.count)
+            try container.encode(UInt32(arg0.count))
             try container.encode(sequence: arg0)
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            let arg0Count = try container.decode(Int.self)
+            let arg0Count = Int(try container.decode(UInt32.self))
             arg0 = try container.decode(length: arg0Count)
         }
     }
@@ -195,13 +195,13 @@ extension RemoteCompressor {
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(response.count)
+            try container.encode(UInt32(response.count))
             try container.encode(sequence: response)
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            let responseCount = try container.decode(Int.self)
+            let responseCount = Int(try container.decode(UInt32.self))
             response = try container.decode(length: responseCount)
         }
     }
