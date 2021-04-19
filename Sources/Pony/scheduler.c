@@ -434,7 +434,7 @@ bool ponyint_sched_start()
     return true;
 }
 
-void ponyint_sched_wait()
+void ponyint_sched_wait(bool waitForRemotes)
 {
     // block current thread until there are no more actors running
     int32_t times = 99;
@@ -448,7 +448,7 @@ void ponyint_sched_wait()
             }
         }
         
-        if (active == 0 && pony_root_finished()) {
+        if (active == 0 && (waitForRemotes == false || pony_root_finished())) {
             times--;
             if (times <= 0) {
                 fprintf(stderr, "pony shutting down\n");

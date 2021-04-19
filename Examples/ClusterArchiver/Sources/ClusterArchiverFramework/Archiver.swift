@@ -131,7 +131,7 @@ public class Archiver: Actor {
     private func _beArchiveMore() {
 
         while Flynn.remoteCores <= 0 {
-            sleep(1)
+            usleep(500)
         }
 
         while active < max(Flynn.cores, Flynn.remoteCores) {

@@ -33,10 +33,10 @@ bool pony_startup() {
     return pony_is_inited;
 }
 
-void pony_shutdown() {
+void pony_shutdown(bool waitForRemotes) {
     if (!pony_is_inited) { return; }
     
-    ponyint_sched_wait();
+    ponyint_sched_wait(waitForRemotes);
     
     ponyint_sched_stop();
     

@@ -412,10 +412,7 @@ extension RemoteActorManager {
                                _ jsonData: Data,
                                _ replySender: Actor?,
                                _ replyCallback: RemoteBehaviorReply?) -> Self {
-        unsafeSend {
-            self._beSendToRemote(internalRemoteActor, actorUUID, actorTypeString, behaviorType, jsonData, replySender, replyCallback)
-            
-        }
+        unsafeSend { self._beSendToRemote(internalRemoteActor, actorUUID, actorTypeString, behaviorType, jsonData, replySender, replyCallback) }
         return self
     }
     @discardableResult

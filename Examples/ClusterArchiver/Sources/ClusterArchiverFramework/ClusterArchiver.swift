@@ -33,6 +33,6 @@ public enum ClusterArchiver {
 
         Archiver.init(directory: directory)
 
-        Flynn.shutdown()
+        Flynn.shutdown(waitForRemotes: true)
     }
 }

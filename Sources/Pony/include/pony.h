@@ -53,7 +53,7 @@ void pony_register_node_to_root(int socketfd,
 void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD);
 
 bool pony_startup(void);
-void pony_shutdown(void);
+void pony_shutdown(bool waitForRemotes);
 
 int pony_core_count();
 int pony_e_core_count();

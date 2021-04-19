@@ -40,9 +40,9 @@ open class Flynn {
         }
     }
 
-    public class func shutdown() {
+    public class func shutdown(waitForRemotes: Bool = false) {
         running.checkActive {
-            pony_shutdown()
+            pony_shutdown(waitForRemotes)
             
             remotes = RemoteActorManager()
 
