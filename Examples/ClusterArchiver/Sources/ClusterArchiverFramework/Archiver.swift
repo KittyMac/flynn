@@ -1,5 +1,5 @@
 // swiftlint:disable unused_optional_binding
-// swiftlint:disable cyclomatic_complexity
+// swiftlint:disable line_length
 
 import Flynn
 import Foundation
@@ -7,13 +7,16 @@ import Foundation
 private class FileArchiver: Actor {
     private var fileHandle: FileHandle?
     private var fileURL: URL
+    private var isLocal: Bool
     private let bufferSize = 16384 * 8
-    private var remoteCompressor: RemoteCompressor?
-    private var remoteDecompressor: RemoteDecompressor?
+
+    private var lzipActor: LzipActor?
     private var nextChunk = Data()
 
-    init(file: URL) {
+    init(file: URL,
+         local: Bool) {
         fileURL = file
+        isLocal = local
 
         super.init()
 
@@ -23,8 +26,7 @@ private class FileArchiver: Actor {
     private func fail(_ reason: String,
                       _ returnCallback: @escaping (Bool) -> Void) {
         print("\(reason): \(fileURL)")
-        remoteCompressor = nil
-        remoteDecompressor = nil
+        lzipActor = nil
         returnCallback(false)
     }
 
@@ -35,10 +37,18 @@ private class FileArchiver: Actor {
         nextChunk = fileHandle.readData(ofLength: bufferSize)
         guard nextChunk.count > 0 else { return fail("First chunk is empty", returnCallback) }
 
-        if nextChunk.isLzipped {
-            remoteDecompressor = RemoteDecompressor()
+        if isLocal {
+            if nextChunk.isLzipped {
+                lzipActor = LocalDecompressor()
+            } else {
+                lzipActor = LocalCompressor()
+            }
         } else {
-            remoteCompressor = RemoteCompressor()
+            if nextChunk.isLzipped {
+                lzipActor = RemoteDecompressor()
+            } else {
+                lzipActor = RemoteCompressor()
+            }
         }
 
         processNextChunk(returnCallback)
@@ -49,45 +59,33 @@ private class FileArchiver: Actor {
 
         if nextChunk.count == 0 {
 
-            if let remoteDecompressor = remoteDecompressor {
-                remoteDecompressor.beFinish(self) { (data) in
+            if let lzipActor = lzipActor {
+                lzipActor.beFinish(self) { (data) in
                     if data.count > 0 {
-                        let outFile = self.fileURL.deletingPathExtension()
-                        if let _ = try? data.write(to: outFile) {
-                            try? FileManager.default.removeItem(at: self.fileURL)
+                        if data.isLzipped {
+                            let outFile = self.fileURL.appendingPathExtension("lz")
+                            if let _ = try? data.write(to: outFile) {
+                                try? FileManager.default.removeItem(at: self.fileURL)
+                            }
+                        } else {
+                            let outFile = self.fileURL.deletingPathExtension()
+                            if let _ = try? data.write(to: outFile) {
+                                try? FileManager.default.removeItem(at: self.fileURL)
+                            }
                         }
                         returnCallback(true)
                     } else {
                         return self.fail("RemoteDecompressor finish empty data", returnCallback)
                     }
                 }
-                self.remoteDecompressor = nil
-            } else if let remoteCompressor = remoteCompressor {
-                remoteCompressor.beFinish(self) { (data) in
-                    if data.count > 0 {
-                        let outFile = self.fileURL.appendingPathExtension("lz")
-                        if let _ = try? data.write(to: outFile) {
-                            try? FileManager.default.removeItem(at: self.fileURL)
-                        }
-                        returnCallback(true)
-                    } else {
-                        return self.fail("RemoteCompressor finish empty data", returnCallback)
-                    }
-                }
-                self.remoteCompressor = nil
+                self.lzipActor = nil
             }
-
             return
         }
 
-        if let remoteDecompressor = remoteDecompressor {
-            remoteDecompressor.beArchive(nextChunk, self) { (result) in
-                guard result == true else { return self.fail("RemoteDecompressor returned false", returnCallback) }
-                self.processNextChunk(returnCallback)
-            }
-        } else if let remoteCompressor = remoteCompressor {
-            remoteCompressor.beArchive(nextChunk, self) { (result) in
-                guard result == true else { return self.fail("RemoteCompressor returned false", returnCallback) }
+        if let lzipActor = lzipActor {
+            lzipActor.beArchive(nextChunk, self) { (result) in
+                guard result == true else { return self.fail("Lzip returned false", returnCallback) }
                 self.processNextChunk(returnCallback)
             }
         }
@@ -100,8 +98,12 @@ public class Archiver: Actor {
 
     private var files: [URL] = []
     private var maxActive: Int = 0
-    private var active: Int = 0
-    private var completed: Int = 0
+
+    private var activeLocal: Int = 0
+    private var activeRemote: Int = 0
+    private var completedLocal: Int = 0
+    private var completedRemote: Int = 0
+
     private var done = false
     private let start = Date()
 
@@ -121,31 +123,46 @@ public class Archiver: Actor {
     }
 
     private func checkDone() {
-        if active == 0 && done == false {
+        if activeLocal == 0 && activeRemote == 0 && done == false {
             done = true
 
-            print("\(completed) files in \(abs(start.timeIntervalSinceNow))s, max concurrent \(maxActive)")
+            print("\(completedLocal) / \(completedRemote) files in \(abs(start.timeIntervalSinceNow))s, max concurrent \(maxActive)")
         }
     }
 
     private func _beArchiveMore() {
 
-        while Flynn.remoteCores <= 0 {
-            usleep(500)
-        }
-
-        while active < max(Flynn.cores, Flynn.remoteCores) {
+        while activeLocal < Flynn.cores {
             guard let file = files.popLast() else { return checkDone() }
 
-            active += 1
-            if active > maxActive {
-                maxActive = active
+            activeLocal += 1
+            if (activeLocal + activeRemote) > maxActive {
+                maxActive = (activeLocal + activeRemote)
             }
 
-            let fileArchiver = FileArchiver(file: file)
+            let fileArchiver = FileArchiver(file: file,
+                                            local: true)
             fileArchiver.beArchive(self) { (_) in
-                self.active -= 1
-                self.completed += 1
+                self.activeLocal -= 1
+                self.completedLocal += 1
+
+                self.beArchiveMore()
+            }
+        }
+
+        while activeRemote < Flynn.remoteCores {
+            guard let file = files.popLast() else { return checkDone() }
+
+            activeRemote += 1
+            if (activeLocal + activeRemote) > maxActive {
+                maxActive = (activeLocal + activeRemote)
+            }
+
+            let fileArchiver = FileArchiver(file: file,
+                                            local: false)
+            fileArchiver.beArchive(self) { (_) in
+                self.activeRemote -= 1
+                self.completedRemote += 1
 
                 self.beArchiveMore()
             }

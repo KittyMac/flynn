@@ -28,7 +28,7 @@ public enum ClusterArchiver {
         Flynn.Root.listen(address,
                           port,
                           remoteActorTypes: remoteActorManifest,
-                          fallbackRemoteActorTypes: [],
+                          fallbackRemoteActorTypes: remoteActorManifest,
                           namedRemoteActorTypes: [])
 
         Archiver.init(directory: directory)

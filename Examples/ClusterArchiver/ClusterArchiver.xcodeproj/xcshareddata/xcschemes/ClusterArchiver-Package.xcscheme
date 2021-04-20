@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "ClusterArchiver::ClusterArchiver"
-               BuildableName = "ClusterArchiver"
-               BlueprintName = "ClusterArchiver"
+               BlueprintIdentifier = "ClusterArchiver::ClusterArchiverFramework"
+               BuildableName = "ClusterArchiverFramework.framework"
+               BlueprintName = "ClusterArchiverFramework"
                ReferencedContainer = "container:ClusterArchiver.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,9 +28,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "ClusterArchiver::ClusterArchiverFramework"
-               BuildableName = "ClusterArchiverFramework.framework"
-               BlueprintName = "ClusterArchiverFramework"
+               BlueprintIdentifier = "ClusterArchiver::ClusterArchiver"
+               BuildableName = "ClusterArchiver"
+               BlueprintName = "ClusterArchiver"
                ReferencedContainer = "container:ClusterArchiver.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
