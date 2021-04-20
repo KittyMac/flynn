@@ -190,7 +190,7 @@ internal final class RemoteActorManager: Actor {
                                  _ actorUUID: String,
                                  _ actorTypeString: String,
                                  _ behaviorType: String,
-                                 _ jsonData: Data,
+                                 _ payload: Data,
                                  _ replySender: Actor?,
                                  _ replyCallback: RemoteBehaviorReply?) {
                         
@@ -215,7 +215,7 @@ internal final class RemoteActorManager: Actor {
             
             Flynn.remotes.beHandleMessage(actorUUID,
                                           behaviorType,
-                                          jsonData,
+                                          payload,
                                           messageId,
                                           kLocalSocketFD)
         }
@@ -225,14 +225,14 @@ internal final class RemoteActorManager: Actor {
         }
         
         let finishSendingToRemoteActor: (() -> Void) = {
-            _ = jsonData.withUnsafeBytes {
+            _ = payload.withUnsafeBytes {
                 let messageID = pony_remote_actor_send_message_to_node(actorUUID,
                                                                        actorTypeString,
                                                                        behaviorType,
                                                                        (internalRemoteActor.nodeSocketFD != internalRemoteActor.createdNodeSocketFD),
                                                                        internalRemoteActor.nodeSocketFD,
                                                                        $0.baseAddress,
-                                                                       Int32(jsonData.count))
+                                                                       Int32(payload.count))
                 if messageID < 0 {
                     // we're no longer connected to this socket
                     self.didDisconnectFromSocket(internalRemoteActor.nodeSocketFD)
@@ -282,7 +282,7 @@ internal final class RemoteActorManager: Actor {
                                            actorUUID,
                                            actorTypeString,
                                            behaviorType,
-                                           jsonData,
+                                           payload,
                                            replySender,
                                            replyCallback)
                 }
@@ -409,10 +409,10 @@ extension RemoteActorManager {
                                _ actorUUID: String,
                                _ actorTypeString: String,
                                _ behaviorType: String,
-                               _ jsonData: Data,
+                               _ payload: Data,
                                _ replySender: Actor?,
                                _ replyCallback: RemoteBehaviorReply?) -> Self {
-        unsafeSend { self._beSendToRemote(internalRemoteActor, actorUUID, actorTypeString, behaviorType, jsonData, replySender, replyCallback) }
+        unsafeSend { self._beSendToRemote(internalRemoteActor, actorUUID, actorTypeString, behaviorType, payload, replySender, replyCallback) }
         return self
     }
     @discardableResult

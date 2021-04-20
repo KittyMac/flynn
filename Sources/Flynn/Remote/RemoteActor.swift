@@ -118,14 +118,14 @@ open class InternalRemoteActor {
 
     public func unsafeSendToRemote(_ actorType: String,
                                    _ behaviorType: String,
-                                   _ jsonData: Data,
+                                   _ payload: Data,
                                    _ sender: Actor?,
                                    _ callback: RemoteBehaviorReply?) {        
         Flynn.remotes.beSendToRemote(self,
                                      unsafeUUID,
                                      actorType,
                                      behaviorType,
-                                     jsonData,
+                                     payload,
                                      sender,
                                      callback)
     }
