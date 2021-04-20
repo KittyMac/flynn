@@ -1,7 +1,3 @@
-#sudo docker service create --name clusterArchive \
-#    --with-registry-auth \
-#    --mode global kittymac/clusterarchiver
-
 SWIFT_BUILD_FLAGS=--configuration release
 
 .PHONY: all build clean xcode
@@ -47,6 +43,12 @@ docker-shell-armv7:
 
 docker-shell-arm64:
 	docker run --platform linux/arm64/v8 -it kittymac/clusterarchiver:latest sh
+
+docker-service-start:
+	ssh ubuntu@192.168.1.150 "sudo docker service create --name clusterArchive --with-registry-auth --mode global kittymac/clusterarchiver"
+	
+docker-service-stop:
+	ssh ubuntu@192.168.1.150 "sudo docker service rm clusterArchive"
 
 docker-update:
 	ssh ubuntu@192.168.1.150 "/home/ubuntu/update_service.sh kittymac/clusterarchiver"

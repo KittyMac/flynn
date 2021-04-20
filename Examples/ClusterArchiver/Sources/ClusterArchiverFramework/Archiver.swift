@@ -58,11 +58,11 @@ public class Archiver: Actor {
                 self.beArchiveMore()
             }
         }
-/*
-        while Flynn.remoteCores <= 0 {
-            usleep(500)
-        }
-*/
+
+        // while Flynn.remoteCores <= 0 {
+        //    usleep(500)
+        // }
+
         while activeRemote < Flynn.remoteCores {
             guard let file = files.popLast() else { return checkDone() }
 

@@ -1,40 +1,49 @@
-// swiftlint:disable unused_optional_binding
-
 import Flynn
 import Foundation
 
 class FileArchiver: Actor {
-    private var fileHandle: FileHandle?
-    private var fileURL: URL
+    private var inputURL: URL = URL(fileURLWithPath: "/dev/null")
+    private var outputURL: URL = URL(fileURLWithPath: "/dev/null")
     private var isLocal: Bool
     private let bufferSize = 16384 * 4
 
     private var lzipActor: LzipActor?
-    private var nextChunk = Data()
     private var chunksOutstanding = 0
 
     init(file: URL, local: Bool) {
-        fileURL = file
+        inputURL = file
         isLocal = local
 
         super.init()
-
-        fileHandle = try? FileHandle(forReadingFrom: file)
     }
 
     private func fail(_ reason: String,
                       _ returnCallback: @escaping (Bool) -> Void) {
-        print("\(reason): \(fileURL)")
+        print("\(reason): \(inputURL)")
         lzipActor = nil
         returnCallback(false)
     }
 
     private func _beArchive(_ returnCallback: @escaping (Bool) -> Void) {
-        guard let fileHandle = fileHandle else { return fail("FileHandle is null", returnCallback) }
+        FileIO.shared.beOpenRead(inputURL)
 
+        FileIO.shared.beRead(inputURL, bufferSize, self) {
+            guard let data = $0 else { return self.fail("First chunk is null", returnCallback) }
+            self.processFirstChunk(data, returnCallback)
+        }
+    }
+
+    private func processFirstChunk(_ nextChunk: Data,
+                                   _ returnCallback: @escaping (Bool) -> Void) {
         // Read the first bit from the file to know if it is compressed lzip or not
-        nextChunk = fileHandle.readData(ofLength: bufferSize)
         guard nextChunk.count > 0 else { return fail("First chunk is empty", returnCallback) }
+
+        if nextChunk.isLzipped {
+            outputURL = inputURL.deletingPathExtension()
+        } else {
+            outputURL = inputURL.appendingPathExtension("lz")
+        }
+        FileIO.shared.beOpenWrite(outputURL)
 
         if isLocal {
             if nextChunk.isLzipped {
@@ -50,52 +59,52 @@ class FileArchiver: Actor {
             }
         }
 
-        processNextChunk(returnCallback)
+        processNextChunk(nextChunk,
+                         returnCallback)
     }
 
-    private func processNextChunk(_ returnCallback: @escaping (Bool) -> Void) {
+    private func processNextChunk(_ nextChunk: Data,
+                                  _ returnCallback: @escaping (Bool) -> Void) {
         guard lzipActor != nil else { return }
-        guard let fileHandle = fileHandle else { return fail("FileHandle is null", returnCallback) }
+        guard chunksOutstanding < 3 else { return }
 
-        while chunksOutstanding < 4 {
+        // Check to see if we sent all of the data
+        if nextChunk.count == 0 {
+            return finished(returnCallback)
+        }
 
-            // Check to see if we sent all of the data
-            if nextChunk.count == 0 {
-                return finished(returnCallback)
-            }
+        if let lzipActor = lzipActor {
+            chunksOutstanding += 1
+            lzipActor.beArchive(nextChunk, self) { (resultData) in
+                FileIO.shared.beWrite(self.outputURL, resultData)
 
-            if let lzipActor = lzipActor {
-                chunksOutstanding += 1
-                lzipActor.beArchive(nextChunk, self) { (result) in
-                    guard result == true else { return self.fail("Lzip returned false", returnCallback) }
-                    self.chunksOutstanding -= 1
-                    self.processNextChunk(returnCallback)
+                self.chunksOutstanding -= 1
+
+                if self.lzipActor != nil {
+                    FileIO.shared.beRead(self.inputURL, self.bufferSize, self) {
+                        guard let data = $0 else { return }
+                        self.processNextChunk(data, returnCallback)
+                    }
                 }
             }
+        }
 
-            nextChunk = fileHandle.readData(ofLength: bufferSize)
+        FileIO.shared.beRead(self.inputURL, bufferSize, self) {
+            guard let data = $0 else { return }
+            self.processNextChunk(data, returnCallback)
         }
     }
 
     private func finished(_ returnCallback: @escaping (Bool) -> Void) {
         if let lzipActor = lzipActor {
-            lzipActor.beFinish(self) { (data) in
-                if data.count > 0 {
-                    if data.isLzipped {
-                        let outFile = self.fileURL.appendingPathExtension("lz")
-                        if let _ = try? data.write(to: outFile) {
-                            try? FileManager.default.removeItem(at: self.fileURL)
-                        }
-                    } else {
-                        let outFile = self.fileURL.deletingPathExtension()
-                        if let _ = try? data.write(to: outFile) {
-                            try? FileManager.default.removeItem(at: self.fileURL)
-                        }
-                    }
-                    returnCallback(true)
-                } else {
-                    return self.fail("RemoteDecompressor finish empty data", returnCallback)
-                }
+            FileIO.shared.beClose(inputURL)
+
+            lzipActor.beFinish(self) { (resultData) in
+                FileIO.shared.beWrite(self.outputURL, resultData)
+                FileIO.shared.beClose(self.outputURL)
+
+                try? FileManager.default.removeItem(at: self.inputURL)
+                returnCallback(true)
             }
             self.lzipActor = nil
         }
@@ -119,6 +128,10 @@ extension FileArchiver {
         }
         return self
     }
+
+}
+
+extension FileIO {
 
 }
 

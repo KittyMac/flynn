@@ -23,13 +23,13 @@ final class ClusterArchiverTests: XCTestCase {
         // time sh -c 'find . -type f | xargs -I{} -P 4 lzip -d {}'  48.68s user 17.12s system 362% cpu 18.176 total
         
         // lzip command parallelized on corpus of 9450 files (28 local cores)
-        // time sh -c 'find . -type f | xargs -I{} -P 28 lzip {}'  475.42s user 39.78s system 2673% cpu 19.268 total
-        // time sh -c 'find . -type f | xargs -I{} -P 28 lzip -d {}'  46.49s user 18.56s system 950% cpu 6.846 total
+        // time sh -c 'find . -type f | xargs -I{} -P 28 lzip {}'  472.68s user 40.70s system 2671% cpu 19.217 total
+        // time sh -c 'find . -type f | xargs -I{} -P 28 lzip -d {}'  46.53s user 18.67s system 949% cpu 6.867 totalal
         
 
         // 28 local cores, no remotes
-        // compression: 9450 / 0 files in 31.540642023086548s, max concurrent 28
-        // decompression: 9450 / 0 files in 6.716953992843628s, max concurrent 28
+        // compression: 9450 / 0 files in 19.877262949943542s, max concurrent 28
+        // decompression: 9450 / 0 files in 6.540912985801697s, max concurrent 28
         
         // 172 remote cores
         // compression: 9450 files in 33.55566692352295s, max concurrent 172
@@ -40,6 +40,12 @@ final class ClusterArchiverTests: XCTestCase {
         // decompression: 7188 / 2262 files in 5.691049933433533s, max concurrent 200
         
         ClusterArchiver.archive(directory: "/Users/rjbowli/Desktop/TESTARCHIVE",
+                                address: "0.0.0.0",
+                                port: 9090)
+    }
+    
+    func testLargeArchive2() throws {
+        ClusterArchiver.archive(directory: "/Users/rjbowli/Desktop/TESTARCHIVE_LARGE",
                                 address: "0.0.0.0",
                                 port: 9090)
     }
