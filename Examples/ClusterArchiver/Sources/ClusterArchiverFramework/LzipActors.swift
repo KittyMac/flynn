@@ -4,7 +4,7 @@ import LzSwift
 
 protocol LzipActor {
     @discardableResult
-    func beArchive(_ data: Data, _ sender: Actor, _ callback: @escaping (Bool) -> Void ) -> Self
+    func beArchive(_ data: Data, _ sender: Actor, _ callback: @escaping (Data) -> Void ) -> Self
 
     @discardableResult
     func beFinish(_ sender: Actor, _ callback: @escaping (Data) -> Void) -> Self
@@ -13,18 +13,19 @@ protocol LzipActor {
 public class LocalCompressor: Actor, LzipActor {
 
     private let compressor = Lzip.Compress(level: .lvl6)
-    private var compressed = Data()
 
-    private func _beArchive(_ data: Data) -> Bool {
+    private func _beArchive(_ data: Data) -> Data {
         do {
+            var compressed = Data()
             try compressor.compress(input: data, output: &compressed)
+            return compressed
         } catch {
-            return false
+            return Data()
         }
-        return true
     }
 
     private func _beFinish() -> Data {
+        var compressed = Data()
         compressor.finish(output: &compressed)
         return compressed
     }
@@ -33,18 +34,19 @@ public class LocalCompressor: Actor, LzipActor {
 public class RemoteCompressor: RemoteActor, LzipActor {
 
     private let compressor = Lzip.Compress(level: .lvl6)
-    private var compressed = Data()
 
-    private func _beArchive(_ data: Data) -> Bool {
+    private func _beArchive(_ data: Data) -> Data {
         do {
+            var compressed = Data()
             try compressor.compress(input: data, output: &compressed)
+            return compressed
         } catch {
-            return false
+            return Data()
         }
-        return true
     }
 
     private func _beFinish() -> Data {
+        var compressed = Data()
         compressor.finish(output: &compressed)
         return compressed
     }
@@ -53,18 +55,19 @@ public class RemoteCompressor: RemoteActor, LzipActor {
 public class LocalDecompressor: Actor, LzipActor {
 
     private let decompressor = Lzip.Decompress()
-    private var decompressed = Data()
 
-    private func _beArchive(_ data: Data) -> Bool {
+    private func _beArchive(_ data: Data) -> Data {
         do {
+            var decompressed = Data()
             try decompressor.decompress(input: data, output: &decompressed)
+            return decompressed
         } catch {
-            return false
+            return Data()
         }
-        return true
     }
 
     private func _beFinish() -> Data {
+        var decompressed = Data()
         decompressor.finish(output: &decompressed)
         return decompressed
     }
@@ -73,18 +76,19 @@ public class LocalDecompressor: Actor, LzipActor {
 public class RemoteDecompressor: RemoteActor, LzipActor {
 
     private let decompressor = Lzip.Decompress()
-    private var decompressed = Data()
 
-    private func _beArchive(_ data: Data) -> Bool {
+    private func _beArchive(_ data: Data) -> Data {
         do {
+            var decompressed = Data()
             try decompressor.decompress(input: data, output: &decompressed)
+            return decompressed
         } catch {
-            return false
+            return Data()
         }
-        return true
     }
 
     private func _beFinish() -> Data {
+        var decompressed = Data()
         decompressor.finish(output: &decompressed)
         return decompressed
     }
@@ -98,7 +102,7 @@ extension LocalDecompressor {
     @discardableResult
     public func beArchive(_ data: Data,
                           _ sender: Actor,
-                          _ callback: @escaping ((Bool) -> Void)) -> Self {
+                          _ callback: @escaping ((Data) -> Void)) -> Self {
         unsafeSend {
             let result = self._beArchive(data)
             sender.unsafeSend { callback(result) }
@@ -122,7 +126,7 @@ extension LocalCompressor {
     @discardableResult
     public func beArchive(_ data: Data,
                           _ sender: Actor,
-                          _ callback: @escaping ((Bool) -> Void)) -> Self {
+                          _ callback: @escaping ((Data) -> Void)) -> Self {
         unsafeSend {
             let result = self._beArchive(data)
             sender.unsafeSend { callback(result) }
@@ -146,20 +150,22 @@ import BinaryCodable
 extension RemoteDecompressor {
 
     struct BeArchiveCodableResponse: BinaryEncodable, BinaryDecodable {
-        let response: Bool
+        let response: Data
 
-        init(response: Bool) {
+        init(response: Data) {
             self.response = response
         }
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(UInt8(response ? 1 : 0))
+            try container.encode(UInt32(response.count))
+            try container.encode(sequence: response)
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            response = try container.decode(UInt8.self) == 0 ? false : true
+            let responseCount = Int(try container.decode(UInt32.self))
+            response = try container.decode(length: responseCount)
         }
     }
     struct BeArchiveCodableRequest: BinaryEncodable, BinaryDecodable {
@@ -204,7 +210,7 @@ extension RemoteDecompressor {
     @discardableResult
     public func beArchive(_ data: Data,
                           _ sender: Actor,
-                          _ callback: @escaping (Bool) -> Void ) -> Self {
+                          _ callback: @escaping (Data) -> Void ) -> Self {
         let msg = BeArchiveCodableRequest(arg0: data)
         // swiftlint:disable:next force_try
         let data = try! BinaryDataEncoder().encode(msg)
@@ -247,20 +253,22 @@ extension RemoteDecompressor {
 extension RemoteCompressor {
 
     struct BeArchiveCodableResponse: BinaryEncodable, BinaryDecodable {
-        let response: Bool
+        let response: Data
 
-        init(response: Bool) {
+        init(response: Data) {
             self.response = response
         }
 
         func encode(to encoder: BinaryEncoder) throws {
             var container = encoder.container()
-            try container.encode(UInt8(response ? 1 : 0))
+            try container.encode(UInt32(response.count))
+            try container.encode(sequence: response)
         }
 
         init(from decoder: BinaryDecoder) throws {
             var container = decoder.container(maxLength: nil)
-            response = try container.decode(UInt8.self) == 0 ? false : true
+            let responseCount = Int(try container.decode(UInt32.self))
+            response = try container.decode(length: responseCount)
         }
     }
     struct BeArchiveCodableRequest: BinaryEncodable, BinaryDecodable {
@@ -305,7 +313,7 @@ extension RemoteCompressor {
     @discardableResult
     public func beArchive(_ data: Data,
                           _ sender: Actor,
-                          _ callback: @escaping (Bool) -> Void ) -> Self {
+                          _ callback: @escaping (Data) -> Void ) -> Self {
         let msg = BeArchiveCodableRequest(arg0: data)
         // swiftlint:disable:next force_try
         let data = try! BinaryDataEncoder().encode(msg)
