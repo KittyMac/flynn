@@ -115,10 +115,12 @@ internal final class RemoteActorManager: Actor {
             // use the rest of the full path
             let actorType = actorTypeWithModule.components(separatedBy: ".").dropFirst().joined(separator: ".")
             
-            combined.append(actorType)
-            combined.append(",")
-            combined.append(actor.unsafeUUID)
-            combined.append("\n")
+            if namedActorTypes[actorType] != nil {
+                combined.append(actorType)
+                combined.append(",")
+                combined.append(actor.unsafeUUID)
+                combined.append("\n")
+            }
         }
         
         if combined.hasSuffix(",") {
