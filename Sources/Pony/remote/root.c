@@ -107,6 +107,15 @@ static node_t * root_get_next_node() {
     return NULL;
 }
 
+int ponyint_remote_core_count_by_socket(int socketfd)
+{
+    node_t * nodePtr = find_node_by_socket(socketfd);
+    if (nodePtr != NULL) {
+        return nodePtr->core_count;
+    }
+    return 0;
+}
+
 static bool root_add_node(int socketfd) {
     pthread_mutex_lock(&nodes_mutex);
     for (int i = 0; i < kMaxNodes; i++) {

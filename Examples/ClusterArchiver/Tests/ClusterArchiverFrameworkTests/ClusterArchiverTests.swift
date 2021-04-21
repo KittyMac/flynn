@@ -32,12 +32,12 @@ final class ClusterArchiverTests: XCTestCase {
         // decompression: 9450 / 0 files in 6.540912985801697s, max concurrent 28
         
         // 172 remote cores
-        // compression: 0 / 9450 files in 27.915373921394348s, max concurrent 172
-        // decompression: 0 / 9450 files in 6.716683983802795s, max concurrent 172
+        // compression: 0 / 9450 files in 9.260679006576538s, max concurrent 172
+        // decompression: 0 / 9450 files in 7.3913960456848145s, max concurrent 172
         
         // 28 local cores / 172 remote cores
-        // compression: 7542 / 1908 files in 15.466073036193848s, max concurrent 200
-        // decompression: 2124 / 7326 files in 7.047600984573364s, max concurrent 200
+        // compression: 1607 / 7843 files in 8.442137956619263s, max concurrent 200
+        // decompression: 1586 / 7864 files in 6.86386501789093s, max concurrent 200
         
         ClusterArchiver.archive(directory: "/Users/rjbowli/Desktop/TESTARCHIVE",
                                 address: "0.0.0.0",

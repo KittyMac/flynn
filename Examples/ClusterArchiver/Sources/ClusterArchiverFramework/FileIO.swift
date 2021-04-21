@@ -39,9 +39,6 @@ class FileIO: Actor {
     private func _beRead(_ url: URL, _ count: Int) -> Data? {
         if let handle = openRead[url] {
             return handle.readData(ofLength: count)
-        } else {
-            print("here \(url)")
-            print("here")
         }
         return nil
 

@@ -49,6 +49,7 @@ internal final class RemoteActorManager: Actor {
     
     // MARK: - RemoteActorManager: Node
     
+    private var numRemoteCoresBySocket: [Int32: Int32] = [:]
     private var actorTypesBySocket: [Int32: [RemoteActor.Type]] = [:]
     
     private var fallbackActorTypes: [String: RemoteActor.Type] = [:]
@@ -268,7 +269,24 @@ internal final class RemoteActorManager: Actor {
                 }
                 if allSockets.count > 0 {
                     remoteNodeRoundRobinIndex += 1
+                    
+                    // sanity default: choose next remote node
                     internalRemoteActor.nodeSocketFD = allSockets[remoteNodeRoundRobinIndex % allSockets.count]
+
+                    // ideal: choose next node based on their core counts (support hetergeneous clusters)
+                    var idx: Int32 = 0
+                    for socket in allSockets {
+                        if idx >= remoteNodeRoundRobinIndex {
+                            internalRemoteActor.nodeSocketFD = socket
+                            break
+                        }
+                        var numCores = numRemoteCoresBySocket[socket] ?? 0
+                        if numCores == 0 {
+                            numCores = pony_remote_core_count_by_socket(socket)
+                            numRemoteCoresBySocket[socket] = numCores
+                        }
+                        idx += numCores
+                    }
                 }
             }
             

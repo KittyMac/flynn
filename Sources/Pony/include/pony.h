@@ -31,6 +31,7 @@ void pony_node(const char * address,
 
 int pony_remote_nodes_count();
 int pony_remote_core_count();
+int pony_remote_core_count_by_socket(int socketfd);
 
 int pony_next_messageId();
 
