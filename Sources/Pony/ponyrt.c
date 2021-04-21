@@ -16,6 +16,7 @@
 
 extern int ponyint_remote_nodes_count();
 extern int ponyint_remote_core_count();
+extern int ponyint_remote_core_count_by_socket(int socketfd);
 
 static bool pony_is_inited = false;
 
@@ -61,6 +62,10 @@ int pony_p_core_count() {
 
 int pony_remote_core_count() {
     return ponyint_remote_core_count();
+}
+
+int pony_remote_core_count_by_socket(int socketfd) {
+    return ponyint_remote_core_count_by_socket(socketfd);
 }
 
 int pony_remote_nodes_count() {
