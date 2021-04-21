@@ -36,17 +36,6 @@ extern char * read_intcount_buffer(int socketfd, uint32_t * count);
 extern bool read_bytecount_buffer(int socketfd, char * dst, size_t max_length);
 
 extern void send_buffer(int socketfd, char * bytes, size_t length);
-extern void send_version_check(int socketfd);
-extern void send_existing_actors(int socketfd);
-extern void send_core_count(int socketfd);
-extern void send_register_with_root(int socketfd, const char * registrationString);
-extern void send_create_actor(int socketfd, const char * actorUUID, const char * actorType);
-extern void send_destroy_actor(int socketfd, const char * actorUUID);
-
-extern int send_heartbeat(int socketfd);
-
-extern int send_message(int socketfd, int messageID, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count);
-extern void send_reply(int socketfd, uint32_t messageID, const void * bytes, uint32_t count);
 
 extern void close_socket(int fd);
 

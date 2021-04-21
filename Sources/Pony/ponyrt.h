@@ -16,9 +16,13 @@ void pony_remote_shutdown();
 
 #define kMessagePointer 1
 #define kRemote_Version 2
-#define kRemote_CreateActor 3
-#define kRemote_DestroyActor 4
-#define kRemote_SendMessage 5
+#define kRemote_RegisterWithRoot 3
+#define kRemote_CreateActor 4
+#define kRemote_DestroyActor 5
+#define kRemote_SendMessage 6
+#define kRemote_SendReply 7
+#define kRemote_SendCoreCount 8
+#define kRemote_SendHeartbeat 9
 
 typedef struct pony_actor_t pony_actor_t;
 
@@ -97,5 +101,31 @@ typedef struct pony_msg_remote_sendmessage_t
     void * payload;
     uint32_t length;
 } pony_msg_remote_sendmessage_t;
+
+
+typedef struct pony_msg_remote_register_t
+{
+    pony_msg_t msg;
+    char * registration;
+    uint32_t length;
+} pony_msg_remote_register_t;
+
+typedef struct pony_msg_remote_core_count_t
+{
+    pony_msg_t msg;
+} pony_msg_remote_core_count_t;
+
+typedef struct pony_msg_remote_heartbeat_t
+{
+    pony_msg_t msg;
+} pony_msg_remote_heartbeat_t;
+
+typedef struct pony_msg_remote_sendreply_t
+{
+    pony_msg_t msg;
+    uint32_t messageId;
+    void * payload;
+    uint32_t length;
+} pony_msg_remote_sendreply_t;
 
 #endif /* ponyrt_h */

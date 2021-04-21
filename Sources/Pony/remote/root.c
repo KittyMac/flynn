@@ -199,6 +199,11 @@ void pony_root_send_message(node_t * nodePtr,
 
 static DECLARE_THREAD_FN(root_write_to_node_thread)
 {
+    extern void send_version_check(int socketfd);
+    extern void send_create_actor(int socketfd, const char * actorUUID, const char * actorType);
+    extern void send_destroy_actor(int socketfd, const char * actorUUID);
+    extern int send_message(int socketfd, int messageID, const char * actorUUID, const char * behaviorType, const void * bytes, uint32_t count);
+    
     // root writing information to be sent to the node. Uses pony message
     // queue to allow other threads to add messages to the queue, and this
     // just drains the queue and writes to the socket

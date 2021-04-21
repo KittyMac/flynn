@@ -21,6 +21,10 @@
 
 #include "remote.h"
 
+#ifndef max
+    #define max(a,b) ((a) > (b) ? (a) : (b))
+#endif
+
 // MARK: - NODE
 
 #define kMaxIPAddress 128
@@ -35,7 +39,9 @@ typedef struct root_t
     DestroyActorFunc destroyActorFuncPtr;
     MessageActorFunc messageActorFuncPtr;
     RegisterActorsOnRootFunc registerActorsOnRootFuncPtr;
-    pony_thread_id_t thread_tid;
+    pony_thread_id_t read_thread_tid;
+    pony_thread_id_t write_thread_tid;
+    messageq_t write_queue;
 } root_t;
 
 #define kMaxRoots 2048
@@ -46,6 +52,7 @@ static pthread_mutex_t roots_mutex;
 static bool inited = false;
 
 static DECLARE_THREAD_FN(node_read_from_root_thread);
+static DECLARE_THREAD_FN(node_write_to_root_thread);
 
 static void init_all_roots() {
     root_t * ptr = roots;
@@ -74,7 +81,7 @@ static bool node_add_root(const char * address,
                           MessageActorFunc messageActorFuncPtr,
                           RegisterActorsOnRootFunc registerActorsOnRootFuncPtr) {
     for (int i = 0; i < kMaxRoots; i++) {
-        if (roots[i].thread_tid == 0) {
+        if (roots[i].read_thread_tid == 0) {
             pthread_mutex_lock(&roots_mutex);
             strncpy(roots[i].address, address, kMaxIPAddress);
             roots[i].port = port;
@@ -83,7 +90,9 @@ static bool node_add_root(const char * address,
             roots[i].destroyActorFuncPtr = destroyActorFuncPtr;
             roots[i].messageActorFuncPtr = messageActorFuncPtr;
             roots[i].registerActorsOnRootFuncPtr = registerActorsOnRootFuncPtr;
-            ponyint_thread_create(&roots[i].thread_tid, node_read_from_root_thread, QOS_CLASS_BACKGROUND, roots + i);
+            ponyint_messageq_init(&roots[i].write_queue);
+            ponyint_thread_create(&roots[i].read_thread_tid, node_read_from_root_thread, QOS_CLASS_BACKGROUND, roots + i);
+            ponyint_thread_create(&roots[i].write_thread_tid, node_write_to_root_thread, QOS_CLASS_BACKGROUND, roots + i);
             pthread_mutex_unlock(&roots_mutex);
             return true;
         }
@@ -92,10 +101,25 @@ static bool node_add_root(const char * address,
 }
 
 static void node_remove_root(root_t * rootPtr) {
-    if (rootPtr->thread_tid != 0) {
+    if (rootPtr->read_thread_tid != 0) {
+        pthread_mutex_lock(&roots_mutex);
         close_socket(rootPtr->socketfd);
-        ponyint_thread_join(rootPtr->thread_tid);
-        rootPtr->thread_tid = 0;
+        
+        pony_thread_id_t read_thread = rootPtr->read_thread_tid;
+        pony_thread_id_t write_thread = rootPtr->write_thread_tid;
+        int socketfd = rootPtr->socketfd;
+        rootPtr->read_thread_tid = 0;
+        rootPtr->write_thread_tid = 0;
+        rootPtr->socketfd = -1;
+        pthread_mutex_unlock(&roots_mutex);
+
+        ponyint_thread_join(rootPtr->read_thread_tid);
+        ponyint_thread_join(rootPtr->write_thread_tid);
+        
+        pthread_mutex_lock(&roots_mutex);
+        ponyint_messageq_destroy(&rootPtr->write_queue);
+        
+        rootPtr->read_thread_tid = 0;
         rootPtr->port = 0;
         rootPtr->automaticReconnect = false;
         rootPtr->createActorFuncPtr = NULL;
@@ -104,6 +128,7 @@ static void node_remove_root(root_t * rootPtr) {
         rootPtr->registerActorsOnRootFuncPtr = NULL;
         rootPtr->address[0] = 0;
         rootPtr->socketfd = -1;
+        pthread_mutex_unlock(&roots_mutex);
     }
 }
 
@@ -113,8 +138,108 @@ static void node_remove_all_roots() {
     }
 }
 
+extern pony_msg_t* pony_alloc_msg(uint32_t index, uint32_t msgId);
+void pony_node_send_version_check(root_t * rootPtr)
+{
+    pony_msg_remote_version_t* m = (pony_msg_remote_version_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_version_t)), kRemote_Version);
+    ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
+}
+
+void pony_node_send_register(root_t * rootPtr, const char * registration)
+{
+    pony_msg_remote_register_t* m = (pony_msg_remote_register_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_register_t)), kRemote_RegisterWithRoot);
+    uint32_t length = max(2048, strlen(registration) + 1);
+    m->registration = (char *)ponyint_pool_alloc_size(length);
+    strncpy(m->registration, registration, length-1);
+    m->length = length;
+    ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
+}
+
+void pony_node_send_core_count(root_t * rootPtr)
+{
+    pony_msg_remote_core_count_t* m = (pony_msg_remote_core_count_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_core_count_t)), kRemote_SendCoreCount);
+    ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
+}
+
+void pony_node_send_heartbeat(root_t * rootPtr)
+{
+    pony_msg_remote_heartbeat_t* m = (pony_msg_remote_heartbeat_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_heartbeat_t)), kRemote_SendHeartbeat);
+    ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
+}
+
+void pony_node_send_reply(root_t * rootPtr,
+                          uint32_t messageId,
+                          const void * payload,
+                          uint32_t length)
+{
+    pony_msg_remote_sendreply_t* m = (pony_msg_remote_sendreply_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_sendreply_t)), kRemote_SendReply);
+    m->messageId = messageId;
+    m->payload = (void *)ponyint_pool_alloc_size(length);
+    memcpy(m->payload, payload, length);
+    m->length = length;
+    ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
+}
+
+static DECLARE_THREAD_FN(node_write_to_root_thread)
+{
+    extern void send_version_check(int socketfd);
+    extern void send_core_count(int socketfd);
+    extern void send_register_with_root(int socketfd, const char * registrationString);
+    extern int send_heartbeat(int socketfd);
+    extern void send_reply(int socketfd, uint32_t messageID, const void * bytes, uint32_t count);
+    
+    // node writing information to be sent to the root. Uses pony message
+    // queue to allow other threads to add messages to the queue, and this
+    // just drains the queue and writes to the socket
+    root_t * rootPtr = (root_t *) arg;
+    pony_msg_t* msg;
+    
+    while(rootPtr->read_thread_tid != 0) {
+        while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&rootPtr->write_queue)) != NULL) {
+            switch(msg->msgId) {
+                case kRemote_Version: {
+                    send_version_check(rootPtr->socketfd);
+                } break;
+                case kRemote_RegisterWithRoot: {
+                    pony_msg_remote_register_t * m = (pony_msg_remote_register_t *)msg;
+                    send_register_with_root(rootPtr->socketfd, m->registration);
+                    ponyint_pool_free_size(m->length, m->registration);
+                } break;
+                case kRemote_SendCoreCount: {
+                    pony_msg_remote_core_count_t * m = (pony_msg_remote_core_count_t *)msg;
+                    send_core_count(rootPtr->socketfd);
+                } break;
+                case kRemote_SendHeartbeat: {
+                    pony_msg_remote_heartbeat_t * m = (pony_msg_remote_heartbeat_t *)msg;
+                    if (send_heartbeat(rootPtr->socketfd) <= 0) {
+                        close_socket(rootPtr->socketfd);
+                        rootPtr->socketfd = -1;
+                    }
+                } break;
+                case kRemote_SendReply: {
+                    pony_msg_remote_sendreply_t * m = (pony_msg_remote_sendreply_t *)msg;
+                    send_reply(rootPtr->socketfd,
+                                 m->messageId,
+                                 m->payload,
+                                 m->length);
+                    ponyint_pool_free_size(m->length, m->payload);
+                } break;
+            }
+            
+            ponyint_actor_messageq_pop_mark_done(&rootPtr->write_queue);
+        }
+        
+        ponyint_messageq_markempty(&rootPtr->write_queue);
+        usleep(500);
+    }
+    
+    return 0;
+}
+
 static DECLARE_THREAD_FN(node_read_from_root_thread)
 {
+    extern int send_heartbeat(int socketfd);
+    
     root_t * rootPtr = (root_t *) arg;
     
     char name[256] = {0};
@@ -131,7 +256,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
     
     int connectAttemptCount = 0;
     
-    while (rootPtr->thread_tid != 0) {
+    while (rootPtr->read_thread_tid != 0) {
         
         // socket create and verification
         rootPtr->socketfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -150,11 +275,11 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
             continue;
         }
         
-        send_version_check(rootPtr->socketfd);
+        pony_node_send_version_check(rootPtr);
         
         rootPtr->registerActorsOnRootFuncPtr(rootPtr->socketfd);
         
-        send_core_count(rootPtr->socketfd);
+        pony_node_send_core_count(rootPtr);
         
         // set the 5 second timeout on reads from the root
         struct timeval timeout;
@@ -312,12 +437,19 @@ void pony_remote_actor_send_message_to_root(int socketfd, int messageID, const v
     // will be delivered back in order
     
     pthread_mutex_lock(&roots_mutex);
-    send_reply(socketfd, messageID, bytes, count);
+    root_t * rootPtr = find_root_by_socket(socketfd);
+    if (rootPtr != NULL) {
+        pony_node_send_reply(rootPtr, messageID, bytes, count);
+    }
     pthread_mutex_unlock(&roots_mutex);
 }
 
 void pony_register_node_to_root(int socketfd, const char * actorRegistrationString) {
+    
     pthread_mutex_lock(&roots_mutex);
-    send_register_with_root(socketfd, actorRegistrationString);
+    root_t * rootPtr = find_root_by_socket(socketfd);
+    if (rootPtr != NULL) {
+        pony_node_send_register(rootPtr, actorRegistrationString);
+    }
     pthread_mutex_unlock(&roots_mutex);
 }
