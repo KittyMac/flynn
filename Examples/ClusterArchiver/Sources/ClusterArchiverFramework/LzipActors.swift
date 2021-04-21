@@ -11,7 +11,6 @@ protocol LzipActor {
 }
 
 public class LocalCompressor: Actor, LzipActor {
-
     private let compressor = Lzip.Compress(level: .lvl6)
 
     private func _beArchive(_ data: Data) -> Data {
@@ -32,10 +31,14 @@ public class LocalCompressor: Actor, LzipActor {
 }
 
 public class RemoteCompressor: RemoteActor, LzipActor {
+    private var compressor: Lzip.Compress?
 
-    private let compressor = Lzip.Compress(level: .lvl6)
+    public override func safeInit() {
+        compressor = Lzip.Compress(level: .lvl6)
+    }
 
     private func _beArchive(_ data: Data) -> Data {
+        guard let compressor = compressor else { return Data() }
         do {
             var compressed = Data()
             try compressor.compress(input: data, output: &compressed)
@@ -46,6 +49,7 @@ public class RemoteCompressor: RemoteActor, LzipActor {
     }
 
     private func _beFinish() -> Data {
+        guard let compressor = compressor else { return Data() }
         var compressed = Data()
         compressor.finish(output: &compressed)
         return compressed
@@ -53,7 +57,6 @@ public class RemoteCompressor: RemoteActor, LzipActor {
 }
 
 public class LocalDecompressor: Actor, LzipActor {
-
     private let decompressor = Lzip.Decompress()
 
     private func _beArchive(_ data: Data) -> Data {
@@ -74,10 +77,14 @@ public class LocalDecompressor: Actor, LzipActor {
 }
 
 public class RemoteDecompressor: RemoteActor, LzipActor {
+    private var decompressor: Lzip.Decompress?
 
-    private let decompressor = Lzip.Decompress()
+    public override func safeInit() {
+        decompressor = Lzip.Decompress()
+    }
 
     private func _beArchive(_ data: Data) -> Data {
+        guard let decompressor = decompressor else { return Data() }
         do {
             var decompressed = Data()
             try decompressor.decompress(input: data, output: &decompressed)
@@ -88,6 +95,7 @@ public class RemoteDecompressor: RemoteActor, LzipActor {
     }
 
     private func _beFinish() -> Data {
+        guard let decompressor = decompressor else { return Data() }
         var decompressed = Data()
         decompressor.finish(output: &decompressed)
         return decompressed
