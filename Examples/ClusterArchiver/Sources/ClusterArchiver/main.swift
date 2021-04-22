@@ -7,8 +7,19 @@ import ClusterArchiverFramework
 struct ClusterArchiverCLI: ParsableCommand {
     static var configuration = CommandConfiguration(
         abstract: "Distributed lzip compression and decompression",
-        subcommands: [Archive.self, Support.self],
-        defaultSubcommand: Archive.self)
+        subcommands: [One.self, Archive.self, Support.self],
+        defaultSubcommand: One.self)
+
+    struct One: ParsableCommand {
+        static var configuration = CommandConfiguration(abstract: "Archive a single file lzip")
+
+        @Argument(help: "Path to file to archive")
+        var path: String
+
+        mutating func run() throws {
+            ClusterArchiver.archive(file: path)
+        }
+    }
 
     struct Archive: ParsableCommand {
         static var configuration = CommandConfiguration(abstract: "Archive files using lzip")

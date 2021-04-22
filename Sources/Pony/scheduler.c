@@ -437,7 +437,7 @@ bool ponyint_sched_start()
 void ponyint_sched_wait(bool waitForRemotes)
 {
     // block current thread until there are no more actors running
-    int32_t times = 99;
+    int32_t times = 500;
     
     while(true) {
         uint32_t active = 0;
