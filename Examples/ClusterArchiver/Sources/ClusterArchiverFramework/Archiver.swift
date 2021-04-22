@@ -22,7 +22,9 @@ public class Archiver: Actor {
 
         if let directoryFiles = try? FileManager.default.contentsOfDirectory(atPath: directory) {
             for filePath in directoryFiles {
-                files.append(URL(fileURLWithPath: "\(directory)/\(filePath)"))
+                if filePath.hasPrefix(".") == false {
+                    files.append(URL(fileURLWithPath: "\(directory)/\(filePath)"))
+                }
             }
 
             print("\(files.count) files to process")
@@ -40,44 +42,52 @@ public class Archiver: Actor {
     }
 
     private func _beArchiveMore() {
+        let useLocal = true
+        let useRemotes = true
 
-        while activeLocal < Flynn.cores {
-            guard let file = files.popLast() else { return checkDone() }
+        if useLocal {
+            while activeLocal < Flynn.cores {
+                guard let file = files.popLast() else { return checkDone() }
 
-            activeLocal += 1
-            if (activeLocal + activeRemote) > maxActive {
-                maxActive = (activeLocal + activeRemote)
-            }
+                activeLocal += 1
+                if (activeLocal + activeRemote) > maxActive {
+                    maxActive = (activeLocal + activeRemote)
+                }
 
-            let fileArchiver = FileArchiver(file: file,
-                                            local: true)
-            fileArchiver.beArchive(self) { (_) in
-                self.activeLocal -= 1
-                self.completedLocal += 1
+                let fileArchiver = FileArchiver(file: file,
+                                                local: true)
+                fileArchiver.beArchive(self) { (_) in
+                    self.activeLocal -= 1
+                    self.completedLocal += 1
 
-                self.beArchiveMore()
+                    self.beArchiveMore()
+                }
             }
         }
 
-        // while Flynn.remoteCores <= 0 {
-        //   usleep(500)
-        // }
-
-        while activeRemote < Flynn.remoteCores {
-            guard let file = files.popLast() else { return checkDone() }
-
-            activeRemote += 1
-            if (activeLocal + activeRemote) > maxActive {
-                maxActive = (activeLocal + activeRemote)
+        if useLocal == false && useRemotes == true {
+            while Flynn.remoteCores <= 0 {
+                usleep(500)
             }
+        }
 
-            let fileArchiver = FileArchiver(file: file,
-                                            local: false)
-            fileArchiver.beArchive(self) { (_) in
-                self.activeRemote -= 1
-                self.completedRemote += 1
+        if useRemotes {
+            while activeRemote < Flynn.remoteCores {
+                guard let file = files.popLast() else { return checkDone() }
 
-                self.beArchiveMore()
+                activeRemote += 1
+                if (activeLocal + activeRemote) > maxActive {
+                    maxActive = (activeLocal + activeRemote)
+                }
+
+                let fileArchiver = FileArchiver(file: file,
+                                                local: false)
+                fileArchiver.beArchive(self) { (_) in
+                    self.activeRemote -= 1
+                    self.completedRemote += 1
+
+                    self.beArchiveMore()
+                }
             }
         }
     }
