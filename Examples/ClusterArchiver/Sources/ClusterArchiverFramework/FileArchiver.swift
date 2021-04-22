@@ -6,9 +6,8 @@ class FileArchiver: Actor {
     private var outputURL: URL = URL(fileURLWithPath: "/dev/null")
     private var isLocal: Bool
     private let bufferSize = 16384 * 4
-
     private var lzipActor: LzipActor?
-    private var chunksOutstanding = 0
+    private var outstandingChunks = 0
 
     init(file: URL, local: Bool) {
         inputURL = file
@@ -66,7 +65,16 @@ class FileArchiver: Actor {
     private func processNextChunk(_ nextChunk: Data,
                                   _ returnCallback: @escaping (Bool) -> Void) {
         guard lzipActor != nil else { return }
-        guard chunksOutstanding < 3 else { return }
+
+        let readMore: (() -> Void) = {
+            while self.outstandingChunks < 4 {
+                self.outstandingChunks += 1
+                FileIO.shared.beRead(self.inputURL, self.bufferSize, self) {
+                    guard let data = $0 else { return }
+                    self.processNextChunk(data, returnCallback)
+                }
+            }
+        }
 
         // Check to see if we sent all of the data
         if nextChunk.count == 0 {
@@ -74,25 +82,17 @@ class FileArchiver: Actor {
         }
 
         if let lzipActor = lzipActor {
-            chunksOutstanding += 1
             lzipActor.beArchive(nextChunk, self) { (resultData) in
+                self.outstandingChunks -= 1
+
                 FileIO.shared.beWrite(self.outputURL, resultData)
-
-                self.chunksOutstanding -= 1
-
                 if self.lzipActor != nil {
-                    FileIO.shared.beRead(self.inputURL, self.bufferSize, self) {
-                        guard let data = $0 else { return }
-                        self.processNextChunk(data, returnCallback)
-                    }
+                    readMore()
                 }
             }
         }
 
-        FileIO.shared.beRead(self.inputURL, bufferSize, self) {
-            guard let data = $0 else { return }
-            self.processNextChunk(data, returnCallback)
-        }
+        readMore()
     }
 
     private func finished(_ returnCallback: @escaping (Bool) -> Void) {
