@@ -1,5 +1,6 @@
 import Flynn
 import Foundation
+import LzSwift
 
 private let remoteActorManifest: [RemoteActor.Type] = [RemoteCompressor.self, RemoteDecompressor.self]
 
@@ -34,5 +35,38 @@ public enum ClusterArchiver {
         Archiver.init(directory: directory)
 
         Flynn.shutdown(waitForRemotes: true)
+    }
+
+    public static func archive(file: String) {
+        // Simulate lzip CLI for apples-to-apples comparison
+        do {
+            let inputURL = URL(fileURLWithPath: file)
+            let data = try Data(contentsOf: inputURL)
+            var output = Data()
+            var outputURL: URL?
+
+            if data.isLzipped {
+                outputURL = inputURL.deletingPathExtension()
+
+                let decompressor = Lzip.Decompress()
+                try decompressor.decompress(input: data, output: &output)
+                decompressor.finish(output: &output)
+            } else {
+                outputURL = inputURL.appendingPathExtension("lz")
+
+                let compressor = Lzip.Compress(level: .lvl6)
+                try compressor.compress(input: data, output: &output)
+                compressor.finish(output: &output)
+            }
+
+            if let outputURL = outputURL {
+                try output.write(to: outputURL)
+                try? FileManager.default.removeItem(at: inputURL)
+            }
+
+        } catch {
+            print("failed: \(error)")
+        }
+
     }
 }
