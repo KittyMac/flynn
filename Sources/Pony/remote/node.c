@@ -101,8 +101,8 @@ static bool node_add_root(const char * address,
 }
 
 static void node_remove_root(root_t * rootPtr) {
+    pthread_mutex_lock(&roots_mutex);
     if (rootPtr->read_thread_tid != 0) {
-        pthread_mutex_lock(&roots_mutex);
         close_socket(rootPtr->socketfd);
         
         pony_thread_id_t read_thread = rootPtr->read_thread_tid;
@@ -110,16 +110,6 @@ static void node_remove_root(root_t * rootPtr) {
         int socketfd = rootPtr->socketfd;
         rootPtr->read_thread_tid = 0;
         rootPtr->write_thread_tid = 0;
-        rootPtr->socketfd = -1;
-        pthread_mutex_unlock(&roots_mutex);
-
-        ponyint_thread_join(rootPtr->read_thread_tid);
-        ponyint_thread_join(rootPtr->write_thread_tid);
-        
-        pthread_mutex_lock(&roots_mutex);
-        ponyint_messageq_destroy(&rootPtr->write_queue);
-        
-        rootPtr->read_thread_tid = 0;
         rootPtr->port = 0;
         rootPtr->automaticReconnect = false;
         rootPtr->createActorFuncPtr = NULL;
@@ -128,13 +118,22 @@ static void node_remove_root(root_t * rootPtr) {
         rootPtr->registerActorsOnRootFuncPtr = NULL;
         rootPtr->address[0] = 0;
         rootPtr->socketfd = -1;
-        pthread_mutex_unlock(&roots_mutex);
+        ponyint_messageq_destroy(&rootPtr->write_queue);
     }
+    pthread_mutex_unlock(&roots_mutex);
 }
 
 static void node_remove_all_roots() {
+    // we just invalidate the socket, the root connections will remove themselves
     for (int i = 0; i < kMaxRoots; i++) {
-        node_remove_root(roots + i);
+        pthread_mutex_lock(&roots_mutex);
+        pony_thread_id_t write_thread_tid = roots[i].write_thread_tid;
+        roots[i].socketfd = -1;
+        pthread_mutex_unlock(&roots_mutex);
+        
+        if (write_thread_tid != 0) {
+            ponyint_thread_join(write_thread_tid);
+        }
     }
 }
 

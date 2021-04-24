@@ -25,7 +25,7 @@ extern void *objc_autoreleasePoolPush();
 extern void objc_autoreleasePoolPop(void *);
 #endif
 
-extern bool pony_root_finished();
+extern int pony_root_num_active_remotes();
 
 static DECLARE_THREAD_FN(run_thread);
 
@@ -188,9 +188,6 @@ static pony_actor_t* steal(scheduler_t* sched)
     int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
 #endif
     
-    
-    sched->idle = true;
-    
     while(true)
     {
         // Choose the victim with the most work to do
@@ -221,6 +218,8 @@ static pony_actor_t* steal(scheduler_t* sched)
         if (sched->terminate) {
             return NULL;
         }
+        
+        sched->idle = true;
     }
     
     sched->idle = false;
@@ -250,6 +249,7 @@ static void run(scheduler_t* sched)
             actor = steal(sched);
         }
         if(actor != NULL) {
+            sched->idle = false;
             
             if (COREAFFINITY_IS_INCOMPATIBLE(actor->coreAffinity, sched->coreAffinity)) {
                 push(sched, actor);
@@ -454,14 +454,20 @@ void ponyint_sched_wait(bool waitForRemotes)
         // in order to be able to shutdown, all schedules must be idle
         // all injection queues must be empty
         // all remote actors must be destroyed
+        /*
+        fprintf(stderr, "%d  %d  %d  %d  %d\n",
+                active,
+                (int)inject.num_messages,
+                (int)injectHighEfficiency.num_messages,
+                (int)injectHighPerformance.num_messages,
+                pony_root_num_active_remotes() );*/
         if (active == 0 &&
             inject.num_messages == 0 &&
             injectHighEfficiency.num_messages == 0 &&
             injectHighPerformance.num_messages == 0 &&
-            (waitForRemotes == false || pony_root_finished())) {
+            (waitForRemotes == false || pony_root_num_active_remotes() == 0)) {
             timesIdle--;
             if (timesIdle <= 0) {
-                fprintf(stderr, "pony shutting down\n");
                 break;
             }
         } else {

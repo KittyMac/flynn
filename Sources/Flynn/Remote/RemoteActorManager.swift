@@ -336,7 +336,7 @@ internal final class RemoteActorManager: Actor {
     
     internal func unsafeGetRunnerForActor(_ actorUUID: String) -> RemoteActorRunner {
         // Ok, this has pros and cons
-        // pro: its quick, easy, and gaurantees causal messaging
+        // pro: its quick, easy, and guarantees causal messaging
         // con: we won't get amazing distribution across all cores
         let runnerIdx = abs(actorUUID.hashValue) % runnerPool.count
         return runnerPool[runnerIdx]
