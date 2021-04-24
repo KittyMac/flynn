@@ -5,7 +5,7 @@ class FileArchiver: Actor {
     private var inputURL: URL = URL(fileURLWithPath: "/dev/null")
     private var outputURL: URL = URL(fileURLWithPath: "/dev/null")
     private var isLocal: Bool
-    private let bufferSize = 65536 * 1
+    private let bufferSize = 65536 * 8
     private var lzipActor: LzipActor?
     private var outstandingChunks = 0
 
@@ -67,7 +67,7 @@ class FileArchiver: Actor {
         guard lzipActor != nil else { return }
 
         let readMore: (() -> Void) = {
-            while self.outstandingChunks < 4 {
+            while self.outstandingChunks < 8 {
                 self.outstandingChunks += 1
                 FileIO.shared.beRead(self.inputURL, self.bufferSize, self) {
                     guard let data = $0 else { return }

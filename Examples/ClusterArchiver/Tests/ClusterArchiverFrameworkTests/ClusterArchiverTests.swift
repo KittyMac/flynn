@@ -56,8 +56,8 @@ final class ClusterArchiverTests: XCTestCase {
         // decompression: 0 / 9449 files in 15.174230098724365s, max concurrent 172
         
         // 28 local cores / 172 remote cores
-        // compression: 4024 / 5425 files in 15.612917065620422s, max concurrent 200
-        // decompression: 5080 / 4369 files in 8.551880955696106s, max concurrent 200
+        // compression: 4148 / 5301 files in 17.91438603401184s, max concurrent 200
+        // decompression: 4331 / 5118 files in 7.008651971817017s, max concurrent 200
         
         
         // Single large file (1.63 GB // 23.1 GB)

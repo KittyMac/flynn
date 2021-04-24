@@ -56,9 +56,6 @@ static bool inited = false;
 static pthread_mutex_t nodes_mutex;
 static pthread_mutex_t messageId_mutex;
 
-#define kMaxSockets 1024
-static pthread_mutex_t socket_mutexes[kMaxSockets] = {0};
-
 static pony_thread_id_t root_tid;
 static char root_ip_address[128] = {0};
 static int root_tcp_port = 9999;
@@ -92,6 +89,7 @@ static node_t * find_node_by_socket(int socketfd) {
 static node_t * root_get_next_node() {
     static int next_node_index = 0;
     
+    pthread_mutex_lock(&nodes_mutex);
     node_t * nodePtr = nodes + next_node_index;
     for (int i = 0; i < kMaxNodes; i++) {
         nodePtr++;
@@ -100,10 +98,12 @@ static node_t * root_get_next_node() {
         }
         if (nodePtr->read_thread_tid != 0) {
             next_node_index = nodePtr - nodes;
+            
+            pthread_mutex_unlock(&nodes_mutex);
             return nodePtr;
         }
     }
-    
+    pthread_mutex_unlock(&nodes_mutex);
     return NULL;
 }
 
@@ -208,6 +208,8 @@ void pony_root_send_message(node_t * nodePtr,
 
 static DECLARE_THREAD_FN(root_write_to_node_thread)
 {
+    ponyint_thead_setname_actual("Flynn Root -> Node");
+    
     extern void send_version_check(int socketfd);
     extern void send_create_actor(int socketfd, const char * actorUUID, const char * actorType);
     extern void send_destroy_actor(int socketfd, const char * actorUUID);
@@ -252,19 +254,20 @@ static DECLARE_THREAD_FN(root_write_to_node_thread)
         usleep(500);
     }
     
+    ponyint_pool_thread_cleanup();
     return 0;
 }
 
 static DECLARE_THREAD_FN(root_read_from_node_thread)
 {
+    ponyint_thead_setname_actual("Flynn Root <- Node");
+    
     // root reading information sent from node. The only valid command
     // node -> root is COMMAND_SEND_REPLY.  Any miscommunication from
     // the node results in the immediate termination of the connection
     node_t * nodePtr = (node_t *) arg;
     
     pony_root_send_version_check(nodePtr);
-    
-    int numDestroyedAck = 0;
         
     while(nodePtr->socketfd >= 0) {
         
@@ -302,9 +305,11 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 }
             } break;
             case COMMAND_DESTROY_ACTOR_ACK: {
-                numDestroyedAck += 1;
-                nodePtr->active_actors -= 1;
-                fprintf(stderr, "%d\n", numDestroyedAck);
+                pthread_mutex_lock(&nodes_mutex);
+                if (nodePtr->active_actors > 0) {
+                    nodePtr->active_actors -= 1;
+                }
+                pthread_mutex_unlock(&nodes_mutex);
             } break;
             case COMMAND_REGISTER_WITH_ROOT: {
                 uint32_t payload_count = 0;
@@ -361,13 +366,13 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
     }
     
     root_remove_node(nodePtr);
-    
+    ponyint_pool_thread_cleanup();
     return 0;
 }
 
 static DECLARE_THREAD_FN(root_thread)
 {
-    ponyint_thead_setname_actual("Flynn Root #0");
+    ponyint_thead_setname_actual("Flynn Root");
         
     socklen_t len;
     int socketfd, connectionfd;
@@ -436,11 +441,6 @@ void pony_root(const char * address,
         inited = true;
         pthread_mutex_init(&nodes_mutex, NULL);
         pthread_mutex_init(&messageId_mutex, NULL);
-        
-        for (int i = 0; i < kMaxSockets; i++) {
-            pthread_mutex_init(&socket_mutexes[i], NULL);
-        }
-        
         init_all_nodes();
     }
     
@@ -468,7 +468,7 @@ void root_shutdown() {
 bool pony_root_finished() {
     node_t * ptr = nodes;
     uint32_t total = 0;
-    while (ptr < (nodes + kMaxNodes) && ptr->read_thread_tid != 0) {
+    while (ptr < (nodes + kMaxNodes)) {
         total += ptr->active_actors;
         ptr++;
     }
