@@ -1,4 +1,5 @@
 // swiftlint:disable line_length
+// swiftlint:disable cyclomatic_complexity
 
 import Flynn
 import Foundation
@@ -33,23 +34,13 @@ public class Archiver: Actor {
         }
     }
 
-    private func checkDone() {
-        if activeLocal == 0 && activeRemote == 0 && files.count == 0 && done == false {
-            done = true
-
-            print("\(completedLocal) / \(completedRemote) files in \(abs(start.timeIntervalSinceNow))s, max concurrent \(maxActive)")
-        }
-    }
-
     private func _beArchiveMore() {
-        let useLocal = true
+        let useLocal = false
         let useRemotes = true
-
-        checkDone()
 
         if useLocal {
             while activeLocal < Flynn.cores {
-                guard let file = files.popLast() else { return }
+                guard let file = files.popLast() else { break }
 
                 activeLocal += 1
                 if (activeLocal + activeRemote) > maxActive {
@@ -75,7 +66,7 @@ public class Archiver: Actor {
 
         if useRemotes {
             while activeRemote < Flynn.remoteCores {
-                guard let file = files.popLast() else { return }
+                guard let file = files.popLast() else { break }
 
                 activeRemote += 1
                 if (activeLocal + activeRemote) > maxActive {
@@ -91,6 +82,11 @@ public class Archiver: Actor {
                     self.beArchiveMore()
                 }
             }
+        }
+
+        if activeLocal == 0 && activeRemote == 0 && files.count == 0 && done == false {
+            done = true
+            print("\(completedLocal) / \(completedRemote) files in \(abs(start.timeIntervalSinceNow))s, max concurrent \(maxActive)")
         }
     }
 }

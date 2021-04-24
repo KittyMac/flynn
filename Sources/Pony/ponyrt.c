@@ -39,12 +39,13 @@ void pony_shutdown(bool waitForRemotes) {
     
     ponyint_sched_wait(waitForRemotes);
     
+    fprintf(stderr, "pony remote shutdown\n");
     pony_remote_shutdown();
     
+    fprintf(stderr, "pony scheduler shutdown\n");
     ponyint_sched_stop();
     
-    //fprintf(stderr, "pony_shutdown()\n");
-    
+    fprintf(stderr, "pony shutdown finished\n");
     pony_is_inited = false;
 }
 
