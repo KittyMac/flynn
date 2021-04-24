@@ -65,7 +65,7 @@ open class InternalRemoteActor {
     }
 
     deinit {
-        if isNamedService == false && nodeSocketFD != kLocalSocketFD {
+        if isNamedService == false && nodeSocketFD != kLocalSocketFD && unsafeIsProxy == true {
             pony_remote_destroy_actor(unsafeUUID, &nodeSocketFD)
         }
         //print("deinit - RemoteActor [\(nodeSocketFD)]")

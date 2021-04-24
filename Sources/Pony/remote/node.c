@@ -188,6 +188,8 @@ void pony_node_send_reply(root_t * rootPtr,
 
 static DECLARE_THREAD_FN(node_write_to_root_thread)
 {
+    ponyint_thead_setname_actual("Flynn Node -> Root");
+    
     extern void send_version_check(int socketfd);
     extern void send_core_count(int socketfd);
     extern void send_register_with_root(int socketfd, const char * registrationString);
@@ -241,11 +243,14 @@ static DECLARE_THREAD_FN(node_write_to_root_thread)
         usleep(500);
     }
     
+    ponyint_pool_thread_cleanup();
     return 0;
 }
 
 static DECLARE_THREAD_FN(node_read_from_root_thread)
 {
+    ponyint_thead_setname_actual("Flynn Node <- Root");
+    
     extern int send_heartbeat(int socketfd);
     
     root_t * rootPtr = (root_t *) arg;

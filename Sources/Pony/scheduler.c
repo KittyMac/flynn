@@ -451,7 +451,14 @@ void ponyint_sched_wait(bool waitForRemotes)
             }
         }
         
-        if (active == 0 && (waitForRemotes == false || pony_root_finished())) {
+        // in order to be able to shutdown, all schedules must be idle
+        // all injection queues must be empty
+        // all remote actors must be destroyed
+        if (active == 0 &&
+            inject.num_messages == 0 &&
+            injectHighEfficiency.num_messages == 0 &&
+            injectHighPerformance.num_messages == 0 &&
+            (waitForRemotes == false || pony_root_finished())) {
             timesIdle--;
             if (timesIdle <= 0) {
                 fprintf(stderr, "pony shutting down\n");
