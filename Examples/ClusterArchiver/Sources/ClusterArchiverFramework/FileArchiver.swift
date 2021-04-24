@@ -5,7 +5,7 @@ class FileArchiver: Actor {
     private var inputURL: URL = URL(fileURLWithPath: "/dev/null")
     private var outputURL: URL = URL(fileURLWithPath: "/dev/null")
     private var isLocal: Bool
-    private let bufferSize = 16384 * 4
+    private let bufferSize = 65536 * 1
     private var lzipActor: LzipActor?
     private var outstandingChunks = 0
 

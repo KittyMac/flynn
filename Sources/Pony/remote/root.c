@@ -263,6 +263,8 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
     node_t * nodePtr = (node_t *) arg;
     
     pony_root_send_version_check(nodePtr);
+    
+    int numDestroyedAck = 0;
         
     while(nodePtr->socketfd >= 0) {
         
@@ -277,7 +279,8 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
             command != COMMAND_HEARTBEAT &&
             command != COMMAND_CREATE_ACTOR &&
             command != COMMAND_REGISTER_WITH_ROOT &&
-            command != COMMAND_SEND_REPLY) {
+            command != COMMAND_SEND_REPLY &&
+            command != COMMAND_DESTROY_ACTOR_ACK) {
             root_remove_node(nodePtr);
             return 0;
         }
@@ -297,6 +300,11 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
                     fprintf(stdout, "warning: root -> node version mismatch ( [%s] != [%s] )\n", uuid, BUILD_VERSION_UUID);
                 }
+            } break;
+            case COMMAND_DESTROY_ACTOR_ACK: {
+                numDestroyedAck += 1;
+                nodePtr->active_actors -= 1;
+                fprintf(stderr, "%d\n", numDestroyedAck);
             } break;
             case COMMAND_REGISTER_WITH_ROOT: {
                 uint32_t payload_count = 0;
@@ -525,7 +533,6 @@ void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD) {
         node_t * nodePtr = find_node_by_socket(*nodeSocketFD);
         if (nodePtr != NULL) {
             pony_root_send_destroy_actor(nodePtr, actorUUID);
-            nodePtr->active_actors -= 1;
         }
         pthread_mutex_unlock(&nodes_mutex);
     }

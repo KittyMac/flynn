@@ -167,6 +167,12 @@ void pony_node_send_heartbeat(root_t * rootPtr)
     ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
 }
 
+void pony_node_send_destroy_actor_ack(root_t * rootPtr)
+{
+    pony_msg_remote_destroy_actor_ack_t* m = (pony_msg_remote_destroy_actor_ack_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_destroy_actor_ack_t)), kRemote_DestroyActorAck);
+    ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
+}
+
 void pony_node_send_reply(root_t * rootPtr,
                           uint32_t messageId,
                           const void * payload,
@@ -186,6 +192,7 @@ static DECLARE_THREAD_FN(node_write_to_root_thread)
     extern void send_core_count(int socketfd);
     extern void send_register_with_root(int socketfd, const char * registrationString);
     extern int send_heartbeat(int socketfd);
+    extern int send_destroy_actor_ack(int socketfd);
     extern void send_reply(int socketfd, uint32_t messageID, const void * bytes, uint32_t count);
     
     // node writing information to be sent to the root. Uses pony message
@@ -206,15 +213,16 @@ static DECLARE_THREAD_FN(node_write_to_root_thread)
                     ponyint_pool_free_size(m->length, m->registration);
                 } break;
                 case kRemote_SendCoreCount: {
-                    pony_msg_remote_core_count_t * m = (pony_msg_remote_core_count_t *)msg;
                     send_core_count(rootPtr->socketfd);
                 } break;
                 case kRemote_SendHeartbeat: {
-                    pony_msg_remote_heartbeat_t * m = (pony_msg_remote_heartbeat_t *)msg;
                     if (send_heartbeat(rootPtr->socketfd) <= 0) {
                         close_socket(rootPtr->socketfd);
                         rootPtr->socketfd = -1;
                     }
+                } break;
+                case kRemote_DestroyActorAck: {
+                    send_destroy_actor_ack(rootPtr->socketfd);
                 } break;
                 case kRemote_SendReply: {
                     pony_msg_remote_sendreply_t * m = (pony_msg_remote_sendreply_t *)msg;
@@ -352,6 +360,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                 case COMMAND_DESTROY_ACTOR:
                     
                     rootPtr->destroyActorFuncPtr(uuid);
+                    pony_node_send_destroy_actor_ack(rootPtr);
                     
 #if REMOTE_DEBUG
                     fprintf(stdout, "[%d] COMMAND_DESTROY_ACTOR[%s]\n", rootPtr->socketfd, uuid);
