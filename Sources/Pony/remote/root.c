@@ -156,11 +156,16 @@ static void root_remove_all_nodes() {
     for (int i = 0; i < kMaxNodes; i++) {
         pthread_mutex_lock(&nodes_mutex);
         pony_thread_id_t write_thread_tid = nodes[i].write_thread_tid;
+        pony_thread_id_t read_thread_tid = nodes[i].read_thread_tid;
+        close_socket(nodes[i].socketfd);
         nodes[i].socketfd = -1;
         pthread_mutex_unlock(&nodes_mutex);
         
         if (write_thread_tid != 0) {
             ponyint_thread_join(write_thread_tid);
+        }
+        if (read_thread_tid != 0) {
+            ponyint_thread_join(read_thread_tid);
         }
     }
 }
@@ -284,6 +289,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
             command != COMMAND_SEND_REPLY &&
             command != COMMAND_DESTROY_ACTOR_ACK) {
             root_remove_node(nodePtr);
+            ponyint_pool_thread_cleanup();
             return 0;
         }
         
@@ -293,6 +299,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
             command == COMMAND_CREATE_ACTOR) {
             if (!read_bytecount_buffer(nodePtr->socketfd, uuid, sizeof(uuid)-1)) {
                 root_remove_node(nodePtr);
+                ponyint_pool_thread_cleanup();
                 return 0;
             }
         }
@@ -526,10 +533,10 @@ int pony_remote_actor_send_message_to_node(const char * actorUUID,
     return messageId;
 }
 
-void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD) {
-    if (*nodeSocketFD >= 0) {
+void pony_remote_destroy_actor(const char * actorUUID, int nodeSocketFD) {
+    if (nodeSocketFD >= 0) {
         pthread_mutex_lock(&nodes_mutex);
-        node_t * nodePtr = find_node_by_socket(*nodeSocketFD);
+        node_t * nodePtr = find_node_by_socket(nodeSocketFD);
         if (nodePtr != NULL) {
             pony_root_send_destroy_actor(nodePtr, actorUUID);
         }

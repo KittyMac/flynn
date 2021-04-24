@@ -39,9 +39,9 @@ void pony_shutdown(bool waitForRemotes) {
     
     ponyint_sched_wait(waitForRemotes);
     
-    ponyint_sched_stop();
-    
     pony_remote_shutdown();
+    
+    ponyint_sched_stop();
     
     //fprintf(stderr, "pony_shutdown()\n");
     
