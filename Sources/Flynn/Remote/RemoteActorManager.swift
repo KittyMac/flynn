@@ -189,6 +189,11 @@ internal final class RemoteActorManager: Actor {
         nodeActors.removeValue(forKey: actorUUID)
     }
     
+    private func _beRemoteDestroyActor(_ actorUUID: String,
+                                       _ nodeSocketFD: Int32) {
+        pony_remote_destroy_actor(actorUUID, nodeSocketFD)
+    }
+    
     private func _beSendToRemote(_ internalRemoteActor: InternalRemoteActor,
                                  _ actorUUID: String,
                                  _ actorTypeString: String,
@@ -196,7 +201,6 @@ internal final class RemoteActorManager: Actor {
                                  _ payload: Data,
                                  _ replySender: Actor?,
                                  _ replyCallback: RemoteBehaviorReply?) {
-                        
         let fallbackRunRemoteActorLocally: (() -> Void) = {
             guard let _ = self.fallbackActorTypes[actorTypeString] else {
                 fatalError("Unregistered remote actor of type \(actorTypeString); properly include all valid types in Flynn.Root.listen()")
@@ -424,6 +428,12 @@ extension RemoteActorManager {
     @discardableResult
     public func beDestroyActor(_ actorUUID: String) -> Self {
         unsafeSend { self._beDestroyActor(actorUUID) }
+        return self
+    }
+    @discardableResult
+    public func beRemoteDestroyActor(_ actorUUID: String,
+                                     _ nodeSocketFD: Int32) -> Self {
+        unsafeSend { self._beRemoteDestroyActor(actorUUID, nodeSocketFD) }
         return self
     }
     @discardableResult

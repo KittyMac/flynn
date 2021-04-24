@@ -460,7 +460,8 @@ void ponyint_sched_wait(bool waitForRemotes)
                 (int)inject.num_messages,
                 (int)injectHighEfficiency.num_messages,
                 (int)injectHighPerformance.num_messages,
-                pony_root_num_active_remotes() );*/
+                pony_root_num_active_remotes() );
+         */
         if (active == 0 &&
             inject.num_messages == 0 &&
             injectHighEfficiency.num_messages == 0 &&

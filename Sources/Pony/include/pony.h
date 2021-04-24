@@ -51,7 +51,7 @@ void pony_remote_actor_send_message_to_root(int socketfd,
 void pony_register_node_to_root(int socketfd,
                                 const char * actorRegistrationString);
 
-void pony_remote_destroy_actor(const char * actorUUID, int * nodeSocketFD);
+void pony_remote_destroy_actor(const char * actorUUID, int nodeSocketFD);
 
 bool pony_startup(void);
 void pony_shutdown(bool waitForRemotes);

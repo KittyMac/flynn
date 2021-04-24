@@ -66,7 +66,7 @@ open class InternalRemoteActor {
 
     deinit {
         if isNamedService == false && nodeSocketFD != kLocalSocketFD && unsafeIsProxy == true {
-            pony_remote_destroy_actor(unsafeUUID, &nodeSocketFD)
+            Flynn.remotes.beRemoteDestroyActor(unsafeUUID, nodeSocketFD)
         }
         //print("deinit - RemoteActor [\(nodeSocketFD)]")
     }
@@ -79,6 +79,7 @@ open class InternalRemoteActor {
         delayedRemoteBehaviors[name] = behavior
     }
 
+    // Note: this is run on a Node from RemoteActorRunner only
     public func unsafeExecuteBehavior(_ name: String, _ payload: Data, _ messageID: Int32, _ replySocketFD: Int32) {
         // regular remote behaviors either return nothing (nil) or
         // return data to be sent back immediately
