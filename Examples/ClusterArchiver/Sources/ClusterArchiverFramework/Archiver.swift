@@ -34,7 +34,7 @@ public class Archiver: Actor {
     }
 
     private func checkDone() {
-        if activeLocal == 0 && activeRemote == 0 && done == false {
+        if activeLocal == 0 && activeRemote == 0 && files.count == 0 && done == false {
             done = true
 
             print("\(completedLocal) / \(completedRemote) files in \(abs(start.timeIntervalSinceNow))s, max concurrent \(maxActive)")
@@ -42,12 +42,14 @@ public class Archiver: Actor {
     }
 
     private func _beArchiveMore() {
-        let useLocal = true
+        let useLocal = false
         let useRemotes = true
+
+        checkDone()
 
         if useLocal {
             while activeLocal < Flynn.cores {
-                guard let file = files.popLast() else { return checkDone() }
+                guard let file = files.popLast() else { return }
 
                 activeLocal += 1
                 if (activeLocal + activeRemote) > maxActive {
@@ -73,7 +75,7 @@ public class Archiver: Actor {
 
         if useRemotes {
             while activeRemote < Flynn.remoteCores {
-                guard let file = files.popLast() else { return checkDone() }
+                guard let file = files.popLast() else { return }
 
                 activeRemote += 1
                 if (activeLocal + activeRemote) > maxActive {

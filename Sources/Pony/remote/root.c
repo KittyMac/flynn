@@ -135,34 +135,33 @@ static bool root_add_node(int socketfd) {
 }
 
 static void root_remove_node(node_t * nodePtr) {
+    pthread_mutex_lock(&nodes_mutex);
     if (nodePtr->read_thread_tid != 0) {
-        pthread_mutex_lock(&nodes_mutex);
         number_of_cores -= nodePtr->core_count;
         number_of_nodes--;
         
-        pony_thread_id_t read_thread = nodePtr->read_thread_tid;
-        pony_thread_id_t write_thread = nodePtr->write_thread_tid;
         int socketfd = nodePtr->socketfd;
+        nodePtr->socketfd = -1;
         nodePtr->read_thread_tid = 0;
         nodePtr->write_thread_tid = 0;
-        nodePtr->socketfd = -1;
-        pthread_mutex_unlock(&nodes_mutex);
-                
-        close_socket(socketfd);
-        ponyint_thread_join(read_thread);
-        ponyint_thread_join(write_thread);
-        
-        pthread_mutex_lock(&nodes_mutex);
         nodePtr->core_count = 0;
         nodePtr->active_actors = 0;
         ponyint_messageq_destroy(&nodePtr->write_queue);
-        pthread_mutex_unlock(&nodes_mutex);
     }
+    pthread_mutex_unlock(&nodes_mutex);
 }
 
 static void root_remove_all_nodes() {
+    // we just invalidate all sockets, the nodes will remove themselves
     for (int i = 0; i < kMaxNodes; i++) {
-        root_remove_node(nodes+i);
+        pthread_mutex_lock(&nodes_mutex);
+        pony_thread_id_t write_thread_tid = nodes[i].write_thread_tid;
+        nodes[i].socketfd = -1;
+        pthread_mutex_unlock(&nodes_mutex);
+        
+        if (write_thread_tid != 0) {
+            ponyint_thread_join(write_thread_tid);
+        }
     }
 }
 
@@ -465,14 +464,14 @@ void root_shutdown() {
     number_of_cores = 0;
 }
 
-bool pony_root_finished() {
+int pony_root_num_active_remotes() {
     node_t * ptr = nodes;
-    uint32_t total = 0;
+    int total = 0;
     while (ptr < (nodes + kMaxNodes)) {
         total += ptr->active_actors;
         ptr++;
     }
-    return total == 0;
+    return total;
 }
 
 
