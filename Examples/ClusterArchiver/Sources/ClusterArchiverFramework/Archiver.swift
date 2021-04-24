@@ -35,7 +35,7 @@ public class Archiver: Actor {
     }
 
     private func _beArchiveMore() {
-        let useLocal = false
+        let useLocal = true
         let useRemotes = true
 
         if useLocal {

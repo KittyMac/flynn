@@ -281,7 +281,7 @@ internal final class RemoteActorManager: Actor {
                     
                     // sanity default: choose next remote node
                     internalRemoteActor.nodeSocketFD = allSockets[remoteNodeRoundRobinIndex % allSockets.count]
-
+/*
                     // ideal: choose next node based on their core counts (support hetergeneous clusters)
                     remoteNodeRoundRobinIndex = remoteNodeRoundRobinIndex % Int(pony_remote_core_count())
                     
@@ -297,7 +297,7 @@ internal final class RemoteActorManager: Actor {
                             numRemoteCoresBySocket[socket] = numCores
                         }
                         idx += numCores
-                    }
+                    }*/
                 }
             }
             

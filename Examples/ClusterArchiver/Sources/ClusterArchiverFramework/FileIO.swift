@@ -7,6 +7,12 @@ class FileIO: Actor {
     static let shared = FileIO()
     private override init() {
         super.init()
+
+        unsafePriority = 99
+    }
+
+    private func _beRemove(_ url: URL) {
+        try? FileManager.default.removeItem(at: url)
     }
 
     private var openRead: [URL: FileHandle] = [:]
@@ -62,6 +68,11 @@ class FileIO: Actor {
 
 extension FileIO {
 
+    @discardableResult
+    public func beRemove(_ url: URL) -> Self {
+        unsafeSend { self._beRemove(url) }
+        return self
+    }
     @discardableResult
     public func beOpenRead(_ url: URL) -> Self {
         unsafeSend { self._beOpenRead(url) }
