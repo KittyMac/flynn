@@ -228,9 +228,9 @@ static DECLARE_THREAD_FN(node_write_to_root_thread)
                 case kRemote_SendReply: {
                     pony_msg_remote_sendreply_t * m = (pony_msg_remote_sendreply_t *)msg;
                     send_reply(rootPtr->socketfd,
-                                 m->messageId,
-                                 m->payload,
-                                 m->length);
+                               m->messageId,
+                               m->payload,
+                               m->length);
                     ponyint_pool_free_size(m->length, m->payload);
                 } break;
             }
@@ -362,10 +362,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
 #endif
                 } break;
                 case COMMAND_DESTROY_ACTOR:
-                    
                     rootPtr->destroyActorFuncPtr(uuid);
-                    pony_node_send_destroy_actor_ack(rootPtr);
-                    
 #if REMOTE_DEBUG
                     fprintf(stdout, "[%d] COMMAND_DESTROY_ACTOR[%s]\n", rootPtr->socketfd, uuid);
 #endif
@@ -444,7 +441,7 @@ void node_shutdown() {
 
 // MARK: - MESSAGES
 
-void pony_remote_actor_send_message_to_root(int socketfd, int messageID, const void * bytes, int count) {
+void pony_node_send_actor_message_to_root(int socketfd, int messageID, const void * bytes, int count) {
     // When a node is sending back to a root, they send a message by knowing the recipients actor uuid
     // The root knows which messages it sent which are expecting a reply, so it is garaunteed they
     // will be delivered back in order
@@ -463,6 +460,15 @@ void pony_register_node_to_root(int socketfd, const char * actorRegistrationStri
     root_t * rootPtr = find_root_by_socket(socketfd);
     if (rootPtr != NULL) {
         pony_node_send_register(rootPtr, actorRegistrationString);
+    }
+    pthread_mutex_unlock(&roots_mutex);
+}
+
+void pony_node_destroy_actor_to_root(int socketfd) {
+    pthread_mutex_lock(&roots_mutex);
+    root_t * rootPtr = find_root_by_socket(socketfd);
+    if (rootPtr != NULL) {
+        pony_node_send_destroy_actor_ack(rootPtr);
     }
     pthread_mutex_unlock(&roots_mutex);
 }

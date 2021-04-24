@@ -66,8 +66,13 @@ open class InternalRemoteActor {
 
     deinit {
         if isNamedService == false && nodeSocketFD != kLocalSocketFD && unsafeIsProxy == true {
-            Flynn.remotes.beRemoteDestroyActor(unsafeUUID, nodeSocketFD)
+            Flynn.remotes.beRootTellNodeToDestroyActor(unsafeUUID, nodeSocketFD)
         }
+        
+        if isNamedService == true && nodeSocketFD != kLocalSocketFD && unsafeIsProxy == false {
+            Flynn.remotes.beNodeTellRootActorWasDestroyed(unsafeUUID, nodeSocketFD)
+        }
+
         //print("deinit - RemoteActor [\(nodeSocketFD)]")
     }
 
@@ -90,10 +95,10 @@ open class InternalRemoteActor {
                                                                    data)
                 } else {
                     data.withUnsafeBytes {
-                        pony_remote_actor_send_message_to_root(replySocketFD,
-                                                               messageID,
-                                                               $0.baseAddress,
-                                                               Int32(data.count))
+                        pony_node_send_actor_message_to_root(replySocketFD,
+                                                             messageID,
+                                                             $0.baseAddress,
+                                                             Int32(data.count))
                     }
                 }
             }
@@ -107,10 +112,10 @@ open class InternalRemoteActor {
                     Flynn.remotes.beHandleMessageReply(messageID, $0)
                 } else {
                     $0.withUnsafeBytes {
-                        pony_remote_actor_send_message_to_root(replySocketFD,
-                                                               messageID,
-                                                               $0.baseAddress,
-                                                               Int32($0.count))
+                        pony_node_send_actor_message_to_root(replySocketFD,
+                                                             messageID,
+                                                             $0.baseAddress,
+                                                             Int32($0.count))
                     }
                 }
             }
