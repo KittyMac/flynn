@@ -192,6 +192,11 @@ int send_heartbeat(int socketfd) {
     return sendall(socketfd, &command, sizeof(command));
 }
 
+int send_destroy_actor_ack(int socketfd) {
+    char command = COMMAND_DESTROY_ACTOR_ACK;
+    return sendall(socketfd, &command, sizeof(command));
+}
+
 void send_register_with_root(int socketfd, const char * registrationString) {
     char buffer[512];
     int idx = 0;

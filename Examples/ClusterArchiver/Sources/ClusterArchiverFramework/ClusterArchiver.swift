@@ -49,13 +49,13 @@ public enum ClusterArchiver {
                 outputURL = inputURL.deletingPathExtension()
 
                 let decompressor = Lzip.Decompress()
-                try decompressor.decompress(input: data, output: &output)
+                output = try decompressor.decompress(input: data)
                 decompressor.finish(output: &output)
             } else {
                 outputURL = inputURL.appendingPathExtension("lz")
 
                 let compressor = Lzip.Compress(level: .lvl6)
-                try compressor.compress(input: data, output: &output)
+                output = try compressor.compress(input: data)
                 compressor.finish(output: &output)
             }
 

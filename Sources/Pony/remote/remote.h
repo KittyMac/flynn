@@ -18,6 +18,7 @@ extern char * BUILD_VERSION_UUID;
 #define COMMAND_SEND_REPLY 6
 #define COMMAND_CORE_COUNT 7
 #define COMMAND_HEARTBEAT 8
+#define COMMAND_DESTROY_ACTOR_ACK 8
 
 typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, bool, int socketFD);

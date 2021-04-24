@@ -15,9 +15,7 @@ public class LocalCompressor: Actor, LzipActor {
 
     private func _beArchive(_ data: Data) -> Data {
         do {
-            var compressed = Data()
-            try compressor.compress(input: data, output: &compressed)
-            return compressed
+            return try compressor.compress(input: data)
         } catch {
             return Data()
         }
@@ -40,9 +38,7 @@ public class RemoteCompressor: RemoteActor, LzipActor {
     private func _beArchive(_ data: Data) -> Data {
         guard let compressor = compressor else { return Data() }
         do {
-            var compressed = Data()
-            try compressor.compress(input: data, output: &compressed)
-            return compressed
+            return try compressor.compress(input: data)
         } catch {
             return Data()
         }
@@ -61,9 +57,7 @@ public class LocalDecompressor: Actor, LzipActor {
 
     private func _beArchive(_ data: Data) -> Data {
         do {
-            var decompressed = Data()
-            try decompressor.decompress(input: data, output: &decompressed)
-            return decompressed
+            return try decompressor.decompress(input: data)
         } catch {
             return Data()
         }
@@ -86,9 +80,7 @@ public class RemoteDecompressor: RemoteActor, LzipActor {
     private func _beArchive(_ data: Data) -> Data {
         guard let decompressor = decompressor else { return Data() }
         do {
-            var decompressed = Data()
-            try decompressor.decompress(input: data, output: &decompressed)
-            return decompressed
+            return try decompressor.decompress(input: data)
         } catch {
             return Data()
         }

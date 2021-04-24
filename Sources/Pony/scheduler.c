@@ -436,8 +436,11 @@ bool ponyint_sched_start()
 
 void ponyint_sched_wait(bool waitForRemotes)
 {
-    // block current thread until there are no more actors running
-    int32_t times = 500;
+    // block until no local actors or remote actors are in existance for
+    // for the specified amount of time.
+    int32_t usSleep = 5000;
+    int32_t numRepeatIdle = (1000 * 1000) / usSleep;
+    int32_t timesIdle = numRepeatIdle;
     
     while(true) {
         uint32_t active = 0;
@@ -449,14 +452,16 @@ void ponyint_sched_wait(bool waitForRemotes)
         }
         
         if (active == 0 && (waitForRemotes == false || pony_root_finished())) {
-            times--;
-            if (times <= 0) {
+            timesIdle--;
+            if (timesIdle <= 0) {
                 fprintf(stderr, "pony shutting down\n");
                 break;
             }
+        } else {
+            timesIdle = numRepeatIdle;
         }
         
-        ponyint_cpu_sleep(5000);
+        ponyint_cpu_sleep(usSleep);
     }
 }
 

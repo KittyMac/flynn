@@ -23,6 +23,7 @@ void pony_remote_shutdown();
 #define kRemote_SendReply 7
 #define kRemote_SendCoreCount 8
 #define kRemote_SendHeartbeat 9
+#define kRemote_DestroyActorAck 10
 
 typedef struct pony_actor_t pony_actor_t;
 
@@ -119,6 +120,11 @@ typedef struct pony_msg_remote_heartbeat_t
 {
     pony_msg_t msg;
 } pony_msg_remote_heartbeat_t;
+
+typedef struct pony_msg_remote_destroy_actor_ack_t
+{
+    pony_msg_t msg;
+} pony_msg_remote_destroy_actor_ack_t;
 
 typedef struct pony_msg_remote_sendreply_t
 {

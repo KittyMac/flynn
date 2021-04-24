@@ -6,6 +6,10 @@ import class Foundation.Bundle
 import ClusterArchiverFramework
 
 final class ClusterArchiverTests: XCTestCase {
+    
+    func testSingleArchive() throws {
+        ClusterArchiver.archive(file: "/Volumes/Optane/ClusterArchiver/testFile1.csv.lz")
+    }
 
     func testArchive() throws {
         ClusterArchiver.archive(directory: "/Volumes/Development/Development/chimerasw2/flynn/Examples/ClusterArchiver/meta/data",
@@ -44,8 +48,8 @@ final class ClusterArchiverTests: XCTestCase {
         
 
         // 28 local cores, no remotes
-        // compression: 9449 / 0 files in 35.72971296310425s, max concurrent 28
-        // decompression: 9449 / 0 files in 6.199898958206177s, max concurrent 28
+        // compression: 9449 / 0 files in 27.411715030670166s, max concurrent 28
+        // decompression: 9449 / 0 files in 6.059340953826904s, max concurrent 28
         
         // 172 remote cores
         // compression: 0 / 9449 files in 28.26699197292328s, max concurrent 172
@@ -60,6 +64,16 @@ final class ClusterArchiverTests: XCTestCase {
         // time lzip -d /Users/rjbowli/Desktop/TESTARCHIVE_LARGE/ProdGmailErrorLog20210315t0000-To-20210316t0000.csv.lz
         // lzip -d   254.11s user 10.42s system 38% cpu 11:18.83 total
         // ./minilzip -d   179.59s user 13.59s system 60% cpu 5:21.19 total
+        // ./minilzip   3837.68s user 16.10s system 98% cpu 1:05:07.23 total
+        
+        
+        // raspberry pi vs odroid
+        
+        // compress all remote: 0 / 9449 files in 32.590381026268005s, max concurrent 172
+        // compress just the pis (19 nodes / 4cores / ~$1200): 0 / 9449 files in 44.54760408401489s, max concurrent 76
+        // compress just the odroids (12 nodes / 8cores / ~$600): 0 / 9449 files in 46.167333006858826s, max concurrent 100
+        
+        // together:
         
         ClusterArchiver.archive(directory: "/Volumes/Optane/ClusterArchiver/TESTARCHIVE",
                                 address: "0.0.0.0",
