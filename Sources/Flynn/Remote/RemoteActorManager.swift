@@ -189,9 +189,14 @@ internal final class RemoteActorManager: Actor {
         nodeActors.removeValue(forKey: actorUUID)
     }
     
-    private func _beRemoteDestroyActor(_ actorUUID: String,
-                                       _ nodeSocketFD: Int32) {
-        pony_remote_destroy_actor(actorUUID, nodeSocketFD)
+    private func _beRootTellNodeToDestroyActor(_ actorUUID: String,
+                                               _ nodeSocketFD: Int32) {
+        pony_root_destroy_actor_to_node(actorUUID, nodeSocketFD)
+    }
+    
+    private func _beNodeTellRootActorWasDestroyed(_ actorUUID: String,
+                                                  _ nodeSocketFD: Int32) {
+        pony_node_destroy_actor_to_root(nodeSocketFD)
     }
     
     private func _beSendToRemote(_ internalRemoteActor: InternalRemoteActor,
@@ -233,13 +238,13 @@ internal final class RemoteActorManager: Actor {
         
         let finishSendingToRemoteActor: (() -> Void) = {
             _ = payload.withUnsafeBytes {
-                let messageID = pony_remote_actor_send_message_to_node(actorUUID,
-                                                                       actorTypeString,
-                                                                       behaviorType,
-                                                                       (internalRemoteActor.nodeSocketFD != internalRemoteActor.createdNodeSocketFD),
-                                                                       internalRemoteActor.nodeSocketFD,
-                                                                       $0.baseAddress,
-                                                                       Int32(payload.count))
+                let messageID = pony_root_send_actor_message_to_node(actorUUID,
+                                                                     actorTypeString,
+                                                                     behaviorType,
+                                                                     (internalRemoteActor.nodeSocketFD != internalRemoteActor.createdNodeSocketFD),
+                                                                     internalRemoteActor.nodeSocketFD,
+                                                                     $0.baseAddress,
+                                                                     Int32(payload.count))
                 if messageID < 0 {
                     // we're no longer connected to this socket
                     self.didDisconnectFromSocket(internalRemoteActor.nodeSocketFD)
@@ -431,9 +436,15 @@ extension RemoteActorManager {
         return self
     }
     @discardableResult
-    public func beRemoteDestroyActor(_ actorUUID: String,
-                                     _ nodeSocketFD: Int32) -> Self {
-        unsafeSend { self._beRemoteDestroyActor(actorUUID, nodeSocketFD) }
+    public func beRootTellNodeToDestroyActor(_ actorUUID: String,
+                                             _ nodeSocketFD: Int32) -> Self {
+        unsafeSend { self._beRootTellNodeToDestroyActor(actorUUID, nodeSocketFD) }
+        return self
+    }
+    @discardableResult
+    public func beNodeTellRootActorWasDestroyed(_ actorUUID: String,
+                                                _ nodeSocketFD: Int32) -> Self {
+        unsafeSend { self._beNodeTellRootActorWasDestroyed(actorUUID, nodeSocketFD) }
         return self
     }
     @discardableResult
