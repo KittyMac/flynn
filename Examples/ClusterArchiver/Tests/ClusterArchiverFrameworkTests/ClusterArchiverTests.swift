@@ -81,6 +81,21 @@ final class ClusterArchiverTests: XCTestCase {
     }
     
     func testLargeArchive2() throws {
+        
+        // 100k files, 798 bytes -> 6.6 MB
+        
+        // 28 local cores, no remotes
+        // compression: 100000 / 0 files in 245.8698070049286s, max concurrent 28
+        // decompression: 100000 / 0 files in 54.309731006622314s, max concurrent 28
+        
+        // 172 remote cores
+        // compression: 0 / 100000 files in 205.94759500026703s, max concurrent 172
+        // decompression: 0 / 100000 files in 135.33914601802826s, max concurrent 172
+        
+        // 28 local cores / 172 remote cores
+        // compression: 42475 / 57525 files in 116.7931410074234s, max concurrent 200
+        // decompression: 48035 / 51965 files in 57.78493404388428s, max concurrent 200
+        
         ClusterArchiver.archive(directory: "/Volumes/Optane/ClusterArchiver/TESTARCHIVE_LARGE",
                                 address: "0.0.0.0",
                                 port: 9090)
