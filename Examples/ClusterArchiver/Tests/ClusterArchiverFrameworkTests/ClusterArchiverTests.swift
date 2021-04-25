@@ -40,24 +40,24 @@ final class ClusterArchiverTests: XCTestCase {
         
         // ClusterArchiver archive one command parallelized on corpus of 9449 files (4 local cores)
         // compression: time sh -c 'find . -type f | xargs -I{} -P 4 $CLUSTERARCHIVER {}'  476.51s user 118.80s system 383% cpu 2:35.26 total
-        // decompression: time sh -c 'find . -type f | xargs -I{} -P 4 $CLUSTERARCHIVER {}'  90.50s user 51.35s system 360% cpu 39.400 total
+        // decompression: time sh -c 'find . -type f | xargs -I{} -P 4 $CLUSTERARCHIVER {}'  90.41s user 51.54s system 359% cpu 39.452 total
         
         // ClusterArchiver archive one command parallelized on corpus of 9449 files (28 local cores)
-        // compression: time sh -c 'find . -type f | xargs -I{} -P 28 $CLUSTERARCHIVER {}'  583.89s user 342.29s system 2489% cpu 37.200 total
-        // decompression: time sh -c 'find . -type f | xargs -I{} -P 28 $CLUSTERARCHIVER {}'  467.60s user 38.38s system 2477% cpu 20.421 total
+        // compression: time sh -c 'find . -type f | xargs -I{} -P 28 $CLUSTERARCHIVER {}'  567.69s user 302.42s system 2561% cpu 33.968 total
+        // decompression: time sh -c 'find . -type f | xargs -I{} -P 28 $CLUSTERARCHIVER {}'  96.66s user 186.57s system 2075% cpu 13.645 total
         
 
         // 28 local cores, no remotes
-        // compression: 9449 / 0 files in 27.411715030670166s, max concurrent 28
-        // decompression: 9449 / 0 files in 6.059340953826904s, max concurrent 28
+        // compression: 9449 / 0 files in 32.379307985305786s, max concurrent 28
+        // decompression: 9449 / 0 files in 5.861212968826294s, max concurrent 28
         
         // 172 remote cores
-        // compression: 0 / 9449 files in 28.26699197292328s, max concurrent 172
-        // decompression: 0 / 9449 files in 15.174230098724365s, max concurrent 172
+        // compression: 0 / 9449 files in 24.445824027061462s, max concurrent 172
+        // decompression: 0 / 9449 files in 15.587779998779297s, max concurrent 172
         
         // 28 local cores / 172 remote cores
-        // compression: 4148 / 5301 files in 17.91438603401184s, max concurrent 200
-        // decompression: 4331 / 5118 files in 7.008651971817017s, max concurrent 200
+        // compression: 3449 / 6000 files in 14.823001980781555s, max concurrent 200
+        // decompression: 5075 / 4374 files in 6.921328067779541s, max concurrent 200
         
         
         // Single large file (1.63 GB // 23.1 GB)
