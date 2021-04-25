@@ -8,6 +8,7 @@ class FileArchiver: Actor {
     private let bufferSize = 65536 * 2
     private var lzipActor: LzipActor?
     private var outstandingChunks = 0
+    private var bytesProcessed: Int = 0
 
     init(file: URL, local: Bool) {
         inputURL = file
@@ -64,7 +65,7 @@ class FileArchiver: Actor {
 
     private func processNextChunk(_ nextChunk: Data,
                                   _ returnCallback: @escaping (Bool) -> Void) {
-        guard lzipActor != nil else { return }
+        guard let lzipActor = lzipActor else { return }
 
         let readMore: (() -> Void) = {
             while self.outstandingChunks < 8 {
@@ -76,19 +77,17 @@ class FileArchiver: Actor {
             }
         }
 
-        // Check to see if we sent all of the data
         if nextChunk.count == 0 {
             return finished(returnCallback)
         }
 
-        if let lzipActor = lzipActor {
-            lzipActor.beArchive(nextChunk, self) { (resultData) in
-                self.outstandingChunks -= 1
+        lzipActor.beArchive(nextChunk, self) { (resultData) in
+            self.outstandingChunks -= 1
+            self.bytesProcessed += resultData.count
 
-                FileIO.shared.beWrite(self.outputURL, resultData)
-                if self.lzipActor != nil {
-                    readMore()
-                }
+            FileIO.shared.beWrite(self.outputURL, resultData)
+            if self.lzipActor != nil {
+                readMore()
             }
         }
 
@@ -103,7 +102,12 @@ class FileArchiver: Actor {
                 FileIO.shared.beWrite(self.outputURL, resultData)
                 FileIO.shared.beClose(self.outputURL)
 
-                try? FileManager.default.removeItem(at: self.inputURL)
+                if self.bytesProcessed > 0 {
+                    try? FileManager.default.removeItem(at: self.inputURL)
+                } else {
+                    print("failed to process file \(self.outputURL.path)")
+                    try? FileManager.default.removeItem(at: self.outputURL)
+                }
                 returnCallback(true)
             }
             self.lzipActor = nil
