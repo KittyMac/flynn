@@ -20,6 +20,7 @@ let package = Package(
     ],
     dependencies: [
         flynnPackage,
+        .package(url: "https://github.com/KittyMac/BinaryCodable.git", .branch("develop")),
         .package(url: "https://github.com/KittyMac/LzSwift.git", .branch("vendored")),
 		.package(url: "https://github.com/apple/swift-argument-parser", .upToNextMinor(from: "0.2.0")),
     ],
@@ -33,7 +34,8 @@ let package = Package(
             name: "ClusterArchiverFramework",
             dependencies: [
 				"Flynn",
-                "LzSwift"
+                "LzSwift",
+                "BinaryCodable"
 			]),
         .testTarget(
             name: "ClusterArchiverFrameworkTests",

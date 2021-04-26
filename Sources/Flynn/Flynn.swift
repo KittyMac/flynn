@@ -31,11 +31,10 @@ open class Flynn {
 
     public class func startup() {
         running.checkInactive {
-                        
             timeStart = ProcessInfo.processInfo.systemUptime
 
             timerLoop = TimerLoop()
-
+            
             pony_startup()
         }
     }
@@ -44,8 +43,9 @@ open class Flynn {
         running.checkActive {
             pony_shutdown(waitForRemotes)
             
+            remotes.unsafeReset()
             remotes = RemoteActorManager()
-
+            
             timerLoop?.join()
             timerLoop = nil
 

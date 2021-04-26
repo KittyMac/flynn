@@ -46,6 +46,7 @@ final class ClusterArchiverTests: XCTestCase {
         // compression: time sh -c 'find . -type f | xargs -I{} -P 28 $CLUSTERARCHIVER {}'  567.69s user 302.42s system 2561% cpu 33.968 total
         // decompression: time sh -c 'find . -type f | xargs -I{} -P 28 $CLUSTERARCHIVER {}'  96.66s user 186.57s system 2075% cpu 13.645 total
         
+        // Using BinaryCodable for messages to remote actors
 
         // 28 local cores, no remotes
         // compression: 9449 / 0 files in 32.379307985305786s, max concurrent 28
@@ -58,6 +59,12 @@ final class ClusterArchiverTests: XCTestCase {
         // 28 local cores / 172 remote cores
         // compression: 3449 / 6000 files in 14.823001980781555s, max concurrent 200
         // decompression: 5075 / 4374 files in 6.921328067779541s, max concurrent 200
+        
+        // Using JsonCodable for messages to remote actors
+        
+        // 172 remote cores
+        // compression: 0 / 9449 files in 37.205869913101196s, max concurrent 172
+        // decompression: 0 / 9449 files in 20.83649504184723s, max concurrent 172
         
         
         // Single large file (1.63 GB // 23.1 GB)

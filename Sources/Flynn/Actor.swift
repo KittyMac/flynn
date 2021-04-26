@@ -52,7 +52,7 @@ open class Actor {
 
     public let unsafeUUID: String
 
-    private let ponyActorPtr: AnyPtr
+    private var ponyActorPtr: AnyPtr
 
     private var poolMessage = Queue<ActorMessage>(size: 128, manyProducers: false, manyConsumers: true)
     private var actorMessagesReused: Int = 0

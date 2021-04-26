@@ -82,38 +82,47 @@ void * pony_actor_create() {
 }
 
 void pony_actor_send_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message)) {
+    if (pony_is_inited == false) { return; }
     pony_send_message(pony_ctx(), actor, argumentPtr, handleMessageFunc);
 }
 
 void pony_actor_setpriority(void * actor, int priority) {
+    if (pony_is_inited == false) { return; }
     ponyint_actor_setpriority(actor, priority);
 }
 
 int pony_actor_getpriority(void * actor) {
+    if (pony_is_inited == false) { return 0; }
     return ponyint_actor_getpriority(actor);
 }
 
 void pony_actor_setbatchSize(void * actor, int batchSize) {
+    if (pony_is_inited == false) { return; }
     ponyint_actor_setbatchSize(actor, batchSize);
 }
 
 int pony_actor_getbatchSize(void * actor) {
+    if (pony_is_inited == false) { return 100; }
     return ponyint_actor_getbatchSize(actor);
 }
 
 void pony_actor_setcoreAffinity(void * actor, int coreAffinity) {
+    if (pony_is_inited == false) { return; }
     ponyint_actor_setcoreAffinity(actor, coreAffinity);
 }
 
 int pony_actor_getcoreAffinity(void * actor) {
+    if (pony_is_inited == false) { return 0; }
     return ponyint_actor_getcoreAffinity(actor);
 }
 
 void pony_actor_yield(void * actor) {
+    if (pony_is_inited == false) { return; }
     ponyint_yield_actor(actor);
 }
 
 int pony_actors_load_balance(void * actorArray, int num_actors) {
+    if (pony_is_inited == false) { return 0; }
     pony_actor_t ** actorsPtr = (pony_actor_t**)actorArray;
     pony_actor_t * minActor = *actorsPtr;
     int minIdx = 0;
@@ -130,6 +139,7 @@ int pony_actors_load_balance(void * actorArray, int num_actors) {
 }
 
 bool pony_actors_should_wait(int min_msgs, void * actorArray, int num_actors) {
+    if (pony_is_inited == false) { return false; }
     // we hard wait until all actors we have been given have no messages waiting
     pony_actor_t ** actorsPtr = (pony_actor_t**)actorArray;
     int32_t n = 0;
@@ -143,6 +153,7 @@ bool pony_actors_should_wait(int min_msgs, void * actorArray, int num_actors) {
 }
 
 void pony_actors_wait(int min_msgs, void * actorArray, int num_actors) {
+    if (pony_is_inited == false) { return; }
     // we hard wait until all actors we have been given have no messages waiting
     pony_actor_t ** actorsPtr = (pony_actor_t**)actorArray;
     int scaling_sleep = 10;
@@ -157,14 +168,17 @@ void pony_actors_wait(int min_msgs, void * actorArray, int num_actors) {
 }
 
 void pony_actor_wait(int min_msgs, void * actor) {
+    if (pony_is_inited == false) { return; }
     pony_actors_wait(min_msgs, &actor, 1);
 }
 
 int pony_actor_num_messages(void * actor) {
+    if (pony_is_inited == false) { return 0; }
     return (int)ponyint_actor_num_messages(actor);
 }
 
 void pony_actor_destroy(void * actor) {
+    if (pony_is_inited == false) { return; }
     ponyint_destroy_actor(actor);
 }
 
