@@ -65,6 +65,20 @@ internal final class RemoteActorManager: Actor {
     
     private var remoteNodeRoundRobinIndex = 0
     
+    public func unsafeReset() {
+        numRemoteCoresBySocket.removeAll()
+        actorTypesBySocket.removeAll()
+        
+        fallbackActorTypes.removeAll()
+        namedActorTypes.removeAll()
+        
+        nodeActorTypes.removeAll()
+        rootActorTypes.removeAll()
+        
+        nodeActors.removeAll()
+        rootActors.removeAll()
+    }
+    
     private func didDisconnectFromSocket(_ socket: Int32) {
         actorTypesBySocket[socket] = []
     }

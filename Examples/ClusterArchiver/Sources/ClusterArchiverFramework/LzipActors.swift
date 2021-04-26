@@ -1,6 +1,7 @@
 import Flynn
 import Foundation
 import LzSwift
+import BinaryCodable
 
 protocol LzipActor {
     @discardableResult
@@ -36,6 +37,7 @@ public class RemoteCompressor: RemoteActor, LzipActor {
     }
 
     private func _beArchive(_ data: Data) -> Data {
+        // flynnlint:codable binary
         guard let compressor = compressor else { return Data() }
         do {
             return try compressor.compress(input: data)
@@ -45,6 +47,7 @@ public class RemoteCompressor: RemoteActor, LzipActor {
     }
 
     private func _beFinish() -> Data {
+        // flynnlint:codable binary
         guard let compressor = compressor else { return Data() }
         var compressed = Data()
         compressor.finish(output: &compressed)
@@ -78,6 +81,7 @@ public class RemoteDecompressor: RemoteActor, LzipActor {
     }
 
     private func _beArchive(_ data: Data) -> Data {
+        // flynnlint:codable binary
         guard let decompressor = decompressor else { return Data() }
         do {
             return try decompressor.decompress(input: data)
@@ -87,6 +91,7 @@ public class RemoteDecompressor: RemoteActor, LzipActor {
     }
 
     private func _beFinish() -> Data {
+        // flynnlint:codable binary
         guard let decompressor = decompressor else { return Data() }
         var decompressed = Data()
         decompressor.finish(output: &decompressed)
@@ -144,8 +149,6 @@ extension LocalCompressor {
     }
 
 }
-
-import BinaryCodable
 
 extension RemoteDecompressor {
 
