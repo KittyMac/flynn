@@ -395,7 +395,7 @@ extension RemoteActorManager {
     public func beGetActor(_ actorUUID: String,
                            _ sender: Actor,
                            _ callback: @escaping ((RemoteActor?) -> Void)) -> Self {
-        unsafeSend() {
+        unsafeSend {
             let result = self._beGetActor(actorUUID)
             sender.unsafeSend { callback(result) }
         }
@@ -407,7 +407,7 @@ extension RemoteActorManager {
                                             _ inNamedActorTypes: [RemoteActor.Type],
                                             _ sender: Actor,
                                             _ callback: @escaping ((Bool) -> Void)) -> Self {
-        unsafeSend() {
+        unsafeSend {
             let result = self._beRegisterActorTypesForRoot(inRootActorTypes, inFallbackActorTypes, inNamedActorTypes)
             sender.unsafeSend { callback(result) }
         }
@@ -418,7 +418,7 @@ extension RemoteActorManager {
                                             _ namedActors: [RemoteActor],
                                             _ sender: Actor,
                                             _ callback: @escaping ((Bool) -> Void)) -> Self {
-        unsafeSend() {
+        unsafeSend {
             let result = self._beRegisterActorTypesForNode(inActorTypes, namedActors)
             sender.unsafeSend { callback(result) }
         }
