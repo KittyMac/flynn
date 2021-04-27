@@ -110,6 +110,8 @@ internal final class RemoteActorManager: Actor {
         for actor in namedActors {
             actor.unsafeRegisterAllBehaviors()
             nodeActors[actor.unsafeUUID] = actor
+            
+            namedActorTypes[String(describing: type(of: actor))] = type(of: actor)
         }
         return true
     }
