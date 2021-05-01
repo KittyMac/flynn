@@ -297,23 +297,23 @@ internal final class RemoteActorManager: Actor {
                     
                     // sanity default: choose next remote node
                     internalRemoteActor.nodeSocketFD = allSockets[remoteNodeRoundRobinIndex % allSockets.count]
-/*
+
                     // ideal: choose next node based on their core counts (support hetergeneous clusters)
-                    remoteNodeRoundRobinIndex = remoteNodeRoundRobinIndex % Int(pony_remote_core_count())
-                    
-                    var idx: Int32 = 0
-                    for socket in allSockets {
-                        if idx >= remoteNodeRoundRobinIndex {
-                            internalRemoteActor.nodeSocketFD = socket
-                            break
-                        }
-                        var numCores = numRemoteCoresBySocket[socket] ?? 0
-                        if numCores == 0 {
-                            numCores = pony_remote_core_count_by_socket(socket)
-                            numRemoteCoresBySocket[socket] = numCores
-                        }
-                        idx += numCores
-                    }*/
+                    //remoteNodeRoundRobinIndex = remoteNodeRoundRobinIndex % Int(pony_remote_core_count())
+                    //
+                    //var idx: Int32 = 0
+                    //for socket in allSockets {
+                    //    if idx >= remoteNodeRoundRobinIndex {
+                    //        internalRemoteActor.nodeSocketFD = socket
+                    //        break
+                    //    }
+                    //    var numCores = numRemoteCoresBySocket[socket] ?? 0
+                    //    if numCores == 0 {
+                    //        numCores = pony_remote_core_count_by_socket(socket)
+                    //        numRemoteCoresBySocket[socket] = numCores
+                    //    }
+                    //    idx += numCores
+                    //}
                 }
             }
             
@@ -338,6 +338,7 @@ internal final class RemoteActorManager: Actor {
             if internalRemoteActor.nodeSocketFD != kUnregistedSocketFD {
                 finishSendingToRemoteActor()
             } else {
+                rootActors[internalRemoteActor.unsafeUUID] = nil
                 print("attempting to send behavior to disconnected named remote actor \(actorTypeString)")
             }
         } else {
