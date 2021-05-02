@@ -273,6 +273,13 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
     node_t * nodePtr = (node_t *) arg;
     
     pony_root_send_version_check(nodePtr);
+    
+    // set the 11 second timeout on reads from the node. If we timeout, then
+    // the node missed 2 of its heartbeats and we should disconnect from it
+    struct timeval timeout;
+    timeout.tv_sec = 11;
+    timeout.tv_usec = 0;
+    setsockopt (nodePtr->socketfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
         
     while(nodePtr->socketfd >= 0) {
         
@@ -282,6 +289,13 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
         
         // read the command byte
         uint8_t command = read_command(nodePtr->socketfd);
+        if (command == COMMAND_NULL) {
+            // If we timeout then we should disconnect from the node (it missed two heartbeats)
+            root_remove_node(nodePtr);
+            ponyint_pool_thread_cleanup();
+            return 0;
+        }
+        
         if (command != COMMAND_VERSION_CHECK &&
             command != COMMAND_CORE_COUNT &&
             command != COMMAND_HEARTBEAT &&
