@@ -77,8 +77,8 @@ static void init_all_nodes() {
 
 static node_t * find_node_by_socket(int socketfd) {
     node_t * ptr = nodes;
-    while (ptr < (nodes + kMaxNodes) && ptr->read_thread_tid != 0) {
-        if (ptr->socketfd == socketfd) {
+    while (ptr < (nodes + kMaxNodes)) {
+        if (ptr->socketfd == socketfd && ptr->read_thread_tid != 0) {
             return ptr;
         }
         ptr++;
@@ -291,6 +291,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
         uint8_t command = read_command(nodePtr->socketfd);
         if (command == COMMAND_NULL) {
             // If we timeout then we should disconnect from the node (it missed two heartbeats)
+            fprintf(stdout, "warning: dropped connection to node [%d]\n", nodePtr->socketfd);
             root_remove_node(nodePtr);
             ponyint_pool_thread_cleanup();
             return 0;
