@@ -64,7 +64,7 @@ static void init_all_roots() {
 
 static root_t * find_root_by_socket(int socketfd) {
     root_t * ptr = roots;
-    while (ptr < (roots + kMaxRoots) && ptr->socketfd >= 0) {
+    while (ptr < (roots + kMaxRoots)) {
         if (ptr->socketfd == socketfd) {
             return ptr;
         }
