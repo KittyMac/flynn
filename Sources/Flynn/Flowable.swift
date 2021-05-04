@@ -17,26 +17,39 @@ public extension Array {
         return self[idx] as! T
     }
     @inline(__always)
+    subscript<T>(if idx: Int) -> T? {
+        guard idx < count else { return nil }
+        return self[idx] as? T
+    }
+    @inline(__always)
     func check(_ idx: Int) -> Any {
         return self[idx]
     }
 }
 
 infix operator |> : AssignmentPrecedence
+
+@discardableResult
 public func |> (left: Flowable, right: Flowable) -> Flowable {
     left.beTarget(right)
     return left
 }
+
+@discardableResult
 public func |> (left: Flowable, right: [Flowable]) -> Flowable {
     left.beTargets(right)
     return left
 }
+
+@discardableResult
 public func |> (left: [Flowable], right: Flowable) -> [Flowable] {
     for one in left {
         one.beTarget(right)
     }
     return left
 }
+
+@discardableResult
 public func |> (left: [Flowable], right: [Flowable]) -> [Flowable] {
     for one in left {
         one.beTargets(right)

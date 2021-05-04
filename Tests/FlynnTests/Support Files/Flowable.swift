@@ -9,11 +9,6 @@ final class Passthrough: Actor, Flowable {
     private func _beFlow(_ args: FlowableArgs) {
         safeFlowToNextTarget(args)
     }
-    func beFlow(_ args: FlowableArgs) {
-        unsafeSend {
-            self._beFlow(args)
-        }
-    }
 }
 
 // Print description of arguments to file
@@ -23,11 +18,6 @@ class Print: Actor, Flowable {
     private func _beFlow(_ args: FlowableArgs) {
         print(args.description)
         safeFlowToNextTarget(args)
-    }
-    func beFlow(_ args: FlowableArgs) {
-        unsafeSend {
-            self._beFlow(args)
-        }
     }
 }
 
@@ -39,11 +29,6 @@ class Uppercase: Actor, Flowable {
         guard !args.isEmpty else { return self.safeFlowToNextTarget(args) }
         let value: String = args[x: 0]
         safeFlowToNextTarget([value.uppercased()])
-    }
-    func beFlow(_ args: FlowableArgs) {
-        unsafeSend {
-            self._beFlow(args)
-        }
     }
 }
 
@@ -65,11 +50,6 @@ class Concatenate: Actor, Flowable {
         let value: String = args[x: 0]
         combined.append(value)
     }
-    func beFlow(_ args: FlowableArgs) {
-        unsafeSend {
-            self._beFlow(args)
-        }
-    }
 }
 
 class Callback: Actor, Flowable {
@@ -84,11 +64,6 @@ class Callback: Actor, Flowable {
     private func _beFlow(_ args: FlowableArgs) {
         callback(args)
         safeFlowToNextTarget(args)
-    }
-    func beFlow(_ args: FlowableArgs) {
-        unsafeSend {
-            self._beFlow(args)
-        }
     }
 }
 
