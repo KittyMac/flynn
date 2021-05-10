@@ -185,3 +185,7 @@ void pony_actor_destroy(void * actor) {
 int pony_max_memory() {
     return ponyint_max_memory();
 }
+
+int pony_current_memory() {
+    return ponyint_total_memory();
+}

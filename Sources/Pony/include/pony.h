@@ -87,5 +87,6 @@ void pony_actors_wait(int min_msgs, void * actor, int num_actors);
 void pony_actor_wait(int min_msgs, void * actor);
 
 int pony_max_memory();
+int pony_current_memory();
 
 #endif
