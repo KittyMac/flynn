@@ -204,7 +204,7 @@ void pony_root_send_message(node_t * nodePtr,
     strncpy(m->actorUUID, actorUUID, sizeof(m->actorUUID)-1);
     strncpy(m->behaviorType, behaviorType, sizeof(m->behaviorType)-1);
     
-    m->payload = (void *)ponyint_pool_alloc_size(length);
+    m->payload = (void *)malloc(length);
     memcpy(m->payload, payload, length);
     m->length = length;
     ponyint_actor_messageq_push(&nodePtr->write_queue, &m->msg, &m->msg);
@@ -248,7 +248,7 @@ static DECLARE_THREAD_FN(root_write_to_node_thread)
                                  m->behaviorType,
                                  m->payload,
                                  m->length);
-                    ponyint_pool_free_size(m->length, m->payload);
+                    free(m->payload);
                 } break;
             }
             
