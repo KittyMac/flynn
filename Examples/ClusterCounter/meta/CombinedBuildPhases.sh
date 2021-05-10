@@ -14,10 +14,10 @@ set -e
 FLYNNLINTSWIFTPM=./.build/checkouts/flynn/meta/FlynnLint
 FLYNNLINTLOCAL=./../../meta/FlynnLint
 
-if [ -f "${FLYNNLINTSWIFTPM}" ]; then
-    ${FLYNNLINTSWIFTPM} ./
-elif [ -f "${FLYNNLINTLOCAL}" ]; then
+if [ -f "${FLYNNLINTLOCAL}" ]; then
     ${FLYNNLINTLOCAL} ./
+elif [ -f "${FLYNNLINTSWIFTPM}" ]; then
+    ${FLYNNLINTSWIFTPM} ./
 else
     echo "warning: Unable to find FlynnLint, aborting..."
 fi

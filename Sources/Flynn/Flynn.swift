@@ -73,6 +73,10 @@ open class Flynn {
     public static var remoteCores: Int {
         return Int(pony_remote_core_count())
     }
+    
+    public static var totalMemory: Int {
+        return Int(pony_current_memory())
+    }
 
     internal static func wakeTimerLoop() {
         timerLoop?.wake()
