@@ -179,7 +179,7 @@ void pony_node_send_reply(root_t * rootPtr,
 {
     pony_msg_remote_sendreply_t* m = (pony_msg_remote_sendreply_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_sendreply_t)), kRemote_SendReply);
     m->messageId = messageId;
-    m->payload = (void *)ponyint_pool_alloc_size(length);
+    m->payload = (void *)malloc(length);
     memcpy(m->payload, payload, length);
     m->length = length;
     ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
@@ -231,7 +231,7 @@ static DECLARE_THREAD_FN(node_write_to_root_thread)
                                m->messageId,
                                m->payload,
                                m->length);
-                    ponyint_pool_free_size(m->length, m->payload);
+                    free(m->payload);
                 } break;
             }
             
