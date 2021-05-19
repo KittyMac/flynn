@@ -34,11 +34,12 @@ extension MultiEchoC {
     @discardableResult
     public func beEcho(_ string: String,
                        _ sender: Actor,
-                       _ callback: @escaping (String) -> Void ) -> Self {
+                       _ error: @escaping () -> Void,
+                       _ callback: @escaping (String) -> Void) -> Self {
         let msg = BeEchoCodableRequest(arg0: string)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("MultiEchoC", "beEcho", data, sender) {
+        unsafeSendToRemote("MultiEchoC", "beEcho", data, sender, error) {
             callback(
                 // swiftlint:disable:next force_try
                 (try! JSONDecoder().decode(BeEchoCodableResponse.self, from: $0).response)
@@ -71,11 +72,12 @@ extension MultiEchoB {
     @discardableResult
     public func beEcho(_ string: String,
                        _ sender: Actor,
-                       _ callback: @escaping (String) -> Void ) -> Self {
+                       _ error: @escaping () -> Void,
+                       _ callback: @escaping (String) -> Void) -> Self {
         let msg = BeEchoCodableRequest(arg0: string)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("MultiEchoB", "beEcho", data, sender) {
+        unsafeSendToRemote("MultiEchoB", "beEcho", data, sender, error) {
             callback(
                 // swiftlint:disable:next force_try
                 (try! JSONDecoder().decode(BeEchoCodableResponse.self, from: $0).response)
@@ -108,11 +110,12 @@ extension MultiEchoA {
     @discardableResult
     public func beEcho(_ string: String,
                        _ sender: Actor,
-                       _ callback: @escaping (String) -> Void ) -> Self {
+                       _ error: @escaping () -> Void,
+                       _ callback: @escaping (String) -> Void) -> Self {
         let msg = BeEchoCodableRequest(arg0: string)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("MultiEchoA", "beEcho", data, sender) {
+        unsafeSendToRemote("MultiEchoA", "beEcho", data, sender, error) {
             callback(
                 // swiftlint:disable:next force_try
                 (try! JSONDecoder().decode(BeEchoCodableResponse.self, from: $0).response)

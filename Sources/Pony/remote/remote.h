@@ -20,6 +20,7 @@ extern char * BUILD_VERSION_UUID;
 #define COMMAND_HEARTBEAT 8
 #define COMMAND_DESTROY_ACTOR_ACK 9
 
+typedef void (*NodeDisconnectedFunc)(int socketFD);
 typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, bool, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);

@@ -27,6 +27,14 @@ open class Flynn {
 
     public static let any = Actor()
     
+    public static let ignore: () -> () = { }
+    public static let warning: () -> () = {
+        print("warning: remote call error'd out")
+    }
+    public static let fatal: () -> () = {
+        fatalError("Flynn.fatal called")
+    }
+    
     static var remotes = RemoteActorManager()
 
     public class func startup() {

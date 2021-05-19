@@ -62,6 +62,7 @@ static int root_tcp_port = 9999;
 static ReplyMessageFunc replyMessageFuncPtr = NULL;
 static CreateActorFunc createActorFuncPtr = NULL;
 static RegisterWithRootFunc registerWithRootPtr = NULL;
+static NodeDisconnectedFunc nodeDisconnectedPtr = NULL;
 static int root_listen_socket = -1;
 
 static DECLARE_THREAD_FN(root_write_to_node_thread);
@@ -139,6 +140,8 @@ static void root_remove_node(node_t * nodePtr) {
     if (nodePtr->read_thread_tid != 0) {
         number_of_cores -= nodePtr->core_count;
         number_of_nodes--;
+        
+        nodeDisconnectedPtr(nodePtr->socketfd);
         
         int socketfd = nodePtr->socketfd;
         nodePtr->socketfd = -1;
@@ -457,7 +460,8 @@ void pony_root(const char * address,
                int port,
                RegisterWithRootFunc registerWithRoot,
                CreateActorFunc createActorFunc,
-               ReplyMessageFunc replyFunc) {
+               ReplyMessageFunc replyFunc,
+               NodeDisconnectedFunc nodeDisconnected) {
     if (root_listen_socket >= 0) { return; }
     
     if (!inited) {
@@ -470,6 +474,7 @@ void pony_root(const char * address,
     replyMessageFuncPtr = replyFunc;
     createActorFuncPtr = createActorFunc;
     registerWithRootPtr = registerWithRoot;
+    nodeDisconnectedPtr = nodeDisconnected;
     
     strncpy(root_ip_address, address, sizeof(root_ip_address)-1);
     root_tcp_port = port;

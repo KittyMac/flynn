@@ -1,3 +1,6 @@
+// swiftlint:disable line_length
+// swiftlint:disable type_body_length
+
 import XCTest
 
 @testable import Flynn
@@ -32,9 +35,9 @@ class FlynnRemoteTests: XCTestCase {
             }
         }
 
-        MultiEchoA().beEcho("Hello 0", Flynn.any) { check("[A] Hello 0", $0) }
-        MultiEchoA().beEcho("Hello 1", Flynn.any) { check("[A] Hello 1", $0) }
-        MultiEchoA().beEcho("Hello 2", Flynn.any) { check("[A] Hello 2", $0) }
+        MultiEchoA().beEcho("Hello 0", Flynn.any, Flynn.fatal) { check("[A] Hello 0", $0) }
+        MultiEchoA().beEcho("Hello 1", Flynn.any, Flynn.fatal) { check("[A] Hello 1", $0) }
+        MultiEchoA().beEcho("Hello 2", Flynn.any, Flynn.fatal) { check("[A] Hello 2", $0) }
 
         wait(for: [expectation], timeout: 2.0)
 
@@ -58,7 +61,7 @@ class FlynnRemoteTests: XCTestCase {
             usleep(500)
         }
 
-        Echo().beToLower("HELLO WORLD", Flynn.any) { (result) in
+        Echo().beToLower("HELLO WORLD", Flynn.any, Flynn.fatal) { (result) in
             if "hello world [1]" == result {
                 expectation.fulfill()
             }
@@ -105,15 +108,15 @@ class FlynnRemoteTests: XCTestCase {
         }
 
         let echo1 = Echo()
-        echo1.beToLower("HELLO WORLD A", Flynn.any, printReply)
-        echo1.beToLower("HELLO WORLD B", Flynn.any, printReply)
+        echo1.beToLower("HELLO WORLD A", Flynn.any, Flynn.fatal, printReply)
+        echo1.beToLower("HELLO WORLD B", Flynn.any, Flynn.fatal, printReply)
 
         let echo2 = Echo()
-        echo2.beToLower("HELLO WORLD C", Flynn.any, printReply)
-        echo2.beToLower("HELLO WORLD D", Flynn.any, printReply)
+        echo2.beToLower("HELLO WORLD C", Flynn.any, Flynn.fatal, printReply)
+        echo2.beToLower("HELLO WORLD D", Flynn.any, Flynn.fatal, printReply)
 
         let echo3 = Echo()
-        echo3.beTestDelayedReturn("hello world e", Flynn.any, printReply)
+        echo3.beTestDelayedReturn("hello world e", Flynn.any, Flynn.fatal, printReply)
 
         wait(for: [expectation], timeout: 10.0)
 
@@ -154,17 +157,17 @@ class FlynnRemoteTests: XCTestCase {
             }
         }
 
-        MultiEchoA().beEcho("Hello 0", Flynn.any) { check("[A] Hello 0", $0) }
-        MultiEchoA().beEcho("Hello 1", Flynn.any) { check("[A] Hello 1", $0) }
-        MultiEchoA().beEcho("Hello 2", Flynn.any) { check("[A] Hello 2", $0) }
+        MultiEchoA().beEcho("Hello 0", Flynn.any, Flynn.fatal) { check("[A] Hello 0", $0) }
+        MultiEchoA().beEcho("Hello 1", Flynn.any, Flynn.fatal) { check("[A] Hello 1", $0) }
+        MultiEchoA().beEcho("Hello 2", Flynn.any, Flynn.fatal) { check("[A] Hello 2", $0) }
 
-        MultiEchoB().beEcho("Hello 0", Flynn.any) { check("[B] Hello 0", $0) }
-        MultiEchoB().beEcho("Hello 1", Flynn.any) { check("[B] Hello 1", $0) }
-        MultiEchoB().beEcho("Hello 2", Flynn.any) { check("[B] Hello 2", $0) }
+        MultiEchoB().beEcho("Hello 0", Flynn.any, Flynn.fatal) { check("[B] Hello 0", $0) }
+        MultiEchoB().beEcho("Hello 1", Flynn.any, Flynn.fatal) { check("[B] Hello 1", $0) }
+        MultiEchoB().beEcho("Hello 2", Flynn.any, Flynn.fatal) { check("[B] Hello 2", $0) }
 
-        MultiEchoC().beEcho("Hello 0", Flynn.any) { check("[C] Hello 0", $0) }
-        MultiEchoC().beEcho("Hello 1", Flynn.any) { check("[C] Hello 1", $0) }
-        MultiEchoC().beEcho("Hello 2", Flynn.any) { check("[C] Hello 2", $0) }
+        MultiEchoC().beEcho("Hello 0", Flynn.any, Flynn.fatal) { check("[C] Hello 0", $0) }
+        MultiEchoC().beEcho("Hello 1", Flynn.any, Flynn.fatal) { check("[C] Hello 1", $0) }
+        MultiEchoC().beEcho("Hello 2", Flynn.any, Flynn.fatal) { check("[C] Hello 2", $0) }
 
         wait(for: [expectation], timeout: 2.0)
 
@@ -191,7 +194,7 @@ class FlynnRemoteTests: XCTestCase {
             usleep(500)
         }
 
-        Echo().beToLower("HELLO WORLD", Flynn.any) { (lowered) in
+        Echo().beToLower("HELLO WORLD", Flynn.any, Flynn.fatal) { (lowered) in
             print(lowered)
             if lowered == "hello world [1]" {
                 expectation.fulfill()
@@ -223,7 +226,7 @@ class FlynnRemoteTests: XCTestCase {
 
         var num = 0
         for _ in 0..<Flynn.remoteCores {
-            Echo().bePrintThreadName(Flynn.any) { (_) in
+            Echo().bePrintThreadName(Flynn.any, Flynn.fatal) { (_) in
                 num += 1
                 if num >= Flynn.remoteCores {
                     expectation.fulfill()
@@ -279,10 +282,10 @@ class FlynnRemoteTests: XCTestCase {
         }
 
         if let echoService = echoService {
-            echoService.beToLower("HELLO WORLD A", Flynn.any, printReply)
-            echoService.beToLower("HELLO WORLD B", Flynn.any, printReply)
-            echoService.beToLower("HELLO WORLD C", Flynn.any, printReply)
-            echoService.beToLower("HELLO WORLD D", Flynn.any, printReply)
+            echoService.beToLower("HELLO WORLD A", Flynn.any, Flynn.fatal, printReply)
+            echoService.beToLower("HELLO WORLD B", Flynn.any, Flynn.fatal, printReply)
+            echoService.beToLower("HELLO WORLD C", Flynn.any, Flynn.fatal, printReply)
+            echoService.beToLower("HELLO WORLD D", Flynn.any, Flynn.fatal, printReply)
         }
 
         wait(for: [expectation], timeout: 10.0)
@@ -311,17 +314,51 @@ class FlynnRemoteTests: XCTestCase {
 
         let echo = Echo()
         var numCorrect = 0
-        echo.beTestDelayedReturn("hello world a", Flynn.any) { if $0 == "HELLO WORLD A" { numCorrect += 1 } }
-        echo.beTestDelayedReturn("hello world b", Flynn.any) { if $0 == "HELLO WORLD B" { numCorrect += 1 } }
-        echo.beTestDelayedReturn("hello world c", Flynn.any) { if $0 == "HELLO WORLD C" { numCorrect += 1 } }
-        echo.beTestDelayedReturn("hello world d", Flynn.any) { if $0 == "HELLO WORLD D" { numCorrect += 1 } }
-        echo.beTestDelayedReturn("hello world e", Flynn.any) { if $0 == "HELLO WORLD E" { numCorrect += 1 } }
-        echo.beTestDelayedReturn("hello world f", Flynn.any) { if $0 == "HELLO WORLD F" { numCorrect += 1 } }
-        echo.beTestDelayedReturn("hello world g", Flynn.any) { if $0 == "HELLO WORLD G" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world a", Flynn.any, Flynn.fatal) { if $0 == "HELLO WORLD A" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world b", Flynn.any, Flynn.fatal) { if $0 == "HELLO WORLD B" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world c", Flynn.any, Flynn.fatal) { if $0 == "HELLO WORLD C" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world d", Flynn.any, Flynn.fatal) { if $0 == "HELLO WORLD D" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world e", Flynn.any, Flynn.fatal) { if $0 == "HELLO WORLD E" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world f", Flynn.any, Flynn.fatal) { if $0 == "HELLO WORLD F" { numCorrect += 1 } }
+        echo.beTestDelayedReturn("hello world g", Flynn.any, Flynn.fatal) { if $0 == "HELLO WORLD G" { numCorrect += 1 } }
 
         sleep(4)
 
         XCTAssertEqual(numCorrect, 7)
+
+        Flynn.shutdown()
+    }
+
+    func testRemoteBehaviorError() {
+        // RemoteActors have behaviors, which boil down to network calls. Network calls
+        // can fail unexpectedly. RemoteActor behaviors have non-optional error callback
+        // which the developer should use to know when this behavior call fails
+        let expectation = XCTestExpectation(description: "RemoteActor behavior error")
+
+        let port = Int32.random(in: 8000..<65500)
+
+        Flynn.Root.listen("127.0.0.1", port,
+                          remoteActorTypes: [Echo.self],
+                          fallbackRemoteActorTypes: [],
+                          namedRemoteActorTypes: [])
+
+        Flynn.Node.connect("127.0.0.1", port, false,
+                           remoteActorTypes: [Echo.self],
+                           namedRemoteActors: [])
+
+        while Flynn.remoteCores == 0 {
+            usleep(500)
+        }
+
+        let echo = Echo()
+
+        echo.beTestFailReturn(Flynn.any, {
+            expectation.fulfill()
+        }, { (_) in
+            XCTAssert(false)
+        })
+
+        wait(for: [expectation], timeout: 30.0)
 
         Flynn.shutdown()
     }

@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);
+typedef void (*NodeDisconnectedFunc)(int socketFD);
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, bool shouldBeProxy, int socketFD);
 typedef void (*DestroyActorFunc)(const char * actorUUID);
 typedef void (*MessageActorFunc)(const char * actorUUID, const char * behavior, void * payload, int payloadSize, int messageID, int replySocketFD);
@@ -20,7 +21,8 @@ void pony_root(const char * address,
                int port,
                RegisterWithRootFunc registerWithRootPtr,
                CreateActorFunc createActorFunc,
-               ReplyMessageFunc replyMessageFunc);
+               ReplyMessageFunc replyMessageFunc,
+               NodeDisconnectedFunc nodeDisconnected);
 void pony_node(const char * address,
                int port,
                bool automaticReconnect,

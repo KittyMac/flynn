@@ -127,17 +127,19 @@ extension RemoteActorExhaustive {
 
     @discardableResult
     public func beNoArgsNoReturn() -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsNoReturn", Data(), nil, nil)
+        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsNoReturn", Data(), nil, nil, nil)
         return self
     }
     @discardableResult
     public func beNoArgsVoidReturn() -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsVoidReturn", Data(), nil, nil)
+        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsVoidReturn", Data(), nil, nil, nil)
         return self
     }
     @discardableResult
-    public func beNoArgsOneReturn(_ sender: Actor, _ callback: @escaping (Int) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsOneReturn", Data(), sender) {
+    public func beNoArgsOneReturn(_ sender: Actor,
+                                  _ error: @escaping () -> Void,
+                                  _ callback: @escaping (Int) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsOneReturn", Data(), sender, error) {
             callback(
                 // swiftlint:disable:next force_try
                 (try! JSONDecoder().decode(BeNoArgsOneReturnCodableResponse.self, from: $0)).response
@@ -146,21 +148,22 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beOneArgNoReturn(_ arg0: Int ) -> Self {
+    public func beOneArgNoReturn(_ arg0: Int) -> Self {
         let msg = BeOneArgNoReturnCodableRequest(arg0: arg0)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgNoReturn", data, nil, nil)
+        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgNoReturn", data, nil, nil, nil)
         return self
     }
     @discardableResult
     public func beOneArgOneReturn(_ arg0: Int,
                                   _ sender: Actor,
-                                  _ callback: @escaping (Int) -> Void ) -> Self {
+                                  _ error: @escaping () -> Void,
+                                  _ callback: @escaping (Int) -> Void) -> Self {
         let msg = BeOneArgOneReturnCodableRequest(arg0: arg0)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgOneReturn", data, sender) {
+        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgOneReturn", data, sender, error) {
             callback(
                 // swiftlint:disable:next force_try
                 (try! JSONDecoder().decode(BeOneArgOneReturnCodableResponse.self, from: $0).response)
@@ -170,22 +173,23 @@ extension RemoteActorExhaustive {
     }
     @discardableResult
     public func beTwoArgsNoReturn(_ arg0: Int,
-                                  _ arg1: String? ) -> Self {
+                                  _ arg1: String?) -> Self {
         let msg = BeTwoArgsNoReturnCodableRequest(arg0: arg0, arg1: arg1)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("RemoteActorExhaustive", "beTwoArgsNoReturn", data, nil, nil)
+        unsafeSendToRemote("RemoteActorExhaustive", "beTwoArgsNoReturn", data, nil, nil, nil)
         return self
     }
     @discardableResult
     public func beTwoArgsOptionalReturn(_ arg0: Int,
                                         _ arg1: String?,
                                         _ sender: Actor,
-                                        _ callback: @escaping (String?) -> Void ) -> Self {
+                                        _ error: @escaping () -> Void,
+                                        _ callback: @escaping (String?) -> Void) -> Self {
         let msg = BeTwoArgsOptionalReturnCodableRequest(arg0: arg0, arg1: arg1)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("RemoteActorExhaustive", "beTwoArgsOptionalReturn", data, sender) {
+        unsafeSendToRemote("RemoteActorExhaustive", "beTwoArgsOptionalReturn", data, sender, error) {
             callback(
                 // swiftlint:disable:next force_try
                 (try! JSONDecoder().decode(BeTwoArgsOptionalReturnCodableResponse.self, from: $0).response)
@@ -196,11 +200,12 @@ extension RemoteActorExhaustive {
     @discardableResult
     public func beOneArgTwoReturn(_ arg0: Int,
                                   _ sender: Actor,
-                                  _ callback: @escaping ((Int, String?)) -> Void ) -> Self {
+                                  _ error: @escaping () -> Void,
+                                  _ callback: @escaping ((Int, String?)) -> Void) -> Self {
         let msg = BeOneArgTwoReturnCodableRequest(arg0: arg0)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgTwoReturn", data, sender) {
+        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgTwoReturn", data, sender, error) {
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeOneArgTwoReturnCodableResponse.self, from: $0)
             callback((
@@ -211,8 +216,10 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beNoArgsDelayedReturn(_ sender: Actor, _ callback: @escaping (String) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsDelayedReturn", Data(), sender) {
+    public func beNoArgsDelayedReturn(_ sender: Actor,
+                                      _ error: @escaping () -> Void,
+                                      _ callback: @escaping (String) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsDelayedReturn", Data(), sender, error) {
             // swiftlint:disable:next force_try
             let response = (try! JSONDecoder().decode(BeNoArgsDelayedReturnCodableResponse.self, from: $0))
             callback(
@@ -224,11 +231,12 @@ extension RemoteActorExhaustive {
     @discardableResult
     public func beOneArgDelayedReturn(_ string: String,
                                       _ sender: Actor,
-                                      _ callback: @escaping (String) -> Void ) -> Self {
+                                      _ error: @escaping () -> Void,
+                                      _ callback: @escaping (String) -> Void) -> Self {
         let msg = BeOneArgDelayedReturnCodableRequest(arg0: string)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgDelayedReturn", data, sender) {
+        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgDelayedReturn", data, sender, error) {
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeOneArgDelayedReturnCodableResponse.self, from: $0)
             callback(
@@ -239,17 +247,18 @@ extension RemoteActorExhaustive {
     }
     @discardableResult
     public func beNoArgsDelayedReturnNoArgs() -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsDelayedReturnNoArgs", Data(), nil, nil)
+        unsafeSendToRemote("RemoteActorExhaustive", "beNoArgsDelayedReturnNoArgs", Data(), nil, nil, nil)
         return self
     }
     @discardableResult
     public func beOneArgTwoDelayedReturn(_ arg0: Int,
                                          _ sender: Actor,
-                                         _ callback: @escaping (Int, String?) -> Void ) -> Self {
+                                         _ error: @escaping () -> Void,
+                                         _ callback: @escaping (Int, String?) -> Void) -> Self {
         let msg = BeOneArgTwoDelayedReturnCodableRequest(arg0: arg0)
         // swiftlint:disable:next force_try
         let data = try! JSONEncoder().encode(msg)
-        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgTwoDelayedReturn", data, sender) {
+        unsafeSendToRemote("RemoteActorExhaustive", "beOneArgTwoDelayedReturn", data, sender, error) {
             // swiftlint:disable:next force_try
             let msg = try! JSONDecoder().decode(BeOneArgTwoDelayedReturnCodableResponse.self, from: $0)
             callback(
@@ -260,8 +269,10 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beArrayReturn(_ sender: Actor, _ callback: @escaping ([String]) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beArrayReturn", Data(), sender) {
+    public func beArrayReturn(_ sender: Actor,
+                              _ error: @escaping () -> Void,
+                              _ callback: @escaping ([String]) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beArrayReturn", Data(), sender, error) {
             // swiftlint:disable:next force_try
             let response = (try! JSONDecoder().decode(BeArrayReturnCodableResponse.self, from: $0))
             callback(
@@ -271,8 +282,10 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beDataReturn(_ sender: Actor, _ callback: @escaping (Data) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beDataReturn", Data(), sender) {
+    public func beDataReturn(_ sender: Actor,
+                             _ error: @escaping () -> Void,
+                             _ callback: @escaping (Data) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beDataReturn", Data(), sender, error) {
             // swiftlint:disable:next force_try
             let response = (try! JSONDecoder().decode(BeDataReturnCodableResponse.self, from: $0))
             callback(
@@ -282,8 +295,10 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beDataArrayReturn(_ sender: Actor, _ callback: @escaping ([Data]) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beDataArrayReturn", Data(), sender) {
+    public func beDataArrayReturn(_ sender: Actor,
+                                  _ error: @escaping () -> Void,
+                                  _ callback: @escaping ([Data]) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beDataArrayReturn", Data(), sender, error) {
             // swiftlint:disable:next force_try
             let response = (try! JSONDecoder().decode(BeDataArrayReturnCodableResponse.self, from: $0))
             callback(
@@ -293,8 +308,10 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beBoolReturn(_ sender: Actor, _ callback: @escaping (Bool) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beBoolReturn", Data(), sender) {
+    public func beBoolReturn(_ sender: Actor,
+                             _ error: @escaping () -> Void,
+                             _ callback: @escaping (Bool) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beBoolReturn", Data(), sender, error) {
             // swiftlint:disable:next force_try
             let response = (try! JSONDecoder().decode(BeBoolReturnCodableResponse.self, from: $0))
             callback(
@@ -304,8 +321,10 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beBoolArrayReturn(_ sender: Actor, _ callback: @escaping ([Bool]) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beBoolArrayReturn", Data(), sender) {
+    public func beBoolArrayReturn(_ sender: Actor,
+                                  _ error: @escaping () -> Void,
+                                  _ callback: @escaping ([Bool]) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beBoolArrayReturn", Data(), sender, error) {
             // swiftlint:disable:next force_try
             let response = (try! JSONDecoder().decode(BeBoolArrayReturnCodableResponse.self, from: $0))
             callback(
@@ -315,8 +334,10 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beFloatReturn(_ sender: Actor, _ callback: @escaping (Float) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beFloatReturn", Data(), sender) {
+    public func beFloatReturn(_ sender: Actor,
+                              _ error: @escaping () -> Void,
+                              _ callback: @escaping (Float) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beFloatReturn", Data(), sender, error) {
             // swiftlint:disable:next force_try
             let response = (try! JSONDecoder().decode(BeFloatReturnCodableResponse.self, from: $0))
             callback(
@@ -326,8 +347,10 @@ extension RemoteActorExhaustive {
         return self
     }
     @discardableResult
-    public func beFloatArrayReturn(_ sender: Actor, _ callback: @escaping ([Float]) -> Void) -> Self {
-        unsafeSendToRemote("RemoteActorExhaustive", "beFloatArrayReturn", Data(), sender) {
+    public func beFloatArrayReturn(_ sender: Actor,
+                                   _ error: @escaping () -> Void,
+                                   _ callback: @escaping ([Float]) -> Void) -> Self {
+        unsafeSendToRemote("RemoteActorExhaustive", "beFloatArrayReturn", Data(), sender, error) {
             // swiftlint:disable:next force_try
             let response = (try! JSONDecoder().decode(BeFloatArrayReturnCodableResponse.self, from: $0))
             callback(
