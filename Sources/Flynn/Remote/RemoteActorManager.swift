@@ -58,6 +58,10 @@ internal final class RemoteActorManager: Actor {
                 runnerPool.append(RemoteActorRunner())
             }
         }
+        
+        // Since all communications to remote actors are funnelled through the manager,
+        // we're going to up its priority
+        unsafePriority = 999
     }
     
     // MARK: - RemoteActorManager: Node
