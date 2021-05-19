@@ -12,6 +12,10 @@ private func nodeRegisterWithRoot(_ registrationString: UnsafePointer<Int8>?,
 
 }
 
+private func nodeDisconnectedFromRoot(_ socketFD: Int32) {
+    Flynn.remotes.beDidDisconnectNode(socketFD)
+}
+
 private func nodeCreateActor(_ actorUUIDPtr: UnsafePointer<Int8>?,
                              _ actorTypePtr: UnsafePointer<Int8>?,
                              _ shouldBeProxy: Bool,
@@ -88,7 +92,8 @@ extension Flynn {
                           port,
                           nodeRegisterWithRoot,
                           nodeCreateActor,
-                          rootHandleMessageReply)
+                          rootHandleMessageReply,
+                          nodeDisconnectedFromRoot)
             }
         }
 

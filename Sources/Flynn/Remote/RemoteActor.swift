@@ -4,6 +4,7 @@ import Pony
 public typealias DelayedRemoteBehavior = (Data, @escaping (Data) -> Void) -> Void
 public typealias RemoteBehavior = (Data) -> Data?
 public typealias RemoteBehaviorReply = (Data) -> Void
+public typealias RemoteBehaviorError = () -> Void
 
 public protocol BehaviorRegisterable {
     func unsafeRegisterAllBehaviors()
@@ -126,13 +127,15 @@ open class InternalRemoteActor {
                                    _ behaviorType: String,
                                    _ payload: Data,
                                    _ sender: Actor?,
-                                   _ callback: RemoteBehaviorReply?) {        
+                                   _ error: RemoteBehaviorError?,
+                                   _ callback: RemoteBehaviorReply?) {
         Flynn.remotes.beSendToRemote(self,
                                      unsafeUUID,
                                      actorType,
                                      behaviorType,
                                      payload,
                                      sender,
-                                     callback)
+                                     callback,
+                                     error)
     }
 }

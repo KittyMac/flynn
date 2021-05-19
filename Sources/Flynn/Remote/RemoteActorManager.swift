@@ -8,10 +8,17 @@ import Pony
 private class MessageReply {
     var actor: Actor
     var block: RemoteBehaviorReply
+    var error: RemoteBehaviorError
+    var socket: Int32
 
-    init(_ actor: Actor, _ block: @escaping RemoteBehaviorReply) {
+    init(_ socket: Int32,
+         _ actor: Actor,
+         _ block: @escaping RemoteBehaviorReply,
+         _ error: @escaping RemoteBehaviorError) {
+        self.socket = socket
         self.actor = actor
         self.block = block
+        self.error = error
     }
 
     func run(_ data: Data) {
@@ -79,10 +86,6 @@ internal final class RemoteActorManager: Actor {
         rootActors.removeAll()
     }
     
-    private func didDisconnectFromSocket(_ socket: Int32) {
-        actorTypesBySocket[socket] = []
-    }
-    
     private func _beGetActor(_ actorUUID: String) -> RemoteActor? {
         return rootActors[actorUUID]
     }
@@ -146,6 +149,16 @@ internal final class RemoteActorManager: Actor {
         
         pony_register_node_to_root(socketFD, combined)
         
+    }
+    
+    private func _beDidDisconnectNode(_ socket: Int32) {
+        actorTypesBySocket[socket] = []
+        
+        // error out any waiting messages for this socket...
+        for (key, value) in waitingReplies where value.socket == socket {
+            value.error()
+            waitingReplies.removeValue(forKey: key)
+        }
     }
     
     private func _beRegisterRemoteNodeOnRoot(_ actorRegistrationString: String,
@@ -221,7 +234,8 @@ internal final class RemoteActorManager: Actor {
                                  _ behaviorType: String,
                                  _ payload: Data,
                                  _ replySender: Actor?,
-                                 _ replyCallback: RemoteBehaviorReply?) {
+                                 _ replyCallback: RemoteBehaviorReply?,
+                                 _ replyError: RemoteBehaviorError?) {
         let fallbackRunRemoteActorLocally: (() -> Void) = {
             guard let _ = self.fallbackActorTypes[actorTypeString] else {
                 fatalError("Unregistered remote actor of type \(actorTypeString); properly include all valid types in Flynn.Root.listen()")
@@ -237,8 +251,14 @@ internal final class RemoteActorManager: Actor {
             
             let messageId = pony_next_messageId()
             
-            if let replySender = replySender, let replyCallback = replyCallback {
-                self._beRegisterReply(messageId, replySender, replyCallback)
+            if let replySender = replySender,
+                let replyCallback = replyCallback,
+                let replyError = replyError {
+                self._beRegisterReply(internalRemoteActor.nodeSocketFD,
+                                      messageId,
+                                      replySender,
+                                      replyCallback,
+                                      replyError)
             }
             
             Flynn.remotes.beHandleMessage(actorUUID,
@@ -263,13 +283,19 @@ internal final class RemoteActorManager: Actor {
                                                                      Int32(payload.count))
                 if messageID < 0 {
                     // we're no longer connected to this socket
-                    self.didDisconnectFromSocket(internalRemoteActor.nodeSocketFD)
+                    self._beDidDisconnectNode(internalRemoteActor.nodeSocketFD)
                     internalRemoteActor.nodeSocketFD = kUnregistedSocketFD
                     internalRemoteActor.createdNodeSocketFD = internalRemoteActor.nodeSocketFD
                 } else {
                     internalRemoteActor.createdNodeSocketFD = internalRemoteActor.nodeSocketFD
-                    if let replySender = replySender, let replyCallback = replyCallback {
-                        self._beRegisterReply(messageID, replySender, replyCallback)
+                    if let replySender = replySender,
+                        let replyCallback = replyCallback,
+                        let replyError = replyError {
+                        self._beRegisterReply(internalRemoteActor.nodeSocketFD,
+                                              messageID,
+                                              replySender,
+                                              replyCallback,
+                                              replyError)
                     }
                 }
             }
@@ -331,7 +357,8 @@ internal final class RemoteActorManager: Actor {
                                            behaviorType,
                                            payload,
                                            replySender,
-                                           replyCallback)
+                                           replyCallback,
+                                           replyError)
                 }
             }
         } else if let _ = namedActorTypes[actorTypeString] {
@@ -372,10 +399,12 @@ internal final class RemoteActorManager: Actor {
 
     private var waitingReplies: [Int32: MessageReply] = [:]
 
-    private func _beRegisterReply(_ messageID: Int32,
+    private func _beRegisterReply(_ socket: Int32,
+                                  _ messageID: Int32,
                                   _ actor: Actor,
-                                  _ block: @escaping RemoteBehaviorReply) {
-        waitingReplies[messageID] = MessageReply(actor, block)
+                                  _ block: @escaping RemoteBehaviorReply,
+                                  _ error: @escaping RemoteBehaviorError) {
+        waitingReplies[messageID] = MessageReply(socket, actor, block, error)
     }
 
     private func _beHandleMessageReply(_ messageID: Int32,
@@ -428,6 +457,11 @@ extension RemoteActorManager {
         return self
     }
     @discardableResult
+    public func beDidDisconnectNode(_ socket: Int32) -> Self {
+        unsafeSend { self._beDidDisconnectNode(socket) }
+        return self
+    }
+    @discardableResult
     public func beRegisterRemoteNodeOnRoot(_ actorRegistrationString: String,
                                            _ socketFD: Int32) -> Self {
         unsafeSend { self._beRegisterRemoteNodeOnRoot(actorRegistrationString, socketFD) }
@@ -471,8 +505,9 @@ extension RemoteActorManager {
                                _ behaviorType: String,
                                _ payload: Data,
                                _ replySender: Actor?,
-                               _ replyCallback: RemoteBehaviorReply?) -> Self {
-        unsafeSend { self._beSendToRemote(internalRemoteActor, actorUUID, actorTypeString, behaviorType, payload, replySender, replyCallback) }
+                               _ replyCallback: RemoteBehaviorReply?,
+                               _ replyError: RemoteBehaviorError?) -> Self {
+        unsafeSend { self._beSendToRemote(internalRemoteActor, actorUUID, actorTypeString, behaviorType, payload, replySender, replyCallback, replyError) }
         return self
     }
     @discardableResult
@@ -485,10 +520,12 @@ extension RemoteActorManager {
         return self
     }
     @discardableResult
-    public func beRegisterReply(_ messageID: Int32,
+    public func beRegisterReply(_ socket: Int32,
+                                _ messageID: Int32,
                                 _ actor: Actor,
-                                _ block: @escaping RemoteBehaviorReply) -> Self {
-        unsafeSend { self._beRegisterReply(messageID, actor, block) }
+                                _ block: @escaping RemoteBehaviorReply,
+                                _ error: @escaping RemoteBehaviorError) -> Self {
+        unsafeSend { self._beRegisterReply(socket, messageID, actor, block, error) }
         return self
     }
     @discardableResult
