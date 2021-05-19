@@ -7,23 +7,29 @@ import Pony
 
 private class MessageReply {
     var actor: Actor
-    var block: RemoteBehaviorReply
-    var error: RemoteBehaviorError
+    var blockSuccess: RemoteBehaviorReply
+    var blockError: RemoteBehaviorError
     var socket: Int32
 
     init(_ socket: Int32,
          _ actor: Actor,
-         _ block: @escaping RemoteBehaviorReply,
-         _ error: @escaping RemoteBehaviorError) {
+         _ blockSuccess: @escaping RemoteBehaviorReply,
+         _ blockError: @escaping RemoteBehaviorError) {
         self.socket = socket
         self.actor = actor
-        self.block = block
-        self.error = error
+        self.blockSuccess = blockSuccess
+        self.blockError = blockError
     }
 
     func run(_ data: Data) {
         actor.unsafeSend {
-            self.block(data)
+            self.blockSuccess(data)
+        }
+    }
+    
+    func error() {
+        actor.unsafeSend {
+            self.blockError()
         }
     }
 }
