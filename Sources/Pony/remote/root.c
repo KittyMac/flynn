@@ -141,15 +141,23 @@ static void root_remove_node(node_t * nodePtr) {
         number_of_cores -= nodePtr->core_count;
         number_of_nodes--;
         
-        nodeDisconnectedPtr(nodePtr->socketfd);
-        
         int socketfd = nodePtr->socketfd;
         nodePtr->socketfd = -1;
         nodePtr->read_thread_tid = 0;
         nodePtr->write_thread_tid = 0;
         nodePtr->core_count = 0;
         nodePtr->active_actors = 0;
+        
+        // ensure everyone else is done writing to the queue
+        pony_msg_t* head = NULL;
+        do {
+            head = atomic_load_explicit(&nodePtr->write_queue.head, memory_order_relaxed);
+        } while(((uintptr_t)head & (uintptr_t)1) != (uintptr_t)1);
+        atomic_thread_fence(memory_order_acquire);
+        
         ponyint_messageq_destroy(&nodePtr->write_queue);
+        
+        nodeDisconnectedPtr(socketfd);
     }
     pthread_mutex_unlock(&nodes_mutex);
 }
