@@ -1,6 +1,17 @@
-<img align="center" src="meta/header.png" >
+# Swift recently added a brand new concurrency system (as of Swift 5.5). If you find yourself here, you should first go and read up on the new [Swift Concurrency Model](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html).
+
+If you're still interesting in learning about Flynn, please continue :)
+
+
+
+
+
+
+
 
 &nbsp;  
+
+
 
 ## Quick Start
 
