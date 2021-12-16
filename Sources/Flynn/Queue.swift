@@ -2,11 +2,17 @@ import Foundation
 
 public class Queue<T: AnyObject> {
     // safe only so long as there is one consumer and multiple producers
-    private var arraySize: Int = 0
+    
+    @usableFromInline
+    var arraySize: Int = 0
+    
     private var arrayPtr: UnsafeMutablePointer<T?>
 
-    private var writeIdx = 0
-    private var readIdx = 0
+    @usableFromInline
+    var writeIdx = 0
+    
+    @usableFromInline
+    var readIdx = 0
 
     private var readLock = NSLock()
     private var writeLock = NSLock()
@@ -14,7 +20,8 @@ public class Queue<T: AnyObject> {
     private let manyProducers: Bool
     private let manyConsumers: Bool
 
-    private var underPressure = false
+    @usableFromInline
+    var underPressure = false
 
     public init(size: Int,
                 manyProducers: Bool = true,
@@ -34,17 +41,17 @@ public class Queue<T: AnyObject> {
         //print("deinit - Queue")
     }
 
-    @inline(__always)
+    @inlinable @inline(__always)
     public var isEmpty: Bool {
         return writeIdx == readIdx
     }
 
-    @inline(__always)
+    @inlinable @inline(__always)
     public var isFull: Bool {
         return ((writeIdx &+ 1) % arraySize) == readIdx
     }
 
-    @inline(__always)
+    @inlinable @inline(__always)
     public func checkPressure() {
         underPressure = count > (arraySize * 3 / 4)
     }

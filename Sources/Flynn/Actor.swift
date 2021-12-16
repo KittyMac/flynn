@@ -5,46 +5,47 @@ import Pony
 
 public typealias PonyBlock = () -> Void
 
+@usableFromInline
 typealias AnyPtr = UnsafeMutableRawPointer?
 
+@inlinable @inline(__always)
 func Ptr <T: AnyObject>(_ obj: T) -> AnyPtr {
     return Unmanaged.passRetained(obj).toOpaque()
 }
 
+@inlinable @inline(__always)
 func Class <T: AnyObject>(_ ptr: AnyPtr) -> T? {
     guard let ptr = ptr else { return nil }
     return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
 }
 
-private func handleMessage(_ argumentPtr: AnyPtr) {
+@inlinable @inline(__always)
+func handleMessage(_ argumentPtr: AnyPtr) {
     if let msg: ActorMessage = Class(argumentPtr) {
         msg.run()
     }
 }
 
-private class ActorMessage {
-    weak var pool: Queue<ActorMessage>?
+@usableFromInline
+class ActorMessage {
+    
+    @usableFromInline
     var block: PonyBlock?
 
-    init(_ pool: Queue<ActorMessage>?, _ block: @escaping PonyBlock) {
-        self.pool = pool
+    @inlinable @inline(__always)
+    init(_ block: @escaping PonyBlock) {
         self.block = block
     }
 
-    @inline(__always)
+    @inlinable @inline(__always)
     func set(_ block: @escaping PonyBlock) {
         self.block = block
     }
 
-    @inline(__always)
+    @inlinable @inline(__always)
     func run() {
         block?()
         block = nil
-        pool?.enqueue(self)
-    }
-
-    deinit {
-        //print("deinit - ActorMessage")
     }
 }
 
@@ -52,68 +53,54 @@ open class Actor {
 
     public let unsafeUUID: String
 
-    private var ponyActorPtr: AnyPtr
-
-    private var poolMessage = Queue<ActorMessage>(size: 128, manyProducers: false, manyConsumers: true)
-    private var actorMessagesReused: Int = 0
-    private var actorMessagesCreated: Int = 0
-
-    @inline(__always)
-    private func unpoolMessage(_ block: @escaping PonyBlock) -> ActorMessage {
-        if let msg = poolMessage.dequeue() {
-            actorMessagesReused += 1
-            msg.set(block)
-            return msg
-        }
-        actorMessagesCreated += 1
-        return ActorMessage(poolMessage, block)
-    }
+    @usableFromInline
+    var safePonyActorPtr: AnyPtr
 
     public var unsafeCoreAffinity: CoreAffinity {
         get {
-            if let affinity = CoreAffinity(rawValue: pony_actor_getcoreAffinity(ponyActorPtr)) {
+            if let affinity = CoreAffinity(rawValue: pony_actor_getcoreAffinity(safePonyActorPtr)) {
                 return affinity
             }
             return .none
         }
         set {
             if pony_core_affinity_enabled() {
-                pony_actor_setcoreAffinity(ponyActorPtr, newValue.rawValue)
+                pony_actor_setcoreAffinity(safePonyActorPtr, newValue.rawValue)
             } else {
-                pony_actor_setcoreAffinity(ponyActorPtr, CoreAffinity.none.rawValue)
+                pony_actor_setcoreAffinity(safePonyActorPtr, CoreAffinity.none.rawValue)
             }
         }
     }
 
     public var unsafePriority: Int32 {
         get {
-            return pony_actor_getpriority(ponyActorPtr)
+            return pony_actor_getpriority(safePonyActorPtr)
         }
         set {
-            pony_actor_setpriority(ponyActorPtr, newValue)
+            pony_actor_setpriority(safePonyActorPtr, newValue)
         }
     }
 
     public var unsafeMessageBatchSize: Int32 {
         get {
-            return pony_actor_getbatchSize(ponyActorPtr)
+            return pony_actor_getbatchSize(safePonyActorPtr)
         }
         set {
-            pony_actor_setbatchSize(ponyActorPtr, newValue)
+            pony_actor_setbatchSize(safePonyActorPtr, newValue)
         }
     }
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
-        pony_actor_wait(minMsgs, ponyActorPtr)
+        pony_actor_wait(minMsgs, safePonyActorPtr)
     }
 
     public func unsafeYield() {
-        pony_actor_yield(ponyActorPtr)
+        pony_actor_yield(safePonyActorPtr)
     }
 
     public var unsafeMessagesCount: Int32 {
-        return pony_actor_num_messages(ponyActorPtr)
+        return pony_actor_num_messages(safePonyActorPtr)
     }
 
     private let initTime: TimeInterval = ProcessInfo.processInfo.systemUptime
@@ -124,16 +111,17 @@ open class Actor {
     public init() {
         Flynn.startup()
         unsafeUUID = UUID().uuidString
-        ponyActorPtr = pony_actor_create()
+        safePonyActorPtr = pony_actor_create()
     }
 
     deinit {
         //print("deinit - Actor")
-        pony_actor_destroy(ponyActorPtr)
+        pony_actor_destroy(safePonyActorPtr)
     }
 
+    @inlinable @inline(__always)
     public func unsafeSend(_ block: @escaping PonyBlock) {
-        pony_actor_send_message(ponyActorPtr, Ptr(unpoolMessage(block)), handleMessage)
+        pony_actor_send_message(safePonyActorPtr, Ptr(ActorMessage(block)), handleMessage)
     }
 
     public var unsafeStatus: String {
@@ -144,9 +132,6 @@ open class Actor {
         scratch.append("Message Batch Size: \(unsafeMessageBatchSize)\n")
         scratch.append("Actor Priority: \(unsafePriority)\n")
         scratch.append("Core Affinity: \(unsafeCoreAffinity)\n")
-        scratch.append("Actor Message Pool Size: \(poolMessage.count) / \(poolMessage.capacity)\n")
-        scratch.append("Actor Messages Created: \(actorMessagesCreated)\n")
-        scratch.append("Actor Messages Reused: \(actorMessagesReused)\n")
         return scratch
     }
 
