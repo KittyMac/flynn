@@ -254,6 +254,8 @@ internal final class RemoteActorManager: Actor {
             guard let _ = self.fallbackActorTypes[actorTypeString] else {
                 #if DEBUG
                 fatalError("Unregistered remote actor of type \(actorTypeString); properly include all valid types in Flynn.Root.listen()")
+                #else
+                return
                 #endif
             }
             
