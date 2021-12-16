@@ -203,7 +203,9 @@ internal final class RemoteActorManager: Actor {
             actor.unsafeRegisterAllBehaviors()
             nodeActors[actorUUID] = actor
         } else {
+            #if DEBUG
             fatalError("Unregistered remote actor of type \(actorType); properly include all valid types in Flynn.Node.connect()")
+            #endif
         }
     }
     
@@ -219,7 +221,9 @@ internal final class RemoteActorManager: Actor {
             actor.unsafeRegisterAllBehaviors()
             rootActors[actorUUID] = actor
         } else {
+            #if DEBUG
             fatalError("Unregistered remote actor of type \(actorType); properly include all valid types in Flynn.Root.listen()")
+            #endif
         }
     }
 
@@ -248,7 +252,9 @@ internal final class RemoteActorManager: Actor {
                                  _ replyError: RemoteBehaviorError?) {
         let fallbackRunRemoteActorLocally: (() -> Void) = {
             guard let _ = self.fallbackActorTypes[actorTypeString] else {
+                #if DEBUG
                 fatalError("Unregistered remote actor of type \(actorTypeString); properly include all valid types in Flynn.Root.listen()")
+                #endif
             }
             
             if internalRemoteActor.nodeSocketFD == kUnregistedSocketFD {
@@ -422,7 +428,9 @@ internal final class RemoteActorManager: Actor {
         if let message = waitingReplies.removeValue(forKey: messageID) {
             message.run(data)
         } else {
+            #if DEBUG
             fatalError("Remote message received for message id \(messageID) which does not exist")
+            #endif
         }
     }
 }
