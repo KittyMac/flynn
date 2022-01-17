@@ -291,7 +291,7 @@ internal final class RemoteActorManager: Actor {
         }
         
         let finishSendingToRemoteActor: (() -> Void) = {
-            _ = payload.withUnsafeBytes {
+            payload.withUnsafeBytes {
                 let messageID = pony_root_send_actor_message_to_node(actorUUID,
                                                                      actorTypeString,
                                                                      behaviorType,
