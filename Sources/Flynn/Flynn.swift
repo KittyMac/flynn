@@ -82,7 +82,11 @@ open class Flynn {
         return Int(pony_remote_core_count())
     }
     
-    public static var totalMemory: UInt64 {
+    public static var appCurrentMemory: UInt64 {
+        return UInt64(pony_current_memory())
+    }
+    
+    public static var flynnCurrentMemory: UInt64 {
         return UInt64(pony_mapped_memory())
     }
 
