@@ -19,9 +19,14 @@ void ponyint_update_memory_usage(void);
 size_t ponyint_total_memory(void);
 
 /**
-* Maximum memory every allocated by the runtime
+* Maximum memory ever allocated by the runtime
 */
 size_t ponyint_max_memory(void);
+
+/**
+* Current (unreleasable) mapped memory (value may be inaccurate)
+*/
+size_t ponyint_usafe_mapped_memory();
 
 /**
  * Allocates memory in the virtual address space.

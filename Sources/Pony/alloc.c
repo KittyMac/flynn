@@ -19,6 +19,8 @@
 static size_t total_memory_allocated = 0;
 static size_t max_memory_allocated = 0;
 
+static size_t unsafe_pony_mapped_memory = 0;
+
 void ponyint_update_memory_usage() {
     struct rusage usage;
     if(0 == getrusage(RUSAGE_SELF, &usage)) {
@@ -45,12 +47,19 @@ size_t ponyint_max_memory()
     return max_memory_allocated;
 }
 
+size_t ponyint_usafe_mapped_memory()
+{
+    return unsafe_pony_mapped_memory;
+}
+
 void* ponyint_virt_alloc(size_t bytes)
 {
     void* p;
     bool ok = true;
     
     p = mmap(0, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+    
+    unsafe_pony_mapped_memory += bytes;
     
     if(p == MAP_FAILED)
         ok = false;
