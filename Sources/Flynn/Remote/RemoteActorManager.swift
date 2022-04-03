@@ -339,25 +339,28 @@ internal final class RemoteActorManager: Actor {
                 if allSockets.count > 0 {
                     remoteNodeRoundRobinIndex += 1
                     
-                    // sanity default: choose next remote node
-                    //internalRemoteActor.nodeSocketFD = allSockets[remoteNodeRoundRobinIndex % allSockets.count]
-
-                    // ideal: choose next node based on their core counts (support hetergeneous clusters)
+                    // ideal: choose next node based on their core counts (support hetergeneous clusters better)
                     remoteNodeRoundRobinIndex = remoteNodeRoundRobinIndex % Int(pony_remote_core_count())
                     
+                    // calculate the total number of remote cores
                     var idx: Int32 = 0
                     for socket in allSockets {
                         if idx >= remoteNodeRoundRobinIndex {
                             internalRemoteActor.nodeSocketFD = socket
                             break
                         }
-                        var numCores = numRemoteCoresBySocket[socket] ?? 0
-                        if numCores == 0 {
-                            numCores = pony_remote_core_count_by_socket(socket)
-                            numRemoteCoresBySocket[socket] = numCores
-                        }
-                        idx += numCores
+                        
+                        let numCoresOnThisSocket = pony_remote_core_count_by_socket(socket)
+                        numRemoteCoresBySocket[socket] = numCoresOnThisSocket
+                        idx += numCoresOnThisSocket
                     }
+                    
+                    if internalRemoteActor.nodeSocketFD == kUnregistedSocketFD {
+                        // sanity default: we must choose one of the remote nodes
+                        internalRemoteActor.nodeSocketFD = allSockets[remoteNodeRoundRobinIndex % allSockets.count]
+                    }
+                    
+                    //print("TAG: remote actor attached to socket \(internalRemoteActor.nodeSocketFD)")
                 }
             }
             
