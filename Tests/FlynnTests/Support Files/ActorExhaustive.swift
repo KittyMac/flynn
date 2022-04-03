@@ -105,7 +105,7 @@ extension ActorExhaustive {
     public func beNoArgsDelayedReturnNoArgs(_ sender: Actor,
                                             _ callback: @escaping (() -> Void)) -> Self {
         unsafeSend {
-            self._beNoArgsDelayedReturnNoArgs {
+            self._beNoArgsDelayedReturnNoArgs() { 
                 sender.unsafeSend {
                     callback()
                 }
@@ -117,7 +117,7 @@ extension ActorExhaustive {
     public func beNoArgsDelayedReturn(_ sender: Actor,
                                       _ callback: @escaping ((String) -> Void)) -> Self {
         unsafeSend {
-            self._beNoArgsDelayedReturn { arg0 in
+            self._beNoArgsDelayedReturn() { arg0 in
                 sender.unsafeSend {
                     callback(arg0)
                 }
@@ -142,7 +142,7 @@ extension ActorExhaustive {
     public func beNoArgsTwoDelayedReturn(_ sender: Actor,
                                          _ callback: @escaping ((String, Int) -> Void)) -> Self {
         unsafeSend {
-            self._beNoArgsTwoDelayedReturn { arg0, arg1 in
+            self._beNoArgsTwoDelayedReturn() { arg0, arg1 in
                 sender.unsafeSend {
                     callback(arg0, arg1)
                 }
@@ -167,7 +167,7 @@ extension ActorExhaustive {
     public func beArrayReturn(_ sender: Actor,
                               _ callback: @escaping (([String], Int) -> Void)) -> Self {
         unsafeSend {
-            self._beArrayReturn { arg0, arg1 in
+            self._beArrayReturn() { arg0, arg1 in
                 sender.unsafeSend {
                     callback(arg0, arg1)
                 }
