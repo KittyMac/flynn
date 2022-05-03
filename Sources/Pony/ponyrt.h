@@ -40,7 +40,7 @@ typedef struct pony_msg_t pony_msg_t;
 
 struct pony_msg_t
 {
-    uint32_t index;
+    uint32_t alloc_size;
     uint32_t msgId;
     PONY_ATOMIC(pony_msg_t*) next;
 };

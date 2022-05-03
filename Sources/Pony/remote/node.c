@@ -16,8 +16,7 @@
 #include "../scheduler.h"
 #include "../actor.h"
 #include "../cpu.h"
-#include "../alloc.h"
-#include "../pool.h"
+#include "../memory.h"
 
 #include "remote.h"
 
@@ -137,18 +136,17 @@ static void node_remove_all_roots() {
     }
 }
 
-extern pony_msg_t* pony_alloc_msg(uint32_t index, uint32_t msgId);
 void pony_node_send_version_check(root_t * rootPtr)
 {
-    pony_msg_remote_version_t* m = (pony_msg_remote_version_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_version_t)), kRemote_Version);
+    pony_msg_remote_version_t* m = (pony_msg_remote_version_t*)pony_alloc_msg(sizeof(pony_msg_remote_version_t), kRemote_Version);
     ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
 }
 
 void pony_node_send_register(root_t * rootPtr, const char * registration)
 {
-    pony_msg_remote_register_t* m = (pony_msg_remote_register_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_register_t)), kRemote_RegisterWithRoot);
+    pony_msg_remote_register_t* m = (pony_msg_remote_register_t*)pony_alloc_msg(sizeof(pony_msg_remote_register_t), kRemote_RegisterWithRoot);
     uint32_t length = max(2048, strlen(registration) + 1);
-    m->registration = (char *)ponyint_pool_alloc_size(length);
+    m->registration = (char *)ponyint_pool_alloc(length);
     strncpy(m->registration, registration, length-1);
     m->length = length;
     ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
@@ -156,19 +154,19 @@ void pony_node_send_register(root_t * rootPtr, const char * registration)
 
 void pony_node_send_core_count(root_t * rootPtr)
 {
-    pony_msg_remote_core_count_t* m = (pony_msg_remote_core_count_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_core_count_t)), kRemote_SendCoreCount);
+    pony_msg_remote_core_count_t* m = (pony_msg_remote_core_count_t*)pony_alloc_msg(sizeof(pony_msg_remote_core_count_t), kRemote_SendCoreCount);
     ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
 }
 
 void pony_node_send_heartbeat(root_t * rootPtr)
 {
-    pony_msg_remote_heartbeat_t* m = (pony_msg_remote_heartbeat_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_heartbeat_t)), kRemote_SendHeartbeat);
+    pony_msg_remote_heartbeat_t* m = (pony_msg_remote_heartbeat_t*)pony_alloc_msg(sizeof(pony_msg_remote_heartbeat_t), kRemote_SendHeartbeat);
     ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
 }
 
 void pony_node_send_destroy_actor_ack(root_t * rootPtr)
 {
-    pony_msg_remote_destroy_actor_ack_t* m = (pony_msg_remote_destroy_actor_ack_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_destroy_actor_ack_t)), kRemote_DestroyActorAck);
+    pony_msg_remote_destroy_actor_ack_t* m = (pony_msg_remote_destroy_actor_ack_t*)pony_alloc_msg(sizeof(pony_msg_remote_destroy_actor_ack_t), kRemote_DestroyActorAck);
     ponyint_actor_messageq_push(&rootPtr->write_queue, &m->msg, &m->msg);
 }
 
@@ -177,7 +175,7 @@ void pony_node_send_reply(root_t * rootPtr,
                           const void * payload,
                           uint32_t length)
 {
-    pony_msg_remote_sendreply_t* m = (pony_msg_remote_sendreply_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_sendreply_t)), kRemote_SendReply);
+    pony_msg_remote_sendreply_t* m = (pony_msg_remote_sendreply_t*)pony_alloc_msg(sizeof(pony_msg_remote_sendreply_t), kRemote_SendReply);
     m->messageId = messageId;
     m->payload = (void *)malloc(length);
     memcpy(m->payload, payload, length);
@@ -211,7 +209,7 @@ static DECLARE_THREAD_FN(node_write_to_root_thread)
                 case kRemote_RegisterWithRoot: {
                     pony_msg_remote_register_t * m = (pony_msg_remote_register_t *)msg;
                     send_register_with_root(rootPtr->socketfd, m->registration);
-                    ponyint_pool_free_size(m->length, m->registration);
+                    ponyint_pool_free(m->registration, m->length);
                 } break;
                 case kRemote_SendCoreCount: {
                     send_core_count(rootPtr->socketfd);

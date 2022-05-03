@@ -11,8 +11,7 @@
 #include "scheduler.h"
 #include "actor.h"
 #include "cpu.h"
-#include "alloc.h"
-#include "pool.h"
+#include "memory.h"
 
 extern int ponyint_remote_nodes_count();
 extern int ponyint_remote_core_count();
@@ -183,14 +182,20 @@ void pony_actor_destroy(void * actor) {
 }
 
 unsigned long pony_max_memory() {
-    return (unsigned long)ponyint_max_memory();
+    // TODO: FIX ME
+    //return (unsigned long)ponyint_max_memory();
+    return 0;
 }
 
 unsigned long pony_current_memory() {
-    return (unsigned long)ponyint_total_memory();
+    // TODO: FIX ME
+    //return (unsigned long)ponyint_total_memory();
+    return 0;
 }
 
 unsigned long pony_mapped_memory() {
-    return (unsigned long)ponyint_usafe_mapped_memory();
+    // TODO: FIX ME
+    //return (unsigned long)ponyint_usafe_mapped_memory();
+    return 0;
 }
 

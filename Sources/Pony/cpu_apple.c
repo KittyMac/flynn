@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 #include "cpu.h"
-#include "pool.h"
+#include "memory.h"
 
 #undef id
 #include <mach/mach.h>

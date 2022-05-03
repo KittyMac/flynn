@@ -6,7 +6,7 @@
 #define PONY_WANT_ATOMIC_DEFS
 
 #include "mpmcq.h"
-#include "pool.h"
+#include "memory.h"
 #include "cpu.h"
 #include <stdio.h>
 
@@ -20,7 +20,7 @@ struct mpmcq_node_t
 
 static mpmcq_node_t* node_alloc(void* data)
 {
-    mpmcq_node_t* node = POOL_ALLOC(mpmcq_node_t);
+    mpmcq_node_t* node = ponyint_pool_alloc(sizeof(mpmcq_node_t));
     atomic_store_explicit(&node->next, NULL, memory_order_relaxed);
     atomic_store_explicit(&node->data, data, memory_order_relaxed);
     return node;
@@ -28,7 +28,7 @@ static mpmcq_node_t* node_alloc(void* data)
 
 static void node_free(mpmcq_node_t* node)
 {
-    POOL_FREE(mpmcq_node_t, node);
+    ponyint_pool_free(node, sizeof(mpmcq_node_t));
 }
 
 void ponyint_mpmcq_init(mpmcq_t* q)

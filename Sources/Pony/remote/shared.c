@@ -16,8 +16,7 @@
 #include "../scheduler.h"
 #include "../actor.h"
 #include "../cpu.h"
-#include "../alloc.h"
-#include "../pool.h"
+#include "../memory.h"
 
 #include "remote.h"
 

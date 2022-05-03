@@ -17,8 +17,7 @@
 #include "../scheduler.h"
 #include "../actor.h"
 #include "../cpu.h"
-#include "../alloc.h"
-#include "../pool.h"
+#include "../memory.h"
 
 #include "remote.h"
 
@@ -181,16 +180,15 @@ static void root_remove_all_nodes() {
     }
 }
 
-extern pony_msg_t* pony_alloc_msg(uint32_t index, uint32_t msgId);
 void pony_root_send_version_check(node_t * nodePtr)
 {
-    pony_msg_remote_version_t* m = (pony_msg_remote_version_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_version_t)), kRemote_Version);
+    pony_msg_remote_version_t* m = (pony_msg_remote_version_t*)pony_alloc_msg(sizeof(pony_msg_remote_version_t), kRemote_Version);
     ponyint_actor_messageq_push(&nodePtr->write_queue, &m->msg, &m->msg);
 }
 
 void pony_root_send_create_actor(node_t * nodePtr, const char * actorUUID, const char * actorType)
 {
-    pony_msg_remote_createactor_t* m = (pony_msg_remote_createactor_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_createactor_t)), kRemote_CreateActor);
+    pony_msg_remote_createactor_t* m = (pony_msg_remote_createactor_t*)pony_alloc_msg(sizeof(pony_msg_remote_createactor_t), kRemote_CreateActor);
     strncpy(m->actorUUID, actorUUID, sizeof(m->actorUUID)-1);
     strncpy(m->actorType, actorType, sizeof(m->actorType)-1);
     ponyint_actor_messageq_push(&nodePtr->write_queue, &m->msg, &m->msg);
@@ -198,7 +196,7 @@ void pony_root_send_create_actor(node_t * nodePtr, const char * actorUUID, const
 
 void pony_root_send_destroy_actor(node_t * nodePtr, const char * actorUUID)
 {
-    pony_msg_remote_destroyactor_t* m = (pony_msg_remote_destroyactor_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_destroyactor_t)), kRemote_DestroyActor);
+    pony_msg_remote_destroyactor_t* m = (pony_msg_remote_destroyactor_t*)pony_alloc_msg(sizeof(pony_msg_remote_destroyactor_t), kRemote_DestroyActor);
     strncpy(m->actorUUID, actorUUID, sizeof(m->actorUUID)-1);
     ponyint_actor_messageq_push(&nodePtr->write_queue, &m->msg, &m->msg);
 }
@@ -210,7 +208,7 @@ void pony_root_send_message(node_t * nodePtr,
                             const void * payload,
                             uint32_t length)
 {
-    pony_msg_remote_sendmessage_t* m = (pony_msg_remote_sendmessage_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msg_remote_sendmessage_t)), kRemote_SendMessage);
+    pony_msg_remote_sendmessage_t* m = (pony_msg_remote_sendmessage_t*)pony_alloc_msg(sizeof(pony_msg_remote_sendmessage_t), kRemote_SendMessage);
     m->messageId = messageId;
     strncpy(m->actorUUID, actorUUID, sizeof(m->actorUUID)-1);
     strncpy(m->behaviorType, behaviorType, sizeof(m->behaviorType)-1);

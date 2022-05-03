@@ -5,7 +5,7 @@
 
 #include "ponyrt.h"
 #include "messageq.h"
-#include "pool.h"
+#include "memory.h"
 
 static bool messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
 {
@@ -33,8 +33,7 @@ static bool messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
 
 void ponyint_messageq_init(messageq_t* q)
 {
-    pony_msg_t* stub = POOL_ALLOC(pony_msg_t);
-    stub->index = POOL_INDEX(sizeof(pony_msg_t));
+    pony_msg_t* stub = ponyint_pool_alloc(sizeof(pony_msg_t));
     atomic_store_explicit(&stub->next, NULL, memory_order_relaxed);
     
     atomic_store_explicit(&q->head, (pony_msg_t*)((uintptr_t)stub | 1),
@@ -49,7 +48,7 @@ void ponyint_messageq_destroy(messageq_t* q)
     pony_msg_t* tail = q->tail;
     assert((((uintptr_t)atomic_load_explicit(&q->head, memory_order_relaxed) & ~(uintptr_t)1)) == (uintptr_t)tail);
     
-    ponyint_pool_free(tail->index, tail);
+    ponyint_pool_free(tail, tail->alloc_size);
     atomic_store_explicit(&q->head, NULL, memory_order_relaxed);
     q->tail = NULL;
     atomic_store_explicit(&q->num_messages, 0, memory_order_relaxed);
@@ -69,7 +68,7 @@ pony_msg_t* ponyint_actor_messageq_pop(messageq_t* q)
     {
         q->tail = next;
         atomic_thread_fence(memory_order_acquire);
-        ponyint_pool_free(tail->index, tail);
+        ponyint_pool_free(tail, tail->alloc_size);
     }
     
     return next;
@@ -88,7 +87,7 @@ pony_msg_t* ponyint_thread_messageq_pop(messageq_t* q)
     {
         q->tail = next;
         atomic_thread_fence(memory_order_acquire);
-        ponyint_pool_free(tail->index, tail);
+        ponyint_pool_free(tail, tail->alloc_size);
         
         atomic_fetch_sub_explicit(&q->num_messages, 1, memory_order_relaxed);
     }

@@ -8,7 +8,7 @@
 #include "actor.h"
 #include "scheduler.h"
 #include "cpu.h"
-#include "pool.h"
+#include "memory.h"
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
@@ -115,8 +115,8 @@ void ponyint_actor_destroy(pony_actor_t* actor)
     
     ponyint_messageq_destroy(&actor->q);
     
-    int32_t typeSize = sizeof(actor);
-    ponyint_pool_free_size(typeSize, actor);
+    int32_t typeSize = sizeof(pony_actor_t);
+    ponyint_pool_free(actor, typeSize);
     
     //fprintf(stderr, "pony actor freed\n");
 }
@@ -148,9 +148,7 @@ size_t ponyint_actor_num_messages(pony_actor_t* actor)
 pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
 {
     int32_t typeSize = sizeof(pony_actor_t);
-    
-    // allocate variable sized actors correctly
-    pony_actor_t* actor = (pony_actor_t*)ponyint_pool_alloc_size(typeSize);
+    pony_actor_t* actor = (pony_actor_t*)ponyint_pool_alloc(typeSize);
     
     memset(actor, 0, typeSize);
     
@@ -162,14 +160,6 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     ponyint_messageq_init(&actor->q);
     
     return actor;
-}
-
-pony_msg_t* pony_alloc_msg(uint32_t index, uint32_t msgId)
-{
-    pony_msg_t* msg = (pony_msg_t*)ponyint_pool_alloc(index);
-    msg->index = index;
-    msg->msgId = msgId;
-    return msg;
 }
 
 void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)
@@ -184,7 +174,7 @@ void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t
 
 void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message))
 {
-    pony_msgfunc_t* m = (pony_msgfunc_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfunc_t)), kMessagePointer);
+    pony_msgfunc_t* m = (pony_msgfunc_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kMessagePointer);
     m->arg = argumentPtr;
     m->func = handleMessageFunc;
     pony_sendv(ctx, to, &m->msg, &m->msg);
@@ -194,6 +184,6 @@ void ponyint_destroy_actor(pony_actor_t* actor)
 {
     // For an actor to be destroyed fully, it needs to get scheduled at least one more time
     // so send it a dummy message
-    pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfunc_t)), kDestroyMessage);
+    pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kDestroyMessage);
     pony_sendv(pony_ctx(), actor, &m->msg, &m->msg);
 }

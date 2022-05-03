@@ -8,8 +8,7 @@
 #include "scheduler.h"
 #include "mpmcq.h"
 #include "pagemap.h"
-#include "pool.h"
-#include "alloc.h"
+#include "memory.h"
 #include "cpu.h"
 #include "actor.h"
 #include <string.h>
@@ -350,12 +349,12 @@ static void ponyint_sched_shutdown()
         // destroy pthread condition object
         pthread_cond_destroy(scheduler[i].sleep_object);
         
-        POOL_FREE(pthread_cond_t, scheduler[i].sleep_object);
+        ponyint_pool_free(scheduler[i].sleep_object, sizeof(pthread_cond_t));
         // set sleep condition object to NULL
         scheduler[i].sleep_object = NULL;
     }
     
-    ponyint_pool_free_size(scheduler_count * sizeof(scheduler_t), scheduler);
+    ponyint_pool_free(scheduler, scheduler_count * sizeof(scheduler_t));
     scheduler = NULL;
     scheduler_count = 0;
     atomic_store_explicit(&active_scheduler_count, 0, memory_order_relaxed);
@@ -377,7 +376,7 @@ pony_ctx_t* ponyint_sched_init()
     
     atomic_store_explicit(&active_scheduler_count, scheduler_count, memory_order_relaxed);
     atomic_store_explicit(&active_scheduler_count_check, scheduler_count, memory_order_relaxed);
-    scheduler = (scheduler_t*)ponyint_pool_alloc_size(scheduler_count * sizeof(scheduler_t));
+    scheduler = (scheduler_t*)ponyint_pool_alloc(scheduler_count * sizeof(scheduler_t));
     memset(scheduler, 0, scheduler_count * sizeof(scheduler_t));
     
     pthread_once(&sched_mut_once, sched_mut_init);
@@ -385,12 +384,12 @@ pony_ctx_t* ponyint_sched_init()
     for(uint32_t i = 0; i < scheduler_count; i++)
     {
         // create pthread condition object
-        scheduler[i].sleep_object = POOL_ALLOC(pthread_cond_t);
+        scheduler[i].sleep_object = ponyint_pool_alloc(sizeof(pthread_cond_t));
         int ret = pthread_cond_init(scheduler[i].sleep_object, NULL);
         if(ret != 0)
         {
             // if it failed, set `sleep_object` to `NULL` for error
-            POOL_FREE(pthread_cond_t, scheduler[i].sleep_object);
+            ponyint_pool_free(scheduler[i].sleep_object, sizeof(pthread_cond_t));
             scheduler[i].sleep_object = NULL;
         }
         
@@ -509,7 +508,7 @@ void pony_register_thread()
         return;
     
     // Create a scheduler_t, even though we will only use the pony_ctx_t.
-    this_scheduler = POOL_ALLOC(scheduler_t);
+    this_scheduler = ponyint_pool_alloc(sizeof(scheduler_t));
     memset(this_scheduler, 0, sizeof(scheduler_t));
     this_scheduler->tid = ponyint_thread_self();
     this_scheduler->index = -1;
@@ -520,7 +519,7 @@ void pony_unregister_thread()
     if(this_scheduler == NULL)
         return;
     
-    POOL_FREE(scheduler_t, this_scheduler);
+    ponyint_pool_free(this_scheduler, sizeof(scheduler_t));
     this_scheduler = NULL;
     
     ponyint_pool_thread_cleanup();
