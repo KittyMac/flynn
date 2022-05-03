@@ -34,6 +34,7 @@ static bool messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
 void ponyint_messageq_init(messageq_t* q)
 {
     pony_msg_t* stub = ponyint_pool_alloc(sizeof(pony_msg_t));
+    stub->alloc_size = sizeof(pony_msg_t);
     atomic_store_explicit(&stub->next, NULL, memory_order_relaxed);
     
     atomic_store_explicit(&q->head, (pony_msg_t*)((uintptr_t)stub | 1),

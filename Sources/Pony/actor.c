@@ -29,7 +29,7 @@ static void set_flag(pony_actor_t* actor, uint8_t flag)
     atomic_store_explicit(&actor->flags, flags | flag, memory_order_relaxed);
 }
 
-bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
+int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
 {
     pony_msg_t* msg;
     int n = 0;
@@ -58,11 +58,11 @@ bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
         ponyint_actor_setpendingdestroy(actor);
         ponyint_messageq_markempty(&actor->q);
         ponyint_actor_destroy(actor);
-        return false;
+        return -1;
     }
     
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
-    return !ponyint_messageq_markempty(&actor->q);
+    return (int)!ponyint_messageq_markempty(&actor->q);
 }
 
 int32_t ponyint_actor_getpriority(pony_actor_t* actor) {

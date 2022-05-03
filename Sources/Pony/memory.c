@@ -31,6 +31,8 @@ void * ponyint_pool_alloc(size_t size) {
 }
 
 void * ponyint_pool_free(void * p, size_t size) {
+    // For debug purposes, null out the memory before we free it
+    //memset(p, 0x55, size);
     free(p);
 }
 

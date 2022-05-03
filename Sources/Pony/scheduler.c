@@ -13,11 +13,16 @@
 #include "actor.h"
 #include <string.h>
 #include <stdio.h>
+#include <pthread.h>
 
 #ifndef PLATFORM_IS_APPLE
 #define QOS_CLASS_USER_INITIATED 0
 #define QOS_CLASS_UTILITY 1
 #endif
+
+pthread_mutex_t injectLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t injectHighPerformanceLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t injectHighEfficiencyLock = PTHREAD_MUTEX_INITIALIZER;
 
 #ifdef PLATFORM_IS_APPLE
 extern void *objc_autoreleasePoolPush();
@@ -65,7 +70,10 @@ uint32_t get_active_scheduler_count()
  */
 static pony_actor_t* pop(scheduler_t* sched)
 {
-    return (pony_actor_t*)ponyint_mpmcq_pop(&sched->q);
+    pthread_mutex_lock(&injectLock);
+    pony_actor_t* actor = ponyint_mpmcq_pop(&sched->q);
+    pthread_mutex_unlock(&injectLock);
+    return actor;
 }
 
 /**
@@ -78,22 +86,30 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
         case kCoreAffinity_OnlyEfficiency:
             if (actor->coreAffinity != sched->coreAffinity) {
                 if (actor->coreAffinity == kCoreAffinity_OnlyPerformance) {
+                    pthread_mutex_lock(&injectHighPerformanceLock);
                     ponyint_mpmcq_push(&injectHighPerformance, actor);
+                    pthread_mutex_unlock(&injectHighPerformanceLock);
                 } else {
+                    pthread_mutex_lock(&injectHighEfficiencyLock);
                     ponyint_mpmcq_push(&injectHighEfficiency, actor);
+                    pthread_mutex_unlock(&injectHighEfficiencyLock);
                 }
                 return;
             }
             break;
         case kCoreAffinity_PreferEfficiency:
             if (sched->coreAffinity == kCoreAffinity_OnlyPerformance) {
+                pthread_mutex_lock(&injectHighEfficiencyLock);
                 ponyint_mpmcq_push(&injectHighEfficiency, actor);
+                pthread_mutex_unlock(&injectHighEfficiencyLock);
                 return;
             }
             break;
         case kCoreAffinity_PreferPerformance:
             if (sched->coreAffinity == kCoreAffinity_OnlyEfficiency) {
+                pthread_mutex_lock(&injectHighPerformanceLock);
                 ponyint_mpmcq_push(&injectHighPerformance, actor);
+                pthread_mutex_unlock(&injectHighPerformanceLock);
                 return;
             }
             break;
@@ -106,16 +122,23 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
  */
 static pony_actor_t* pop_global(scheduler_t* my_sched, scheduler_t* other_sched)
 {
+    pthread_mutex_lock(&injectLock);
     pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
+    pthread_mutex_unlock(&injectLock);
+    
     if(actor != NULL)
         return actor;
     
     switch (my_sched->coreAffinity) {
         case kCoreAffinity_OnlyPerformance:
+            pthread_mutex_lock(&injectHighPerformanceLock);
             actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
+            pthread_mutex_unlock(&injectHighPerformanceLock);
             break;
         case kCoreAffinity_OnlyEfficiency:
+            pthread_mutex_lock(&injectHighEfficiencyLock);
             actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
+            pthread_mutex_unlock(&injectHighEfficiencyLock);
             break;
     }
     if(actor != NULL)
@@ -257,18 +280,21 @@ static void run(scheduler_t* sched)
             }
             
             // Run the current actor and get the next actor.
-            bool reschedule = ponyint_actor_run(&sched->ctx, actor, actor->batchSize);
-            
-            bool actor_did_yield = actor->yield;
-            actor->yield = false;
-            
+            // result < 0 means the actor was destroyed (pointer invalid)
+            // result == 0 means don't reschedule the actor
+            // result > 0 means to reschedule the actor
+            int result = ponyint_actor_run(&sched->ctx, actor, actor->batchSize);
+                        
             pony_actor_t* next = pop_global(sched, sched);
             
 #ifdef PLATFORM_IS_APPLE
             autorelease_pool_is_dirty = true;
 #endif
             
-            if(reschedule) {
+            if(result == 1) {
+                bool actor_did_yield = actor->yield;
+                actor->yield = false;
+                
                 if(next != NULL) {
                     if (actor_did_yield == false && actor->priority > next->priority) {
                         // our current actor has a higher priority than the next actor, so put

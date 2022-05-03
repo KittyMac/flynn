@@ -36,7 +36,7 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx);
 
 void ponyint_destroy_actor(pony_actor_t* actor);
 
-bool ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs);
+int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs);
 
 int32_t ponyint_actor_getpriority(pony_actor_t* actor);
 void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority);
