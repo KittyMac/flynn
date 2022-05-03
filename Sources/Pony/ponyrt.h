@@ -14,6 +14,7 @@
 
 void pony_remote_shutdown();
 
+#define kNullMessage 0
 #define kMessagePointer 1
 #define kRemote_Version 2
 #define kRemote_RegisterWithRoot 3
