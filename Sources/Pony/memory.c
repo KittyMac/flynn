@@ -26,11 +26,19 @@
 // narrow use case for memory (ie a lot of our repeated allocations will be the
 // same size).
 
+static size_t total_memory_allocated = 0;
+static size_t max_memory_allocated = 0;
+
+static size_t unsafe_pony_mapped_memory = 0;
+
 void * ponyint_pool_alloc(size_t size) {
+    unsafe_pony_mapped_memory += size;
     return malloc(size);
 }
 
 void * ponyint_pool_free(void * p, size_t size) {
+    unsafe_pony_mapped_memory -= size;
+    
     // For debug purposes, null out the memory before we free it
     //memset(p, 0x55, size);
     free(p);
@@ -48,5 +56,32 @@ void ponyint_pool_thread_cleanup() {
 }
 
 void ponyint_update_memory_usage() {
-    
+    struct rusage usage;
+    if(0 == getrusage(RUSAGE_SELF, &usage)) {
+#ifdef PLATFORM_IS_APPLE
+        total_memory_allocated = usage.ru_maxrss; // bytes
+#else
+        total_memory_allocated = usage.ru_maxrss * 1024; // on linux, this is in kilobytes
+#endif
+    } else {
+        total_memory_allocated = 0;
+    }
+    if(total_memory_allocated > max_memory_allocated) {
+        max_memory_allocated = total_memory_allocated;
+    }
+}
+
+size_t ponyint_total_memory()
+{
+    return total_memory_allocated;
+}
+
+size_t ponyint_max_memory()
+{
+    return max_memory_allocated;
+}
+
+size_t ponyint_usafe_mapped_memory()
+{
+    return unsafe_pony_mapped_memory;
 }

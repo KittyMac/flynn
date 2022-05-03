@@ -13,6 +13,10 @@ extern pony_msg_t* pony_alloc_msg(size_t size, uint32_t msgId);
 extern void ponyint_pool_thread_cleanup();
 extern void ponyint_update_memory_usage();
 
+extern size_t ponyint_total_memory();
+extern size_t ponyint_max_memory();
+extern size_t ponyint_usafe_mapped_memory();
+
 // void ponyint_update_memory_usage(void);
 // size_t ponyint_total_memory(void);
 // size_t ponyint_max_memory(void);

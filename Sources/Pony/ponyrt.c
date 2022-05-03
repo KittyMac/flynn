@@ -182,20 +182,14 @@ void pony_actor_destroy(void * actor) {
 }
 
 unsigned long pony_max_memory() {
-    // TODO: FIX ME
-    //return (unsigned long)ponyint_max_memory();
-    return 0;
+    return (unsigned long)ponyint_max_memory();
 }
 
 unsigned long pony_current_memory() {
-    // TODO: FIX ME
-    //return (unsigned long)ponyint_total_memory();
-    return 0;
+    return (unsigned long)ponyint_total_memory();
 }
 
 unsigned long pony_mapped_memory() {
-    // TODO: FIX ME
-    //return (unsigned long)ponyint_usafe_mapped_memory();
-    return 0;
+    return (unsigned long)ponyint_usafe_mapped_memory();
 }
 
