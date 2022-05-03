@@ -189,10 +189,12 @@ void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, vo
 
 void ponyint_destroy_actor(pony_actor_t* actor)
 {
-    actor->destroy = true;
-    
-    // For an actor to be destroyed fully, it needs to get scheduled at least one more time
-    // so send it a dummy message
-    pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfunc_t)), kNullMessage);
-    pony_sendv(pony_ctx(), actor, &m->msg, &m->msg);
+    if (actor->destroy == false) {
+        actor->destroy = true;
+        
+        // For an actor to be destroyed fully, it needs to get scheduled at least one more time
+        // so send it a dummy message
+        pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(POOL_INDEX(sizeof(pony_msgfunc_t)), kNullMessage);
+        pony_sendv(pony_ctx(), actor, &m->msg, &m->msg);
+    }
 }
