@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #include "cpu.h"
-#include "pool.h"
+#include "memory.h"
 
 #include <sched.h>
 #include <stdlib.h>
