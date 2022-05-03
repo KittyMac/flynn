@@ -29,15 +29,16 @@
 static size_t total_memory_allocated = 0;
 static size_t max_memory_allocated = 0;
 
-static size_t unsafe_pony_mapped_memory = 0;
+static PONY_ATOMIC(int64_t) unsafe_pony_mapped_memory = 0;
 
 void * ponyint_pool_alloc(size_t size) {
-    unsafe_pony_mapped_memory += size;
+    atomic_fetch_add_explicit(&unsafe_pony_mapped_memory, size, memory_order_relaxed);
+    
     return malloc(size);
 }
 
 void * ponyint_pool_free(void * p, size_t size) {
-    unsafe_pony_mapped_memory -= size;
+    atomic_fetch_sub_explicit(&unsafe_pony_mapped_memory, size, memory_order_relaxed);
     
     // For debug purposes, null out the memory before we free it
     //memset(p, 0x55, size);
