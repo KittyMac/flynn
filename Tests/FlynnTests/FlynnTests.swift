@@ -171,6 +171,11 @@ class FlynnTests: XCTestCase {
 #if !os(Linux)
     @available(OSX 10.15, *)
     func testLoadBalancingLong() {
+        // 0.141
+        // 0.104
+        // 0.093
+        // 0.086
+        
         let options = XCTMeasureOptions()
         options.iterationCount = 100
         self.measure(options: options, block: {
