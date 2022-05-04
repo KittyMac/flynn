@@ -176,6 +176,7 @@ class FlynnTests: XCTestCase {
         // 0.093
         // 0.086
         // 0.091
+        // 0.088
         
         // no locks scheduler
         // 0.076

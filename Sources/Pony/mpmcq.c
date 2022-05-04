@@ -101,6 +101,11 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
         tail = cmp.object;
         // Get the next node rather than the tail. The tail is either a stub or has
         // already been consumed.
+        if(tail == NULL)
+            return NULL;
+        
+        // Note: Xcode address sanitizer fails on this call. unclear whether this is
+        // an actual problem with this fencing mechanism or a red herring
         next = atomic_load_explicit(&tail->next, memory_order_relaxed);
         
         if(next == NULL)

@@ -70,9 +70,9 @@ uint32_t get_active_scheduler_count()
  */
 static pony_actor_t* pop(scheduler_t* sched)
 {
-    //pthread_mutex_lock(&injectLock);
+    pthread_mutex_lock(&injectLock);
     pony_actor_t* actor = ponyint_mpmcq_pop(&sched->q);
-    //pthread_mutex_unlock(&injectLock);
+    pthread_mutex_unlock(&injectLock);
     return actor;
 }
 
@@ -122,23 +122,23 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
  */
 static pony_actor_t* pop_global(scheduler_t* my_sched, scheduler_t* other_sched)
 {
-    //pthread_mutex_lock(&injectLock);
+    pthread_mutex_lock(&injectLock);
     pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
-    //pthread_mutex_unlock(&injectLock);
+    pthread_mutex_unlock(&injectLock);
     
     if(actor != NULL)
         return actor;
     
     switch (my_sched->coreAffinity) {
         case kCoreAffinity_OnlyPerformance:
-            //pthread_mutex_lock(&injectHighPerformanceLock);
+            pthread_mutex_lock(&injectHighPerformanceLock);
             actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
-            //pthread_mutex_unlock(&injectHighPerformanceLock);
+            pthread_mutex_unlock(&injectHighPerformanceLock);
             break;
         case kCoreAffinity_OnlyEfficiency:
-            //pthread_mutex_lock(&injectHighEfficiencyLock);
+            pthread_mutex_lock(&injectHighEfficiencyLock);
             actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
-            //pthread_mutex_unlock(&injectHighEfficiencyLock);
+            pthread_mutex_unlock(&injectHighEfficiencyLock);
             break;
     }
     if(actor != NULL)

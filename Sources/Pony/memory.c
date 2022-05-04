@@ -70,8 +70,6 @@ typedef struct pool_item_t {
 typedef struct pool_local_t {
     pool_item_t* pool;
     size_t length;
-    char* start;
-    char* end;
 } pool_local_t;
 
 static __pony_thread_local pool_local_t pool_local[6] = {0};
@@ -114,12 +112,16 @@ static void* pool_pop(size_t size) {
 
 static bool pool_push(void * p, size_t size) {
     int32_t pool_index = ponyint_pool_index(size);
-    if (pool_index >= 0 && pool_local->length < 512) {
-        pool_item_t* lp = (pool_item_t*)p;
-        lp->next = pool_local->pool;
-        pool_local->pool = lp;
-        pool_local->length++;
-        return true;
+    
+    if (pool_index >= 0) {
+        pool_local_t* pool = pool_local + pool_index;
+        if (pool->length < 512) {
+            pool_item_t* lp = (pool_item_t*)p;
+            lp->next = pool->pool;
+            pool->pool = lp;
+            pool->length++;
+            return true;
+        }
     }
     return false;
 }
@@ -136,24 +138,23 @@ void * ponyint_pool_alloc(size_t size) {
     if (p != NULL) {
         return p;
     }
-    
-    //fprintf(stderr, "alloc: %lu\n", size);
-    
+        
     atomic_fetch_add_explicit(&unsafe_pony_mapped_memory, size, memory_order_relaxed);
-    
+    //fprintf(stderr, "+ %lu\n", (size_t)unsafe_pony_mapped_memory);
     return malloc(size);
 }
 
 void ponyint_pool_free(void * p, size_t size) {
+    size = ponyint_alloc_size(size);
+    
     if (pool_push(p, size)) {
         return;
     }
     
     atomic_fetch_sub_explicit(&unsafe_pony_mapped_memory, size, memory_order_relaxed);
-    
-    // For debug purposes, null out the memory before we free it
-    //memset(p, 0x55, size);
     free(p);
+    
+    //fprintf(stderr, "- %lu\n", (size_t)unsafe_pony_mapped_memory);
 }
 
 pony_msg_t* pony_alloc_msg(size_t size, uint32_t msgId) {
@@ -170,7 +171,12 @@ void ponyint_pool_thread_cleanup() {
         size_t pool_size = pool_sizes[i];
         pool_local_t* pool = pool_local + i;
         while (pool->length > 0) {
-            pool_pop(pool_size);
+            void * p = pool_pop(pool_size);
+            if (p != NULL) {
+                atomic_fetch_sub_explicit(&unsafe_pony_mapped_memory, pool_size, memory_order_relaxed);
+                free(p);
+                //fprintf(stderr, "[%lu] after: %lu\n", pool_size, (size_t)unsafe_pony_mapped_memory);
+            }
         }
     }
 }
