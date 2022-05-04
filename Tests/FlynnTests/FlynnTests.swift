@@ -175,6 +175,10 @@ class FlynnTests: XCTestCase {
         // 0.104
         // 0.093
         // 0.086
+        // 0.091
+        
+        // no locks scheduler
+        // 0.076
         
         let options = XCTMeasureOptions()
         options.iterationCount = 100
