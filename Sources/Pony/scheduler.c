@@ -179,11 +179,10 @@ static scheduler_t* choose_victim(scheduler_t* sched)
 }
 
 void check_memory_usage(scheduler_t* sched, bool now) {
-    if(sched->index == 0)
-    {
+    if(sched->index == 0) {
         static int not_all_the_time = 0;
         not_all_the_time++;
-        if (now || (not_all_the_time % 100 == 0)) {
+        if (now || (not_all_the_time % 1000 == 0)) {
             ponyint_update_memory_usage();
         }
     }
