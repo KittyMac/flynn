@@ -43,7 +43,9 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
         switch(msg->msgId) {
             case kMessagePointer: {
                 pony_msgfunc_t * m = (pony_msgfunc_t *)msg;
-                m->func(m->arg);
+                if (m->func != NULL) {
+                    m->func(m->arg);
+                }
             } break;
             case kDestroyMessage: {
                 actor->destroy = true;
@@ -109,6 +111,7 @@ void ponyint_suspend_actor(pony_actor_t* actor)
 void ponyint_resume_actor(pony_ctx_t* ctx, pony_actor_t* actor)
 {
     actor->suspended = false;
+    pony_send_message(ctx, actor, NULL, NULL);
     ponyint_sched_add(ctx, actor);
 }
 

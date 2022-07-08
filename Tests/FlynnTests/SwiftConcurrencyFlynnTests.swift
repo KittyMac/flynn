@@ -13,6 +13,9 @@ class SwiftConcurrencyTestActor: Actor {
         x += 1
         
         safeTask { continuation in
+            if #available(macOS 12.0, *) {
+                _ = try! await URLSession.shared.data(from: URL(string: "http://www.apple.com")!)
+            }
             
             // Safe: the Flynn actor is "suspended" during this
             // block. While the actor is suspended it will not
@@ -55,7 +58,7 @@ class SwiftConcurrencyFlynnTests: XCTestCase {
     }
 
     func test0() {
-        let expectation = XCTestExpectation(description: "GetServiceStatus")
+        let expectation = XCTestExpectation(description: "safeTask")
 
         let actor = SwiftConcurrencyTestActor()
 

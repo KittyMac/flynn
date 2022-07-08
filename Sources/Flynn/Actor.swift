@@ -4,7 +4,7 @@ import Foundation
 import Pony
 
 public typealias PonyBlock = () -> Void
-public typealias PonyTaskBlock = (() -> ()) -> Void
+public typealias PonyTaskBlock = (() -> ()) async -> Void
 
 @usableFromInline
 typealias AnyPtr = UnsafeMutableRawPointer?
@@ -144,7 +144,7 @@ open class Actor {
             while pony_actor_is_suspended(safePonyActorPtr) == false {
                 usleep(50)
             }
-            block {
+            await block {
                 pony_actor_resume(safePonyActorPtr)
             }
         }
