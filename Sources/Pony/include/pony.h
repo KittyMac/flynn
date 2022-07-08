@@ -78,6 +78,9 @@ void pony_actor_setcoreAffinity(void * actor, int coreAffinity);
 int pony_actor_getcoreAffinity(void * actor);
 
 void pony_actor_yield(void * actor);
+void pony_actor_suspend(void * actor);
+void pony_actor_resume(void * actor);
+bool pony_actor_is_suspended(void * actor);
 
 int pony_actor_num_messages(void * actor);
 void pony_actor_destroy(void * actor);

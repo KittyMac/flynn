@@ -82,6 +82,8 @@ As of v0.2 Flynn has a new kind of actor, the ```RemoteActor```.  RemoteActors b
 [Flynn.Timer](docs/TIMERS.md) - Actor friendly Timers  
 [RemoteActors](docs/REMOTEACTOR.md) - Run actors in another process  
 
+[Coexisting with Swift Concurrecy](docs/REMOTEACTOR.md) - Coexisting peacefully with async/await  
+
 ## Examples
 
 [Hello World](Examples/HelloWorld/) - You guessed it!  

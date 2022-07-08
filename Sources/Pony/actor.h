@@ -20,6 +20,7 @@ typedef struct pony_actor_t
     int32_t priority;
     int32_t coreAffinity;
     int32_t batchSize;
+    bool suspended;
     bool yield;
     bool destroy;
 } pony_actor_t;
@@ -48,6 +49,9 @@ int32_t ponyint_actor_getcoreAffinity(pony_actor_t* actor);
 void ponyint_actor_setcoreAffinity(pony_actor_t* actor, int32_t coreAffinity);
 
 void ponyint_yield_actor(pony_actor_t* actor);
+void ponyint_suspend_actor(pony_actor_t* actor);
+void ponyint_resume_actor(pony_ctx_t* ctx, pony_actor_t* actor);
+bool ponyint_actor_is_suspended(pony_actor_t* actor);
 
 bool ponyint_actor_pendingdestroy(pony_actor_t* actor);
 

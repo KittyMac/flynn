@@ -34,6 +34,10 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     pony_msg_t* msg;
     int n = 0;
     
+    if (actor->suspended) {
+        return 0;
+    }
+    
     while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&actor->q)) != NULL) {
         
         switch(msg->msgId) {
@@ -49,7 +53,7 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
         ponyint_actor_messageq_pop_mark_done(&actor->q);
         
         n++;
-        if (n > max_msgs || actor->yield) {
+        if (n > max_msgs || actor->yield || actor->suspended) {
             break;
         }
     }
@@ -95,6 +99,22 @@ void ponyint_actor_setcoreAffinity(pony_actor_t* actor, int32_t coreAffinity)
 void ponyint_yield_actor(pony_actor_t* actor)
 {
     actor->yield = true;
+}
+
+void ponyint_suspend_actor(pony_actor_t* actor)
+{
+    actor->suspended = true;
+}
+
+void ponyint_resume_actor(pony_ctx_t* ctx, pony_actor_t* actor)
+{
+    actor->suspended = false;
+    ponyint_sched_add(ctx, actor);
+}
+
+bool ponyint_actor_is_suspended(pony_actor_t* actor)
+{
+    return actor->suspended;
 }
 
 void ponyint_actor_destroy(pony_actor_t* actor)

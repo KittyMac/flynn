@@ -120,6 +120,21 @@ void pony_actor_yield(void * actor) {
     ponyint_yield_actor(actor);
 }
 
+void pony_actor_suspend(void * actor) {
+    if (pony_is_inited == false) { return; }
+    ponyint_suspend_actor(actor);
+}
+
+void pony_actor_resume(void * actor) {
+    if (pony_is_inited == false) { return; }
+    ponyint_resume_actor(pony_ctx(), actor);
+}
+
+bool pony_actor_is_suspended(void * actor) {
+    if (pony_is_inited == false) { return 0; }
+    return ponyint_actor_is_suspended(actor);
+}
+
 int pony_actors_load_balance(void * actorArray, int num_actors) {
     if (pony_is_inited == false) { return 0; }
     pony_actor_t ** actorsPtr = (pony_actor_t**)actorArray;

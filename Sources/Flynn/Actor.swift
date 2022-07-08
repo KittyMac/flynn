@@ -4,6 +4,7 @@ import Foundation
 import Pony
 
 public typealias PonyBlock = () -> Void
+public typealias PonyTaskBlock = (() -> ()) -> Void
 
 @usableFromInline
 typealias AnyPtr = UnsafeMutableRawPointer?
@@ -98,6 +99,14 @@ open class Actor {
     public func unsafeYield() {
         pony_actor_yield(safePonyActorPtr)
     }
+    
+    public func unsafeSuspend() {
+        pony_actor_suspend(safePonyActorPtr)
+    }
+    
+    public func unsafeResume() {
+        pony_actor_resume(safePonyActorPtr)
+    }
 
     public var unsafeMessagesCount: Int32 {
         return pony_actor_num_messages(safePonyActorPtr)
@@ -122,6 +131,24 @@ open class Actor {
     @inlinable @inline(__always)
     public func unsafeSend(_ block: @escaping PonyBlock) {
         pony_actor_send_message(safePonyActorPtr, Ptr(ActorMessage(block)), handleMessage)
+    }
+    
+    @available(iOS 13.0, *)
+    @available(macOS 10.15, *)
+    @inlinable @inline(__always)
+    public func safeTask(_ block: @escaping PonyTaskBlock) {
+        if pony_actor_is_suspended(safePonyActorPtr) {
+            fatalError("safeTask may not be called on an already suspended actor")
+        }
+        Task {
+            while pony_actor_is_suspended(safePonyActorPtr) == false {
+                usleep(50)
+            }
+            block {
+                pony_actor_resume(safePonyActorPtr)
+            }
+        }
+        pony_actor_suspend(safePonyActorPtr)
     }
 
     public var unsafeStatus: String {

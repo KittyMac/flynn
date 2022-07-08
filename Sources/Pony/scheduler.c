@@ -283,6 +283,10 @@ static void run(scheduler_t* sched)
             // result == 0 means don't reschedule the actor
             // result > 0 means to reschedule the actor
             int result = ponyint_actor_run(&sched->ctx, actor, actor->batchSize);
+            
+            if (actor->suspended) {
+                result = 0;
+            }
                         
             pony_actor_t* next = pop_global(sched, sched);
             
