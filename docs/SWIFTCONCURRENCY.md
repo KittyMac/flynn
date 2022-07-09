@@ -4,9 +4,9 @@ NOTE: Additional features to work gracefully with Swift Concurrency (async/await
 
 ## Using async/await in Flynn actors
 
-Flynn provides and actor/model functionality from both synchronous and asynchrous contexts in Swift, as all of Flynn's calling mechanisms are implemented using regular synchronous methods using callbacks.
+Flynn provides actor/model functionality from both synchronous and asynchrous Swift contexts as all of Flynn's calling mechanisms are implemented using regular synchronous methods and callbacks.
 
-You may, however, want to be able to call existing async methods from inside of a Flynn actor, while still preserving in the thread safety of the Flynn actor. To do this, we have a mechanism very similar in behaviour to withCheckedContinuation, called **safeTask**.
+You may, however, want to be able to call async methods from inside of a Flynn actor, while still preserving in the thread safety of the Flynn actor. To do this, we have a mechanism very similar in behaviour to withCheckedContinuation, called **safeTask**.
 
 ```swift
 class SwiftConcurrencyTestActor: Actor {
@@ -24,7 +24,7 @@ class SwiftConcurrencyTestActor: Actor {
             // block. While the actor is suspended it will not
             // be scheduled to run in the Flynn runtime, allowing
             // the Swift async context sole access to the thread
-            // safe Actor. If is YOUR responsibility to call the
+            // safe Actor. It is YOUR responsibility to call the
             // continuation call back EXACTLY ONCE, which will
             // resume Flynn operations on this actor. Calling it
             // more than once will result in a fatal error. Not
