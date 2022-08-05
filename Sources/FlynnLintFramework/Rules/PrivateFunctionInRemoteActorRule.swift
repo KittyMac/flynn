@@ -148,9 +148,9 @@ struct PrivateFunctionInRemoteActorRule: Rule {
 
                         if (function.name ?? "").hasPrefix(FlynnLint.prefixBehaviorInternal) &&
                             function.kind == .functionMethodInstance &&
-                            function.accessibility != .private {
+                            function.accessibility != .internal {
                             if let output = output {
-                                output.beFlow([error(function.offset, syntax, description.console("Behaviors must be private"))])
+                                output.beFlow([error(function.offset, syntax, description.console("Behaviors must be internal"))])
                             }
                             allPassed = false
                             continue

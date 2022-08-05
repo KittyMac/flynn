@@ -156,7 +156,7 @@ struct AST {
         for function in functions where
             (function.name ?? "").hasPrefix(FlynnLint.prefixBehaviorInternal) &&
             function.kind == .functionMethodInstance &&
-            function.accessibility == .private {
+            function.accessibility == .internal {
                 internalBehaviors[name]?.append(Behavior(actor: actor,
                                                          behavior: actor.clone(substructure: function)))
         }

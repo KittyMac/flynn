@@ -824,7 +824,7 @@ class AutogenerateExternalBehaviors: Actor, Flowable {
             ast.isActor(fullActorName) {
 
             let (internals, _) = ast.getBehaviorsForActor(actorSyntax)
-
+            
             if internals.count > 0 {
                 var didHaveBehavior = false
 
@@ -1055,20 +1055,20 @@ class AutogenerateExternalBehaviors: Actor, Flowable {
 
                 for (_, actorSyntax) in ast.classes.sorted(by: { $0.0 > $1.0 }) {
                     createActorExtensionIfRequired(syntax,
-                                              ast,
-                                              &numOfExtensions,
-                                              &newExtensionString,
-                                              actorSyntax)
+                                                   ast,
+                                                   &numOfExtensions,
+                                                   &newExtensionString,
+                                                   actorSyntax)
                 }
 
                 for actorSyntax in ast.extensions {
                     // Note: we don't want to do extensions which were
                     // created previously by FlynnLint... but how?
                     createActorExtensionIfRequired(syntax,
-                                              ast,
-                                              &numOfExtensions,
-                                              &newExtensionString,
-                                              actorSyntax)
+                                                   ast,
+                                                   &numOfExtensions,
+                                                   &newExtensionString,
+                                                   actorSyntax)
                 }
 
                 var first = true
@@ -1095,7 +1095,7 @@ class AutogenerateExternalBehaviors: Actor, Flowable {
                         first = false
                     }
                 }
-                
+                                
                 // NOTE: to support being a SPM build tool, we have two modes:
                 // 1. As a build tool, we generate extensons in a new file for all behaviours
                 // 2. As a source code formatter, we remove old, in file auto generated code
@@ -1103,29 +1103,6 @@ class AutogenerateExternalBehaviors: Actor, Flowable {
                    let handle = FileHandle(forUpdatingAtPath: syntax.outputPath) {
                     handle.write(stringData)
                 }
-                
-                /*
-                // Four scenarios we want to make sure we handle:
-                // - Actor in file with no previous FlynnLint generation
-                // - Actor in file with existing FlynnLint generation, but does not need updated (no changes)
-                // - Actor in file with existing FlynnLint generation, but does need updated
-                // - Actor in file, but an existing FlynnLint generation.
-                if  (numOfExtensions > 0 && previousExtensionString == "NOT FOUND") ||
-                    (numOfExtensions > 0 && newExtensionString != previousExtensionString) ||
-                    (numOfExtensions == 0 && previousExtensionString != "NOT FOUND") {
-
-                    if numOfExtensions > 0 {
-                        fileString.append(fileMarker)
-                        fileString.append(newExtensionString)
-                    }
-
-                    if let outputFilePath = syntax.file.path {
-                        try? fileString.write(toFile: outputFilePath, atomically: true, encoding: .utf8)
-                        print("Generating behaviors for \(URL(fileURLWithPath: outputFilePath).lastPathComponent)")
-                    }
-                }
-                 */
-
             }
         }
 

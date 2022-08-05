@@ -18,6 +18,13 @@ class FlynnLintTests: XCTestCase {
     }
 
     override func tearDownWithError() throws { }
+    
+    func testExample() throws {
+        let flynnlint = FlynnLint()
+        flynnlint.process(input: "/Users/rjbowli/Development/chimerasw/Flynn/Examples/PluginTest/Sources/PluginTest/main.swift",
+                          output: "/tmp/FlynnLint.swift")
+        flynnlint.finish()
+    }
 
     /*
     func testSO10() throws {

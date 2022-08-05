@@ -1,5 +1,14 @@
 import Flynn
 
 class TestActor: Actor {
-    private func _beTest() { }
+    internal func _beTest() {
+        print("Hello World!")
+    }
 }
+
+let actor = TestActor()
+print("BEFORE")
+actor.beTest()
+print("AFTER")
+
+Flynn.shutdown()

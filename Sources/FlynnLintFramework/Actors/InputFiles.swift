@@ -21,6 +21,11 @@ class InputFiles: Actor, Flowable {
 
         let output: String = args[x:0]
         let input: String = args[x:1]
+        
+        if input.hasSuffix(".swift") {
+            self.safeFlowToNextTarget([output, input])
+            return
+        }
                 
         guard let inputsFileString = try? String(contentsOf: URL(fileURLWithPath: input)) else {
             fatalError("unable to open inputs file \(input)")
