@@ -196,7 +196,7 @@ static pony_actor_t* steal(scheduler_t* sched)
 {
     pony_actor_t* actor = NULL;
     scheduler_t* victim = NULL;
-    
+    /*
 #if TARGET_OS_IPHONE
     int scaling_sleep = 0;
     int scaling_sleep_delta = 250;
@@ -208,6 +208,11 @@ static pony_actor_t* steal(scheduler_t* sched)
     int scaling_sleep_min = 50;      // The minimum value we start actually sleeping at
     int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
 #endif
+     */
+    int scaling_sleep = 0;
+    int scaling_sleep_delta = 1;
+    int scaling_sleep_min = 50;      // The minimum value we start actually sleeping at
+    int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
     
     while(true)
     {

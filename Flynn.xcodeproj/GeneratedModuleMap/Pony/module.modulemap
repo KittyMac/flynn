@@ -1,4 +1,0 @@
-module Pony {
-    umbrella header "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Pony/include/Pony.h"
-    export *
-}

@@ -1,34 +1,32 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "Socket",
-        "repositoryURL": "https://github.com/IBM-Swift/BlueSocket.git",
-        "state": {
-          "branch": null,
-          "revision": "c46a3d41f5b2401d18bcb46d0101cdc5cd13e307",
-          "version": "1.0.52"
-        }
-      },
-      {
-        "package": "Flynn",
-        "repositoryURL": "https://github.com/KittyMac/Flynn.git",
-        "state": {
-          "branch": "master",
-          "revision": "700b18b2daef6d7a7704f3cf9fca672299cdab36",
-          "version": null
-        }
-      },
-      {
-        "package": "swift-argument-parser",
-        "repositoryURL": "https://github.com/apple/swift-argument-parser",
-        "state": {
-          "branch": null,
-          "revision": "3e7d2fe99da091dcc1e4a7dd22fc3cfc2dca7937",
-          "version": "0.2.2"
-        }
+  "pins" : [
+    {
+      "identity" : "bluesocket",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/IBM-Swift/BlueSocket.git",
+      "state" : {
+        "revision" : "c46a3d41f5b2401d18bcb46d0101cdc5cd13e307",
+        "version" : "1.0.52"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "flynn",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/KittyMac/Flynn.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "8267d6bb747f2df61dfad93385ed020afd7c3971"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "e394bf350e38cb100b6bc4172834770ede1b7232",
+        "version" : "1.0.3"
+      }
+    }
+  ],
+  "version" : 2
 }
