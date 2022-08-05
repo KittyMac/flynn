@@ -105,7 +105,8 @@ struct FileSyntax {
                           blacklist)
     }
 
-    func match(_ pattern: String) -> Int64? {
+    func match(_ pattern: String,
+               includeComments: Bool = false) -> Int64? {
         var firstOffendingMatchOffset: Int64?
 
         do {
@@ -127,16 +128,18 @@ struct FileSyntax {
 
                         // check this offset against all of the offsets in the syntax map.  If it is
                         // inside of a comment, then we want to ignore this offset
-                        for commentSection in map {
-                            if let type = SyntaxKind(rawValue: commentSection.type) {
-                                let offset = commentSection.offset.value
-                                let length = commentSection.length.value
-                                if fullBodyOffset >= offset && fullBodyOffset <= (offset + length) {
-                                    switch type {
-                                    case .comment, .commentURL, .commentMark, .docComment, .docCommentField, .string, .stringInterpolationAnchor:
-                                        return
-                                    default:
-                                        break
+                        if includeComments == false {
+                            for commentSection in map {
+                                if let type = SyntaxKind(rawValue: commentSection.type) {
+                                    let offset = commentSection.offset.value
+                                    let length = commentSection.length.value
+                                    if fullBodyOffset >= offset && fullBodyOffset <= (offset + length) {
+                                        switch type {
+                                        case .comment, .commentURL, .commentMark, .docComment, .docCommentField, .string, .stringInterpolationAnchor:
+                                            return
+                                        default:
+                                            break
+                                        }
                                     }
                                 }
                             }
