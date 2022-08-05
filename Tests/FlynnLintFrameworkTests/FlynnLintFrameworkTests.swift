@@ -19,60 +19,61 @@ class FlynnLintTests: XCTestCase {
 
     override func tearDownWithError() throws { }
 
+    /*
     func testSO10() throws {
         let flynnlint = FlynnLint()
-        flynnlint.process(output: output,
-                          source: "/Volumes/Development/Development/chimerasw2/starbaseorion10/Server/.build/checkouts/Picaroon")
-        flynnlint.process(output: output,
-                          source: "/Volumes/Development/Development/chimerasw2/starbaseorion10/Server/Sources")
-        flynnlint.process(output: output,
-                          source: "/Volumes/Development/Development/chimerasw2/starbaseorion10/Server/Tests")
+        flynnlint.process(input: "/Volumes/Development/Development/chimerasw2/starbaseorion10/Server/.build/checkouts/Picaroon",
+                          output: output)
+        flynnlint.process(input: "/Volumes/Development/Development/chimerasw2/starbaseorion10/Server/Sources",
+                          output: output)
+        flynnlint.process(input: "/Volumes/Development/Development/chimerasw2/starbaseorion10/Server/Tests",
+                          output: output)
         flynnlint.finish()
     }
     
     func testFlynn() throws {
         let flynnlint = FlynnLint()
-        flynnlint.process(output: output,
-                          source: "/Users/rjbowli/Development/chimerasw/Flynn/Tests")
-        flynnlint.process(output: output,
-                          source: "/Users/rjbowli/Development/chimerasw/Flynn/Sources")
+        flynnlint.process(input: "/Users/rjbowli/Development/chimerasw/Flynn/Tests",
+                          output: output)
+        flynnlint.process(input: "/Users/rjbowli/Development/chimerasw/Flynn/Sources",
+                          output: output)
         flynnlint.finish()
     }
 
     func testFlynnLint() throws {
         let flynnlint = FlynnLint()
         flynnlint.process(output: output,
-                          source: "/Users/rjbowli/Development/chimerasw/Flynnlint/Sources")
+                          input: "/Users/rjbowli/Development/chimerasw/Flynnlint/Sources")
         flynnlint.process(output: output,
-                          source: "/Users/rjbowli/Development/chimerasw/Flynnlint/Tests")
+                          input: "/Users/rjbowli/Development/chimerasw/Flynnlint/Tests")
         flynnlint.finish()
     }
 
     func testBatteryTester() throws {
         let flynnlint = FlynnLint()
         flynnlint.process(output: output,
-                          source: "/Users/rjbowli/Development/chimerasw/Flynn/Examples/BatteryTester/BatteryTester")
+                          input: "/Users/rjbowli/Development/chimerasw/Flynn/Examples/BatteryTester/BatteryTester")
         flynnlint.finish()
     }
     
     func testHelloWorld() throws {
         let flynnlint = FlynnLint()
         flynnlint.process(output: output,
-                          source: "/Users/rjbowli/Development/chimerasw/Flynn/Examples/HelloWorld/HelloWorld")
+                          input: "/Users/rjbowli/Development/chimerasw/Flynn/Examples/HelloWorld/HelloWorld")
         flynnlint.finish()
     }
 
     func testCutlass() throws {
         let flynnlint = FlynnLint()
         flynnlint.process(output: output,
-                          source: "/Volumes/Development/Development/chimerasw2/cutlass/Cutlass")
+                          input: "/Volumes/Development/Development/chimerasw2/cutlass/Cutlass")
         flynnlint.finish()
     }
     
     func testSOServerFramework() throws {
         let flynnlint = FlynnLint()
         flynnlint.process(output: output,
-                          source: "/Volumes/Development/Development/chimerasw2/starbaseorion10/Server/Sources/SOServerFramework")
+                          input: "/Volumes/Development/Development/chimerasw2/starbaseorion10/Server/Sources/SOServerFramework")
         flynnlint.finish()
     }
 
@@ -120,14 +121,14 @@ class FlynnLintTests: XCTestCase {
     func testCodeGen() throws {
         let flynnlint = FlynnLint()
         flynnlint.process(output: output,
-                          source: "/Users/rjbowli/Development/chimerasw/Flynn/Tests/FlynnTests/Support Files")
+                          input: "/Users/rjbowli/Development/chimerasw/Flynn/Tests/FlynnTests/Support Files")
         flynnlint.finish()
     }
 
     func testSampleSet() throws {
         let flynnlint = FlynnLint()
         flynnlint.process(output: output,
-                          source: "/Users/rjbowli/Development/chimerasw/Flynnlint/Tests/sample")
+                          input: "/Users/rjbowli/Development/chimerasw/Flynnlint/Tests/sample")
         flynnlint.finish()
     }
 
@@ -135,7 +136,7 @@ class FlynnLintTests: XCTestCase {
         measure {
             let flynnlint = FlynnLint()
             flynnlint.process(output: output,
-                              source: "/Users/rjbowli/Development/chimerasw/Flynnlint/Tests/benchmark")
+                              input: "/Users/rjbowli/Development/chimerasw/Flynnlint/Tests/benchmark")
             flynnlint.finish()
         }
     }
@@ -176,7 +177,7 @@ class FlynnLintTests: XCTestCase {
     func testLocalDir() throws {
         let flynnlint = FlynnLint()
         flynnlint.process(output: output,
-                          source: "\(packageRoot)/meta/fail")
+                          input: "\(packageRoot)/meta/fail")
         print("\(packageRoot)/Tests/sample")
         flynnlint.finish()
     }
@@ -188,4 +189,5 @@ class FlynnLintTests: XCTestCase {
         ("testOneRule", testOneRule),
         ("testAllRules", testAllRules),
     ]
+     */
 }

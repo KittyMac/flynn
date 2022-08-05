@@ -48,7 +48,7 @@ class FindFiles: Actor, Flowable {
                     // safeguard that we do not process the same file twice
                     if filesProcessed[fileURL.path] == nil {
                         filesProcessed[fileURL.path] = true
-                        self.safeFlowToNextTarget([output, source, fileURL.path])
+                        self.safeFlowToNextTarget([output, fileURL.path])
                     }
                 }
             }

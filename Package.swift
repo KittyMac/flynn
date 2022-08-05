@@ -8,6 +8,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Flynn", targets: ["Flynn"]),
+        .executable(name: "FlynnLint", targets: ["FlynnLint"]),
         .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"])
     ],
     dependencies: [

@@ -29,8 +29,8 @@ public class FlynnLint {
         
         let ruleset = Ruleset()
         let poolSize = max(1, Flynn.cores - 2)
-
-        pipeline = FindFiles(["swift"]) |>
+        
+        pipeline = InputFiles() |>
             Array(count: poolSize) { ParseFile() } |>
             buildCombinedAST |>
             Array(count: poolSize) { AutogenerateExternalBehaviors() } |>
@@ -40,9 +40,9 @@ public class FlynnLint {
             }
     }
 
-    public func process(output: String,
-                        source: String) {
-        pipeline!.beFlow([output, source])
+    public func process(input: String,
+                        output: String) {
+        pipeline!.beFlow([output, input])
         pipeline!.beFlow([])
     }
 

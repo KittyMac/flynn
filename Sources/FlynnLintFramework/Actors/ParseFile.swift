@@ -19,8 +19,7 @@ class ParseFile: Actor, Flowable {
         if args.isEmpty { return self.safeFlowToNextTarget(args) }
 
         let output: String = args[x:0]
-        let source: String = args[x:1]
-        let filePath: String = args[x:2]
+        let filePath: String = args[x:1]
         
         if let file = File(path: filePath) {
             do {
@@ -34,7 +33,6 @@ class ParseFile: Actor, Flowable {
                 }
 
                 let fileSyntax = FileSyntax(output,
-                                            source,
                                             file,
                                             syntax.structure,
                                             [],

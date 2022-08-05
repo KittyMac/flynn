@@ -67,7 +67,6 @@ extension String {
 
 struct FileSyntax {
     let outputPath: String
-    let rootPath: String
     let file: File
     let structure: SyntaxStructure
     let ancestry: [FileSyntax]
@@ -75,14 +74,12 @@ struct FileSyntax {
     let blacklist: [String]
 
     init(_ outputPath: String,
-         _ rootPath: String,
          _ file: File,
          _ structure: SyntaxStructure,
          _ ancestry: [FileSyntax],
          _ tokens: [SyntaxToken],
          _ blacklist: [String]) {
         self.outputPath = outputPath
-        self.rootPath = rootPath
         self.file = file
         self.structure = structure
         self.tokens = tokens
@@ -92,7 +89,6 @@ struct FileSyntax {
     
     func clone(ancestry: [FileSyntax]) -> FileSyntax {
         return FileSyntax(outputPath,
-                          rootPath,
                           file,
                           structure,
                           ancestry,
@@ -102,7 +98,6 @@ struct FileSyntax {
 
     func clone(substructure: SyntaxStructure) -> FileSyntax {
         return FileSyntax(outputPath,
-                          rootPath,
                           file,
                           substructure,
                           ancestry,

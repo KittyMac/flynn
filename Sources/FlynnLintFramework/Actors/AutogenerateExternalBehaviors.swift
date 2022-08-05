@@ -1046,8 +1046,6 @@ class AutogenerateExternalBehaviors: Actor, Flowable {
                 let parts = fileString.components(separatedBy: fileMarker)
                 fileString = parts[0]
 
-                let previousExtensionString = parts.count > 1 ? parts[1] : "NOT FOUND"
-
                 var newExtensionString = ""
 
                 newExtensionString.append(fileMarker)
@@ -1101,10 +1099,11 @@ class AutogenerateExternalBehaviors: Actor, Flowable {
                 // NOTE: to support being a SPM build tool, we have two modes:
                 // 1. As a build tool, we generate extensons in a new file for all behaviours
                 // 2. As a source code formatter, we remove old, in file auto generated code
+                if let stringData = newExtensionString.data(using: .utf8),
+                   let handle = FileHandle(forUpdatingAtPath: syntax.outputPath) {
+                    handle.write(stringData)
+                }
                 
-                let output = "\(syntax.outputPath)/FlynnLint.swift"
-                try! newExtensionString.write(toFile: output, atomically: true, encoding: .utf8)
-
                 /*
                 // Four scenarios we want to make sure we handle:
                 // - Actor in file with no previous FlynnLint generation

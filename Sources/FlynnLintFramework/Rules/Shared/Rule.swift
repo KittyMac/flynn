@@ -95,7 +95,6 @@ extension Rule {
             let file = File(contents: code)
             let syntax = try StructureAndSyntax(file: file)
             let fileSyntax = FileSyntax("/tmp",
-                                        "/tmp",
                                         file,
                                         syntax.structure,
                                         [],

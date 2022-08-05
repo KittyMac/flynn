@@ -18,25 +18,26 @@ struct FlynnLintCLI: ParsableCommand {
         commandName: "flynnlint",
         abstract: "FlynnLint is a SPM build tool which supports Flynn (https://github.com/KittyMac/Flynn)"
     )
+        
+    @Argument(help: "Path to file containing list of swift files to lint")
+    var input: String
     
-    @Option(name: NameSpecification.shortAndLong,
-            help: "Directory to generate source files")
-    var output: String?
-    
-    @Argument(help: "Source directories for FlynnLint to check")
-    var source: [String] = []
+    @Argument(help: "Path to output file")
+    var output: String
 
     mutating func run() throws {
-        guard let output = output else {
-            fatalError("output directory missing")
-        }
         let flynnlint = FlynnLint()
-        for path in source {
-            flynnlint.process(output: output,
-                              source: path)
-        }
         
-        //exit(Int32(flynnlint.finish()))
+        try? FileManager.default.removeItem(atPath: output)
+        try! "".write(toFile: output, atomically: false, encoding: .utf8)
+        
+        flynnlint.process(input: input,
+                          output: output)
+        
+        let exitCode = flynnlint.finish()
+        if exitCode != 0 {
+            throw ExitCode(Int32(exitCode))
+        }
     }
 }
 
