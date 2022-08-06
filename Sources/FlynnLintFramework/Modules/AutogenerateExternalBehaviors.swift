@@ -1045,9 +1045,15 @@ class AutogenerateExternalBehaviors {
 
                 // include all imports from the source file, in case they use structures we don't
                 // normall have access to
+                var importNames = Set<String>()
                 syntax.file.contents.matches(importsRegexString) { (_, groups) in
-                    let importName = groups[1]
+                    importNames.insert(groups[1])
+                }
+                
+                for importName in importNames {
+                    fileMarker += "#if canImport(\(importName))\n"
                     fileMarker += "import \(importName)\n"
+                    fileMarker += "#endif\n"
                 }
                 
                 var newExtensionString = fileMarker
