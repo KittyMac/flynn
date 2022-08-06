@@ -1,16 +1,4 @@
-//
-//  main.swift
-//  flynnlint
-//
-//  Created by Rocco Bowling on 5/29/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
-
-// swiftlint:disable line_length
-// swiftlint:disable cyclomatic_complexity
-
 import Foundation
-import Flynn
 import SourceKittenFramework
 
 struct PrivateVariablesInActorRule: Rule {
@@ -56,7 +44,7 @@ struct PrivateVariablesInActorRule: Rule {
         ]
     )
 
-    func check(_ ast: AST, _ syntax: FileSyntax, _ output: Flowable?) -> Bool {
+    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
         var allPassed = true
 
         if let resolvedClass = ast.getClassOrProtocol(syntax.structure.name) {
@@ -91,16 +79,12 @@ struct PrivateVariablesInActorRule: Rule {
                                 }
                                 // allow variables to be "unsafe"
                                 if name.hasPrefix(FlynnLint.prefixUnsafe) {
-                                    if let output = output {
-                                        output.beFlow([warning(variable.offset, syntax, description.console("Unsafe variables should not be used"))])
-                                    }
+                                    output.append(warning(variable.offset, syntax, description.console("Unsafe variables should not be used")))
                                     continue
                                 }
                             }
 
-                            if let output = output {
-                                output.beFlow([error(variable.offset, syntax)])
-                            }
+                            output.append(error(variable.offset, syntax))
                             allPassed = false
                         }
                     }

@@ -1,5 +1,3 @@
-// swiftlint:disable force_cast
-
 import Foundation
 
 public typealias FlowableArgs = [Any?]

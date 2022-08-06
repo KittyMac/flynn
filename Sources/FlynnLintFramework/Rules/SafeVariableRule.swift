@@ -1,13 +1,4 @@
-//
-//  main.swift
-//  flynnlint
-//
-//  Created by Rocco Bowling on 5/29/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
-
 import Foundation
-import Flynn
 import SourceKittenFramework
 
 struct SafeVariableRule: Rule {
@@ -81,16 +72,14 @@ struct SafeVariableRule: Rule {
         return file.contents.contains(".\(FlynnLint.prefixSafe)")
     }
 
-    func check(_ ast: AST, _ syntax: FileSyntax, _ output: Flowable?) -> Bool {
+    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
         // sourcekit doesn't give us structures for variable accesses. So the
         // best we can do is grep the body contents. Doing this, we are looking
         // or any instances of .safe which are not self.safe This is
         // FAR from perfect, but until sourcekit provides the full, unadultered
         // AST what can we do?
         if let innerOffset = syntax.match(#"\w+(?<!self)\."# + FlynnLint.prefixSafe + #"\w"#) {
-            if let output = output {
-                output.beFlow([error(innerOffset, syntax)])
-            }
+            output.append(error(innerOffset, syntax))
             return false
         }
 

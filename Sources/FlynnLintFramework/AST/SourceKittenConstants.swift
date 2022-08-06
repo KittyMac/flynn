@@ -1,16 +1,5 @@
-//
-//  main.swift
-//  flynnlint
-//
-//  Created by Rocco Bowling on 5/29/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
-
-// swiftlint:disable force_cast
-
 import Foundation
 import SourceKittenFramework
-import Flynn
 
 typealias SyntaxStructure = [String: SourceKitRepresentable]
 

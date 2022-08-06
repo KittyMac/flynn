@@ -1,16 +1,4 @@
-//
-//  main.swift
-//  flynnlint
-//
-//  Created by Rocco Bowling on 5/29/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
-
-// swiftlint:disable line_length
-// swiftlint:disable cyclomatic_complexity
-
 import Foundation
-import Flynn
 import SourceKittenFramework
 
 struct PrivateVariablesInRemoteActorRule: Rule {
@@ -55,7 +43,7 @@ struct PrivateVariablesInRemoteActorRule: Rule {
         ]
     )
 
-    func check(_ ast: AST, _ syntax: FileSyntax, _ output: Flowable?) -> Bool {
+    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
         var allPassed = true
 
         if let resolvedClass = ast.getClassOrProtocol(syntax.structure.name) {
@@ -96,17 +84,13 @@ struct PrivateVariablesInRemoteActorRule: Rule {
                                         continue
                                     }
 
-                                    if let output = output {
-                                        output.beFlow([error(variable.offset, syntax, description.console("Unsafe variables are not allowed in RemoteActor"))])
-                                    }
+                                    output.append(error(variable.offset, syntax, description.console("Unsafe variables are not allowed in RemoteActor")))
                                     allPassed = false
                                     continue
                                 }
                             }
 
-                            if let output = output {
-                                output.beFlow([error(variable.offset, syntax)])
-                            }
+                            output.append(error(variable.offset, syntax))
                             allPassed = false
                         }
                     }

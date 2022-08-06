@@ -24,20 +24,25 @@ let package = Package(
         ),
         .target(
             name: "Flynn",
-            dependencies: [ "Pony" ]
+            dependencies: [ "Pony" ],
+            plugins: [
+                .plugin(name: "FlynnPlugin"),
+            ]
         ),
         .testTarget(
             name: "FlynnTests",
             dependencies: [ "Flynn" ],
-            exclude: [ "Resources" ]
+            plugins: [
+                "FlynnPlugin"
+            ]
         ),
         
         .plugin(
             name: "FlynnPlugin",
             capability: .buildTool(),
-            dependencies: ["FlynnLint", "FlynnLintFramework"]
+            dependencies: ["FlynnLint"]
         ),
-        
+                
         .executableTarget(
             name: "FlynnLint",
             dependencies: ["FlynnLintFramework"]
@@ -46,14 +51,12 @@ let package = Package(
             name: "FlynnLintFramework",
             dependencies: [
                 .product(name: "SourceKittenFramework", package: "SourceKitten"),
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                "Flynn"
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
         ),
         .testTarget(
             name: "FlynnLintFrameworkTests",
-            dependencies: [ "FlynnLintFramework" ],
-            exclude: [ "Resources" ]
+            dependencies: [ "FlynnLintFramework" ]
         )
 
     ]

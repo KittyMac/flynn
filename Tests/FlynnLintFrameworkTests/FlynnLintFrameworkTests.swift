@@ -23,8 +23,32 @@ class FlynnLintTests: XCTestCase {
         let flynnlint = FlynnLint()
         flynnlint.process(input: "/Users/rjbowli/Development/chimerasw/Flynn/Examples/PluginTest/Sources/PluginTest/main.swift",
                           output: "/tmp/FlynnLint.swift")
-        flynnlint.finish()
     }
+    
+    func testFlynn() throws {
+        
+        let flynnlint = FlynnLint()
+        
+        let files = [
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Flowable.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Flynn+Timer.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Atomics.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Flynn.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Extensions.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Queue.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Actor.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/Flynn+Remote.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActorManager.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActorRunner.swift",
+            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActor.swift"
+        ]
+        
+        flynnlint.process(inputs: files,
+                          output: "/tmp/FlynnLint.swift")
+        
+        
+    }
+
 
     /*
     func testSO10() throws {

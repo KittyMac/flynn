@@ -1,17 +1,4 @@
-//
-//  main.swift
-//  flynnlint
-//
-//  Created by Rocco Bowling on 5/29/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
-
-// swiftlint:disable line_length
-// swiftlint:disable cyclomatic_complexity
-// swiftlint:disable function_body_length
-
 import Foundation
-import Flynn
 import SourceKittenFramework
 
 struct PrivateFunctionInRemoteActorRule: Rule {
@@ -104,7 +91,7 @@ struct PrivateFunctionInRemoteActorRule: Rule {
         ]
     )
 
-    func check(_ ast: AST, _ syntax: FileSyntax, _ output: Flowable?) -> Bool {
+    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
         // Every function defined in a class which is a subclass of Actor must follow these rules:
         // 1. its access control level (ACL) must be set to private
         // 2. if it starts with safe, its ACL may be anything. Other rules will keep anything
@@ -124,9 +111,7 @@ struct PrivateFunctionInRemoteActorRule: Rule {
                             // this compliance is in place, so for here we just need to exempt it
 
                             if syntax.match(#"unsafeSendToRemote\s*\("#) == nil {
-                                if let output = output {
-                                    output.beFlow([error(function.offset, syntax, description.console("Behaviors must call unsafeSendToRemote()"))])
-                                }
+                                output.append(error(function.offset, syntax, description.console("Behaviors must call unsafeSendToRemote()")))
                                 allPassed = false
                             }
                             continue
@@ -139,9 +124,7 @@ struct PrivateFunctionInRemoteActorRule: Rule {
                             !(function.name ?? "").hasPrefix("deinit") &&
                             function.kind == .functionMethodInstance &&
                             function.accessibility != .private {
-                            if let output = output {
-                                output.beFlow([error(function.offset, syntax)])
-                            }
+                            output.append(error(function.offset, syntax))
                             allPassed = false
                             continue
                         }
@@ -149,9 +132,7 @@ struct PrivateFunctionInRemoteActorRule: Rule {
                         if (function.name ?? "").hasPrefix(FlynnLint.prefixBehaviorInternal) &&
                             function.kind == .functionMethodInstance &&
                             function.accessibility != .internal {
-                            if let output = output {
-                                output.beFlow([error(function.offset, syntax, description.console("Behaviors must be internal"))])
-                            }
+                            output.append(error(function.offset, syntax, description.console("Behaviors must be internal")))
                             allPassed = false
                             continue
                         }
@@ -164,9 +145,7 @@ struct PrivateFunctionInRemoteActorRule: Rule {
                             !(function.name ?? "").hasPrefix("unsafeRegisterAllBehaviors(") &&
                             function.kind == .functionMethodInstance &&
                             function.accessibility != .private {
-                            if let output = output {
-                                output.beFlow([error(function.offset, syntax, description.console("Unsafe functions are not allowed on remote actors"))])
-                            }
+                            output.append(error(function.offset, syntax, description.console("Unsafe functions are not allowed on remote actors")))
                             allPassed = false
                             continue
                         }
@@ -175,9 +154,7 @@ struct PrivateFunctionInRemoteActorRule: Rule {
                             function.kind == .functionMethodInstance {
                             let (_, parameterLabels) = ast.parseFunctionDefinition(function)
                             if parameterLabels.count > 0 {
-                                if let output = output {
-                                    output.beFlow([error(function.offset, syntax, description.console("Initializers with parameters are not allowed on remote actors"))])
-                                }
+                                output.append(error(function.offset, syntax, description.console("Initializers with parameters are not allowed on remote actors")))
                                 allPassed = false
                                 continue
                             }

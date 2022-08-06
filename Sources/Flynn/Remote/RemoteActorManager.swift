@@ -1,8 +1,6 @@
 import Foundation
 import Pony
 
-// swiftlint:disable line_length
-
 // MARK: REMOTE ACTOR
 
 private class MessageReply {
@@ -96,13 +94,13 @@ internal final class RemoteActorManager: Actor {
         rootActors.removeAll()
     }
     
-    private func _beGetActor(_ actorUUID: String) -> RemoteActor? {
+    internal func _beGetActor(_ actorUUID: String) -> RemoteActor? {
         return rootActors[actorUUID]
     }
     
-    private func _beRegisterActorTypesForRoot(_ inRootActorTypes: [RemoteActor.Type],
-                                              _ inFallbackActorTypes: [RemoteActor.Type],
-                                              _ inNamedActorTypes: [RemoteActor.Type]) -> Bool {
+    internal func _beRegisterActorTypesForRoot(_ inRootActorTypes: [RemoteActor.Type],
+                                               _ inFallbackActorTypes: [RemoteActor.Type],
+                                               _ inNamedActorTypes: [RemoteActor.Type]) -> Bool {
         for actorType in inRootActorTypes {
             rootActorTypes[String(describing: actorType)] = actorType
         }
@@ -115,8 +113,8 @@ internal final class RemoteActorManager: Actor {
         return true
     }
     
-    private func _beRegisterActorTypesForNode(_ inActorTypes: [RemoteActor.Type],
-                                              _ namedActors: [RemoteActor]) -> Bool {
+    internal func _beRegisterActorTypesForNode(_ inActorTypes: [RemoteActor.Type],
+                                               _ namedActors: [RemoteActor]) -> Bool {
         for actorType in inActorTypes {
             nodeActorTypes[String(describing: actorType)] = actorType
         }
@@ -161,7 +159,7 @@ internal final class RemoteActorManager: Actor {
         
     }
     
-    private func _beDidDisconnectNode(_ socket: Int32) {
+    internal func _beDidDisconnectNode(_ socket: Int32) {
         actorTypesBySocket[socket] = []
         
         // error out any waiting messages for this socket...
@@ -171,8 +169,8 @@ internal final class RemoteActorManager: Actor {
         }
     }
     
-    private func _beRegisterRemoteNodeOnRoot(_ actorRegistrationString: String,
-                                             _ socketFD: Int32) {
+    internal func _beRegisterRemoteNodeOnRoot(_ actorRegistrationString: String,
+                                              _ socketFD: Int32) {
         
         var remoteTypes:[RemoteActor.Type] = []
         
@@ -193,9 +191,9 @@ internal final class RemoteActorManager: Actor {
         actorTypesBySocket[socketFD] = remoteTypes
     }
 
-    private func _beCreateActorOnNode(_ actorUUID: String,
-                                      _ actorType: String,
-                                      _ socketFD: Int32) {
+    internal func _beCreateActorOnNode(_ actorUUID: String,
+                                       _ actorType: String,
+                                       _ socketFD: Int32) {
         guard nodeActors[actorUUID] == nil else { return }
         
         if let actorType = nodeActorTypes[actorType] {
@@ -209,9 +207,9 @@ internal final class RemoteActorManager: Actor {
         }
     }
     
-    private func _beCreateActorOnRoot(_ actorUUID: String,
-                                      _ actorType: String,
-                                      _ socketFD: Int32) {
+    internal func _beCreateActorOnRoot(_ actorUUID: String,
+                                       _ actorType: String,
+                                       _ socketFD: Int32) {
         if let actorType = namedActorTypes[actorType] {
             let actor = actorType.init(actorUUID, socketFD, true)
             actor.unsafeRegisterAllBehaviors()
@@ -227,29 +225,29 @@ internal final class RemoteActorManager: Actor {
         }
     }
 
-    private func _beDestroyActor(_ actorUUID: String) {
+    internal func _beDestroyActor(_ actorUUID: String) {
         rootActors.removeValue(forKey: actorUUID)
         nodeActors.removeValue(forKey: actorUUID)
     }
     
-    private func _beRootTellNodeToDestroyActor(_ actorUUID: String,
-                                               _ nodeSocketFD: Int32) {
+    internal func _beRootTellNodeToDestroyActor(_ actorUUID: String,
+                                                _ nodeSocketFD: Int32) {
         pony_root_destroy_actor_to_node(actorUUID, nodeSocketFD)
     }
     
-    private func _beNodeTellRootActorWasDestroyed(_ actorUUID: String,
-                                                  _ nodeSocketFD: Int32) {
+    internal func _beNodeTellRootActorWasDestroyed(_ actorUUID: String,
+                                                   _ nodeSocketFD: Int32) {
         pony_node_destroy_actor_to_root(nodeSocketFD)
     }
     
-    private func _beSendToRemote(_ internalRemoteActor: InternalRemoteActor,
-                                 _ actorUUID: String,
-                                 _ actorTypeString: String,
-                                 _ behaviorType: String,
-                                 _ payload: Data,
-                                 _ replySender: Actor?,
-                                 _ replyCallback: RemoteBehaviorReply?,
-                                 _ replyError: RemoteBehaviorError?) {
+    internal func _beSendToRemote(_ internalRemoteActor: InternalRemoteActor,
+                                  _ actorUUID: String,
+                                  _ actorTypeString: String,
+                                  _ behaviorType: String,
+                                  _ payload: Data,
+                                  _ replySender: Actor?,
+                                  _ replyCallback: RemoteBehaviorReply?,
+                                  _ replyError: RemoteBehaviorError?) {
         let fallbackRunRemoteActorLocally: (() -> Void) = {
             guard let _ = self.fallbackActorTypes[actorTypeString] else {
                 #if DEBUG
@@ -396,11 +394,11 @@ internal final class RemoteActorManager: Actor {
         }
     }
 
-    private func _beHandleMessage(_ actorUUID: String,
-                                  _ behavior: String,
-                                  _ data: Data,
-                                  _ messageID: Int32,
-                                  _ replySocketFD: Int32) {
+    internal func _beHandleMessage(_ actorUUID: String,
+                                   _ behavior: String,
+                                   _ data: Data,
+                                   _ messageID: Int32,
+                                   _ replySocketFD: Int32) {
         if let actor = nodeActors[actorUUID] {
             unsafeGetRunnerForActor(actorUUID).beHandleMessage(actor, behavior, data, messageID, replySocketFD)
         } else if let actor = rootActors[actorUUID] {
@@ -420,16 +418,16 @@ internal final class RemoteActorManager: Actor {
 
     private var waitingReplies: [Int32: MessageReply] = [:]
 
-    private func _beRegisterReply(_ socket: Int32,
-                                  _ messageID: Int32,
-                                  _ actor: Actor,
-                                  _ block: @escaping RemoteBehaviorReply,
-                                  _ error: @escaping RemoteBehaviorError) {
+    internal func _beRegisterReply(_ socket: Int32,
+                                   _ messageID: Int32,
+                                   _ actor: Actor,
+                                   _ block: @escaping RemoteBehaviorReply,
+                                   _ error: @escaping RemoteBehaviorError) {
         waitingReplies[messageID] = MessageReply(socket, actor, block, error)
     }
 
-    private func _beHandleMessageReply(_ messageID: Int32,
-                                       _ data: Data) {
+    internal func _beHandleMessageReply(_ messageID: Int32,
+                                        _ data: Data) {
         if let message = waitingReplies.removeValue(forKey: messageID) {
             message.run(data)
         } else {
@@ -438,124 +436,4 @@ internal final class RemoteActorManager: Actor {
             #endif
         }
     }
-}
-
-
-// MARK: - Autogenerated by FlynnLint
-// Contents of file after this marker will be overwritten as needed
-
-extension RemoteActorManager {
-
-    @discardableResult
-    public func beGetActor(_ actorUUID: String,
-                           _ sender: Actor,
-                           _ callback: @escaping ((RemoteActor?) -> Void)) -> Self {
-        unsafeSend {
-            let result = self._beGetActor(actorUUID)
-            sender.unsafeSend { callback(result) }
-        }
-        return self
-    }
-    @discardableResult
-    public func beRegisterActorTypesForRoot(_ inRootActorTypes: [RemoteActor.Type],
-                                            _ inFallbackActorTypes: [RemoteActor.Type],
-                                            _ inNamedActorTypes: [RemoteActor.Type],
-                                            _ sender: Actor,
-                                            _ callback: @escaping ((Bool) -> Void)) -> Self {
-        unsafeSend {
-            let result = self._beRegisterActorTypesForRoot(inRootActorTypes, inFallbackActorTypes, inNamedActorTypes)
-            sender.unsafeSend { callback(result) }
-        }
-        return self
-    }
-    @discardableResult
-    public func beRegisterActorTypesForNode(_ inActorTypes: [RemoteActor.Type],
-                                            _ namedActors: [RemoteActor],
-                                            _ sender: Actor,
-                                            _ callback: @escaping ((Bool) -> Void)) -> Self {
-        unsafeSend {
-            let result = self._beRegisterActorTypesForNode(inActorTypes, namedActors)
-            sender.unsafeSend { callback(result) }
-        }
-        return self
-    }
-    @discardableResult
-    public func beDidDisconnectNode(_ socket: Int32) -> Self {
-        unsafeSend { self._beDidDisconnectNode(socket) }
-        return self
-    }
-    @discardableResult
-    public func beRegisterRemoteNodeOnRoot(_ actorRegistrationString: String,
-                                           _ socketFD: Int32) -> Self {
-        unsafeSend { self._beRegisterRemoteNodeOnRoot(actorRegistrationString, socketFD) }
-        return self
-    }
-    @discardableResult
-    public func beCreateActorOnNode(_ actorUUID: String,
-                                    _ actorType: String,
-                                    _ socketFD: Int32) -> Self {
-        unsafeSend { self._beCreateActorOnNode(actorUUID, actorType, socketFD) }
-        return self
-    }
-    @discardableResult
-    public func beCreateActorOnRoot(_ actorUUID: String,
-                                    _ actorType: String,
-                                    _ socketFD: Int32) -> Self {
-        unsafeSend { self._beCreateActorOnRoot(actorUUID, actorType, socketFD) }
-        return self
-    }
-    @discardableResult
-    public func beDestroyActor(_ actorUUID: String) -> Self {
-        unsafeSend { self._beDestroyActor(actorUUID) }
-        return self
-    }
-    @discardableResult
-    public func beRootTellNodeToDestroyActor(_ actorUUID: String,
-                                             _ nodeSocketFD: Int32) -> Self {
-        unsafeSend { self._beRootTellNodeToDestroyActor(actorUUID, nodeSocketFD) }
-        return self
-    }
-    @discardableResult
-    public func beNodeTellRootActorWasDestroyed(_ actorUUID: String,
-                                                _ nodeSocketFD: Int32) -> Self {
-        unsafeSend { self._beNodeTellRootActorWasDestroyed(actorUUID, nodeSocketFD) }
-        return self
-    }
-    @discardableResult
-    public func beSendToRemote(_ internalRemoteActor: InternalRemoteActor,
-                               _ actorUUID: String,
-                               _ actorTypeString: String,
-                               _ behaviorType: String,
-                               _ payload: Data,
-                               _ replySender: Actor?,
-                               _ replyCallback: RemoteBehaviorReply?,
-                               _ replyError: RemoteBehaviorError?) -> Self {
-        unsafeSend { self._beSendToRemote(internalRemoteActor, actorUUID, actorTypeString, behaviorType, payload, replySender, replyCallback, replyError) }
-        return self
-    }
-    @discardableResult
-    public func beHandleMessage(_ actorUUID: String,
-                                _ behavior: String,
-                                _ data: Data,
-                                _ messageID: Int32,
-                                _ replySocketFD: Int32) -> Self {
-        unsafeSend { self._beHandleMessage(actorUUID, behavior, data, messageID, replySocketFD) }
-        return self
-    }
-    @discardableResult
-    public func beRegisterReply(_ socket: Int32,
-                                _ messageID: Int32,
-                                _ actor: Actor,
-                                _ block: @escaping RemoteBehaviorReply,
-                                _ error: @escaping RemoteBehaviorError) -> Self {
-        unsafeSend { self._beRegisterReply(socket, messageID, actor, block, error) }
-        return self
-    }
-    @discardableResult
-    public func beHandleMessageReply(_ messageID: Int32,
-                                     _ data: Data) -> Self {
-        unsafeSend { self._beHandleMessageReply(messageID, data) }
-        return self
-    }
-
 }

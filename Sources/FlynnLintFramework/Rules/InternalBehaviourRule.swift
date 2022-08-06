@@ -1,13 +1,4 @@
-//
-//  main.swift
-//  flynnlint
-//
-//  Created by Rocco Bowling on 5/29/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
-
 import Foundation
-import Flynn
 import SourceKittenFramework
 
 struct InternalBehaviourRule: Rule {
@@ -120,14 +111,12 @@ struct InternalBehaviourRule: Rule {
         ]
     )
 
-    func check(_ ast: AST, _ syntax: FileSyntax, _ output: Flowable?) -> Bool {
+    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
         // Only functions of the class may call safe methods on a class
         if let functionCall = syntax.structure.name {
             if  functionCall.range(of: internalCallString) != nil &&
                 functionCall.hasPrefix("self.") == false {
-                if let output = output {
-                    output.beFlow([error(syntax.structure.offset, syntax)])
-                }
+                output.append(error(syntax.structure.offset, syntax))
                 return false
             }
         }

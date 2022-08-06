@@ -39,18 +39,12 @@ import PackagePlugin
         }
 
         let tool = try context.tool(named: "FlynnLint")
-        
-        print(tool.path)
-        print(target.directory.string)
-        print(context.pluginWorkDirectory)
-        
+                
         // Find all .swift files in our target and all of our target's dependencies, add them as input files
         var inputFiles: [PackagePlugin.Path] = []
         gatherSwiftInputFiles(target: target,
                               inputFiles: &inputFiles)
-        
-        print(inputFiles)
-        
+                
         let inputFilesFilePath = context.pluginWorkDirectory.string + "/inputFiles.txt"
         try! inputFiles.map { $0.string }.joined(separator: "\n").write(toFile: inputFilesFilePath, atomically: false, encoding: .utf8)
         

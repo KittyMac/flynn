@@ -6,9 +6,6 @@
 //  Copyright © 2020 Rocco Bowling. All rights reserved.
 //
 
-// swiftlint:disable function_body_length
-// swiftlint:disable cyclomatic_complexity
-
 // Benchmark Results:
 // Performed on iPhone 8+
 // Screen brightness to minimum

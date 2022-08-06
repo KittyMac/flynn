@@ -1,13 +1,4 @@
-//
-//  main.swift
-//  flynnlint
-//
-//  Created by Rocco Bowling on 5/29/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
-
 import Foundation
-import Flynn
 import SourceKittenFramework
 
 struct Ruleset {
@@ -50,7 +41,7 @@ protocol Rule {
     func precheck(_ file: File) -> Bool
 
     @discardableResult
-    func check(_ ast: AST, _ syntax: FileSyntax, _ output: Flowable?) -> Bool
+    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool
 }
 
 extension Rule {
@@ -59,39 +50,38 @@ extension Rule {
         return true
     }
 
-    func error(_ offset: Int64?, _ fileSyntax: FileSyntax, _ msg: String) -> String {
+    func error(_ offset: Int64?, _ fileSyntax: FileSyntax, _ msg: String) -> PrintError.Packet {
         let path = fileSyntax.file.path ?? "<nopath>"
         if let offset = offset {
             let stringView = StringView.init(fileSyntax.file.contents)
             if let (line, character) = stringView.lineAndCharacter(forByteOffset: ByteCount(offset)) {
-                return "\(path):\(line):\(character): error: \(msg)"
+                return PrintError.Packet(error: "\(path):\(line):\(character): error: \(msg)")
             }
         }
-        return "\(path): error: \(msg)"
+        return PrintError.Packet(error: "\(path): error: \(msg)")
     }
 
-    func error(_ offset: Int64?, _ fileSyntax: FileSyntax) -> String {
+    func error(_ offset: Int64?, _ fileSyntax: FileSyntax) -> PrintError.Packet {
         return error(offset, fileSyntax, description.consoleDescription)
     }
 
-    func warning(_ offset: Int64?, _ fileSyntax: FileSyntax, _ msg: String) -> String {
+    func warning(_ offset: Int64?, _ fileSyntax: FileSyntax, _ msg: String) -> PrintError.Packet {
         let path = fileSyntax.file.path ?? "<nopath>"
         if let offset = offset {
             let stringView = StringView.init(fileSyntax.file.contents)
             if let (line, character) = stringView.lineAndCharacter(forByteOffset: ByteCount(offset)) {
-                return "\(path):\(line):\(character): warning: \(msg)"
+                return PrintError.Packet(error: "\(path):\(line):\(character): warning: \(msg)")
             }
         }
-        return "\(path): warning: \(msg)"
+        return PrintError.Packet(error: "\(path): warning: \(msg)")
     }
 
-    func warning(_ offset: Int64?, _ fileSyntax: FileSyntax) -> String {
+    func warning(_ offset: Int64?, _ fileSyntax: FileSyntax) -> PrintError.Packet {
         return warning(offset, fileSyntax, description.consoleDescription)
     }
 
     func test(_ code: String) -> Bool {
-        let printError: PrintError? = PrintError()
-        //let printError: PrintError? = nil
+        var next: [PrintError.Packet] = []
 
         do {
             let file = File(contents: code)
@@ -111,11 +101,11 @@ extension Rule {
             for syntax in astBuilder {
 
                 if description.syntaxTriggers.count == 0 {
-                    if !check(ast, syntax, printError) {
+                    if !check(ast, syntax, &next) {
                         return false
                     }
                 } else if description.syntaxTriggers.contains(syntax.structure.kind!) {
-                    if !check(ast, syntax, printError) {
+                    if !check(ast, syntax, &next) {
                         return false
                     }
                 }

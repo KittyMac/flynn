@@ -2,8 +2,6 @@
 // to the actor can happen concurrently, and updates are passed on to SwiftUI
 // on the main thread
 
-// swiftlint:disable line_length
-
 import SwiftUI
 import Flynn
 

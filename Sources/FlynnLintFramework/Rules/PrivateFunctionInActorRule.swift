@@ -1,17 +1,4 @@
-//
-//  main.swift
-//  flynnlint
-//
-//  Created by Rocco Bowling on 5/29/20.
-//  Copyright © 2020 Rocco Bowling. All rights reserved.
-//
-
-// swiftlint:disable line_length
-// swiftlint:disable cyclomatic_complexity
-// swiftlint:disable function_body_length
-
 import Foundation
-import Flynn
 import SourceKittenFramework
 
 struct PrivateFunctionInActorRule: Rule {
@@ -77,7 +64,7 @@ struct PrivateFunctionInActorRule: Rule {
         ]
     )
 
-    func check(_ ast: AST, _ syntax: FileSyntax, _ output: Flowable?) -> Bool {
+    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
         // Every function defined in a class which is a subclass of Actor must follow these rules:
         // 1. its access control level (ACL) must be set to private
         // 2. if it starts with safe, its ACL may be anything. Other rules will keep anything
@@ -115,9 +102,7 @@ struct PrivateFunctionInActorRule: Rule {
                                 }
 
                                 if !(numUnsafeSend == 1 && numOther == 0) {
-                                    if let output = output {
-                                        output.beFlow([error(function.offset, syntax, description.console("Behaviors must wrap their contents in a call to unsafeSend()"))])
-                                    }
+                                    output.append(error(function.offset, syntax, description.console("Behaviors must wrap their contents in a call to unsafeSend()")))
                                     allPassed = false
                                 }
                             }
@@ -131,9 +116,7 @@ struct PrivateFunctionInActorRule: Rule {
                             !(function.name ?? "").hasPrefix("deinit") &&
                             function.kind == .functionMethodInstance &&
                             function.accessibility != .private {
-                            if let output = output {
-                                output.beFlow([error(function.offset, syntax)])
-                            }
+                            output.append(error(function.offset, syntax))
                             allPassed = false
                             continue
                         }
@@ -141,9 +124,7 @@ struct PrivateFunctionInActorRule: Rule {
                         if (function.name ?? "").hasPrefix(FlynnLint.prefixBehaviorInternal) &&
                             function.kind == .functionMethodInstance &&
                             function.accessibility != .internal {
-                            if let output = output {
-                                output.beFlow([error(function.offset, syntax, description.console("Behaviors must be internal"))])
-                            }
+                            output.append(error(function.offset, syntax, description.console("Behaviors must be internal")))
                             allPassed = false
                             continue
                         }
@@ -151,9 +132,7 @@ struct PrivateFunctionInActorRule: Rule {
                         if (function.name ?? "").hasPrefix(FlynnLint.prefixUnsafe) &&
                             function.kind == .functionMethodInstance &&
                             function.accessibility != .private {
-                            if let output = output {
-                                output.beFlow([warning(function.offset, syntax, description.console("Unsafe functions should not be used"))])
-                            }
+                            output.append(warning(function.offset, syntax, description.console("Unsafe functions should not be used")))
                             continue
                         }
 
