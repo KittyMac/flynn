@@ -14,7 +14,14 @@ class ParseFile {
         var next: [FileSyntax] = []
         
         for packet in packets {
-            if let file = File(path: packet.filePath) {
+            var filePath = packet.filePath
+            var dependency = false
+            if filePath.hasPrefix("+") {
+                filePath = String(filePath.dropFirst())
+                dependency = true
+            }
+            
+            if let file = File(path: filePath) {
                 do {
                     let syntax = try StructureAndSyntax(file: file)
 
@@ -25,12 +32,13 @@ class ParseFile {
                         }
                     }
 
-                    let fileSyntax = FileSyntax(packet.output,
-                                                file,
-                                                syntax.structure,
-                                                [],
-                                                syntax.syntax,
-                                                blacklist)
+                    let fileSyntax = FileSyntax(outputPath: packet.output,
+                                                file: file,
+                                                structure: syntax.structure,
+                                                ancestry: [],
+                                                tokens: syntax.syntax,
+                                                blacklist: blacklist,
+                                                dependency: dependency)
 
                     next.append(fileSyntax)
                 } catch {

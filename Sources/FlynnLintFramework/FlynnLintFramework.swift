@@ -30,6 +30,8 @@ public class FlynnLint {
         try? FileManager.default.removeItem(atPath: output)
         try? "import Foundation\nimport Flynn\n".write(toFile: output, atomically: false, encoding: .utf8)
         
+        print("\(output): warning: FlynnLint generated code")
+        
         let inputFiles = InputFiles()
         let parseFile = ParseFile()
         let buildCombinedAST = BuildCombinedAST()
@@ -56,6 +58,8 @@ public class FlynnLint {
         
         try? FileManager.default.removeItem(atPath: output)
         try? "import Foundation\nimport Flynn\n".write(toFile: output, atomically: false, encoding: .utf8)
+        
+        print("\(output): warning: FlynnLint generated code")
         
         let parseFile = ParseFile()
         let buildCombinedAST = BuildCombinedAST()

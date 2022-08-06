@@ -86,12 +86,13 @@ extension Rule {
         do {
             let file = File(contents: code)
             let syntax = try StructureAndSyntax(file: file)
-            let fileSyntax = FileSyntax("/tmp",
-                                        file,
-                                        syntax.structure,
-                                        [],
-                                        syntax.syntax,
-                                        [])
+            let fileSyntax = FileSyntax(outputPath: "/tmp",
+                                        file: file,
+                                        structure: syntax.structure,
+                                        ancestry: [],
+                                        tokens: syntax.syntax,
+                                        blacklist: [],
+                                        dependency: false)
 
             let astBuilder = ASTBuilder()
             astBuilder.add(fileSyntax)

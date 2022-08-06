@@ -280,8 +280,7 @@ public class Queue<T: AnyObject> {
 
     public func peek() -> T? {
         if manyConsumers {
-            print("Queues which allow multiple consumers cannot use peek() safely")
-            fatalError()
+            fatalError("Queues which allow multiple consumers cannot use peek() safely")
         }
         if writeIdx == readIdx {
             return nil

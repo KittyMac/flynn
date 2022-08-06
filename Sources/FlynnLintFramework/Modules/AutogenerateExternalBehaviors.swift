@@ -1090,9 +1090,9 @@ class AutogenerateExternalBehaviors {
                 // NOTE: to support being a SPM build tool, we have two modes:
                 // 1. As a build tool, we generate extensons in a new file for all behaviours
                 // 2. As a source code formatter, we remove old, in file auto generated code
-                if newExtensionString != fileMarker {
+                if syntax.dependency == false && newExtensionString != fileMarker {
                     if let stringData = newExtensionString.data(using: .utf8),
-                       let handle = FileHandle(forWritingAtPath: syntax.outputPath) {                        
+                       let handle = FileHandle(forWritingAtPath: syntax.outputPath) {
                         handle.seekToEndOfFile()
                         handle.write(stringData)
                         handle.closeFile()

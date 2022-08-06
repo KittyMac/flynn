@@ -48,7 +48,18 @@ class FlynnLintTests: XCTestCase {
         
         
     }
-
+    
+    func testFlynn2() throws {
+        let flynnlint = FlynnLint()
+        flynnlint.process(input: "/Users/rjbowli/Library/Developer/Xcode/DerivedData/Flynn-atlbddvexwtcxmbjhpgyyonyzrrj/SourcePackages/flynn/FlynnTests/FlynnPlugin/inputFiles.txt",
+                          output: "/tmp/FlynnLint.swift")
+    }
+    
+    func testFlynn3() throws {
+        let flynnlint = FlynnLint()
+        flynnlint.process(input: "/Users/rjbowli/Development/chimerasw/Flynn/.build/plugins/outputs/flynn/FlynnTests/FlynnPlugin/inputFiles.txt",
+                          output: "/tmp/FlynnLint.swift")
+    }
 
     /*
     func testSO10() throws {

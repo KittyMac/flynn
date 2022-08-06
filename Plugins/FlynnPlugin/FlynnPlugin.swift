@@ -4,6 +4,7 @@ import PackagePlugin
 @main struct FlynnPlugin: BuildToolPlugin {
     
     func gatherSwiftInputFiles(target: Target,
+                               isRoot: Bool,
                                inputFiles: inout [PackagePlugin.Path]) {
         
         let url = URL(fileURLWithPath: target.directory.string)
@@ -14,7 +15,11 @@ import PackagePlugin
                 do {
                     let fileAttributes = try fileURL.resourceValues(forKeys:[.isRegularFileKey])
                     if fileAttributes.isRegularFile == true && fileURL.pathExtension == "swift" {
-                        inputFiles.append(PackagePlugin.Path(fileURL.path))
+                        if isRoot {
+                            inputFiles.append(PackagePlugin.Path(fileURL.path))
+                        } else {
+                            inputFiles.append(PackagePlugin.Path("+" + fileURL.path))
+                        }
                     }
                 } catch { print(error, fileURL) }
             }
@@ -24,6 +29,7 @@ import PackagePlugin
             switch dependency {
             case .target(let target):
                 gatherSwiftInputFiles(target: target,
+                                      isRoot: false,
                                       inputFiles: &inputFiles)
                 break
             default:
@@ -43,6 +49,7 @@ import PackagePlugin
         // Find all .swift files in our target and all of our target's dependencies, add them as input files
         var inputFiles: [PackagePlugin.Path] = []
         gatherSwiftInputFiles(target: target,
+                              isRoot: true,
                               inputFiles: &inputFiles)
                 
         let inputFilesFilePath = context.pluginWorkDirectory.string + "/inputFiles.txt"
@@ -52,7 +59,7 @@ import PackagePlugin
         
         return [
             .buildCommand(
-                displayName: "Flynn Plugin - checking concurrency safety, generating behaviours...",
+                displayName: "Flynn Plugin - generating behaviours...",
                 executable: tool.path,
                 arguments: [
                     inputFilesFilePath,

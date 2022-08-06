@@ -26,14 +26,14 @@ let package = Package(
             name: "Flynn",
             dependencies: [ "Pony" ],
             plugins: [
-                .plugin(name: "FlynnPlugin"),
+                .plugin(name: "FlynnPlugin")
             ]
         ),
         .testTarget(
             name: "FlynnTests",
             dependencies: [ "Flynn" ],
             plugins: [
-                "FlynnPlugin"
+                .plugin(name: "FlynnPlugin")
             ]
         ),
         

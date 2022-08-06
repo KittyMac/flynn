@@ -60,37 +60,26 @@ struct FileSyntax {
     let ancestry: [FileSyntax]
     let tokens: [SyntaxToken]
     let blacklist: [String]
-
-    init(_ outputPath: String,
-         _ file: File,
-         _ structure: SyntaxStructure,
-         _ ancestry: [FileSyntax],
-         _ tokens: [SyntaxToken],
-         _ blacklist: [String]) {
-        self.outputPath = outputPath
-        self.file = file
-        self.structure = structure
-        self.tokens = tokens
-        self.blacklist = blacklist
-        self.ancestry = ancestry
-    }
+    let dependency: Bool
     
     func clone(ancestry: [FileSyntax]) -> FileSyntax {
-        return FileSyntax(outputPath,
-                          file,
-                          structure,
-                          ancestry,
-                          tokens,
-                          blacklist)
+        return FileSyntax(outputPath: outputPath,
+                          file: file,
+                          structure: structure,
+                          ancestry: ancestry,
+                          tokens: tokens,
+                          blacklist: blacklist,
+                          dependency: dependency)
     }
 
     func clone(substructure: SyntaxStructure) -> FileSyntax {
-        return FileSyntax(outputPath,
-                          file,
-                          substructure,
-                          ancestry,
-                          tokens,
-                          blacklist)
+        return FileSyntax(outputPath: outputPath,
+                          file: file,
+                          structure: substructure,
+                          ancestry: ancestry,
+                          tokens: tokens,
+                          blacklist: blacklist,
+                          dependency: dependency)
     }
 
     func match(_ pattern: String,
