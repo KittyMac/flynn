@@ -1,11 +1,7 @@
 import Flynn
 import WebKit
 
-struct TestStruct {
-    let message: String
-}
-
-class TestActor: Actor {
+class SecondActor: Actor {
     
     internal func _beTest() {
         print("Hello World!")
@@ -19,11 +15,3 @@ class TestActor: Actor {
         self._beTest()
     }
 }
-
-let actor = TestActor()
-
-print("BEFORE")
-actor.beTest()
-print("AFTER")
-
-Flynn.shutdown()

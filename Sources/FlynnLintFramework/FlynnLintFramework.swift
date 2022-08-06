@@ -28,7 +28,7 @@ public class FlynnLint {
         let ruleset = Ruleset()
         
         try? FileManager.default.removeItem(atPath: output)
-        try? "import Foundation\nimport Flynn\n".write(toFile: output, atomically: false, encoding: .utf8)
+        try? "import Foundation\n".write(toFile: output, atomically: false, encoding: .utf8)
         
         print("\(output): warning: FlynnLint generated code")
         
@@ -57,7 +57,7 @@ public class FlynnLint {
         let ruleset = Ruleset()
         
         try? FileManager.default.removeItem(atPath: output)
-        try? "import Foundation\nimport Flynn\n".write(toFile: output, atomically: false, encoding: .utf8)
+        try? "import Foundation\n".write(toFile: output, atomically: false, encoding: .utf8)
         
         print("\(output): warning: FlynnLint generated code")
         

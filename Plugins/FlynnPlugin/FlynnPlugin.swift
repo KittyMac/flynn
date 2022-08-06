@@ -55,6 +55,7 @@ import PackagePlugin
         let inputFilesFilePath = context.pluginWorkDirectory.string + "/inputFiles.txt"
         try! inputFiles.map { $0.string }.joined(separator: "\n").write(toFile: inputFilesFilePath, atomically: false, encoding: .utf8)
         
+        // let outputFilePath = context.pluginWorkDirectory.string + "/" + UUID().uuidString + ".swift"
         let outputFilePath = context.pluginWorkDirectory.string + "/FlynnLint.swift"
         
         return [
