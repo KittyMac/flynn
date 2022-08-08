@@ -91,9 +91,9 @@ int recvall(int fd, void * ptr, int size) {
     char * end_ptr = ptr + size;
     
     while (cptr < end_ptr) {
-        int bytes_read = recv(fd, cptr, end_ptr - cptr, 0);
+        ssize_t bytes_read = recv(fd, cptr, end_ptr - cptr, 0);
         if (bytes_read <= 0) {
-            return bytes_read;
+            return (int)bytes_read;
         }
         cptr += bytes_read;
     }
@@ -108,7 +108,7 @@ int sendall(int fd, void * ptr, int size) {
     char * end_ptr = ptr + size;
     
     while (cptr < end_ptr) {
-        int bytes_read = send(fd, cptr, end_ptr - cptr, sendFlags);
+        ssize_t bytes_read = send(fd, cptr, end_ptr - cptr, sendFlags);
         if (bytes_read <= 0) {
             return -1;
         }
@@ -203,7 +203,7 @@ void send_register_with_root(int socketfd, const char * registrationString) {
     buffer[idx++] = COMMAND_REGISTER_WITH_ROOT;
     sendall(socketfd, buffer, idx);
     
-    uint32_t count = strnlen(registrationString, 4090) + 1;
+    uint32_t count = (uint32_t)strnlen(registrationString, 4090) + 1;
     
     uint32_t net_count = htonl(count);
     if (sendall(socketfd, &net_count, sizeof(net_count)) < 0) {

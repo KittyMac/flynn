@@ -145,7 +145,7 @@ void pony_node_send_version_check(root_t * rootPtr)
 void pony_node_send_register(root_t * rootPtr, const char * registration)
 {
     pony_msg_remote_register_t* m = (pony_msg_remote_register_t*)pony_alloc_msg(sizeof(pony_msg_remote_register_t), kRemote_RegisterWithRoot);
-    uint32_t length = max(2048, strlen(registration) + 1);
+    uint32_t length = max(2048, (uint32_t)strlen(registration) + 1);
     m->registration = (char *)ponyint_pool_alloc(length);
     strncpy(m->registration, registration, length-1);
     m->length = length;

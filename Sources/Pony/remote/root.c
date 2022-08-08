@@ -97,7 +97,7 @@ static node_t * root_get_next_node() {
             nodePtr = nodes;
         }
         if (nodePtr->read_thread_tid != 0) {
-            next_node_index = nodePtr - nodes;
+            next_node_index = (int)(nodePtr - nodes);
             
             pthread_mutex_unlock(&nodes_mutex);
             return nodePtr;

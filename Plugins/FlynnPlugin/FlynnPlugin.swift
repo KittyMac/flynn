@@ -4,7 +4,6 @@ import PackagePlugin
 @main struct FlynnPlugin: BuildToolPlugin {
     
     func gatherSwiftInputFiles(targets: [Target],
-                               isRoot: Bool,
                                inputFiles: inout [PackagePlugin.Path]) {
         
         for target in targets {
@@ -16,11 +15,7 @@ import PackagePlugin
                     do {
                         let fileAttributes = try fileURL.resourceValues(forKeys:[.isRegularFileKey])
                         if fileAttributes.isRegularFile == true && fileURL.pathExtension == "swift" {
-                            if isRoot {
-                                inputFiles.append(PackagePlugin.Path(fileURL.path))
-                            } else {
-                                inputFiles.append(PackagePlugin.Path("+" + fileURL.path))
-                            }
+                            inputFiles.append(PackagePlugin.Path(fileURL.path))
                         }
                     } catch { print(error, fileURL) }
                 }
@@ -37,17 +32,27 @@ import PackagePlugin
         let tool = try context.tool(named: "FlynnLint")
         
         // Find all .swift files in our target and all of our target's dependencies, add them as input files
-        var inputFiles: [PackagePlugin.Path] = []
+        var rootFiles: [PackagePlugin.Path] = []
+        var dependencyFiles: [PackagePlugin.Path] = []
         
         gatherSwiftInputFiles(targets: [target],
-                              isRoot: true,
-                              inputFiles: &inputFiles)
+                              inputFiles: &rootFiles)
         gatherSwiftInputFiles(targets: target.recursiveTargetDependencies,
-                              isRoot: false,
-                              inputFiles: &inputFiles)
+                              inputFiles: &dependencyFiles)
+        
+        let allInputFiles = rootFiles + dependencyFiles
                 
         let inputFilesFilePath = context.pluginWorkDirectory.string + "/inputFiles.txt"
-        try! inputFiles.map { $0.string }.joined(separator: "\n").write(toFile: inputFilesFilePath, atomically: false, encoding: .utf8)
+        var inputFilesString = ""
+        
+        for file in rootFiles {
+            inputFilesString.append("\(file)\n")
+        }
+        for file in dependencyFiles {
+            inputFilesString.append("+\(file)\n")
+        }
+
+        try! inputFilesString.write(toFile: inputFilesFilePath, atomically: false, encoding: .utf8)
         
         // let outputFilePath = context.pluginWorkDirectory.string + "/" + UUID().uuidString + ".swift"
         let outputFilePath = context.pluginWorkDirectory.string + "/FlynnLint.swift"
@@ -60,7 +65,7 @@ import PackagePlugin
                     inputFilesFilePath,
                     outputFilePath
                 ],
-                inputFiles: inputFiles,
+                inputFiles: allInputFiles,
                 outputFiles: [
                     PackagePlugin.Path(outputFilePath)
                 ]

@@ -7,8 +7,9 @@ let package = Package(
         .iOS(.v9)
     ],
     products: [
-        .library(name: "Flynn", targets: ["Flynn"]),
         .executable(name: "FlynnLint", targets: ["FlynnLint"]),
+        .library(name: "FlynnLintFramework", targets: ["FlynnLintFramework"]),
+        .library(name: "Flynn", targets: ["Flynn"]),
         .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"])
     ],
     dependencies: [

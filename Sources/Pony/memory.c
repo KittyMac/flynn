@@ -159,7 +159,7 @@ void ponyint_pool_free(void * p, size_t size) {
 
 pony_msg_t* pony_alloc_msg(size_t size, uint32_t msgId) {
     pony_msg_t* msg = (pony_msg_t*)ponyint_pool_alloc(size);
-    msg->alloc_size = size;
+    msg->alloc_size = (uint32_t)size;
     msg->msgId = msgId;
     return msg;
 }
