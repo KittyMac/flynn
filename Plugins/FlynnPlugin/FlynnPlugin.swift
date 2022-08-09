@@ -16,6 +16,11 @@ import PackagePlugin
                         hasFlynnDependency = true
                     }
                     break
+                case .product(let product):
+                    if product.name == "Flynn" {
+                        hasFlynnDependency = true
+                    }
+                    break
                 default:
                     break
                 }
