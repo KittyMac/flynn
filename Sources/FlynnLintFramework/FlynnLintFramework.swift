@@ -7,6 +7,15 @@ import SourceKittenFramework
 // code was modified quickly to strip Flynn from it, so its architecture
 // is a little weird looking without it.
 
+extension Array {
+    func chunked(by chunkSize: Int) -> [[Element]] {
+        let fchunkSize = Swift.max(chunkSize, 1)
+        return stride(from: 0, to: self.count, by: fchunkSize).map {
+            Array(self[$0..<Swift.min($0 + fchunkSize, self.count)])
+        }
+    }
+}
+
 public class FlynnLint {
 
     static let prefixBehaviorExternal = "be"
@@ -25,30 +34,15 @@ public class FlynnLint {
     @discardableResult
     public func process(input: String,
                         output: String) -> Int {
-        let ruleset = Ruleset()
         
-        try? FileManager.default.removeItem(atPath: output)
-        try? "import Foundation\n".write(toFile: output, atomically: false, encoding: .utf8)
-        
-        //print("\(output): warning: FlynnLint generated code")
-        
-        let inputFiles = InputFiles()
-        let parseFile = ParseFile()
-        let buildCombinedAST = BuildCombinedAST()
-        let autogenerateBehaviours = AutogenerateExternalBehaviors()
-        let checkRules = CheckRules(ruleset)
-        let printError = PrintError { (numErrors: Int) in
-            self.numErrors += numErrors
+        guard let inputsFileString = try? String(contentsOf: URL(fileURLWithPath: input)) else {
+            fatalError("unable to open inputs file \(input)")
         }
         
-        let step1 = inputFiles.process(packet: InputFiles.Packet(output: output, input: input))
-        let step2 = parseFile.process(packets: step1)
-        let step3 = buildCombinedAST.process(fileSyntaxes: step2)
-        let step4 = autogenerateBehaviours.process(packets: step3)
-        let step5 = checkRules.process(packets: step4)
-        let _ = printError.process(packets: step5)
+        let inputFiles = inputsFileString.split(separator: "\n")
         
-        return numErrors
+        return process(inputs: inputFiles.map { String($0) },
+                       output: output)
     }
     
     @discardableResult
@@ -61,21 +55,85 @@ public class FlynnLint {
         
         //print("\(output): warning: FlynnLint generated code")
         
-        let parseFile = ParseFile()
+        let cores = ProcessInfo.processInfo.activeProcessorCount
+        
+        var parseFile: [ParseFile] = []
         let buildCombinedAST = BuildCombinedAST()
-        let autogenerateBehaviours = AutogenerateExternalBehaviors()
-        let checkRules = CheckRules(ruleset)
+        var autogenerateBehaviours: [AutogenerateExternalBehaviors] = []
+        var checkRules: [CheckRules] = []
         let printError = PrintError { (numErrors: Int) in
             self.numErrors += numErrors
         }
         
+        for _ in 0..<cores+1 {
+            parseFile.append(ParseFile())
+            autogenerateBehaviours.append(AutogenerateExternalBehaviors())
+            checkRules.append(CheckRules(ruleset))
+        }
+        
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = ProcessInfo.processInfo.activeProcessorCount
+
         let step1 = inputs.map { ParseFile.Packet(output: output, filePath: $0) }
-        let step2 = parseFile.process(packets: step1)
+        
+        var step2: [FileSyntax] = []
+        if true {
+            autoreleasepool {
+                let inputs = step1.chunked(by: step1.count / cores)
+                let lock = NSLock()
+                for idx in 0..<inputs.count {
+                    queue.addOperation {
+                        let result = parseFile[idx].process(packets: inputs[idx])
+                        lock.lock()
+                        step2.append(contentsOf: result)
+                        lock.unlock()
+                    }
+                }
+                queue.waitUntilAllOperationsAreFinished()
+            }
+        }
+        
         let step3 = buildCombinedAST.process(fileSyntaxes: step2)
-        let step4 = autogenerateBehaviours.process(packets: step3)
-        let step5 = checkRules.process(packets: step4)
+        
+        // parallelize
+        var step4: [AutogenerateExternalBehaviors.Packet] = []
+        if true {
+            autoreleasepool {
+                let inputs = step3.chunked(by: step3.count / cores)
+                let lock = NSLock()
+                for idx in 0..<inputs.count {
+                    queue.addOperation {
+                        let result = autogenerateBehaviours[idx].process(packets: inputs[idx])
+                        lock.lock()
+                        step4.append(contentsOf: result)
+                        lock.unlock()
+                    }
+                }
+                queue.waitUntilAllOperationsAreFinished()
+            }
+        }
+        
+        // parallelize
+        var step5: [PrintError.Packet] = []
+        if true {
+            autoreleasepool {
+                let inputs = step4.chunked(by: step4.count / cores)
+                let lock = NSLock()
+                for idx in 0..<inputs.count {
+                    queue.addOperation {
+                        let result = checkRules[idx].process(packets: inputs[idx])
+                        lock.lock()
+                        step5.append(contentsOf: result)
+                        lock.unlock()
+                    }
+                }
+                queue.waitUntilAllOperationsAreFinished()
+            }
+        }
+        
         let _ = printError.process(packets: step5)
         
         return numErrors
     }
+    
 }

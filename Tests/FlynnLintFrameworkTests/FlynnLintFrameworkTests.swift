@@ -60,6 +60,12 @@ class FlynnLintTests: XCTestCase {
         flynnlint.process(input: "/Users/rjbowli/Development/chimerasw/Flynn/.build/plugins/outputs/flynn/FlynnTests/FlynnPlugin/inputFiles.txt",
                           output: "/tmp/FlynnLint.swift")
     }
+    
+    func testFlynn4() throws {
+        let flynnlint = FlynnLint()
+        flynnlint.process(input: "/Users/rjbowli/Development/smallplanet/npd_ReceiptPal_iOS/receiptpal_amazon/swift/ErrorLogServer/.build/plugins/outputs/errorlogserver/ErrorLogServerFramework/FlynnPlugin/inputFiles.txt",
+                          output: "/tmp/FlynnLint.swift")
+    }
 
     /*
     func testSO10() throws {
