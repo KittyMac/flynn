@@ -23,26 +23,24 @@ class ParseFile {
             
             if let file = File(path: filePath) {
                 do {
-                    if file.contents.contains("Flynn") {
-                        let syntax = try StructureAndSyntax(file: file)
+                    let syntax = try StructureAndSyntax(file: file)
 
-                        var blacklist: [String] = []
-                        for rule in Ruleset().all {
-                            if !rule.precheck(file) {
-                                blacklist.append(rule.description.identifier)
-                            }
+                    var blacklist: [String] = []
+                    for rule in Ruleset().all {
+                        if !rule.precheck(file) {
+                            blacklist.append(rule.description.identifier)
                         }
-
-                        let fileSyntax = FileSyntax(outputPath: packet.output,
-                                                    file: file,
-                                                    structure: syntax.structure,
-                                                    ancestry: [],
-                                                    tokens: syntax.syntax,
-                                                    blacklist: blacklist,
-                                                    dependency: dependency)
-
-                        next.append(fileSyntax)
                     }
+
+                    let fileSyntax = FileSyntax(outputPath: packet.output,
+                                                file: file,
+                                                structure: syntax.structure,
+                                                ancestry: [],
+                                                tokens: syntax.syntax,
+                                                blacklist: blacklist,
+                                                dependency: dependency)
+
+                    next.append(fileSyntax)
                 } catch {
                     print("Parsing error: \(error)")
                 }

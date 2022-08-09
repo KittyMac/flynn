@@ -7,6 +7,22 @@ import PackagePlugin
                                inputFiles: inout [PackagePlugin.Path]) {
         
         for target in targets {
+            
+            var hasFlynnDependency = target.name == "Flynn"
+            for dependency in target.dependencies {
+                switch dependency {
+                case .target(let target):
+                    if target.name == "Flynn" {
+                        hasFlynnDependency = true
+                    }
+                    break
+                default:
+                    break
+                }
+            }
+            
+            guard hasFlynnDependency else { continue }
+            
             let url = URL(fileURLWithPath: target.directory.string)
             if let enumerator = FileManager.default.enumerator(at: url,
                                                                includingPropertiesForKeys: [.isRegularFileKey],
