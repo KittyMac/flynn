@@ -79,19 +79,17 @@ public class FlynnLint {
         
         var step2: [FileSyntax] = []
         if true {
-            autoreleasepool {
-                let inputs = step1.chunked(divisions: cores)
-                let lock = NSLock()
-                for idx in 0..<inputs.count {
-                    queue.addOperation {
-                        let result = parseFile[idx].process(packets: inputs[idx])
-                        lock.lock()
-                        step2.append(contentsOf: result)
-                        lock.unlock()
-                    }
+            let inputs = step1.chunked(divisions: cores)
+            let lock = NSLock()
+            for idx in 0..<inputs.count {
+                queue.addOperation {
+                    let result = parseFile[idx].process(packets: inputs[idx])
+                    lock.lock()
+                    step2.append(contentsOf: result)
+                    lock.unlock()
                 }
-                queue.waitUntilAllOperationsAreFinished()
             }
+            queue.waitUntilAllOperationsAreFinished()
         }
         
         let step3 = buildCombinedAST.process(fileSyntaxes: step2)
@@ -99,37 +97,33 @@ public class FlynnLint {
         // parallelize
         var step4: [AutogenerateExternalBehaviors.Packet] = []
         if true {
-            autoreleasepool {
-                let inputs = step3.chunked(divisions: cores)
-                let lock = NSLock()
-                for idx in 0..<inputs.count {
-                    queue.addOperation {
-                        let result = autogenerateBehaviours[idx].process(packets: inputs[idx])
-                        lock.lock()
-                        step4.append(contentsOf: result)
-                        lock.unlock()
-                    }
+            let inputs = step3.chunked(divisions: cores)
+            let lock = NSLock()
+            for idx in 0..<inputs.count {
+                queue.addOperation {
+                    let result = autogenerateBehaviours[idx].process(packets: inputs[idx])
+                    lock.lock()
+                    step4.append(contentsOf: result)
+                    lock.unlock()
                 }
-                queue.waitUntilAllOperationsAreFinished()
             }
+            queue.waitUntilAllOperationsAreFinished()
         }
         
         // parallelize
         var step5: [PrintError.Packet] = []
         if true {
-            autoreleasepool {
-                let inputs = step4.chunked(divisions: cores)
-                let lock = NSLock()
-                for idx in 0..<inputs.count {
-                    queue.addOperation {
-                        let result = checkRules[idx].process(packets: inputs[idx])
-                        lock.lock()
-                        step5.append(contentsOf: result)
-                        lock.unlock()
-                    }
+            let inputs = step4.chunked(divisions: cores)
+            let lock = NSLock()
+            for idx in 0..<inputs.count {
+                queue.addOperation {
+                    let result = checkRules[idx].process(packets: inputs[idx])
+                    lock.lock()
+                    step5.append(contentsOf: result)
+                    lock.unlock()
                 }
-                queue.waitUntilAllOperationsAreFinished()
             }
+            queue.waitUntilAllOperationsAreFinished()
         }
         
         let _ = printError.process(packets: step5)
