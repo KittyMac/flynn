@@ -100,12 +100,10 @@ As of v0.2 Flynn has a new kind of actor, the ```RemoteActor```.  RemoteActors b
 ## Examples
 
 [Hello World](Examples/HelloWorld/) - You guessed it!  
-[Battery Tester](Examples/BatteryTester/) - Use an Actor's core affinity to make smart choices between performance and energy consumption  
 [Simple HTTP Server](Examples/SimpleHTTPServer/) - Actors for HTTP connections, Actors as services  
-[Concurrent Data SwiftUI](Examples/ConcurrentDataSwiftUI/) - Simple example of using Actor as ObservableObject for SwiftUI  
-[Actor Callbacks](Examples/ActorCallbacks/) - Two scenarios for how to call back to an actor
 
 ## Projects
+[Starbase Orion 10](https://www.starbaseorion.com) - 4X space strategy game  
 [Jukebox](https://github.com/KittyMac/jukebox2) - Linux daemon for running a homebrewed Alexa powered Jukebox  
 [Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://yogalayout.com) and [Metal](https://developer.apple.com/metal/)  
 
