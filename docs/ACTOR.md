@@ -18,11 +18,11 @@ This is the ideal. Unfortunately, to be 100% thread safe through access restrict
 **Beware of closures and actors**  
 *Many APIs execute closures as callbacks; if those are executed on a different thread, then two threads are accessing the innards of an actor at the same time (which would be bad). Closure callbacks should immediately call behaviors, keeping everything thread safe*
 
-These may seem like a lot! Flynnlint will ensure you comply with these best practices at compile time. So if you forget to label an Actor variable as private, it will flag that as an error.
+These may seem like a lot! The FlynnPlugin will ensure you comply with these best practices at compile time. So if you forget to label an Actor variable as private, it will flag that as an error.
 
-## Flynnlint Enforces Actor Best Practices
+## FlynnPlugin Enforces Actor Best Practices
 
-Flynnlint ensures that your actor code adheres to the best practices.  For actors specifically, that means ensuring that:
+FlynnPlugin ensures that your actor code adheres to the best practices.  For actors specifically, that means ensuring that:
 
 **All actor variables are private**  
 *Covered above*
@@ -31,10 +31,10 @@ Flynnlint ensures that your actor code adheres to the best practices.  For actor
 *Covered above*
 
 **Actor variables and functions that start with "safe" are "protected"**  
-*If all variables and functions in a actor must be private, then class inheritance would be near impossible to do effectively. As such, Flynnlint provides its own implementation pf "protected" access for Actors. Simply start your variable or function with the prefix "safe" and Flynnlint will allow you to make it non-private.  Once it is non-private, it can be called by outside of the main Actor class. Flynnlint will then ensure that the safe variable is only called from a subclass of that actor class, effectively giving actors a "protected" access level*
+*If all variables and functions in a actor must be private, then class inheritance would be near impossible to do effectively. As such, FlynnPlugin provides its own implementation pf "protected" access for Actors. Simply start your variable or function with the prefix "safe" and FlynnPlugin will allow you to make it non-private.  Once it is non-private, it can be called by outside of the main Actor class. FlynnPlugin will then ensure that the safe variable is only called from a subclass of that actor class, effectively giving actors a "protected" access level*
 
 **Actor variables and functions that start with "unsafe" are... unsafe!**  
-*At the end of the day, you are the developer. If you want to expose access to a variable or function on a actor to be potentially called directly by other threads you can do this by using the prefix "unsafe". As the name implies, all Flynnlint protections are turned off for unsafe variables and functions, and it is up to you to provide any necessary measure so that these can be used safely*
+*At the end of the day, you are the developer. If you want to expose access to a variable or function on a actor to be potentially called directly by other threads you can do this by using the prefix "unsafe". As the name implies, all FlynnPlugin protections are turned off for unsafe variables and functions, and it is up to you to provide any necessary measure so that these can be used safely*
 
 ![](../meta/safety.png)
 
@@ -71,7 +71,7 @@ Note: Unlike other Actor-Model runtimes, Flynn does not have a built-in back pre
 class Producer: Actor {
     private let consumer = Consumer()
     
-    private func _beProduce() {
+    internal func _beProduce() {
         // Don't overload the consumer; check that they have a small enough
         // message queue. If they don't then we explicitly yield execution
         // (allowing other actors to use this scheduler) and we try again
@@ -93,7 +93,7 @@ Similar to the scenario above where a produce is delaying producing items in ord
 class Producer: Actor {
     private let consumer = Consumer()
     
-    private func _beProduce() {
+    internal func _beProduce() {
         // Note: you should avoid using unsafeWait() in Actors whenever possible, 
         // this example is only here for completeness. You avoid sleeping or
         // blocking execution in actors as that will also block the scheduler.
@@ -153,19 +153,19 @@ public protocol Colorable: Actor {
 
 // We expose the behaviors (stored in our colorable state) to the protocol
 public extension Colorable {
-    private func _beClear() {
+    internal func _beClear() {
         safeColorable.setColor(0, 0, 0, 0)
     }
 
-    private func _beWhite() {
+    internal func _beWhite() {
         safeColorable.setColor(1, 1, 1, 1)
     }
 
-    private func _beBlack() {
+    internal func _beBlack() {
         safeColorable.setColor(0, 0, 0, 1)
     }
 
-    private func _beRed() {
+    internal func _beRed() {
         safeColorable.setColor(1, 0, 0, 1)
     }
 }
@@ -178,7 +178,7 @@ public extension Colorable {
 public final class Color: Actor, Colorable, Viewable {
     public var safeColorable = ColorableState()
 
-    private func _beDraw(_ bounds: CGRect) {
+    internal func _beDraw(_ bounds: CGRect) {
         print("draw the color \(self.safeColorable.color) into the bounds \(bounds)")
     }
 }

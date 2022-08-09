@@ -7,8 +7,8 @@ let package = Package(
         .iOS(.v9)
     ],
     products: [
-        .executable(name: "FlynnLint", targets: ["FlynnLint"]),
-        .library(name: "FlynnLintFramework", targets: ["FlynnLintFramework"]),
+        .executable(name: "FlynnPluginTool", targets: ["FlynnPluginTool"]),
+        .library(name: "FlynnPluginFramework", targets: ["FlynnPluginFramework"]),
         .library(name: "Flynn", targets: ["Flynn"]),
         .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"])
     ],
@@ -41,23 +41,23 @@ let package = Package(
         .plugin(
             name: "FlynnPlugin",
             capability: .buildTool(),
-            dependencies: ["FlynnLint"]
+            dependencies: ["FlynnPluginTool"]
         ),
                 
         .executableTarget(
-            name: "FlynnLint",
-            dependencies: ["FlynnLintFramework"]
+            name: "FlynnPluginTool",
+            dependencies: ["FlynnPluginFramework"]
         ),
         .target(
-            name: "FlynnLintFramework",
+            name: "FlynnPluginFramework",
             dependencies: [
                 .product(name: "SourceKittenFramework", package: "SourceKitten"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
         ),
         .testTarget(
-            name: "FlynnLintFrameworkTests",
-            dependencies: [ "FlynnLintFramework" ]
+            name: "FlynnPluginFrameworkTests",
+            dependencies: [ "FlynnPluginFramework" ]
         )
 
     ]

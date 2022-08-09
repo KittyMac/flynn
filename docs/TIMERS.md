@@ -7,11 +7,11 @@ import Flynn
 import Foundation
 
 class HelloWorld: Actor, Timerable {
-    private func _bePrint(_ string: String) {
+    internal func _bePrint(_ string: String) {
         print(string)
     }
 
-    private func _beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) {
+    internal func _beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) {
         if args.isEmpty {
             print("-")
             return

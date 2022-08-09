@@ -27,7 +27,7 @@ class FindImages: Actor, Flowable {
         self.extensions = extensions
     }
 
-    private func _beFlow(_ args: FlowableArgs) {
+    internal func _beFlow(_ args: FlowableArgs) {
         if args.isEmpty { return self.safeFlowToNextTarget(args) }
 
         let path: String = args[x:0]
@@ -74,32 +74,3 @@ let pipeline = FindImages(["png", "jpg", "pict"]) |>
 pipeline.beFlow(["path/to/images/folder1/"])
 pipeline.beFlow(["path/to/images/folder2/"])
 ```
-
-## How Flynnlint Uses Flowable Actors
-
-As a more complex example, we can look at how FlynnLint utilized Flowable actors. As a reminder, FlynnLint looks at all of the Swift files in a directory structure and checks them against number of rules looking for file which violate best practices with Flynn.  It's processing pipeline looks like this:
-
-![](meta/flynnlint_graph.png)
-
-```swift
-pipeline = FindFiles(["swift"]) |>
-            AutoCorrectFile() |>
-            Array(count: poolSize) { ParseFile() } |>
-            BuildCombinedAST() |>
-            Array(count: poolSize) { CheckRules(ruleset) } |>
-            PrintError { (numErrors: Int) in
-                self.numErrors += numErrors
-            }
-```
-
-FlynnLint introduces actor pools to the concept of Flowable. After a file is autocorrected, the path to that file is distributed amongst a pool of ParseFile actors.  A single file is sent to a single ParseFile actor; the next file path is sent to another actor in the pool. As such, we can take advantage of many cores by having many actors in a particular actor pool.
-
-**FindFiles** - walks the target directories looking for files ending in ".swift", flows the file path  
-**AutoCorrectFile** - checks to see if there are any automatic corrects which can be applied to the file
-**ParseFile** - uses SourceKitten to parse the Swift file into syntax structures, flows a ``FileSyntax`` with this info  
-**BuildCombinedAST** - combines all ``FileSyntax`` together into an ``AST``, which represents the syntax structure of all files in the program; flows individual files + combined AST  
-**CheckRules** - Checks the file against the entire ruleset, using file structure and combined AST, flows any errors found  
-**PrintError** - Prints the errors to the console, in format appropriate for Xcode error/warning display
-
-
-This network of actors not only makes the code more modular, the practice performance benefits are real and immediate.  FlynnLint includes some unit tests which benchmarks it against a well-known linter against a corpus of Swift files. As of this writing, FlynnLint lints the corpus about 2x faster (apples-to-oranges comparison, but better than nothing).

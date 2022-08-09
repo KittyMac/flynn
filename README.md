@@ -1,23 +1,36 @@
-# Swift recently added a brand new concurrency system (as of Swift 5.5). If you find yourself here, you should first go and read up on the new [Swift Concurrency Model](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html).
-
-If you're still interesting in learning about Flynn, please continue :)
-
-
-
-
-
-
-
-
-&nbsp;  
-
-
+Swift added its own [Swift Concurrency Model](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html) in Swift 5.5. If you are unfamiliar with it, you should likely go read up on it first. If you are still interested in learning Flynn after that, please continue :)
 
 ## Quick Start
 
+### Swift Package Manager
+
+To use Flynn make sure you are using **Swift 5.6** or later and make the following changes to your Package.swift
+
+Add to your Package:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/KittyMac/Flynn.git", from: "0.3.0"),
+]
+```
+
+Add to the desired Target:
+
+```swift
+.target(
+	...
+	dependencies: [
+		"Flynn"
+	],
+	plugins: [
+		.plugin(name: "FlynnPlugin", package: "Flynn")
+	]
+)
+```
+
 ### Actor-Model Programming
 
-Flynn grafts Actor-Model programming onto Swift, providing a new level of safety and performance for your highly concurrent Swift code.  Flynn is heavily inspired by the [Pony programming language](https://www.ponylang.io). Here's what you need to know:
+Flynn grafts Actor-Model programming onto Swift, providing safety and performance for your highly concurrent Swift code.  Flynn is heavily inspired by the [Pony programming language](https://www.ponylang.io). Here's what you need to know:
 
 #### [Actors are concurrency safe Swift classes](docs/ACTOR.md)
 
@@ -48,7 +61,7 @@ From the Actor's perspective, behaviors execute synchronously (in the same order
 class ConcurrentDatastore: Actor {
   ...
   // Behaviors are called asynchronously but execute synchronously on the Actor
-  private func _beStore(_ key: String, _ value: String) {
+  internal func _beStore(_ key: String, _ value: String) {
     storage[key] = value
   }
 }
@@ -58,15 +71,15 @@ class ConcurrentDatastore: Actor {
 
 Unlike other attempts to bring Actor-Model programming to Swift, Flynn does not use DispatchQueues. Instead, Flynn includes a modified version of the [Pony language runtime](https://www.ponylang.io/faq/#runtime). This makes actors in Flynn much more light-weight than DispatchQueues; you can have millions of actors all sending messages to each other incredibly efficiently.
 
-#### [Use FlynnLint](docs/FLYNNLINT.md)
+#### Concurrency warnings and errors at compile time
 
-Flynn provides the scaffolding for safer concurrency but it relies on you, the developer, to follow the best practices for safe concurrency.  FlynnLint will help you by enforcing those best practices for you at compile time. This keeps you out of numerous concurrency pitfalls by not allowing unsafe code to compile:
+The Flynn library provides the mechanisms for safer concurrency and the FlynnPlugin will help ensure that safety for you at compile time. This keeps you out of numerous concurrency pitfalls by not allowing unsafe code to compile:
 
-![](meta/flynnlint0.png)
+![](meta/flynnplugin0.png)
 
 In this example, we have a public variable on our Counter Actor. Public variables are not allowed as they can be potentially accessed from other threads, breaking the concurrency safety the Actor-Model paradigm provides us.
 
-#### [Remote actors are actors which run elsewhere](docs/FLYNNLINT.md)
+#### [Remote actors are actors which run elsewhere](docs/FLYNNPLUGIN.md)
 
 RemoteActors are an advanced topic and are likely useful only to a subset of developers.  
 
@@ -77,7 +90,7 @@ As of v0.2 Flynn has a new kind of actor, the ```RemoteActor```.  RemoteActors b
 [Actors](docs/ACTOR.md) - Concurrency safe Swift classes  
 [Behaviors](docs/BEHAVIOR.md) - Asynchronous method calls  
 [Scheduling](docs/SCHEDULER.md) - How and when Actors execute Behaviors  
-[FlynnLint](docs/FLYNNLINT.md) - Protects against data races and other bad things  
+[FlynnPlugin](docs/FLYNNPLUGIN.md) - Protects against data races and other bad things  
 [Flowable Actors](docs/FLOWABLE.md) - Easily chainable networks of actors  
 [Flynn.Timer](docs/TIMERS.md) - Actor friendly Timers  
 [RemoteActors](docs/REMOTEACTOR.md) - Run actors in another process  
@@ -93,7 +106,6 @@ As of v0.2 Flynn has a new kind of actor, the ```RemoteActor```.  RemoteActors b
 [Actor Callbacks](Examples/ActorCallbacks/) - Two scenarios for how to call back to an actor
 
 ## Projects
-[FlynnLint](https://github.com/KittyMac/flynnlint) - FlynnLint uses Flynn to concurrently check your Swift files for Flynn best practices  
 [Jukebox](https://github.com/KittyMac/jukebox2) - Linux daemon for running a homebrewed Alexa powered Jukebox  
 [Cutlass](https://github.com/KittyMac/cutlass) - Fully concurrent user interfaces using Flynn, [Yoga](https://yogalayout.com) and [Metal](https://developer.apple.com/metal/)  
 
@@ -102,63 +114,6 @@ As of v0.2 Flynn has a new kind of actor, the ```RemoteActor```.  RemoteActors b
 <a href="https://apps.apple.com/us/app/mad-kings-steward/id1461873703" target="_blank"><img align="center" src="meta/madsteward.png" width="80"></a>
 
 Have you released something using Flynn? Let us know!
-
-
-## Installation
-
-Flynn is a fully compatible with the Swift Package Manager.
-
-### Swift Package Manager
-
-If you use swiftpm, you can add Flynn as a dependency directly to your Package.swift file.
-
-```
-dependencies: [
-    .package(url: "https://github.com/KittyMac/Flynn.git", .upToNextMajor(from: "0.1.1")),
-],
-```
-
-### Xcode
-
-To integrate with Xcode, simply add it as a package dependency by going to
-
-```
-File -> Swift Packages -> Add Package Dependency
-```
-
-and pasting the url to this repository. Follow the instructions to complete the dependency addition.  [Check the releases page](https://github.com/KittyMac/flynn/releases) for release versions or choose master branch for the bleeding edge.
-
-Flynn is most effective when used with FlynnLint. FlynnLint helps protect you from accidentally introducing data races in your highly concurrent code by enforcing Flynn's best programming practices.  
-
-#### It is HIGHLY RECOMMENDED that you use FlynnLint!
-
-FlynnLint is included in the Flynn repository in the meta folder. Just add a new "Run Script Phase" with:
-
-```bash
-FLYNNLINTSWIFTPM=${SRCROOT}/.build/checkouts/flynn/meta/FlynnLint
-FLYNNLINTXCODE=${BUILD_ROOT}/../../SourcePackages/checkouts/flynn/meta/FlynnLint
-
-if [ -f "${FLYNNLINTSWIFTPM}" ]; then
-    ${FLYNNLINTSWIFTPM} ${SRCROOT}
-elif [ -f "${FLYNNLINTXCODE}" ]; then
-    ${FLYNNLINTXCODE} ${SRCROOT}
-else
-    echo "warning: Unable to find FlynnLint, aborting..."
-fi
-```
-
-**Example:**
-
-![](meta/runphase.png)
-
-* Place the FlynnLint build phase **before** the "Compile Sources" phase
-* Place the FlynnLint build phase **before** any other code linters
-
-FlynnLint processes any and all directories provided as arguments. If you want to restrict it to a subset of directories, simply list each directory after the call to FlynnLint. For example, if you use swiftpm and your source files are in /Sources and /Tests, then the following would lint just those directories:
-
-```bash
-${FLYNNLINTSWIFTPM} ${SRCROOT}/Sources ${SRCROOT}/Tests
-```
 
 ## License
 

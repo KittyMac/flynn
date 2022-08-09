@@ -50,7 +50,7 @@ import PackagePlugin
             return []
         }
         
-        let tool = try context.tool(named: "FlynnLint")
+        let tool = try context.tool(named: "FlynnPluginTool")
         
         // Find all .swift files in our target and all of our target's dependencies, add them as input files
         var rootFiles: [PackagePlugin.Path] = []
@@ -76,7 +76,7 @@ import PackagePlugin
         try! inputFilesString.write(toFile: inputFilesFilePath, atomically: false, encoding: .utf8)
         
         // let outputFilePath = context.pluginWorkDirectory.string + "/" + UUID().uuidString + ".swift"
-        let outputFilePath = context.pluginWorkDirectory.string + "/FlynnLint.swift"
+        let outputFilePath = context.pluginWorkDirectory.string + "/FlynnPlugin.swift"
         
         return [
             .buildCommand(

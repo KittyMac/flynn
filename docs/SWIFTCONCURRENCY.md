@@ -13,7 +13,7 @@ class SwiftConcurrencyTestActor: Actor {
 
     private var x = 0
 
-    private func _beCheckFlynnTask() -> Int {
+    internal func _beCheckFlynnTask() -> Int {
         
         // Safe: this is protected by Flynn already
         x += 1
