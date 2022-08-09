@@ -8,7 +8,8 @@ import SourceKittenFramework
 // is a little weird looking without it.
 
 extension Array {
-    func chunked(by chunkSize: Int) -> [[Element]] {
+    func chunked(divisions: Int) -> [[Element]] {
+        let chunkSize = Int((Double(count) / Double(divisions)).rounded(.up))
         let fchunkSize = Swift.max(chunkSize, 1)
         return stride(from: 0, to: self.count, by: fchunkSize).map {
             Array(self[$0..<Swift.min($0 + fchunkSize, self.count)])
@@ -79,7 +80,7 @@ public class FlynnLint {
         var step2: [FileSyntax] = []
         if true {
             autoreleasepool {
-                let inputs = step1.chunked(by: step1.count / cores)
+                let inputs = step1.chunked(divisions: cores)
                 let lock = NSLock()
                 for idx in 0..<inputs.count {
                     queue.addOperation {
@@ -99,7 +100,7 @@ public class FlynnLint {
         var step4: [AutogenerateExternalBehaviors.Packet] = []
         if true {
             autoreleasepool {
-                let inputs = step3.chunked(by: step3.count / cores)
+                let inputs = step3.chunked(divisions: cores)
                 let lock = NSLock()
                 for idx in 0..<inputs.count {
                     queue.addOperation {
@@ -117,7 +118,7 @@ public class FlynnLint {
         var step5: [PrintError.Packet] = []
         if true {
             autoreleasepool {
-                let inputs = step4.chunked(by: step4.count / cores)
+                let inputs = step4.chunked(divisions: cores)
                 let lock = NSLock()
                 for idx in 0..<inputs.count {
                     queue.addOperation {

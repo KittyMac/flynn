@@ -57,7 +57,7 @@ class FlynnLintTests: XCTestCase {
     
     func testFlynn3() throws {
         let flynnlint = FlynnLint()
-        flynnlint.process(input: "/Users/rjbowli/Development/chimerasw/Flynn/.build/plugins/outputs/flynn/FlynnTests/FlynnPlugin/inputFiles.txt",
+        flynnlint.process(input: "/Users/rjbowli/Development/chimerasw/Picaroon/.build/plugins/outputs/picaroon/Picaroon/FlynnPlugin/inputFiles.txt",
                           output: "/tmp/FlynnLint.swift")
     }
     
