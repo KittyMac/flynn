@@ -49,9 +49,7 @@ struct WeakTimersRule: Rule {
         ]
     )
 
-    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
-        guard syntax.file.contents.contains("WeakTimer -> deinit") else { return true }
-        
+    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {        
         var errorOffsets: [Int64] = []
         syntax.matches(#"Flynn.Timer\([^\)]*\)[^{]*\{(.*)in"#) { offset, match, groups in
             if groups[1].contains("[weak self]") == false && groups[1].contains("[unowned self]") == false {

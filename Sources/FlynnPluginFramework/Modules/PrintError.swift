@@ -25,13 +25,17 @@ class PrintError {
     }
 
     func process(packets: [Packet]) {
+        var dedup = Set<String>()
+        
         for packet in packets {
+            guard dedup.contains(packet.error) == false else { continue }
             
             // suppress printing warnings generated in dependencies
             if packet.dependecy && packet.warning {
                 continue
             }
             
+            dedup.insert(packet.error)
             print(packet.error)
             if packet.error.contains("error") {
                 self.numErrors += 1
