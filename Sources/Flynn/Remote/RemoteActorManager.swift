@@ -94,10 +94,12 @@ internal final class RemoteActorManager: Actor {
         rootActors.removeAll()
     }
     
+    @inlinable
     internal func _beGetActor(_ actorUUID: String) -> RemoteActor? {
         return rootActors[actorUUID]
     }
     
+    @inlinable
     internal func _beRegisterActorTypesForRoot(_ inRootActorTypes: [RemoteActor.Type],
                                                _ inFallbackActorTypes: [RemoteActor.Type],
                                                _ inNamedActorTypes: [RemoteActor.Type]) -> Bool {
@@ -113,6 +115,7 @@ internal final class RemoteActorManager: Actor {
         return true
     }
     
+    @inlinable
     internal func _beRegisterActorTypesForNode(_ inActorTypes: [RemoteActor.Type],
                                                _ namedActors: [RemoteActor]) -> Bool {
         for actorType in inActorTypes {
@@ -159,6 +162,7 @@ internal final class RemoteActorManager: Actor {
         
     }
     
+    @inlinable
     internal func _beDidDisconnectNode(_ socket: Int32) {
         actorTypesBySocket[socket] = []
         
@@ -169,6 +173,7 @@ internal final class RemoteActorManager: Actor {
         }
     }
     
+    @inlinable
     internal func _beRegisterRemoteNodeOnRoot(_ actorRegistrationString: String,
                                               _ socketFD: Int32) {
         
@@ -191,6 +196,7 @@ internal final class RemoteActorManager: Actor {
         actorTypesBySocket[socketFD] = remoteTypes
     }
 
+    @inlinable
     internal func _beCreateActorOnNode(_ actorUUID: String,
                                        _ actorType: String,
                                        _ socketFD: Int32) {
@@ -207,6 +213,7 @@ internal final class RemoteActorManager: Actor {
         }
     }
     
+    @inlinable
     internal func _beCreateActorOnRoot(_ actorUUID: String,
                                        _ actorType: String,
                                        _ socketFD: Int32) {
@@ -225,21 +232,25 @@ internal final class RemoteActorManager: Actor {
         }
     }
 
+    @inlinable
     internal func _beDestroyActor(_ actorUUID: String) {
         rootActors.removeValue(forKey: actorUUID)
         nodeActors.removeValue(forKey: actorUUID)
     }
     
+    @inlinable
     internal func _beRootTellNodeToDestroyActor(_ actorUUID: String,
                                                 _ nodeSocketFD: Int32) {
         pony_root_destroy_actor_to_node(actorUUID, nodeSocketFD)
     }
     
+    @inlinable
     internal func _beNodeTellRootActorWasDestroyed(_ actorUUID: String,
                                                    _ nodeSocketFD: Int32) {
         pony_node_destroy_actor_to_root(nodeSocketFD)
     }
     
+    @inlinable
     internal func _beSendToRemote(_ internalRemoteActor: InternalRemoteActor,
                                   _ actorUUID: String,
                                   _ actorTypeString: String,
@@ -394,6 +405,7 @@ internal final class RemoteActorManager: Actor {
         }
     }
 
+    @inlinable
     internal func _beHandleMessage(_ actorUUID: String,
                                    _ behavior: String,
                                    _ data: Data,
@@ -418,6 +430,7 @@ internal final class RemoteActorManager: Actor {
 
     private var waitingReplies: [Int32: MessageReply] = [:]
 
+    @inlinable
     internal func _beRegisterReply(_ socket: Int32,
                                    _ messageID: Int32,
                                    _ actor: Actor,
@@ -426,6 +439,7 @@ internal final class RemoteActorManager: Actor {
         waitingReplies[messageID] = MessageReply(socket, actor, block, error)
     }
 
+    @inlinable
     internal func _beHandleMessageReply(_ messageID: Int32,
                                         _ data: Data) {
         if let message = waitingReplies.removeValue(forKey: messageID) {

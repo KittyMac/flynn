@@ -124,7 +124,15 @@ struct PrivateFunctionInActorRule: Rule {
                         if (function.name ?? "").hasPrefix(FlynnPluginTool.prefixBehaviorInternal) &&
                             function.kind == .functionMethodInstance &&
                             function.accessibility != .internal {
-                            output.append(error(function.offset, syntax, description.console("Behaviors must be internal")))
+                            output.append(error(function.offset, syntax, description.console("Behaviours must be internal")))
+                            allPassed = false
+                            continue
+                        }
+                        
+                        if (function.name ?? "").hasPrefix(FlynnPluginTool.prefixBehaviorInternal) &&
+                            function.kind == .functionMethodInstance &&
+                            function.has(attribute: .inlinable) == false {
+                            output.append(error(function.offset, syntax, description.console("Behaviours must declare @inlinable")))
                             allPassed = false
                             continue
                         }

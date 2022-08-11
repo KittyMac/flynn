@@ -27,6 +27,14 @@ extension SyntaxStructure {
     var typename: String? { return self["key.typename"] as? String }
     
     var substructureExists: Bool { return self["key.substructure"] != nil }
+    
+    func has(attribute: SwiftDeclarationAttributeKind) -> Bool {
+        guard let attributes = attributes else { return false }
+        for item in attributes where item.attribute == attribute.rawValue {
+            return true
+        }
+        return false
+    }
 }
 
 public struct StructureAndSyntax {
