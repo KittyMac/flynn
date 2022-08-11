@@ -388,7 +388,9 @@ class AutogenerateExternalBehaviors {
 
                     if parameterLabels.count == minParameterCount {
                         if returnCallbackParameters.count > 0 {
-                            scratch.append("    @inlinable\n")
+                            if behavior.function.structure.has(attribute: .inlinable) {
+                                scratch.append("    @inlinable\n")
+                            }
                             scratch.append("    @discardableResult\n")
                             scratch.append("    public func \(name)(_ sender: Actor,\n")
                             scratch.append("                \(namespaces) _ error: @escaping () -> Void,\n")
@@ -423,7 +425,9 @@ class AutogenerateExternalBehaviors {
                             scratch.append("        return self\n")
                             scratch.append("    }\n")
                         } else if let returnType = returnType {
-                            scratch.append("    @inlinable\n")
+                            if behavior.function.structure.has(attribute: .inlinable) {
+                                scratch.append("    @inlinable\n")
+                            }
                             scratch.append("    @discardableResult\n")
                             scratch.append("    public func \(name)(_ sender: Actor,\n")
                             scratch.append("                \(namespaces) _ error: @escaping () -> Void,\n")
@@ -441,7 +445,9 @@ class AutogenerateExternalBehaviors {
                             scratch.append("        return self\n")
                             scratch.append("    }\n")
                         } else {
-                            scratch.append("    @inlinable\n")
+                            if behavior.function.structure.has(attribute: .inlinable) {
+                                scratch.append("    @inlinable\n")
+                            }
                             scratch.append("    @discardableResult\n")
                             scratch.append("    public func \(name)() -> Self {\n")
                             scratch.append("        unsafeSendToRemote(\"\(fullActorName)\", \"\(name)\", Data(), nil, nil, nil)\n")
@@ -450,7 +456,9 @@ class AutogenerateExternalBehaviors {
                         }
                     } else {
 
-                        scratch.append("    @inlinable\n")
+                        if behavior.function.structure.has(attribute: .inlinable) {
+                            scratch.append("    @inlinable\n")
+                        }
                         scratch.append("    @discardableResult\n")
                         let functionNameHeader = "    public func \(name)("
                         scratch.append(functionNameHeader)
@@ -865,7 +873,9 @@ class AutogenerateExternalBehaviors {
                     }
 
                     // 2. the names and type of the parameters are in the substructures
-                    scratch.append("    @inlinable\n")
+                    if behavior.function.structure.has(attribute: .inlinable) {
+                        scratch.append("    @inlinable\n")
+                    }
                     scratch.append("    @discardableResult\n")
                     let functionNameHeader = "    public func \(name)("
                     scratch.append(functionNameHeader)

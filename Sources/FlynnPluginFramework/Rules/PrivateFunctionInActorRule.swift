@@ -128,14 +128,6 @@ struct PrivateFunctionInActorRule: Rule {
                             allPassed = false
                             continue
                         }
-                        
-                        if (function.name ?? "").hasPrefix(FlynnPluginTool.prefixBehaviorInternal) &&
-                            function.kind == .functionMethodInstance &&
-                            function.has(attribute: .inlinable) == false {
-                            output.append(error(function.offset, syntax, description.console("Behaviours must declare @inlinable")))
-                            allPassed = false
-                            continue
-                        }
 
                         if (function.name ?? "").hasPrefix(FlynnPluginTool.prefixUnsafe) &&
                             function.kind == .functionMethodInstance &&
