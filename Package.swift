@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "Flynn",
     platforms: [
-        .iOS(.v9)
+        .macOS(.v12), .iOS(.v9)
     ],
     products: [
         .executable(name: "FlynnPluginTool", targets: ["FlynnPluginTool"]),
