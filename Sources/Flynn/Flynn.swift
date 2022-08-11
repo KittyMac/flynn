@@ -19,6 +19,10 @@ open class Flynn {
     public static var defaultActorAffinity: CoreAffinity = .none
 #endif
 
+    private static var dockedQueue = Queue<Actor>(size: 1024,
+                                                  manyProducers: true,
+                                                  manyConsumers: true)
+    
     private static var timerLoop: TimerLoop?
     private static var running = AtomicContidion()
 
@@ -60,6 +64,14 @@ open class Flynn {
             // wait until the registered actors thread ends
             clearRegisteredTimers()
         }
+    }
+    
+    public class func dock(_ actor: Actor) {
+        dockedQueue.enqueue(actor)
+    }
+    
+    public class func undock(_ actor: Actor) {
+        dockedQueue.dequeueAny { $0.unsafeUUID == actor.unsafeUUID }
     }
 
     public static var cores: Int {

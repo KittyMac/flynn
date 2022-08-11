@@ -210,6 +210,7 @@ public class Queue<T: AnyObject> {
         return elementPtr!
     }
 
+    @discardableResult
     public func dequeueIf(_ closure: (T) -> Bool) -> T? {
         if writeIdx == readIdx {
             return nil

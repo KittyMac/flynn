@@ -31,7 +31,8 @@ class Echo: RemoteActor {
 
     @inlinable
     internal func _beTestDelayedReturn(_ string: String, _ returnCallback: @escaping (String) -> Void) {
-        Flynn.Timer(timeInterval: Double.random(in: 0..<3), repeats: false, safeActor) { (_) in
+        Flynn.Timer(timeInterval: Double.random(in: 0..<3), repeats: false, safeActor) { [weak self] (_) in
+            guard let _ = self else { return }
             returnCallback(string.uppercased())
         }
     }

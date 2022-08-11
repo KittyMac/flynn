@@ -299,7 +299,9 @@ class FlynnTests: XCTestCase {
 
         Flynn.Timer(timeInterval: 0.01, repeats: true, counter, [1])
 
-        Flynn.Timer(timeInterval: 1, repeats: false, counter, { (_) in
+        Flynn.Timer(timeInterval: 1, repeats: false, counter, { [weak self] (_) in
+            guard let _ = self else { return }
+            
             counter.beEquals { (value) in
                 print(value)
                 XCTAssert(value >= 99)
@@ -315,7 +317,9 @@ class FlynnTests: XCTestCase {
 
         let builder = StringBuilder()
 
-        Flynn.Timer(timeInterval: 0.010, repeats: false, builder, { (_) in
+        Flynn.Timer(timeInterval: 0.010, repeats: false, builder, { [weak self] (_) in
+            guard let _ = self else { return }
+            
             builder.beResult { (value) in
                 XCTAssertEqual(value, "123456789", "string did not append in the correct order")
                 expectation.fulfill()
@@ -335,11 +339,13 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
     
-    func testWeakTimers() {
-        // Timers should only hold weak references to their actors
+    func testWeakTimersAndDockingActors() {
         if true {
-            let _ = WeakTimer()
-            sleep(2)
+            // normally this actor would dealloc itself when this block is left, however
+            // it has been coded to dock itself with Flynn and undock itself after 3 seconds.
+            // this feature allows you to spawn actors which don't need to be tethered to a parent
+            let _ = WeakTimer() 
+            sleep(4)
         }
     }
 
