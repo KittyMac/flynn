@@ -1051,7 +1051,7 @@ class AutogenerateExternalBehaviors {
                 // include all imports from the source file, in case they use structures we don't
                 // normall have access to
                 var importNames = Set<String>()
-                syntax.matches(importsRegexString) { (_, groups) in
+                syntax.matches(importsRegexString) { (_, _, groups) in
                     importNames.insert(groups[1])
                 }
                 

@@ -133,7 +133,7 @@ struct FileSyntax {
         return firstOffendingMatchOffset
     }
 
-    func matches(_ pattern: String, _ callback: @escaping ((NSTextCheckingResult, [String]) -> Void)) {
+    func matches(_ pattern: String, _ callback: @escaping ((Int64, NSTextCheckingResult, [String]) -> Void)) {
         do {
             let body = self.file.contents
             let structure = self.structure
@@ -173,11 +173,11 @@ struct FileSyntax {
                                 groups.append(String(groupString))
                             }
                         }
-                        callback(match, groups)
+                        callback(fullBodyOffset, match, groups)
                     }
                 }
             }
-        } catch { }
+        } catch { print("\(error)") }
     }
 
     func markup(_ label: String) -> [(ByteCount, String)] {
