@@ -29,7 +29,7 @@ public class FlynnPluginTool {
     private var buildCombinedAST = BuildCombinedAST()
 
     public init() {
-        
+        SourceKittenConfiguration.preferInProcessSourceKit = true
     }
 
     @discardableResult

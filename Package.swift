@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "Flynn",
     platforms: [
-        .macOS(.v12), .iOS(.v9)
+        .iOS(.v9)
     ],
     products: [
         .executable(name: "FlynnPluginTool", targets: ["FlynnPluginTool"]),
@@ -13,7 +13,7 @@ let package = Package(
         .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"])
     ],
     dependencies: [
-        .package(url: "https://github.com/jpsim/SourceKitten", from: "0.32.0"),
+        .package(url: "https://github.com/jpsim/SourceKitten", exact: "0.32.0"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0")
     ],
     targets: [
