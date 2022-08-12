@@ -6,7 +6,7 @@ struct WeakTimersRule: Rule {
     let description = RuleDescription(
         identifier: "weak_timer_callback",
         name: "Weak Timer Violation",
-        description: "Flynn.Timer callbacks must use [weak self]",
+        description: "Flynn.Timer callbacks should use [weak self]",
         syntaxTriggers: [.exprCall],
         nonTriggeringExamples: [
             Example("class SomeClass {}\n"),
@@ -57,7 +57,7 @@ struct WeakTimersRule: Rule {
             }
         }
         errorOffsets.forEach {
-            output.append(error($0, syntax))
+            output.append(warning($0, syntax))
         }
         return errorOffsets.count == 0
     }
