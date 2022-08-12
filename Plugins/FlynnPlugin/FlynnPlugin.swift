@@ -3,6 +3,38 @@ import PackagePlugin
 
 @main struct FlynnPlugin: BuildToolPlugin {
     
+    private func shouldProcess(inputs: [String],
+                               outputs: [String]) -> Bool {
+        var maxInputDate = Date.distantPast
+        var minOutputDate = Date.distantFuture
+        
+        for input in inputs {
+            if let attr = try? FileManager.default.attributesOfItem(atPath: input),
+               let date = attr[FileAttributeKey.modificationDate] as? Date {
+                if date > maxInputDate {
+                    print("input: \(input) is \(date)")
+                    maxInputDate = date
+                }
+            }
+        }
+        
+        for output in outputs {
+            if let attr = try? FileManager.default.attributesOfItem(atPath: output),
+               let date = attr[FileAttributeKey.modificationDate] as? Date {
+                if date < minOutputDate {
+                    print("output: \(output) is \(date)")
+                    minOutputDate = date
+                }
+            }
+        }
+        
+        if maxInputDate == Date.distantPast || minOutputDate == Date.distantFuture {
+            return true
+        }
+                
+        return minOutputDate < maxInputDate
+    }
+    
     func gatherSwiftInputFiles(targets: [Target],
                                inputFiles: inout [PackagePlugin.Path]) {
         
@@ -78,14 +110,29 @@ import PackagePlugin
         // let outputFilePath = context.pluginWorkDirectory.string + "/" + UUID().uuidString + ".swift"
         let outputFilePath = context.pluginWorkDirectory.string + "/FlynnPlugin.swift"
         
+        if shouldProcess(inputs: allInputFiles.map { $0.string },
+                         outputs: [outputFilePath]) {
+            return [
+                .buildCommand(
+                    displayName: "Flynn Plugin - generating behaviours...",
+                    executable: tool.path,
+                    arguments: [
+                        inputFilesFilePath,
+                        outputFilePath
+                    ],
+                    inputFiles: allInputFiles,
+                    outputFiles: [
+                        PackagePlugin.Path(outputFilePath)
+                    ]
+                )
+            ]
+        }
+        
         return [
             .buildCommand(
-                displayName: "Flynn Plugin - generating behaviours...",
+                displayName: "Flynn Plugin - skipping...",
                 executable: tool.path,
-                arguments: [
-                    inputFilesFilePath,
-                    outputFilePath
-                ],
+                arguments: [ "skip" ],
                 inputFiles: allInputFiles,
                 outputFiles: [
                     PackagePlugin.Path(outputFilePath)
