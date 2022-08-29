@@ -7,6 +7,32 @@ import SourceKittenFramework
 // code was modified quickly to strip Flynn from it, so its architecture
 // is a little weird looking without it.
 
+/*
+var logs: [String] = []
+
+internal func print(_ items: String..., filename: String = #file, function : String = #function, line: Int = #line, separator: String = " ", terminator: String = "\n") {
+    let pretty = "\(URL(fileURLWithPath: filename).lastPathComponent) [#\(line)] \(function)\n\t-> "
+    let output = items.map { "\($0)" }.joined(separator: separator)
+    Swift.print(pretty+output, terminator: terminator)
+    logs.append(output)
+}
+
+internal func print(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+    let output = items.map { "\($0)" }.joined(separator: separator)
+    Swift.print(output, terminator: terminator)
+    logs.append(output)
+}
+
+internal func clearLogs() {
+    try? FileManager.default.removeItem(atPath: "/tmp/FlynnPluginFramework.log")
+}
+
+internal func exportLogs() {
+    let logString = logs.joined(separator: "\n")
+    try? logString.write(toFile: "/tmp/FlynnPluginFramework.log", atomically: false, encoding: .utf8)
+}
+ */
+
 extension Array {
     func chunked(divisions: Int) -> [[Element]] {
         let chunkSize = Int((Double(count) / Double(divisions)).rounded(.up))
@@ -35,7 +61,7 @@ public class FlynnPluginTool {
     @discardableResult
     public func process(input: String,
                         output: String) -> Int {
-        
+                
         guard let inputsFileString = try? String(contentsOf: URL(fileURLWithPath: input)) else {
             fatalError("unable to open inputs file \(input)")
         }
@@ -49,6 +75,9 @@ public class FlynnPluginTool {
     @discardableResult
     public func process(inputs: [String],
                         output: String) -> Int {
+        
+        //clearLogs(); defer { exportLogs() }
+        
         let ruleset = Ruleset()
         
         try? FileManager.default.removeItem(atPath: output)
@@ -74,6 +103,8 @@ public class FlynnPluginTool {
         
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = ProcessInfo.processInfo.activeProcessorCount
+        
+        print(inputs)
 
         let step1 = inputs.map { ParseFile.Packet(output: output, filePath: $0) }
         
