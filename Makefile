@@ -1,5 +1,8 @@
 SWIFT_BUILD_FLAGS=--configuration release
 
+build-library:
+	swift build -Xswiftc -enable-library-evolution -v $(SWIFT_BUILD_FLAGS)
+
 build:
 	swift build --triple arm64-apple-macosx $(SWIFT_BUILD_FLAGS)
 	swift build --triple x86_64-apple-macosx $(SWIFT_BUILD_FLAGS)

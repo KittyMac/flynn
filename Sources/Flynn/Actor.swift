@@ -31,7 +31,7 @@ class ActorMessage {
     @usableFromInline
     var block: PonyBlock?
 
-    @inlinable @inline(__always)
+    @usableFromInline
     init(_ block: @escaping PonyBlock) {
         self.block = block
     }
