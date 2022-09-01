@@ -125,7 +125,7 @@ public extension Flynn {
         internal var idle: Bool
         internal var running: Bool
 
-    #if os(Linux)
+    #if os(Linux) || os(Android)
         private lazy var thread = Thread(block: run)
     #else
         private lazy var thread = Thread(target: self, selector: #selector(run), object: nil)
@@ -146,7 +146,7 @@ public extension Flynn {
             waitingForWorkSemaphore.signal()
         }
 
-        #if os(Linux)
+        #if os(Linux) || os(Android)
         func run() {
             while running {
                 let timeout = Flynn.checkRegisteredTimers()

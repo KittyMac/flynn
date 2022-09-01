@@ -165,7 +165,7 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 30.0)
     }
 
-#if !os(Linux)
+#if !os(Linux) && !os(Android)
     @available(OSX 10.15, *)
     func testLoadBalancingLong() {
         // 0.141
