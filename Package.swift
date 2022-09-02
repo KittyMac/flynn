@@ -42,18 +42,13 @@ let pluginDependencies: [Package.Dependency] = [
 ]
 #endif
 
-#if os(Android)
-productsTarget += [
-    .library(name: "Pony", type: .dynamic, targets: ["Pony"])
-]
-#endif
-
 let package = Package(
     name: "Flynn",
     platforms: [
         .iOS(.v9)
     ],
     products: productsTarget + [
+        .library(name: "PonyLib", type: .dynamic, targets: ["Pony"]),
         .library(name: "Flynn", targets: ["Flynn"]),
         .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"])
     ],
