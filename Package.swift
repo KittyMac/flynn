@@ -49,7 +49,7 @@ let package = Package(
     ],
     products: productsTarget + [
         .library(name: "Flynn", targets: ["Flynn"]),
-        .library(name: "Pony", targets: ["Pony"]),
+        .library(name: "Pony", type: .dynamic, targets: ["Pony"]),
         .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"])
     ],
     dependencies: pluginDependencies + [
