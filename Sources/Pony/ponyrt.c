@@ -4,6 +4,7 @@
 #include "platform.h"
 
 #include <stdlib.h>
+#include <syslog.h>
 
 #include "ponyrt.h"
 
@@ -206,5 +207,9 @@ unsigned long pony_current_memory() {
 
 unsigned long pony_mapped_memory() {
     return (unsigned long)ponyint_usafe_mapped_memory();
+}
+
+void pony_syslog(const char * msg) {
+    syslog(LOG_ERR, "TAG: %s\n", msg);
 }
 

@@ -22,6 +22,10 @@ class FlynnTests: XCTestCase {
         }
         wait(for: [expectation], timeout: 10.0)
     }
+    
+    func testSyslog() {
+        Flynn.syslog("Hello world")
+    }
 
     func test0() {
         let expectation = XCTestExpectation(description: "Warning when passing reference values")
@@ -178,11 +182,9 @@ class FlynnTests: XCTestCase {
         // no locks scheduler
         // 0.076
         
-        let options = XCTMeasureOptions()
-        options.iterationCount = 100
-        self.measure(options: options, block: {
+        measure {
             internalTestLoadBalancing(50_000)
-        })
+        }
     }
 #endif
 
