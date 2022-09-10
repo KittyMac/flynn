@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import Flynn
+import Flynn
 
 class PassToMe: Actor {
 

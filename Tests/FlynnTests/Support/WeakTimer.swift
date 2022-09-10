@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import Flynn
+import Flynn
 
 class WeakTimer: Actor {
     private var timer: Flynn.Timer?

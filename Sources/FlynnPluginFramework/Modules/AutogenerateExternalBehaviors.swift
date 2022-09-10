@@ -620,6 +620,10 @@ class AutogenerateExternalBehaviors {
                             } else {
                                 scratch.append("            let msg = try! JSONDecoder().decode(\(codableName(name))Request.self, from: data)\n")
                             }
+                            
+                            scratch.append("            #if DEBUG\n")
+                            scratch.append("            var onlyOnce = true\n")
+                            scratch.append("            #endif\n")
 
                             scratch.append("            self._\(name)(")
                             if let parameters = behavior.function.structure.substructure {
@@ -636,6 +640,11 @@ class AutogenerateExternalBehaviors {
                             }
 
                             scratch.append(") {\n")
+                            
+                            scratch.append("                #if DEBUG\n")
+                            scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
+                            scratch.append("                onlyOnce = false\n")
+                            scratch.append("                #endif\n")
 
                             if returnCallbackParameters.count > 0 {
                                 scratch.append("                callback(\n")
@@ -665,6 +674,10 @@ class AutogenerateExternalBehaviors {
                         } else {
                             scratch.append("        safeRegisterDelayedRemoteBehavior(\"\(name)\") { [unowned self] (_, callback) in\n")
 
+                            scratch.append("            #if DEBUG\n")
+                            scratch.append("            var onlyOnce = true\n")
+                            scratch.append("            #endif\n")
+                            
                             if returnCallbackParameters.count > 1 {
                                 var idx = 0
                                 scratch.append("            self._\(name) { (")
@@ -681,6 +694,11 @@ class AutogenerateExternalBehaviors {
                             } else {
                                 scratch.append("            self._\(name) {\n")
                             }
+                            
+                            scratch.append("                #if DEBUG\n")
+                            scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
+                            scratch.append("                onlyOnce = false\n")
+                            scratch.append("                #endif\n")
 
                             if returnCallbackParameters.count > 0 {
                                 scratch.append("                callback(\n")
@@ -932,6 +950,12 @@ class AutogenerateExternalBehaviors {
                     scratch.append(") -> Self {\n")
 
                     if returnType != nil {
+                        if hasReturnCallback == true {
+                            scratch.append("        #if DEBUG\n")
+                            scratch.append("        var onlyOnce = true\n")
+                            scratch.append("        #endif\n")
+                        }
+                        
                         scratch.append("        unsafeSend {\n")
 
                         if hasReturnCallback == false {
@@ -969,6 +993,11 @@ class AutogenerateExternalBehaviors {
                             } else {
                                 scratch.append("\n")
                             }
+                            
+                            scratch.append("            #if DEBUG\n")
+                            scratch.append("            guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
+                            scratch.append("            onlyOnce = false\n")
+                            scratch.append("            #endif\n")
 
                             scratch.append("                sender.unsafeSend {\n")
                             scratch.append("                    callback(")

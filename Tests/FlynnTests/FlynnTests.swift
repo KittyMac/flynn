@@ -1,6 +1,13 @@
 import XCTest
 
-@testable import Flynn
+import Flynn
+
+class TestDoubleCallback: Actor {
+    internal func _beFunc(_ returnCallback: () -> ()) {
+        returnCallback()
+        returnCallback()
+    }
+}
 
 class FlynnTests: XCTestCase {
 
@@ -11,6 +18,18 @@ class FlynnTests: XCTestCase {
     override func tearDown() {
         Flynn.shutdown()
     }
+    
+    /*
+    func testSuppressCallbackTwice() {
+        let test = TestDoubleCallback()
+        var count = 0
+        test.beFunc(Flynn.any) {
+            count += 1
+        }
+        sleep(2)
+        XCTAssertEqual(count, 1)
+    }
+     */
 
     func testMultipleDelayedReturns() {
         let expectation = XCTestExpectation(description: "Mutliple delayed returns from Actor behavior")
@@ -350,17 +369,4 @@ class FlynnTests: XCTestCase {
             sleep(4)
         }
     }
-
-    static var allTests = [
-        ("test0", test0),
-        ("test1", test1),
-        ("test2", test2),
-        ("testColor", testColor),
-        ("testImage", testImage),
-        ("testFlowable", testFlowable),
-        ("testLoadBalancing", testLoadBalancing),
-        ("testMeasureOverheadAgainstLoadBalancingExample", testMeasureOverheadAgainstLoadBalancingExample),
-        ("testMemoryBloatFromMessagePassing", testMemoryBloatFromMessagePassing),
-        ("testMemoryBloatFromMessagePassing2", testMemoryBloatFromMessagePassing2)
-    ]
 }

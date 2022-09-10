@@ -2,7 +2,7 @@
 
 import XCTest
 
-@testable import Flynn
+import Flynn
 
 // swiftlint:disable function_body_length
 

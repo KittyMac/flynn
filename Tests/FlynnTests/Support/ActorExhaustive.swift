@@ -1,5 +1,5 @@
 import XCTest
-@testable import Flynn
+import Flynn
 
 // The only purpose of this file is to have one of all combinations of remote
 // behaviors to help ensure flynnlint generates them all correctly

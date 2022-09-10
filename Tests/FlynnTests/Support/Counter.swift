@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import Flynn
+import Flynn
 
 class Counter: Actor, Timerable {
     private var counter: Int = 0

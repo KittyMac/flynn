@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import FlynnPluginFramework
+import FlynnPluginFramework
 
 class FlynnPluginTests: XCTestCase {
     var output = "/tmp/FlynnPlugin"
@@ -108,14 +108,4 @@ class FlynnPluginTests: XCTestCase {
             XCTAssert(rule.test())
         }
     }*/
-
-    static var allTests = [
-        ("testFlynn", testFlynn),
-        /*
-        ("testOneRuleOneCode", testOneRuleOneCode),
-        ("testAllRulesOneCode", testAllRulesOneCode),
-        ("testOneRule", testOneRule),
-        ("testAllRules", testAllRules),
-         */
-    ]
 }

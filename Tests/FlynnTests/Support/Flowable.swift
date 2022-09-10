@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import Flynn
+import Flynn
 
 // Pass through all arguments
 final class Passthrough: Actor, Flowable {

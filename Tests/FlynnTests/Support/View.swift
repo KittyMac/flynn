@@ -1,5 +1,5 @@
 import XCTest
-@testable import Flynn
+import Flynn
 
 protocol Viewable: Actor {
 

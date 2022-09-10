@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import Flynn
+import Flynn
 
 class StringBuilder: Actor, Timerable {
     private var string: String = ""

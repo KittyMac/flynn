@@ -1,5 +1,5 @@
 import XCTest
-@testable import Flynn
+import Flynn
 
 class Echo: RemoteActor {
     private let echoUUID = UUID().uuidString
@@ -41,6 +41,6 @@ class Echo: RemoteActor {
     internal func _beTestFailReturn(_ returnCallback: @escaping (String) -> Void) {
         // This behavior purposefully does not call its returnCallback so the
         // unit test can check error callbacks
-        close(nodeSocketFD)
+        // close(nodeSocketFD)
     }
 }

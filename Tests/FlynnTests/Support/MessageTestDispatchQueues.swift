@@ -1,7 +1,7 @@
 // swiftlint:disable identifier_name
 
 import XCTest
-@testable import Flynn
+import Flynn
 
 // Note: this test/benchmark was ported directly from the Pony language
 // benchmark message-ubench.  Comments kept in as-is.
