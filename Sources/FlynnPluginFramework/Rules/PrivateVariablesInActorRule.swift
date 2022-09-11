@@ -73,6 +73,10 @@ struct PrivateVariablesInActorRule: Rule {
                             }
 
                             if let name = variable.name {
+                                // allow the "then" variable
+                                if name == "then" {
+                                    continue
+                                }
                                 // allow variables to be "safe"
                                 if name.hasPrefix(FlynnPluginTool.prefixSafe) {
                                     continue

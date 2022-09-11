@@ -13,6 +13,9 @@
 #include <string.h>
 #include <stdio.h>
 
+static __pony_thread_local pony_msg_t * sendv_last_argument_ptr = NULL;
+static __pony_thread_local pony_msg_t * sendv_then_argument_ptr = NULL;
+
 void ponyint_actor_destroy(pony_actor_t* actor);
 
 // The flags of a given actor cannot be mutated from more than one actor at
@@ -38,7 +41,7 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
         return 0;
     }
     
-    while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&actor->q)) != NULL) {
+    while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&actor->queue)) != NULL) {
         
         switch(msg->msgId) {
             case kMessagePointer: {
@@ -52,7 +55,7 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
             } break;
         }
         
-        ponyint_actor_messageq_pop_mark_done(&actor->q);
+        ponyint_actor_messageq_pop_mark_done(&actor->queue);
         
         n++;
         if (n > max_msgs || actor->yield || actor->suspended) {
@@ -62,13 +65,13 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     
     if (actor->destroy) {
         ponyint_actor_setpendingdestroy(actor);
-        ponyint_messageq_markempty(&actor->q);
+        ponyint_messageq_markempty(&actor->queue);
         ponyint_actor_destroy(actor);
         return -1;
     }
     
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
-    return (int)!ponyint_messageq_markempty(&actor->q);
+    return (int)!ponyint_messageq_markempty(&actor->queue);
 }
 
 int32_t ponyint_actor_getpriority(pony_actor_t* actor) {
@@ -129,14 +132,13 @@ void ponyint_actor_destroy(pony_actor_t* actor)
     // the same and fail to mark the queue as empty, resulting in it getting
     // rescheduled.
     pony_msg_t* head = NULL;
-    do
-    {
-        head = atomic_load_explicit(&actor->q.head, memory_order_relaxed);
+    do {
+        head = atomic_load_explicit(&actor->queue.head, memory_order_relaxed);
     } while(((uintptr_t)head & (uintptr_t)1) != (uintptr_t)1);
     
     atomic_thread_fence(memory_order_acquire);
     
-    ponyint_messageq_destroy(&actor->q);
+    ponyint_messageq_destroy(&actor->queue);
     
     int32_t typeSize = sizeof(pony_actor_t);
     ponyint_pool_free(actor, typeSize);
@@ -161,7 +163,7 @@ void ponyint_actor_setpendingdestroy(pony_actor_t* actor)
 
 size_t ponyint_actor_num_messages(pony_actor_t* actor)
 {
-    size_t n = actor->q.num_messages;
+    size_t n = actor->queue.num_messages;
     if (n < 0) {
         return 0;
     }
@@ -180,16 +182,25 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     actor->coreAffinity = kCoreAffinity_None;
     actor->batchSize = 1000;
     
-    ponyint_messageq_init(&actor->q);
-    
+    ponyint_messageq_init(&actor->queue);
+
     return actor;
+}
+
+void pony_actor_mark_then_argument_ptr() {
+    sendv_then_argument_ptr = sendv_last_argument_ptr;
+    sendv_last_argument_ptr = NULL;
+}
+
+void * pony_actor_get_then_argument_ptr() {
+    void * then = sendv_then_argument_ptr;
+    sendv_then_argument_ptr = NULL;
+    return then;
 }
 
 void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)
 {
-    // The function takes a prebuilt chain instead of varargs because the latter
-    // is expensive and very hard to optimise.
-    if(ponyint_actor_messageq_push(&to->q, first, last))
+    if(ponyint_actor_messageq_push(&to->queue, first, last))
     {
         ponyint_sched_add(ctx, to);
     }
@@ -197,10 +208,17 @@ void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t
 
 void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message))
 {
+    sendv_last_argument_ptr = argumentPtr;
+    
     pony_msgfunc_t* m = (pony_msgfunc_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kMessagePointer);
     m->arg = argumentPtr;
     m->func = handleMessageFunc;
     pony_sendv(ctx, to, &m->msg, &m->msg);
+}
+
+void pony_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr)
+{
+    sendv_last_argument_ptr = argumentPtr;
 }
 
 void ponyint_destroy_actor(pony_actor_t* actor)

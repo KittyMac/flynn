@@ -66,7 +66,11 @@ bool pony_core_affinity_enabled();
 
 void * pony_actor_create();
 
+void pony_actor_mark_then_argument_ptr();
+void * pony_actor_get_then_argument_ptr();
+
 void pony_actor_send_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message));
+void pony_actor_then_message(void * actor, void * argumentPtr);
 
 void pony_actor_setpriority(void * actor, int priority);
 int pony_actor_getpriority(void * actor);

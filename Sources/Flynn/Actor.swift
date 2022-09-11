@@ -1,11 +1,16 @@
 import Foundation
 import Pony
 
-public typealias PonyBlock = () -> Void
+public typealias PonyBlock = (UnsafeMutableRawPointer?) -> Void
 public typealias PonyTaskBlock = (() -> ()) async -> Void
 
 @usableFromInline
 typealias AnyPtr = UnsafeMutableRawPointer?
+
+@inlinable @inline(__always)
+func UnretainedPtr <T: AnyObject>(_ obj: T) -> AnyPtr {
+    return Unmanaged.passUnretained(obj).toOpaque()
+}
 
 @inlinable @inline(__always)
 func Ptr <T: AnyObject>(_ obj: T) -> AnyPtr {
@@ -43,7 +48,7 @@ class ActorMessage {
 
     @inlinable @inline(__always)
     func run() {
-        block?()
+        block?(UnretainedPtr(self))
         block = nil
     }
 }
@@ -125,11 +130,6 @@ open class Actor {
         //print("deinit - Actor")
         pony_actor_destroy(safePonyActorPtr)
     }
-
-    @inlinable @inline(__always)
-    public func unsafeSend(_ block: @escaping PonyBlock) {
-        pony_actor_send_message(safePonyActorPtr, Ptr(ActorMessage(block)), handleMessage)
-    }
     
     @available(iOS 13.0, *)
     @available(macOS 10.15, *)
@@ -160,4 +160,36 @@ open class Actor {
         return scratch
     }
 
+    // MARK: - Then
+    @usableFromInline
+    internal var safeThenMessages: [UnsafeMutableRawPointer: UnsafeMutableRawPointer] = [:]
+    
+    @discardableResult
+    @inlinable @inline(__always)
+    public func unsafeSend(_ block: @escaping PonyBlock) -> Self {
+        let argumentPtr = Ptr(ActorMessage(block))
+        if let prevMessage = pony_actor_get_then_argument_ptr() {
+            safeThenMessages[prevMessage] = argumentPtr
+            pony_actor_then_message(safePonyActorPtr, argumentPtr)
+        } else {
+            pony_actor_send_message(safePonyActorPtr, argumentPtr, handleMessage)
+        }
+        return self
+    }
+    
+    @inlinable @inline(__always)
+    public func safeThen(_ prevMessage: UnsafeMutableRawPointer?) {
+        if let prevMessage = prevMessage,
+           let thenPtr = safeThenMessages.removeValue(forKey: prevMessage) {
+            pony_actor_send_message(safePonyActorPtr, thenPtr, handleMessage)
+        }
+    }
+    
+    @inlinable @inline(__always)
+    public var then: Self {
+        // on the ponyrt side we store a thread local variable which we now flag so that we
+        // know the next behaviour call on this thread should be a then call
+        pony_actor_mark_then_argument_ptr()
+        return self
+    }
 }

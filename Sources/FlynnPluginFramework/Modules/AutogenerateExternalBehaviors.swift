@@ -956,7 +956,7 @@ class AutogenerateExternalBehaviors {
                             scratch.append("        #endif\n")
                         }
                         
-                        scratch.append("        unsafeSend {\n")
+                        scratch.append("        return unsafeSend { thenPtr in\n")
 
                         if hasReturnCallback == false {
                             scratch.append("            let result = self._\(name)(")
@@ -994,12 +994,12 @@ class AutogenerateExternalBehaviors {
                                 scratch.append("\n")
                             }
                             
-                            scratch.append("            #if DEBUG\n")
-                            scratch.append("            guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
-                            scratch.append("            onlyOnce = false\n")
-                            scratch.append("            #endif\n")
+                            scratch.append("                #if DEBUG\n")
+                            scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
+                            scratch.append("                onlyOnce = false\n")
+                            scratch.append("                #endif\n")
 
-                            scratch.append("                sender.unsafeSend {\n")
+                            scratch.append("                sender.unsafeSend { _ in\n")
                             scratch.append("                    callback(")
                             for idx in 0..<returnCallbackParameters.count {
                                 scratch.append("arg\(idx), ")
@@ -1009,22 +1009,27 @@ class AutogenerateExternalBehaviors {
                                 scratch.removeLast()
                             }
                             scratch.append(")\n")
-
+                            
+                            // TODO: tell pony this message is done
+                            scratch.append("                    self.unsafeSend { _ in self.safeThen(thenPtr) }\n")
+                            
                             scratch.append("                }\n")
                             scratch.append("            }\n")
                         } else {
                             scratch.append(")\n")
-                            scratch.append("            sender.unsafeSend { callback(result) }\n")
+                            scratch.append("            sender.unsafeSend { _ in\n")
+                            scratch.append("                callback(result)\n")
+                            scratch.append("                self.unsafeSend { _ in self.safeThen(thenPtr) }\n")
+                            scratch.append("            }\n")
                         }
 
                         scratch.append("        }\n")
-                        scratch.append("        return self\n")
                         scratch.append("    }\n")
                     } else {
                         if parameterLabels.count == minParameterCount {
-                            scratch.append("        unsafeSend(_\(name))\n")
+                            scratch.append("        return unsafeSend { thenPtr in self._\(name)() }\n")
                         } else {
-                            scratch.append("        unsafeSend { self._\(name)(")
+                            scratch.append("        return unsafeSend { thenPtr in self._\(name)(")
 
                             if let parameters = behavior.function.structure.substructure {
                                 var idx = 0
@@ -1044,7 +1049,6 @@ class AutogenerateExternalBehaviors {
                             }
                             scratch.append(") }\n")
                         }
-                        scratch.append("        return self\n")
                         scratch.append("    }\n")
                     }
                 }

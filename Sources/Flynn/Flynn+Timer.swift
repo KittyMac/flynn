@@ -70,7 +70,7 @@ public extension Flynn {
             if let target = target {
                 target.beTimerFired(self, args)
             } else if let callback = callback, let actor = actor {
-                actor.unsafeSend { callback(self) }
+                actor.unsafeSend { thenPtr in callback(self) }
             } else {
                 cancelled = true
             }

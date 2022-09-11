@@ -86,6 +86,11 @@ void pony_actor_send_message(void * actor, void * argumentPtr, void (*handleMess
     pony_send_message(pony_ctx(), actor, argumentPtr, handleMessageFunc);
 }
 
+void pony_actor_then_message(void * actor, void * argumentPtr) {
+    if (pony_is_inited == false) { return; }
+    pony_then_message(pony_ctx(), actor, argumentPtr);
+}
+
 void pony_actor_setpriority(void * actor, int priority) {
     if (pony_is_inited == false) { return; }
     ponyint_actor_setpriority(actor, priority);
@@ -142,10 +147,10 @@ int pony_actors_load_balance(void * actorArray, int num_actors) {
     pony_actor_t * minActor = *actorsPtr;
     int minIdx = 0;
     for (int i = 0; i < num_actors; i++) {
-        if(actorsPtr[i]->q.num_messages < minActor->q.num_messages) {
+        if(actorsPtr[i]->queue.num_messages < minActor->queue.num_messages) {
             minActor = actorsPtr[i];
             minIdx = i;
-            if (minActor->q.num_messages == 0) {
+            if (minActor->queue.num_messages == 0) {
                 return minIdx;
             }
         }
@@ -159,7 +164,7 @@ bool pony_actors_should_wait(int min_msgs, void * actorArray, int num_actors) {
     pony_actor_t ** actorsPtr = (pony_actor_t**)actorArray;
     int32_t n = 0;
     for (int i = 0; i < num_actors; i++) {
-        n += actorsPtr[i]->q.num_messages;
+        n += actorsPtr[i]->queue.num_messages;
     }
     if (n <= min_msgs) {
         return false;

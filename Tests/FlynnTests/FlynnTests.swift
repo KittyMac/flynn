@@ -9,6 +9,27 @@ class TestDoubleCallback: Actor {
     }
 }
 
+class ThenActor: Actor {
+    internal func _beFirst(delay: Double, _ returnCallback: @escaping () -> ()) {
+        Flynn.Timer(timeInterval: delay, repeats: false, self) { [weak self] timer in
+            guard let _ = self else { return }
+            returnCallback()
+        }
+    }
+    internal func _beSecond(delay: Double, _ returnCallback: @escaping () -> ()) {
+        Flynn.Timer(timeInterval: delay, repeats: false, self) { [weak self] timer in
+            guard let _ = self else { return }
+            returnCallback()
+        }
+    }
+    internal func _beThird(delay: Double, _ returnCallback: @escaping () -> ()) {
+        Flynn.Timer(timeInterval: delay, repeats: false, self) { [weak self] timer in
+            guard let _ = self else { return }
+            returnCallback()
+        }
+    }
+}
+
 class FlynnTests: XCTestCase {
 
     override func setUp() {
@@ -31,6 +52,52 @@ class FlynnTests: XCTestCase {
     }
      */
 
+    
+    func testActorThen() {
+        // then() allows you to chain behaviour calls to actors when they call their return callback
+        let expectation = XCTestExpectation(description: "then")
+                
+        var results: [String] = []
+        
+        // "normal" behaviour calls are put onto the actor's message queue immediately,
+        // so these messages will in the order of their delays (third processes in 1 second,
+        // second in 2 seconds, first in 3 seconds)
+        ThenActor().beFirst(delay: 3.0, Flynn.any) {
+            results.append("first")
+        }.beSecond(delay: 2.0, Flynn.any) {
+            results.append("second")
+        }.beThird(delay: 1.0, Flynn.any) {
+            results.append("third")
+        }
+        
+        // When we introduce the "then", we are saying that we don't want the next behaviour to
+        // be added to this actor until the preceeding behaviour finishes (ie it calls its returnCallback).
+        // So in this example we see first in 6 seconds, THEN we see second after 5 seconds, THEN
+        // we see third after 4 seconds
+        ThenActor().beFirst(delay: 6.0, Flynn.any) {
+            results.append("first")
+        }.then.beSecond(delay: 5.0, Flynn.any) {
+            results.append("second")
+        }.then.beThird(delay: 4.0, Flynn.any) {
+            results.append("third")
+            expectation.fulfill()
+        }
+        
+        // The "then" allows use to avoid "callback hell". It is syntactically nicer than:
+        // let a = ThenActor()
+        // a.beFirst(Flynn.any) {
+        //     a.beSecond(Flynn.any) {
+        //         a.beThird(Flynn.any) {
+        //             expectation.fulfill()
+        //         }
+        //     }
+        // }
+        
+        wait(for: [expectation], timeout: 30.0)
+        
+        XCTAssertEqual(results.joined(separator: ","), "third,second,first,first,second,third")
+    }
+    
     func testMultipleDelayedReturns() {
         let expectation = XCTestExpectation(description: "Mutliple delayed returns from Actor behavior")
 
@@ -124,7 +191,6 @@ class FlynnTests: XCTestCase {
             .beColor()
             .beAlpha()
             .bePath("bundle://image.png")
-        // print(color.safeColorable._color)
         expectation.fulfill()
     }
 
