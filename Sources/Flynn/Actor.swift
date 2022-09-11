@@ -53,7 +53,10 @@ class ActorMessage {
     }
 }
 
-open class Actor {
+open class Actor: Equatable {
+    public static func == (lhs: Actor, rhs: Actor) -> Bool {
+        return lhs.unsafeUUID == rhs.unsafeUUID
+    }
 
     public let unsafeUUID: String
 
