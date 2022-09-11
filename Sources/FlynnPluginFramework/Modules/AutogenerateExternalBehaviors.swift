@@ -1027,7 +1027,7 @@ class AutogenerateExternalBehaviors {
                         scratch.append("    }\n")
                     } else {
                         if parameterLabels.count == minParameterCount {
-                            scratch.append("        return unsafeSend { thenPtr in self._\(name)() }\n")
+                            scratch.append("        return unsafeSend { thenPtr in self._\(name)(); self.safeThen(thenPtr) }\n")
                         } else {
                             scratch.append("        return unsafeSend { thenPtr in self._\(name)(")
 
@@ -1047,7 +1047,7 @@ class AutogenerateExternalBehaviors {
                                     scratch.removeLast()
                                 }
                             }
-                            scratch.append(") }\n")
+                            scratch.append("); self.safeThen(thenPtr) }\n")
                         }
                         scratch.append("    }\n")
                     }
