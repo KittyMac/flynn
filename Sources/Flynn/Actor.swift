@@ -128,6 +128,11 @@ open class Actor {
 
     deinit {
         //print("deinit - Actor")
+        for thenPtr in safeThenMessages.values {
+            if let _ : ActorMessage = Class(thenPtr) { }
+        }
+        safeThenMessages.removeAll()
+        
         pony_actor_destroy(safePonyActorPtr)
     }
     
