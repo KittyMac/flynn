@@ -10,6 +10,9 @@ class TestDoubleCallback: Actor {
 }
 
 class ThenActor: Actor {
+    deinit {
+        print("ThenActor - deinit")
+    }
     internal func _beFirst(delay: Double, _ returnCallback: @escaping () -> ()) {
         Flynn.Timer(timeInterval: delay, repeats: false, self) { [weak self] timer in
             guard let _ = self else { return }
@@ -62,46 +65,48 @@ class FlynnTests: XCTestCase {
         
         var results: [String] = []
         
-        // "normal" behaviour calls are put onto the actor's message queue immediately,
-        // so these messages will in the order of their delays (third processes in 1 second,
-        // second in 2 seconds, first in 3 seconds)
-        ThenActor().beFirst(delay: 1.0, Flynn.any) {
-            results.append("first")
-        }.beSecond(delay: 0.6, Flynn.any) {
-            results.append("second")
-        }.beThird(delay: 0.3, Flynn.any) {
-            results.append("third")
-        }
-        
-        // When we introduce the "then", we are saying that we don't want the next behaviour to
-        // be added to this actor until the preceeding behaviour finishes (ie it calls its returnCallback).
-        // So in this example we see first in 6 seconds, THEN we see second after 5 seconds, THEN
-        // we see third after 4 seconds
-        ThenActor().beFirst(delay: 3.0, Flynn.any) {
-            results.append("first")
-        }.then.beSecond(delay: 2.0, Flynn.any) {
-            results.append("second")
-        }.then.beThird(delay: 1.0, Flynn.any) {
-            results.append("third")
-        }
-        
-        // The "then" allows use to avoid "callback hell". It is syntactically nicer than:
-        // let a = ThenActor()
-        // a.beFirst(Flynn.any) {
-        //     a.beSecond(Flynn.any) {
-        //         a.beThird(Flynn.any) {
-        //             expectation.fulfill()
-        //         }
-        //     }
-        // }
-        
-        // Finally, ensure we support "then" on behaviours which do not have a callback (for consistency)
-        ThenActor().beFirst(delay: 7.0, Flynn.any) {
-            results.append("first")
-        }.then.beFourth()
-            .then.beThird(delay: 1.0, Flynn.any) {
-            results.append("third")
-            expectation.fulfill()
+        if true {
+            // "normal" behaviour calls are put onto the actor's message queue immediately,
+            // so these messages will in the order of their delays (third processes in 1 second,
+            // second in 2 seconds, first in 3 seconds)
+            ThenActor().beFirst(delay: 1.0, Flynn.any) {
+                results.append("first")
+            }.beSecond(delay: 0.6, Flynn.any) {
+                results.append("second")
+            }.beThird(delay: 0.3, Flynn.any) {
+                results.append("third")
+            }
+            
+            // When we introduce the "then", we are saying that we don't want the next behaviour to
+            // be added to this actor until the preceeding behaviour finishes (ie it calls its returnCallback).
+            // So in this example we see first in 6 seconds, THEN we see second after 5 seconds, THEN
+            // we see third after 4 seconds
+            ThenActor().beFirst(delay: 3.0, Flynn.any) {
+                results.append("first")
+            }.then.beSecond(delay: 2.0, Flynn.any) {
+                results.append("second")
+            }.then.beThird(delay: 1.0, Flynn.any) {
+                results.append("third")
+            }
+            
+            // The "then" allows use to avoid "callback hell". It is syntactically nicer than:
+            // let a = ThenActor()
+            // a.beFirst(Flynn.any) {
+            //     a.beSecond(Flynn.any) {
+            //         a.beThird(Flynn.any) {
+            //             expectation.fulfill()
+            //         }
+            //     }
+            // }
+            
+            // Finally, ensure we support "then" on behaviours which do not have a callback (for consistency)
+            ThenActor().beFirst(delay: 7.0, Flynn.any) {
+                results.append("first")
+            }.then.beFourth()
+                .then.beThird(delay: 1.0, Flynn.any) {
+                results.append("third")
+                expectation.fulfill()
+            }
         }
         
         wait(for: [expectation], timeout: 30.0)
@@ -121,7 +126,7 @@ class FlynnTests: XCTestCase {
     }
     
     func testSyslog() {
-        Flynn.syslog("Hello world")
+        Flynn.syslog("FLYNN", "Hello world")
     }
 
     func test0() {

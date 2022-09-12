@@ -214,7 +214,7 @@ unsigned long pony_mapped_memory() {
     return (unsigned long)ponyint_usafe_mapped_memory();
 }
 
-void pony_syslog(const char * msg) {
-    syslog(LOG_ERR, "TAG: %s\n", msg);
+void pony_syslog(const char * tag, const char * msg) {
+    syslog(LOG_ERR, "%s: %s\n", tag, msg);
 }
 

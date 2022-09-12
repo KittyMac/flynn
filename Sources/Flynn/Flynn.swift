@@ -102,8 +102,8 @@ open class Flynn {
         return UInt64(pony_mapped_memory())
     }
     
-    public static func syslog(_ message: String) {
-        pony_syslog(message)
+    public static func syslog(_ tag: String, _ message: String) {
+        pony_syslog(tag, message)
     }
 
     internal static func wakeTimerLoop() {

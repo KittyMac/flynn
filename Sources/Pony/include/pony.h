@@ -99,6 +99,6 @@ unsigned long pony_max_memory();
 unsigned long pony_current_memory();
 unsigned long pony_mapped_memory();
 
-void pony_syslog(const char * msg);
+void pony_syslog(const char * tag, const char * msg);
 
 #endif
