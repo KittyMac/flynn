@@ -49,7 +49,6 @@ class ActorMessage {
     @inlinable @inline(__always)
     func run() {
         block?(UnretainedPtr(self))
-        block = nil
     }
 }
 

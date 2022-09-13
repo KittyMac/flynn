@@ -36,6 +36,36 @@ class ThenActor: Actor {
     }
 }
 
+class ThenActor2: Actor {
+    deinit {
+        //print("ThenActor2 - deinit")
+    }
+    internal func _beFirst(_ returnCallback: @escaping () -> ()) {
+        //print("1")
+        returnCallback()
+    }
+    internal func _beSecond(_ returnCallback: @escaping () -> ()) {
+        //print("2")
+        returnCallback()
+    }
+    internal func _beThird(_ returnCallback: @escaping () -> ()) {
+        //print("3")
+        returnCallback()
+    }
+    internal func _beFourth() {
+        //print("4")
+    }
+    
+    internal func _beTest(_ returnCallback: @escaping () -> ()) {
+        self.beFirst(self) {
+        }.then.beSecond(self) {
+        }.then.beThird(self) {
+        }.then.beFourth().then.unsafeSend { _ in
+            returnCallback()
+        }
+    }
+}
+
 class FlynnTests: XCTestCase {
 
     override func setUp() {
@@ -112,6 +142,26 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 30.0)
         
         XCTAssertEqual(results.joined(separator: ","), "third,second,first,first,second,third,first,third")
+    }
+    
+    func testActorThen2() {
+        let expectation = XCTestExpectation(description: "then")
+        
+        var count = 1_000_000
+        for _ in 0..<1_000_000 {
+            if true {
+                let a = ThenActor2()
+                a.beTest(Flynn.any) {
+                    count -= 1
+                    if count <= 0 {
+                        expectation.fulfill()
+                    }
+                    //print("really?")
+                }
+            }
+        }
+        
+        wait(for: [expectation], timeout: 30.0)
     }
     
     func testMultipleDelayedReturns() {
