@@ -5,6 +5,8 @@ struct SafeFunctionRule: Rule {
 
     let safeCallString = ".\(FlynnPluginTool.prefixSafe)"
     let unsafeCallString = ".\(FlynnPluginTool.prefixUnsafe)"
+    
+    let selfSafeCallString = "self.\(FlynnPluginTool.prefixSafe)"
 
     let description = RuleDescription(
         identifier: "actors_safe_func",
@@ -115,7 +117,7 @@ struct SafeFunctionRule: Rule {
         // Only functions of the class may call safe methods on a class
         if let functionCall = syntax.structure.name {
             if  functionCall.range(of: safeCallString) != nil &&
-                functionCall.hasPrefix("self.") == false {
+                functionCall.range(of: selfSafeCallString) == nil {
                 output.append(error(syntax.structure.offset, syntax))
                 return false
             }
