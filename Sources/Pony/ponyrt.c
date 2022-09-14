@@ -86,6 +86,12 @@ void pony_actor_send_message(void * actor, void * argumentPtr, void (*handleMess
     pony_send_message(pony_ctx(), actor, argumentPtr, handleMessageFunc);
 }
 
+void pony_actor_complete_then_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message)) {
+    if (pony_is_inited == false) { return; }
+    pony_complete_then_message(pony_ctx(), actor, argumentPtr, handleMessageFunc);
+}
+
+
 void pony_actor_then_message(void * actor, void * argumentPtr) {
     if (pony_is_inited == false) { return; }
     pony_then_message(pony_ctx(), actor, argumentPtr);

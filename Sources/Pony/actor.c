@@ -217,6 +217,14 @@ void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, vo
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
+void pony_complete_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message))
+{
+    pony_msgfunc_t* m = (pony_msgfunc_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kMessagePointer);
+    m->arg = argumentPtr;
+    m->func = handleMessageFunc;
+    pony_sendv(ctx, to, &m->msg, &m->msg);
+}
+
 void pony_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr)
 {
     sendv_last_argument_ptr = argumentPtr;

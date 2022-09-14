@@ -188,7 +188,7 @@ open class Actor: Equatable {
     public func safeThen(_ prevMessage: UnsafeMutableRawPointer?) {
         if let prevMessage = prevMessage,
            let thenPtr = safeThenMessages.removeValue(forKey: prevMessage) {
-            pony_actor_send_message(safePonyActorPtr, thenPtr, handleMessage)
+            pony_actor_complete_then_message(safePonyActorPtr, thenPtr, handleMessage)
         }
     }
     

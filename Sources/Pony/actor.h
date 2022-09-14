@@ -60,6 +60,7 @@ void ponyint_actor_setpendingdestroy(pony_actor_t* actor);
 size_t ponyint_actor_num_messages(pony_actor_t* actor);
 
 void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message));
+void pony_complete_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message));
 void pony_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr);
 
 #endif /* actor_h */
