@@ -48,6 +48,7 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
                 pony_msgfunc_t * m = (pony_msgfunc_t *)msg;
                 if (m->func != NULL) {
                     m->func(m->arg);
+                    sendv_last_argument_ptr = NULL;
                 }
             } break;
             case kDestroyMessage: {
