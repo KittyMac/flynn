@@ -7,6 +7,7 @@
 #define pony_h
 
 #include <stdbool.h>
+#include <sys/types.h>
 
 typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);
 typedef void (*NodeDisconnectedFunc)(int socketFD);
@@ -56,6 +57,8 @@ void pony_register_node_to_root(int socketfd,
 void pony_root_destroy_actor_to_node(const char * actorUUID, int nodeSocketFD);
 void pony_node_destroy_actor_to_root(int socketfd);
 
+uint64_t pony_actor_new_then_id();
+
 bool pony_startup(void);
 void pony_shutdown(bool waitForRemotes);
 
@@ -66,12 +69,12 @@ bool pony_core_affinity_enabled();
 
 void * pony_actor_create();
 
-void pony_actor_mark_then_argument_ptr();
-void * pony_actor_get_then_argument_ptr();
+void pony_actor_mark_then_id();
+uint64_t pony_actor_get_then_id();
 
-void pony_actor_send_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message));
+void pony_actor_send_message(void * actor, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message));
 void pony_actor_complete_then_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message));
-void pony_actor_then_message(void * actor, void * argumentPtr);
+void pony_actor_then_message(void * actor, uint64_t then_id);
 
 void pony_actor_setpriority(void * actor, int priority);
 int pony_actor_getpriority(void * actor);

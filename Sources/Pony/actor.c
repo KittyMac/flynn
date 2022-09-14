@@ -13,8 +13,8 @@
 #include <string.h>
 #include <stdio.h>
 
-static __pony_thread_local pony_msg_t * sendv_last_argument_ptr = NULL;
-static __pony_thread_local pony_msg_t * sendv_then_argument_ptr = NULL;
+static __pony_thread_local uint64_t sendv_last_then_id = 0;
+static __pony_thread_local uint64_t sendv_marked_then_id = 0;
 
 void ponyint_actor_destroy(pony_actor_t* actor);
 
@@ -47,11 +47,11 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
             case kMessagePointer: {
                 pony_msgfunc_t * m = (pony_msgfunc_t *)msg;
                 if (m->func != NULL) {
-                    sendv_last_argument_ptr = NULL;
-                    sendv_then_argument_ptr = NULL;
+                    sendv_last_then_id = 0;
+                    sendv_marked_then_id = 0;
                     m->func(m->arg);
-                    sendv_last_argument_ptr = NULL;
-                    sendv_then_argument_ptr = NULL;
+                    sendv_last_then_id = 0;
+                    sendv_marked_then_id = 0;
                 }
             } break;
             case kDestroyMessage: {
@@ -118,7 +118,7 @@ void ponyint_suspend_actor(pony_actor_t* actor)
 void ponyint_resume_actor(pony_ctx_t* ctx, pony_actor_t* actor)
 {
     actor->suspended = false;
-    pony_send_message(ctx, actor, NULL, NULL);
+    pony_send_message(ctx, actor, NULL, 0, NULL);
     ponyint_sched_add(ctx, actor);
 }
 
@@ -191,15 +191,15 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     return actor;
 }
 
-void pony_actor_mark_then_argument_ptr() {
-    sendv_then_argument_ptr = sendv_last_argument_ptr;
-    sendv_last_argument_ptr = NULL;
+void pony_actor_mark_then_id() {
+    sendv_marked_then_id = sendv_last_then_id;
+    sendv_last_then_id = 0;
 }
 
-void * pony_actor_get_then_argument_ptr() {
-    void * then = sendv_then_argument_ptr;
-    sendv_then_argument_ptr = NULL;
-    return then;
+uint64_t pony_actor_get_then_id() {
+    uint64_t then_id = sendv_marked_then_id;
+    sendv_marked_then_id = 0;
+    return then_id;
 }
 
 void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)
@@ -210,9 +210,9 @@ void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t
     }
 }
 
-void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message))
+void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message))
 {
-    sendv_last_argument_ptr = argumentPtr;
+    sendv_last_then_id = then_id;
     
     pony_msgfunc_t* m = (pony_msgfunc_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kMessagePointer);
     m->arg = argumentPtr;
@@ -228,9 +228,9 @@ void pony_complete_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argume
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
-void pony_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr)
+void pony_then_message(pony_ctx_t* ctx, pony_actor_t* to, uint64_t then_id)
 {
-    sendv_last_argument_ptr = argumentPtr;
+    sendv_last_then_id = then_id;
 }
 
 void ponyint_destroy_actor(pony_actor_t* actor)

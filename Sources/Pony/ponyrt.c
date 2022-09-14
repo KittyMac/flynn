@@ -18,6 +18,17 @@ extern int ponyint_remote_nodes_count();
 extern int ponyint_remote_core_count();
 extern int ponyint_remote_core_count_by_socket(int socketfd);
 
+uint64_t pony_actor_new_then_id() {
+    static PONY_ATOMIC(uint64_t) global_then_id;
+    uint64_t next_then_id = atomic_fetch_add_explicit(&global_then_id, 1, memory_order_relaxed);
+    
+    // 0 is not a valid then id
+    if (next_then_id == 0) {
+        return pony_actor_new_then_id();
+    }
+    return next_then_id;
+}
+
 static bool pony_is_inited = false;
 
 bool pony_startup() {
@@ -81,9 +92,9 @@ void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
 }
 
-void pony_actor_send_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message)) {
+void pony_actor_send_message(void * actor, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message)) {
     if (pony_is_inited == false) { return; }
-    pony_send_message(pony_ctx(), actor, argumentPtr, handleMessageFunc);
+    pony_send_message(pony_ctx(), actor, argumentPtr, then_id, handleMessageFunc);
 }
 
 void pony_actor_complete_then_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message)) {
@@ -92,9 +103,9 @@ void pony_actor_complete_then_message(void * actor, void * argumentPtr, void (*h
 }
 
 
-void pony_actor_then_message(void * actor, void * argumentPtr) {
+void pony_actor_then_message(void * actor, uint64_t then_id) {
     if (pony_is_inited == false) { return; }
-    pony_then_message(pony_ctx(), actor, argumentPtr);
+    pony_then_message(pony_ctx(), actor, then_id);
 }
 
 void pony_actor_setpriority(void * actor, int priority) {

@@ -1,16 +1,11 @@
 import Foundation
 import Pony
 
-public typealias PonyBlock = (UnsafeMutableRawPointer?) -> Void
+public typealias PonyBlock = (UInt64) -> Void
 public typealias PonyTaskBlock = (() -> ()) async -> Void
 
 @usableFromInline
 typealias AnyPtr = UnsafeMutableRawPointer?
-
-@inlinable @inline(__always)
-func UnretainedPtr <T: AnyObject>(_ obj: T) -> AnyPtr {
-    return Unmanaged.passUnretained(obj).toOpaque()
-}
 
 @inlinable @inline(__always)
 func Ptr <T: AnyObject>(_ obj: T) -> AnyPtr {
@@ -35,10 +30,15 @@ class ActorMessage {
     
     @usableFromInline
     var block: PonyBlock?
+    
+    @usableFromInline
+    var thenId: UInt64
 
     @usableFromInline
-    init(_ block: @escaping PonyBlock) {
+    init(_ block: @escaping PonyBlock,
+         _ thenId: UInt64) {
         self.block = block
+        self.thenId = thenId
     }
 
     @inlinable @inline(__always)
@@ -48,7 +48,7 @@ class ActorMessage {
 
     @inlinable @inline(__always)
     func run() {
-        block?(UnretainedPtr(self))
+        block?(thenId)
     }
 }
 
@@ -169,26 +169,28 @@ open class Actor: Equatable {
 
     // MARK: - Then
     @usableFromInline
-    internal var safeThenMessages: [UnsafeMutableRawPointer: UnsafeMutableRawPointer] = [:]
+    internal var safeThenMessages: [UInt64: UnsafeMutableRawPointer] = [:]
     
     @discardableResult
     @inlinable @inline(__always)
     public func unsafeSend(_ block: @escaping PonyBlock) -> Self {
-        let argumentPtr = Ptr(ActorMessage(block))
-        if let prevMessage = pony_actor_get_then_argument_ptr() {
-            safeThenMessages[prevMessage] = argumentPtr
-            pony_actor_then_message(safePonyActorPtr, argumentPtr)
+        let thenId = pony_actor_new_then_id()
+        let argumentPtr = Ptr(ActorMessage(block, thenId))
+        let prevThenId = pony_actor_get_then_id()
+        if prevThenId != 0 {
+            safeThenMessages[prevThenId] = argumentPtr
+            pony_actor_then_message(safePonyActorPtr, thenId)
         } else {
-            pony_actor_send_message(safePonyActorPtr, argumentPtr, handleMessage)
+            pony_actor_send_message(safePonyActorPtr, argumentPtr, thenId, handleMessage)
         }
         return self
     }
     
     @inlinable @inline(__always)
-    public func safeThen(_ prevMessage: UnsafeMutableRawPointer?) {
-        if let prevMessage = prevMessage,
-           let thenPtr = safeThenMessages.removeValue(forKey: prevMessage) {
-            pony_actor_complete_then_message(safePonyActorPtr, thenPtr, handleMessage)
+    public func safeThen(_ prevThenId: UInt64?) {
+        if let prevThenId = prevThenId,
+           let argumentPtr = safeThenMessages.removeValue(forKey: prevThenId) {
+            pony_actor_complete_then_message(safePonyActorPtr, argumentPtr, handleMessage)
         }
     }
     
@@ -196,7 +198,7 @@ open class Actor: Equatable {
     public var then: Self {
         // on the ponyrt side we store a thread local variable which we now flag so that we
         // know the next behaviour call on this thread should be a then call
-        pony_actor_mark_then_argument_ptr()
+        pony_actor_mark_then_id()
         return self
     }
 }
