@@ -80,8 +80,11 @@ public class FlynnPluginTool {
         
         let ruleset = Ruleset()
         
-        try? FileManager.default.removeItem(atPath: output)
-        try? "import Foundation\n".write(toFile: output, atomically: false, encoding: .utf8)
+        let uuid = UUID().uuidString
+        let tempOutput = "/tmp/\(uuid).flynn.swift"
+        
+        try? FileManager.default.removeItem(atPath: tempOutput)
+        try? "import Foundation\n".write(toFile: tempOutput, atomically: false, encoding: .utf8)
         
         //print("\(output): warning: FlynnPluginTool generated code")
         
@@ -106,7 +109,7 @@ public class FlynnPluginTool {
         
         print(inputs)
 
-        let step1 = inputs.map { ParseFile.Packet(output: output, filePath: $0) }
+        let step1 = inputs.map { ParseFile.Packet(output: tempOutput, filePath: $0) }
         
         var step2: [FileSyntax] = []
         if true {
@@ -158,6 +161,12 @@ public class FlynnPluginTool {
         }
         
         let _ = printError.process(packets: step5)
+        
+        if let finalOutput = try? String(contentsOfFile: tempOutput) {
+            try? finalOutput.write(toFile: output, atomically: false, encoding: .utf8)
+        }
+        
+        try? FileManager.default.removeItem(atPath: tempOutput)
         
         return numErrors
     }

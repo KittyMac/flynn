@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 #include <sys/types.h>
+#include <stdint.h>
 
 typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);
 typedef void (*NodeDisconnectedFunc)(int socketFD);
