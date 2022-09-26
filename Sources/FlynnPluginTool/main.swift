@@ -19,6 +19,11 @@ struct FlynnPluginToolCLI: ParsableCommand {
         var output: String
 
         mutating func run() throws {
+            if let buildAction = ProcessInfo.processInfo.environment["ACTION"],
+               buildAction == "indexbuild" {
+                return
+            }
+            
             let flynnplugintool = FlynnPluginTool()
                     
             let exitCode = flynnplugintool.process(input: input,
