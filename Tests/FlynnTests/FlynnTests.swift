@@ -36,6 +36,18 @@ class ThenActor: Actor {
     }
 }
 
+class ThenNeverActor: Actor {
+    deinit {
+        print("ThenNeverActor - deinit")
+    }
+    internal func _beFirst(delay: Double, _ returnCallback: @escaping () -> ()) {
+    }
+    internal func _beSecond(delay: Double, _ returnCallback: @escaping () -> ()) {
+    }
+    internal func _beThird(delay: Double, _ returnCallback: @escaping () -> ()) {
+    }
+}
+
 class ThenActor2: Actor {
     deinit {
         //print("ThenActor2 - deinit")
@@ -162,6 +174,36 @@ class FlynnTests: XCTestCase {
         }
         
         wait(for: [expectation], timeout: 30.0)
+    }
+    
+    func testActorThen3() {
+        let expectation = XCTestExpectation(description: "then")
+        
+        // Note: both "a" and "b" should deinit, but "a" will ONLY
+        // deinit if it's "then" (which will never arrive) is cancelled
+        if true {
+            let a = ThenNeverActor()
+            a.beFirst(delay: 5, Flynn.any) {
+                
+            }.then.beSecond(delay: 5, Flynn.any) {
+                
+            }
+            
+            a.unsafeCancel()
+            
+            a.beFirst(delay: 5, Flynn.any) {
+                
+            }
+        }
+        
+        if true {
+            let b = ThenNeverActor()
+            b.beFirst(delay: 5, Flynn.any) {
+                
+            }
+        }
+        
+        wait(for: [expectation], timeout: 1.0)
     }
     
     func testMultipleDelayedReturns() {

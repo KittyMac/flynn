@@ -64,12 +64,14 @@ open class Actor: Equatable {
 
     public var unsafeCoreAffinity: CoreAffinity {
         get {
+            guard safePonyActorPtr != nil else { return .none }
             if let affinity = CoreAffinity(rawValue: pony_actor_getcoreAffinity(safePonyActorPtr)) {
                 return affinity
             }
             return .none
         }
         set {
+            guard safePonyActorPtr != nil else { return }
             if pony_core_affinity_enabled() {
                 pony_actor_setcoreAffinity(safePonyActorPtr, newValue.rawValue)
             } else {
@@ -80,40 +82,62 @@ open class Actor: Equatable {
 
     public var unsafePriority: Int32 {
         get {
+            guard safePonyActorPtr != nil else { return 0 }
             return pony_actor_getpriority(safePonyActorPtr)
         }
         set {
+            guard safePonyActorPtr != nil else { return }
             pony_actor_setpriority(safePonyActorPtr, newValue)
         }
     }
 
     public var unsafeMessageBatchSize: Int32 {
         get {
+            guard safePonyActorPtr != nil else { return 0 }
             return pony_actor_getbatchSize(safePonyActorPtr)
         }
         set {
+            guard safePonyActorPtr != nil else { return }
             pony_actor_setbatchSize(safePonyActorPtr, newValue)
         }
     }
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
+        guard safePonyActorPtr != nil else { return }
         pony_actor_wait(minMsgs, safePonyActorPtr)
     }
 
     public func unsafeYield() {
+        guard safePonyActorPtr != nil else { return }
         pony_actor_yield(safePonyActorPtr)
     }
     
+    public func unsafeCancel() {
+        // Cancels all futures and suspends the actor
+        //print("deinit - Actor")
+        for thenPtr in safeThenMessages.values {
+            if let _ : ActorMessage = Class(thenPtr) { }
+        }
+        safeThenMessages.removeAll()
+        
+        pony_actor_suspend(safePonyActorPtr)
+        pony_actor_destroy(safePonyActorPtr)
+        safePonyActorPtr = nil
+    }
+    
     public func unsafeSuspend() {
+        guard safePonyActorPtr != nil else { return }
         pony_actor_suspend(safePonyActorPtr)
     }
     
     public func unsafeResume() {
+        guard safePonyActorPtr != nil else { return }
         pony_actor_resume(safePonyActorPtr)
     }
 
     public var unsafeMessagesCount: Int32 {
+        guard safePonyActorPtr != nil else { return 0 }
         return pony_actor_num_messages(safePonyActorPtr)
     }
 
@@ -135,13 +159,16 @@ open class Actor: Equatable {
         }
         safeThenMessages.removeAll()
         
-        pony_actor_destroy(safePonyActorPtr)
+        if let safePonyActorPtr = safePonyActorPtr {
+            pony_actor_destroy(safePonyActorPtr)
+        }
     }
     
     @available(iOS 13.0, *)
     @available(macOS 10.15, *)
     @inlinable @inline(__always)
     public func safeTask(_ block: @escaping PonyTaskBlock) {
+        guard safePonyActorPtr != nil else { return }
         if pony_actor_is_suspended(safePonyActorPtr) {
             fatalError("safeTask may not be called on an already suspended actor")
         }
@@ -174,6 +201,8 @@ open class Actor: Equatable {
     @discardableResult
     @inlinable @inline(__always)
     public func unsafeSend(_ block: @escaping PonyBlock) -> Self {
+        guard safePonyActorPtr != nil else { return self }
+        
         let thenId = pony_actor_new_then_id()
         let argumentPtr = Ptr(ActorMessage(block, thenId))
         let prevThenId = pony_actor_get_then_id()
@@ -188,6 +217,8 @@ open class Actor: Equatable {
     
     @inlinable @inline(__always)
     public func safeThen(_ prevThenId: UInt64?) {
+        guard safePonyActorPtr != nil else { return }
+        
         if let prevThenId = prevThenId,
            let argumentPtr = safeThenMessages.removeValue(forKey: prevThenId) {
             pony_actor_complete_then_message(safePonyActorPtr, argumentPtr, handleMessage)
