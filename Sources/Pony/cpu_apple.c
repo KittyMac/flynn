@@ -103,7 +103,7 @@ void ponyint_cpu_init()
     
     if (hw_e_core_count == 0 || hw_p_core_count == 0) {
         fprintf(stdout, "Warning: Actor core affinities have been disabled, unrecognized cpu family detected (0x%08X)\n", cpu_family);
-        hw_e_core_count = hw_core_count / 2;
+        hw_e_core_count = 1;
         hw_p_core_count = hw_core_count - hw_e_core_count;
     }
     
