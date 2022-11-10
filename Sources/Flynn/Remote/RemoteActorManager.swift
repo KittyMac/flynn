@@ -349,7 +349,8 @@ internal final class RemoteActorManager: Actor {
                     remoteNodeRoundRobinIndex += 1
                     
                     // ideal: choose next node based on their core counts (support hetergeneous clusters better)
-                    remoteNodeRoundRobinIndex = remoteNodeRoundRobinIndex % Int(pony_remote_core_count())
+                    let remoteCoreCount = max(1, pony_remote_core_count())
+                    remoteNodeRoundRobinIndex = remoteNodeRoundRobinIndex % Int(remoteCoreCount)
                     
                     // calculate the total number of remote cores
                     var idx: Int32 = 0
