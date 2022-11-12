@@ -1,3 +1,4 @@
+DIST:=$(shell cd dist && pwd)
 SWIFT_BUILD_FLAGS=--configuration release
 
 build-library:
@@ -20,11 +21,15 @@ update:
 	swift package update
 
 release: build docker
-	docker pull kittymac/flynn:latest
-	docker run --platform linux/arm64 --rm -v /tmp/:/outTemp kittymac/flynn /bin/bash -lc 'cp /root/Flynn/.build/aarch64-unknown-linux-gnu/release/FlynnPluginTool /outTemp/FlynnPluginTool'
-	cp /tmp/FlynnPluginTool ./dist/FlynnPluginTool.artifactbundle/FlynnPluginTool-arm64/bin/FlynnPluginTool
-	docker run --platform linux/amd64 --rm -v /tmp/:/outTemp kittymac/flynn /bin/bash -lc 'cp /root/Flynn/.build/x86_64-unknown-linux-gnu/release/FlynnPluginTool /outTemp/FlynnPluginTool'
-	cp /tmp/FlynnPluginTool ./dist/FlynnPluginTool.artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool
+	# Getting plugin for focal
+	docker pull kittymac/flynn-focal:latest
+	docker run --platform linux/arm64 --rm -v $(DIST):/outTemp kittymac/flynn-focal /bin/bash -lc 'cp /root/Flynn/.build/aarch64-unknown-linux-gnu/release/FlynnPluginTool /outTemp/FlynnPluginTool.artifactbundle/FlynnPluginTool-arm64-focal/bin/FlynnPluginTool'
+	docker run --platform linux/amd64 --rm -v $(DIST):/outTemp kittymac/flynn-focal /bin/bash -lc 'cp /root/Flynn/.build/x86_64-unknown-linux-gnu/release/FlynnPluginTool /outTemp/FlynnPluginTool.artifactbundle/FlynnPluginTool-amd64-focal/bin/FlynnPluginTool'
+	
+	# Getting plugin for amazonlinux2
+	docker pull kittymac/flynn-amazonlinux2:latest
+	docker run --platform linux/arm64 --rm -v $(DIST):/outTemp kittymac/flynn-amazonlinux2 /bin/bash -lc 'cp /root/Flynn/.build/aarch64-unknown-linux-gnu/release/FlynnPluginTool /outTemp/FlynnPluginTool.artifactbundle/FlynnPluginTool-arm64-amazonlinux2/bin/FlynnPluginTool'
+	docker run --platform linux/amd64 --rm -v $(DIST):/outTemp kittymac/flynn-amazonlinux2 /bin/bash -lc 'cp /root/Flynn/.build/x86_64-unknown-linux-gnu/release/FlynnPluginTool /outTemp/FlynnPluginTool.artifactbundle/FlynnPluginTool-amd64-amazonlinux2/bin/FlynnPluginTool'
 	
 	cp ./dist/FlynnPluginTool ./dist/FlynnPluginTool.artifactbundle/FlynnPluginTool-macos/bin/FlynnPluginTool
 	rm -f ./dist/FlynnPluginTool.zip
@@ -36,7 +41,8 @@ docker:
 	-docker buildx use local_builder
 	-docker buildx inspect --bootstrap
 	-docker login
-	docker buildx build --platform linux/amd64,linux/arm64 --push -t kittymac/flynn .
+	docker buildx build --file Dockerfile-focal --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-focal .
+	docker buildx build --file Dockerfile-amazonlinux2 --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-amazonlinux2 .
 
 docker-shell:
 	docker pull kittymac/flynn
