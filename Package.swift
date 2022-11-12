@@ -36,6 +36,10 @@ let productsTarget: [PackageDescription.Product] = [
 let pluginTarget: [PackageDescription.Target] = [
     .binaryTarget(name: "FlynnPluginTool",
                   path: "dist/FlynnPluginTool.zip"),
+    .binaryTarget(name: "FlynnPluginTool-focal",
+                  path: "dist/FlynnPluginTool-focal.zip"),
+    .binaryTarget(name: "FlynnPluginTool-amazonlinux2",
+                  path: "dist/FlynnPluginTool-amazonlinux2.zip"),
 ]
 let pluginDependencies: [Package.Dependency] = [
     
