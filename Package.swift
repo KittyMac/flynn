@@ -5,13 +5,18 @@ import PackageDescription
 // Otherwise always set it to false
 #if false
 let productsTarget: [PackageDescription.Product] = [
-    .executable(name: "FlynnPluginTool", targets: ["FlynnPluginTool"]),
-    .library(name: "FlynnPluginFramework", targets: ["FlynnPluginFramework"]),
 ]
 let pluginTarget: [PackageDescription.Target] = [
     .executableTarget(
-        name: "FlynnPluginTool",
+        name: "FlynnPluginTool-focal",
         dependencies: ["FlynnPluginFramework"]
+    ),
+    .plugin(
+        name: "FlynnPlugin",
+        capability: .buildTool(),
+        dependencies: [
+            "FlynnPluginTool-focal"
+        ]
     ),
     .target(
         name: "FlynnPluginFramework",
@@ -31,17 +36,24 @@ let pluginDependencies: [Package.Dependency] = [
 ]
 #else
 let productsTarget: [PackageDescription.Product] = [
-    .library(name: "FlynnPluginTool", targets: ["FlynnPluginTool"]),
-    .library(name: "FlynnPluginTool-focal", targets: ["FlynnPluginTool-focal"]),
-    .library(name: "FlynnPluginTool-amazonlinux2", targets: ["FlynnPluginTool-amazonlinux2"]),
+    .library(name: "FlynnPluginTool", targets: [
+        "FlynnPluginTool-focal",
+        "FlynnPluginTool-amazonlinux2"
+    ]),
 ]
 let pluginTarget: [PackageDescription.Target] = [
-    .binaryTarget(name: "FlynnPluginTool",
-                  path: "dist/FlynnPluginTool.zip"),
     .binaryTarget(name: "FlynnPluginTool-focal",
                   path: "dist/FlynnPluginTool-focal.zip"),
     .binaryTarget(name: "FlynnPluginTool-amazonlinux2",
                   path: "dist/FlynnPluginTool-amazonlinux2.zip"),
+    .plugin(
+        name: "FlynnPlugin",
+        capability: .buildTool(),
+        dependencies: [
+            "FlynnPluginTool-focal",
+            "FlynnPluginTool-amazonlinux2"
+        ]
+    ),
 ]
 let pluginDependencies: [Package.Dependency] = [
     
@@ -57,8 +69,6 @@ let package = Package(
         .library(name: "PonyLib", type: .dynamic, targets: ["Pony"]),
         .library(name: "Flynn", targets: ["Flynn"]),
         .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"]),
-        .plugin(name: "FlynnPlugin-focal", targets: ["FlynnPlugin-focal"]),
-        .plugin(name: "FlynnPlugin-amazonlinux2", targets: ["FlynnPlugin-amazonlinux2"]),
     ],
     dependencies: pluginDependencies + [
         
@@ -83,21 +93,6 @@ let package = Package(
             plugins: [
                 .plugin(name: "FlynnPlugin")
             ]
-        ),
-        .plugin(
-            name: "FlynnPlugin",
-            capability: .buildTool(),
-            dependencies: [ "FlynnPluginTool" ]
-        ),
-        .plugin(
-            name: "FlynnPlugin-focal",
-            capability: .buildTool(),
-            dependencies: [ "FlynnPluginTool-focal" ]
-        ),
-        .plugin(
-            name: "FlynnPlugin-amazonlinux2",
-            capability: .buildTool(),
-            dependencies: [ "FlynnPluginTool-amazonlinux2" ]
         ),
     ]
 )

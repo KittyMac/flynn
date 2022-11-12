@@ -1,5 +1,8 @@
 FROM swift:5.6.2-amazonlinux2
 
+RUN yum install -y \
+    unzip
+
 WORKDIR /root/Flynn
 COPY ./dist ./dist
 COPY ./Package.swift ./Package.swift
