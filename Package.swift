@@ -56,7 +56,9 @@ let package = Package(
     products: productsTarget + [
         .library(name: "PonyLib", type: .dynamic, targets: ["Pony"]),
         .library(name: "Flynn", targets: ["Flynn"]),
-        .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"])
+        .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"]),
+        .plugin(name: "FlynnPlugin-focal", targets: ["FlynnPlugin-focal"]),
+        .plugin(name: "FlynnPlugin-amazonlinux2", targets: ["FlynnPlugin-amazonlinux2"]),
     ],
     dependencies: pluginDependencies + [
         
@@ -85,7 +87,17 @@ let package = Package(
         .plugin(
             name: "FlynnPlugin",
             capability: .buildTool(),
-            dependencies: ["FlynnPluginTool"]
+            dependencies: [ "FlynnPluginTool" ]
+        ),
+        .plugin(
+            name: "FlynnPlugin-focal",
+            capability: .buildTool(),
+            dependencies: [ "FlynnPluginTool-focal" ]
+        ),
+        .plugin(
+            name: "FlynnPlugin-amazonlinux2",
+            capability: .buildTool(),
+            dependencies: [ "FlynnPluginTool-amazonlinux2" ]
         ),
     ]
 )
