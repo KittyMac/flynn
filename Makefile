@@ -8,8 +8,8 @@ build:
 	swift build --triple arm64-apple-macosx $(SWIFT_BUILD_FLAGS)
 	swift build --triple x86_64-apple-macosx $(SWIFT_BUILD_FLAGS)
 	-rm .build/FlynnPluginTool
-	lipo -create -output .build/FlynnPluginTool .build/arm64-apple-macosx/release/FlynnPluginTool .build/x86_64-apple-macosx/release/FlynnPluginTool
-	cp .build/FlynnPluginTool ./dist/FlynnPluginTool
+	lipo -create -output .build/FlynnPluginTool-focal .build/arm64-apple-macosx/release/FlynnPluginTool-focal .build/x86_64-apple-macosx/release/FlynnPluginTool-focal
+	cp .build/FlynnPluginTool-focal ./dist/FlynnPluginTool
 
 clean:
 	rm -rf .build
