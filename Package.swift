@@ -32,6 +32,8 @@ let pluginDependencies: [Package.Dependency] = [
 #else
 let productsTarget: [PackageDescription.Product] = [
     .library(name: "FlynnPluginTool", targets: ["FlynnPluginTool"]),
+    .library(name: "FlynnPluginTool-focal", targets: ["FlynnPluginTool-focal"]),
+    .library(name: "FlynnPluginTool-amazonlinux2", targets: ["FlynnPluginTool-amazonlinux2"]),
 ]
 let pluginTarget: [PackageDescription.Target] = [
     .binaryTarget(name: "FlynnPluginTool",
