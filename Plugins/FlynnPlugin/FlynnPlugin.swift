@@ -94,7 +94,7 @@ internal func exportLogs() {
                let osTool = try? context.tool(named: "FlynnPluginTool-amazonlinux2") {
                 tool = osTool
             }
-            if osFile.contains("fedora"),
+            if osFile.contains("Fedora Linux"),
                let osTool = try? context.tool(named: "FlynnPluginTool-fedora") {
                 tool = osTool
             }
