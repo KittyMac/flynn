@@ -123,8 +123,8 @@ static bool root_add_node(int socketfd) {
             disableSIGPIPE(socketfd);
             nodes[i].socketfd = socketfd;
             ponyint_messageq_init(&nodes[i].write_queue);
-            ponyint_thread_create(&nodes[i].read_thread_tid, root_read_from_node_thread, QOS_CLASS_USER_INTERACTIVE, nodes + i);
-            ponyint_thread_create(&nodes[i].write_thread_tid, root_write_to_node_thread, QOS_CLASS_USER_INTERACTIVE, nodes + i);
+            ponyint_thread_create(&nodes[i].read_thread_tid, root_read_from_node_thread, QOS_CLASS_UTILITY, nodes + i);
+            ponyint_thread_create(&nodes[i].write_thread_tid, root_write_to_node_thread, QOS_CLASS_UTILITY, nodes + i);
             number_of_nodes++;
             pthread_mutex_unlock(&nodes_mutex);
             return true;
@@ -498,7 +498,7 @@ void pony_root(const char * address,
     strncpy(root_ip_address, address, sizeof(root_ip_address)-1);
     root_tcp_port = port;
     
-    ponyint_thread_create(&root_tid, root_thread, QOS_CLASS_USER_INTERACTIVE, NULL);
+    ponyint_thread_create(&root_tid, root_thread, QOS_CLASS_UTILITY, NULL);
 }
 
 void root_shutdown() {

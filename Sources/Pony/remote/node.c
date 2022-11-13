@@ -90,8 +90,8 @@ static bool node_add_root(const char * address,
             roots[i].messageActorFuncPtr = messageActorFuncPtr;
             roots[i].registerActorsOnRootFuncPtr = registerActorsOnRootFuncPtr;
             ponyint_messageq_init(&roots[i].write_queue);
-            ponyint_thread_create(&roots[i].read_thread_tid, node_read_from_root_thread, QOS_CLASS_USER_INTERACTIVE, roots + i);
-            ponyint_thread_create(&roots[i].write_thread_tid, node_write_to_root_thread, QOS_CLASS_USER_INTERACTIVE, roots + i);
+            ponyint_thread_create(&roots[i].read_thread_tid, node_read_from_root_thread, QOS_CLASS_UTILITY, roots + i);
+            ponyint_thread_create(&roots[i].write_thread_tid, node_write_to_root_thread, QOS_CLASS_UTILITY, roots + i);
             pthread_mutex_unlock(&roots_mutex);
             return true;
         }

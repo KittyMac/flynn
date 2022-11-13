@@ -2,8 +2,12 @@
 #include "platform.h"
 
 #ifndef PLATFORM_IS_APPLE
+#define QOS_CLASS_USER_INTERACTIVE 0
 #define QOS_CLASS_USER_INITIATED 0
+#define QOS_CLASS_DEFAULT 0
 #define QOS_CLASS_UTILITY 1
+#define QOS_CLASS_BACKGROUND 1
+#define QOS_CLASS_UNSPECIFIED 1
 #endif
 
 
