@@ -29,6 +29,9 @@ typedef void (*RegisterActorsOnRootFunc)(int replySocketFD);
 
 typedef void (*ReplyMessageFunc)(uint32_t messageID, void * payload, int payloadSize);
 
+extern void cork(int fd);
+extern void uncork(int fd);
+
 extern int recvall(int fd, void * ptr, int size);
 extern int sendall(int fd, void * ptr, int size);
 

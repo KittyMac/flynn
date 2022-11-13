@@ -60,6 +60,7 @@ internal final class RemoteActorManager: Actor {
         // Since all communications to remote actors are funnelled through the manager,
         // we're going to up its priority
         unsafePriority = 999
+        unsafeMessageBatchSize = 10_000
     }
     
     // MARK: - RemoteActorManager: Node

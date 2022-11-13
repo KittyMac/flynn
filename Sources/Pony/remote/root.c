@@ -123,8 +123,8 @@ static bool root_add_node(int socketfd) {
             disableSIGPIPE(socketfd);
             nodes[i].socketfd = socketfd;
             ponyint_messageq_init(&nodes[i].write_queue);
-            ponyint_thread_create(&nodes[i].read_thread_tid, root_read_from_node_thread, QOS_CLASS_BACKGROUND, nodes + i);
-            ponyint_thread_create(&nodes[i].write_thread_tid, root_write_to_node_thread, QOS_CLASS_BACKGROUND, nodes + i);
+            ponyint_thread_create(&nodes[i].read_thread_tid, root_read_from_node_thread, QOS_CLASS_USER_INTERACTIVE, nodes + i);
+            ponyint_thread_create(&nodes[i].write_thread_tid, root_write_to_node_thread, QOS_CLASS_USER_INTERACTIVE, nodes + i);
             number_of_nodes++;
             pthread_mutex_unlock(&nodes_mutex);
             return true;
@@ -233,9 +233,18 @@ static DECLARE_THREAD_FN(root_write_to_node_thread)
     // just drains the queue and writes to the socket
     node_t * nodePtr = (node_t *) arg;
     pony_msg_t* msg;
-    
+        
     while(nodePtr->socketfd >= 0) {
+        
+        bool didSend = false;
+        
         while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&nodePtr->write_queue)) != NULL) {
+            
+            if (didSend == false) {
+                didSend = true;
+                cork(nodePtr->socketfd);
+            }
+            
             switch(msg->msgId) {
                 case kRemote_Version: {
                     send_version_check(nodePtr->socketfd);
@@ -262,6 +271,10 @@ static DECLARE_THREAD_FN(root_write_to_node_thread)
             }
             
             ponyint_actor_messageq_pop_mark_done(&nodePtr->write_queue);
+        }
+        
+        if (didSend) {
+            uncork(nodePtr->socketfd);
         }
         
         ponyint_messageq_markempty(&nodePtr->write_queue);
@@ -485,7 +498,7 @@ void pony_root(const char * address,
     strncpy(root_ip_address, address, sizeof(root_ip_address)-1);
     root_tcp_port = port;
     
-    ponyint_thread_create(&root_tid, root_thread, QOS_CLASS_BACKGROUND, NULL);
+    ponyint_thread_create(&root_tid, root_thread, QOS_CLASS_USER_INTERACTIVE, NULL);
 }
 
 void root_shutdown() {

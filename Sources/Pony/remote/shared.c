@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
+#include <netinet/tcp.h>
 
 #include "../ponyrt.h"
 
@@ -81,6 +82,18 @@ void disableSIGPIPE(int fd) {
 //   [0-4]      number of bytes for message data
 //   [?]        message data
 //
+
+void cork(int fd) {
+    int state = 0;
+    setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &state, sizeof(state));
+}
+
+void uncork(int fd) {
+    int state = 1;
+    setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &state, sizeof(state));
+    send(fd, &state, 0, sendFlags);
+}
+
 
 // MARK: - COMMANDS
 

@@ -90,8 +90,8 @@ static bool node_add_root(const char * address,
             roots[i].messageActorFuncPtr = messageActorFuncPtr;
             roots[i].registerActorsOnRootFuncPtr = registerActorsOnRootFuncPtr;
             ponyint_messageq_init(&roots[i].write_queue);
-            ponyint_thread_create(&roots[i].read_thread_tid, node_read_from_root_thread, QOS_CLASS_BACKGROUND, roots + i);
-            ponyint_thread_create(&roots[i].write_thread_tid, node_write_to_root_thread, QOS_CLASS_BACKGROUND, roots + i);
+            ponyint_thread_create(&roots[i].read_thread_tid, node_read_from_root_thread, QOS_CLASS_USER_INTERACTIVE, roots + i);
+            ponyint_thread_create(&roots[i].write_thread_tid, node_write_to_root_thread, QOS_CLASS_USER_INTERACTIVE, roots + i);
             pthread_mutex_unlock(&roots_mutex);
             return true;
         }
@@ -201,7 +201,16 @@ static DECLARE_THREAD_FN(node_write_to_root_thread)
     pony_msg_t* msg;
     
     while(rootPtr->read_thread_tid != 0) {
+        
+        bool didSend = false;
+        
         while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&rootPtr->write_queue)) != NULL) {
+            
+            if (didSend == false) {
+                didSend = true;
+                cork(rootPtr->socketfd);
+            }
+            
             switch(msg->msgId) {
                 case kRemote_Version: {
                     send_version_check(rootPtr->socketfd);
@@ -234,6 +243,10 @@ static DECLARE_THREAD_FN(node_write_to_root_thread)
             }
             
             ponyint_actor_messageq_pop_mark_done(&rootPtr->write_queue);
+        }
+        
+        if (didSend) {
+            uncork(rootPtr->socketfd);
         }
         
         ponyint_messageq_markempty(&rootPtr->write_queue);
