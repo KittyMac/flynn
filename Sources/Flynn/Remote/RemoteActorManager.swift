@@ -414,9 +414,9 @@ internal final class RemoteActorManager: Actor {
                                    _ messageID: Int32,
                                    _ replySocketFD: Int32) {
         if let actor = nodeActors[actorUUID] {
-            unsafeGetRunnerForActor(actorUUID).beHandleMessage(actor, behavior, data, messageID, replySocketFD)
+            unsafeGetRunnerForActor(actor.unsafeRunnerIdx).beHandleMessage(actor, behavior, data, messageID, replySocketFD)
         } else if let actor = rootActors[actorUUID] {
-            unsafeGetRunnerForActor(actorUUID).beHandleMessage(actor, behavior, data, messageID, replySocketFD)
+            unsafeGetRunnerForActor(actor.unsafeRunnerIdx).beHandleMessage(actor, behavior, data, messageID, replySocketFD)
         }
     }
     
@@ -426,6 +426,13 @@ internal final class RemoteActorManager: Actor {
         // con: we won't get amazing distribution across all cores
         let runnerIdx = abs(actorUUID.hashValue) % runnerPool.count
         return runnerPool[runnerIdx]
+    }
+    
+    internal func unsafeGetRunnerForActor(_ runnerIdx: Int) -> RemoteActorRunner {
+        // Ok, this has pros and cons
+        // pro: its quick, easy, and guarantees causal messaging
+        // con: we won't get amazing distribution across all cores
+        return runnerPool[runnerIdx % runnerPool.count]
     }
 
     // MARK: - RemoteActorManager: Root

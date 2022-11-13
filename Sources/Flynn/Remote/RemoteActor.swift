@@ -12,8 +12,11 @@ public protocol BehaviorRegisterable {
 
 public typealias RemoteActor = ( InternalRemoteActor & BehaviorRegisterable )
 
+fileprivate var unsafeGlobalRunnerIdx = 0
+
 open class InternalRemoteActor {
 
+    public let unsafeRunnerIdx: Int
     public let unsafeUUID: String
     
     public let unsafeIsProxy: Bool
@@ -34,6 +37,9 @@ open class InternalRemoteActor {
     }
 
     public required init() {
+        unsafeGlobalRunnerIdx = (unsafeGlobalRunnerIdx + 1) % 4096
+        self.unsafeRunnerIdx = unsafeGlobalRunnerIdx
+        
         unsafeUUID = UUID().uuidString
         isNamedService = false
         unsafeIsProxy = true
@@ -41,6 +47,9 @@ open class InternalRemoteActor {
     }
 
     public required init(_ uuid: String) {
+        unsafeGlobalRunnerIdx = (unsafeGlobalRunnerIdx + 1) % 4096
+        self.unsafeRunnerIdx = unsafeGlobalRunnerIdx
+        
         unsafeUUID = uuid
         isNamedService = true
         unsafeIsProxy = false
@@ -49,6 +58,9 @@ open class InternalRemoteActor {
     }
 
     public required init(_ uuid: String, _ socketFD: Int32, _ shouldBeProxy: Bool) {
+        unsafeGlobalRunnerIdx = (unsafeGlobalRunnerIdx + 1) % 4096
+        self.unsafeRunnerIdx = unsafeGlobalRunnerIdx
+        
         unsafeUUID = uuid
         nodeSocketFD = socketFD
         isNamedService = true
