@@ -74,7 +74,8 @@ static uint32_t hw_p_core_count = 0;
 
 void ponyint_cpu_init()
 {
-    hw_core_count = get_sys_info_by_name("hw.physicalcpu", 1);
+    // hw.logicalcpu or hw.physicalcpu
+    hw_core_count = get_sys_info_by_name("hw.logicalcpu", 1);
     
     const uint32_t cpu_family = get_sys_info_by_name("hw.cpufamily", 0);
     switch (cpu_family) {
