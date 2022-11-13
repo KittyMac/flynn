@@ -38,7 +38,8 @@ let pluginDependencies: [Package.Dependency] = [
 let productsTarget: [PackageDescription.Product] = [
     .library(name: "FlynnPluginTool", targets: [
         "FlynnPluginTool-focal",
-        "FlynnPluginTool-amazonlinux2"
+        "FlynnPluginTool-amazonlinux2",
+        "FlynnPluginTool-fedora"
     ]),
 ]
 let pluginTarget: [PackageDescription.Target] = [
@@ -46,12 +47,15 @@ let pluginTarget: [PackageDescription.Target] = [
                   path: "dist/FlynnPluginTool-focal.zip"),
     .binaryTarget(name: "FlynnPluginTool-amazonlinux2",
                   path: "dist/FlynnPluginTool-amazonlinux2.zip"),
+    .binaryTarget(name: "FlynnPluginTool-fedora",
+                  path: "dist/FlynnPluginTool-fedora.zip"),
     .plugin(
         name: "FlynnPlugin",
         capability: .buildTool(),
         dependencies: [
             "FlynnPluginTool-focal",
-            "FlynnPluginTool-amazonlinux2"
+            "FlynnPluginTool-amazonlinux2",
+            "FlynnPluginTool-fedora"
         ]
     ),
 ]
