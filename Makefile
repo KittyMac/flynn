@@ -62,6 +62,6 @@ docker:
 	docker buildx build --file Dockerfile-fedora --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora .
 
 docker-shell:
-	docker buildx build --file Dockerfile-fedora --platform linux/arm64 --push -t kittymac/flynn-fedora .
+	docker buildx build --file Dockerfile-fedora --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora .
 	docker pull kittymac/flynn-fedora
-	docker run --platform linux/arm64 --rm -it --entrypoint bash kittymac/flynn-fedora
+	docker run --rm -it --entrypoint bash kittymac/flynn-fedora
