@@ -354,16 +354,19 @@ internal final class RemoteActorManager: Actor {
                     remoteNodeRoundRobinIndex = remoteNodeRoundRobinIndex % Int(remoteCoreCount)
                     
                     // calculate the total number of remote cores
-                    var idx: Int32 = 0
                     for socket in allSockets {
+                        let numCoresOnThisSocket = pony_remote_core_count_by_socket(socket)
+                        numRemoteCoresBySocket[socket] = numCoresOnThisSocket
+                    }
+                    
+                    var idx: Int32 = 0
+                    for (socket, numCoresOnThisSocket) in numRemoteCoresBySocket {
+                        idx += numCoresOnThisSocket
+                        
                         if idx >= remoteNodeRoundRobinIndex {
                             internalRemoteActor.nodeSocketFD = socket
                             break
                         }
-                        
-                        let numCoresOnThisSocket = pony_remote_core_count_by_socket(socket)
-                        numRemoteCoresBySocket[socket] = numCoresOnThisSocket
-                        idx += numCoresOnThisSocket
                     }
                     
                     if internalRemoteActor.nodeSocketFD == kUnregistedSocketFD {
