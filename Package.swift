@@ -70,8 +70,9 @@ let package = Package(
         .iOS(.v9)
     ],
     products: productsTarget + [
+        .library(name: "Flynn", targets: ["Flynn"]),
+        .library(name: "FlynnLib", type: .dynamic, targets: ["Flynn"]),
         .library(name: "PonyLib", type: .dynamic, targets: ["Pony"]),
-        .library(name: "Flynn", type: .dynamic, targets: ["Flynn"]),
         .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"]),
     ],
     dependencies: pluginDependencies + [
