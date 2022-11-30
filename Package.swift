@@ -71,7 +71,7 @@ let package = Package(
     ],
     products: productsTarget + [
         .library(name: "PonyLib", type: .dynamic, targets: ["Pony"]),
-        .library(name: "Flynn", targets: ["Flynn"]),
+        .library(name: "Flynn", type: .dynamic, targets: ["Flynn"]),
         .plugin(name: "FlynnPlugin", targets: ["FlynnPlugin"]),
     ],
     dependencies: pluginDependencies + [

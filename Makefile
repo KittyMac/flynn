@@ -52,9 +52,9 @@ release: build docker
 	
 
 docker:
-	-docker buildx create --name local_builder
-	-DOCKER_HOST=tcp://192.168.1.198:2376 docker buildx create --name local_builder --platform linux/amd64 --append
-	-docker buildx use local_builder
+	-docker buildx create --name cluster_builder203
+	-DOCKER_HOST=ssh://rjbowli@192.168.1.203 docker buildx create --name cluster_builder203 --platform linux/amd64 --append
+	-docker buildx use cluster_builder203
 	-docker buildx inspect --bootstrap
 	-docker login
 	docker buildx build --file Dockerfile-focal --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-focal .
