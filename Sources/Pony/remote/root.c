@@ -306,14 +306,14 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
     while(nodePtr->socketfd >= 0) {
         
 #if REMOTE_DEBUG
-        fprintf(stderr, "[%d] root reading socket\n", nodePtr->socketfd);
+        pony_syslog2("Flynn", "[%d] root reading socket\n", nodePtr->socketfd);
 #endif
         
         // read the command byte
         uint8_t command = read_command(nodePtr->socketfd);
         if (command == COMMAND_NULL) {
             // If we timeout then we should disconnect from the node (it missed two heartbeats)
-            fprintf(stdout, "warning: dropped connection to node [%d]\n", nodePtr->socketfd);
+            pony_syslog2("Flynn", "warning: dropped connection to node [%d]\n", nodePtr->socketfd);
             root_remove_node(nodePtr);
             ponyint_pool_thread_cleanup();
             return 0;
@@ -345,7 +345,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
         switch(command) {
             case COMMAND_VERSION_CHECK: {
                 if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
-                    fprintf(stdout, "warning: root -> node version mismatch ( [%s] != [%s] )\n", uuid, BUILD_VERSION_UUID);
+                    pony_syslog2("Flynn", "warning: root -> node version mismatch ( [%s] != [%s] )\n", uuid, BUILD_VERSION_UUID);
                 }
             } break;
             case COMMAND_DESTROY_ACTOR_ACK: {
@@ -363,7 +363,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 registerWithRootPtr(payload, nodePtr->socketfd);
                 free(payload);
 #if REMOTE_DEBUG
-                fprintf(stdout, "[%d] COMMAND_REGISTER_WITH_ROOT(root)[%s]\n", nodePtr->socketfd, uuid);
+                pony_syslog2("Flynn", "[%d] COMMAND_REGISTER_WITH_ROOT(root)[%s]\n", nodePtr->socketfd, uuid);
 #endif
             } break;
             case COMMAND_CREATE_ACTOR: {
@@ -377,7 +377,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 createActorFuncPtr(uuid, type, true, nodePtr->socketfd);
                 
 #if REMOTE_DEBUG
-                fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR(root)[%s, %s]\n", nodePtr->socketfd, uuid, type);
+                pony_syslog2("Flynn", "[%d] COMMAND_CREATE_ACTOR(root)[%s, %s]\n", nodePtr->socketfd, uuid, type);
 #endif
             } break;
             case COMMAND_CORE_COUNT: {
@@ -404,7 +404,7 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 replyMessageFuncPtr(messageID, payload, payload_count);
                 
 #if REMOTE_DEBUG
-                fprintf(stdout, "[%d] COMMAND_SEND_REPLY[%s] %d bytes\n", nodePtr->socketfd, uuid, payload_count);
+                pony_syslog2("Flynn", "[%d] COMMAND_SEND_REPLY[%s] %d bytes\n", nodePtr->socketfd, uuid, payload_count);
 #endif
             } break;
         }
@@ -427,7 +427,7 @@ static DECLARE_THREAD_FN(root_thread)
     // socket create and verification
     socketfd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketfd < 0) {
-        fprintf(stderr, "Flynn Root socket creation failed, exiting...\n");
+        pony_syslog2("Flynn", "Flynn Root socket creation failed, exiting...\n");
         exit(1);
     }
     
@@ -446,11 +446,11 @@ static DECLARE_THREAD_FN(root_thread)
     }
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] root listen socket\n", root_listen_socket);
+    pony_syslog2("Flynn", "[%d] root listen socket\n", root_listen_socket);
 #endif
     while(root_listen_socket >= 0) {
         if ((listen(socketfd, 32)) != 0) {
-            fprintf(stderr, "Flynn Root socket listen failed, ending root listen thread\n");
+            pony_syslog2("Flynn", "Flynn Root socket listen failed, ending root listen thread\n");
             close_socket(socketfd);
             ponyint_pool_thread_cleanup();
             return 0;
@@ -458,12 +458,12 @@ static DECLARE_THREAD_FN(root_thread)
         
         connectionfd = accept(socketfd, (struct sockaddr*)&clientaddr, &len);
         if (connectionfd < 0) {
-            fprintf(stderr, "Flynn Root failed to accept incoming connection, skipping...\n");
+            pony_syslog2("Flynn", "Flynn Root failed to accept incoming connection, skipping...\n");
             continue;
         }
         
         if(!root_add_node(connectionfd)) {
-            fprintf(stderr, "Flynn Root failed to add node, maximum number of nodes exceeded\n");
+            pony_syslog2("Flynn", "Flynn Root failed to add node, maximum number of nodes exceeded\n");
             close_socket(socketfd);
             ponyint_pool_thread_cleanup();
             return 0;

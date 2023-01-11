@@ -228,7 +228,7 @@ void send_register_with_root(int socketfd, const char * registrationString) {
     }
         
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] registering with root on socket\n", socketfd);
+    pony_syslog2("Flynn", "[%d] registering with root on socket\n", socketfd);
 #endif
 }
 
@@ -251,7 +251,7 @@ void send_create_actor(int socketfd, const char * actorUUID, const char * actorT
     sendall(socketfd, buffer, idx);
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] sending create actor to socket\n", socketfd);
+    pony_syslog2("Flynn", "[%d] sending create actor to socket\n", socketfd);
 #endif
 }
 
@@ -269,7 +269,7 @@ void send_destroy_actor(int socketfd, const char * actorUUID) {
     sendall(socketfd, buffer, idx);
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] root sending destroy actor to socket\n", socketfd);
+    pony_syslog2("Flynn", "[%d] root sending destroy actor to socket\n", socketfd);
 #endif
 }
 
@@ -308,7 +308,7 @@ int send_message(int socketfd, int messageID, const char * actorUUID, const char
     }
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] root sending message id %d to socket\n", socketfd, messageID);
+    pony_syslog2("Flynn", "[%d] root sending message id %d to socket\n", socketfd, messageID);
 #endif
     
     return idx + sizeof(net_count) + count;
@@ -330,7 +330,7 @@ void send_reply(int socketfd, uint32_t messageID, const void * bytes, uint32_t c
     sendall(socketfd, (char *)bytes, count);
     
 #if REMOTE_DEBUG
-    fprintf(stderr, "[%d] node sending reply to messageID %d\n", socketfd, messageID);
+    pony_syslog2("Flynn", "[%d] node sending reply to messageID %d\n", socketfd, messageID);
 #endif
 }
 

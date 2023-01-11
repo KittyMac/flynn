@@ -284,14 +284,14 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
         // socket create and verification
         rootPtr->socketfd = socket(AF_INET, SOCK_STREAM, 0);
         if (rootPtr->socketfd < 0) {
-            fprintf(stderr, "Flynn Node socket creation failed, exiting...\n");
+            pony_syslog2("Flynn", "Flynn Node socket creation failed, exiting...");
             exit(1);
         }
         
         disableSIGPIPE(rootPtr->socketfd);
         
         connectAttemptCount += 1;
-        fprintf(stdout, "reconnect attempt %d to root %s:%d\n", connectAttemptCount, rootPtr->address, rootPtr->port);
+        pony_syslog2("Flynn", "reconnect attempt %d to root %s:%d\n", connectAttemptCount, rootPtr->address, rootPtr->port);
         if (connect(rootPtr->socketfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
             close_socket(rootPtr->socketfd);
             sleep(1);
@@ -311,10 +311,10 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
         setsockopt (rootPtr->socketfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
         
         connectAttemptCount = 0;
-        fprintf(stdout, "connected to root %s:%d\n", rootPtr->address, rootPtr->port);
+        pony_syslog2("Flynn", "connected to root %s:%d\n", rootPtr->address, rootPtr->port);
         while(rootPtr->socketfd >= 0) {
 #if REMOTE_DEBUG
-            fprintf(stderr, "[%d] node reading socket\n", rootPtr->socketfd);
+            pony_syslog2("Flynn", "[%d] node reading socket\n", rootPtr->socketfd);
 #endif
             
             // read the command byte
@@ -354,7 +354,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                 case COMMAND_VERSION_CHECK: {
                     if (strncmp(BUILD_VERSION_UUID, uuid, strlen(BUILD_VERSION_UUID)) != 0) {
 #if REMOTE_DEBUG
-                        fprintf(stdout, "[%d] node -> root version mismatch ( [%s] != [%s] )\n", rootPtr->socketfd, uuid, BUILD_VERSION_UUID);
+                        pony_syslog2("Flynn", "[%d] node -> root version mismatch ( [%s] != [%s] )\n", rootPtr->socketfd, uuid, BUILD_VERSION_UUID);
 #endif
                     }
                 } break;
@@ -369,13 +369,13 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                     rootPtr->createActorFuncPtr(uuid, type, false, rootPtr->socketfd);
                     
 #if REMOTE_DEBUG
-                    fprintf(stdout, "[%d] COMMAND_CREATE_ACTOR(node)[%s, %s]\n", rootPtr->socketfd, uuid, type);
+                    pony_syslog2("Flynn", "[%d] COMMAND_CREATE_ACTOR(node)[%s, %s]\n", rootPtr->socketfd, uuid, type);
 #endif
                 } break;
                 case COMMAND_DESTROY_ACTOR:
                     rootPtr->destroyActorFuncPtr(uuid);
 #if REMOTE_DEBUG
-                    fprintf(stdout, "[%d] COMMAND_DESTROY_ACTOR[%s]\n", rootPtr->socketfd, uuid);
+                    pony_syslog2("Flynn", "[%d] COMMAND_DESTROY_ACTOR[%s]\n", rootPtr->socketfd, uuid);
 #endif
                     break;
                 case COMMAND_SEND_MESSAGE: {
@@ -404,7 +404,7 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
                     rootPtr->messageActorFuncPtr(uuid, behavior, bytes, payload_count, messageID, rootPtr->socketfd);
                     
     #if REMOTE_DEBUG
-                    fprintf(stdout, "[%d] COMMAND_SEND_MESSAGE[%s, %s] %d bytes\n", rootPtr->socketfd, uuid, behavior, payload_count);
+                    pony_syslog2("Flynn", "[%d] COMMAND_SEND_MESSAGE[%s, %s] %d bytes\n", rootPtr->socketfd, uuid, behavior, payload_count);
     #endif
                 } break;
             }
@@ -441,7 +441,7 @@ void pony_node(const char * address,
                       destroyActorFuncPtr,
                       messageActorFuncPtr,
                       registerActorsOnRootFuncPtr)) {
-        fprintf(stderr, "Flynn node failed to add root, maximum number of roots exceeded\n");
+        pony_syslog2("Flynn", "Flynn node failed to add root, maximum number of roots exceeded\n");
         return;
     }
 }

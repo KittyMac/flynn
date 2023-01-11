@@ -41,12 +41,12 @@ static uint32_t get_sys_info(int type_specifier, const char* name, uint32_t defa
     uint32_t result = default_value;
     int mib[2] = { CTL_HW, type_specifier };
     if (sysctl(mib, 2, NULL, &size, NULL, 0) != 0) {
-        fprintf(stderr, "sysctl(\"%s\") failed: %s\n", name, strerror(errno));
+        pony_syslog2("Flynn", "sysctl(\"%s\") failed: %s\n", name, strerror(errno));
     } else if (size == sizeof(uint32_t)) {
         sysctl(mib, 2, &result, &size, NULL, 0);
-        //fprintf(stderr, "%s: %u, size = %lu\n", name, result, size);
+        //pony_syslog2("Flynn", "%s: %u, size = %lu\n", name, result, size);
     } else {
-        fprintf(stderr, "sysctl does not support non-integer lookup for (\"%s\")\n", name);
+        pony_syslog2("Flynn", "sysctl does not support non-integer lookup for (\"%s\")\n", name);
     }
     return result;
 }
@@ -55,12 +55,12 @@ static uint32_t get_sys_info_by_name(const char* type_specifier, uint32_t defaul
     size_t size = 0;
     uint32_t result = default_value;
     if (sysctlbyname(type_specifier, NULL, &size, NULL, 0) != 0) {
-        fprintf(stderr, "sysctlbyname(\"%s\") failed: %s\n", type_specifier, strerror(errno));
+        pony_syslog2("Flynn", "sysctlbyname(\"%s\") failed: %s\n", type_specifier, strerror(errno));
     } else if (size == sizeof(uint32_t)) {
         sysctlbyname(type_specifier, &result, &size, NULL, 0);
-        //fprintf(stderr, "%s: %u, size = %lu\n", type_specifier, result, size);
+        //pony_syslog2("Flynn", "%s: %u, size = %lu\n", type_specifier, result, size);
     } else {
-        fprintf(stderr, "sysctl does not support non-integer lookup for (\"%s\")\n", type_specifier);
+        pony_syslog2("Flynn", "sysctl does not support non-integer lookup for (\"%s\")\n", type_specifier);
     }
     return result;
 }
@@ -106,7 +106,7 @@ void ponyint_cpu_init()
     }
     
     if (hw_e_core_count == 0 || hw_p_core_count == 0) {
-        fprintf(stdout, "Warning: Actor core affinities have been disabled, unrecognized cpu family detected (0x%08X)\n", cpu_family);
+        pony_syslog2("Flynn", "Warning: Actor core affinities have been disabled, unrecognized cpu family detected (0x%08X)\n", cpu_family);
         hw_e_core_count = 1;
         hw_p_core_count = hw_core_count - hw_e_core_count;
     }

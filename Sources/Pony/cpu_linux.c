@@ -106,7 +106,7 @@ void ponyint_cpu_init()
     hw_core_count = CPU_COUNT(&ht_cpus) + CPU_COUNT(&hw_cpus);
     
     if (hw_e_core_count == 0 || hw_p_core_count == 0) {
-        fprintf(stdout, "Warning: Actor core affinities have been disabled, unrecognized cpu detected\n");
+        pony_syslog2("Flynn", "Warning: Actor core affinities have been disabled, unrecognized cpu detected\n");
         hw_e_core_count = 1;
         hw_p_core_count = hw_core_count - hw_e_core_count;
     }

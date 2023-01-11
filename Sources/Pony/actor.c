@@ -147,7 +147,7 @@ void ponyint_actor_destroy(pony_actor_t* actor)
     int32_t typeSize = sizeof(pony_actor_t);
     ponyint_pool_free(actor, typeSize);
     
-    //fprintf(stderr, "pony actor freed\n");
+    //pony_syslog2("Flynn", "pony actor freed\n");
 }
 
 bool ponyint_actor_pendingdestroy(pony_actor_t* actor)

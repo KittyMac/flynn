@@ -393,7 +393,7 @@ static void ponyint_sched_shutdown()
     ponyint_mpmcq_destroy(&injectHighEfficiency);
     ponyint_mpmcq_destroy(&injectHighPerformance);
     
-    //fprintf(stderr, "max memory usage: %0.2f MB\n", ponyint_max_memory() / (1024.0f * 1024.0f));
+    //pony_syslog2("Flynn", "max memory usage: %0.2f MB\n", ponyint_max_memory() / (1024.0f * 1024.0f));
 }
 
 pony_ctx_t* ponyint_sched_init()
@@ -484,7 +484,7 @@ void ponyint_sched_wait(bool waitForRemotes)
         // all injection queues must be empty
         // all remote actors must be destroyed
         /*
-        fprintf(stderr, "%d  %d  %d  %d  %d\n",
+         pony_syslog2("Flynn", "%d  %d  %d  %d  %d\n",
                 active,
                 (int)inject.num_messages,
                 (int)injectHighEfficiency.num_messages,

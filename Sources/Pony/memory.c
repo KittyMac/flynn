@@ -140,7 +140,7 @@ void * ponyint_pool_alloc(size_t size) {
     }
         
     atomic_fetch_add_explicit(&unsafe_pony_mapped_memory, size, memory_order_relaxed);
-    //fprintf(stderr, "+ %lu\n", (size_t)unsafe_pony_mapped_memory);
+    //pony_syslog2("Flynn", "+ %lu\n", (size_t)unsafe_pony_mapped_memory);
     return malloc(size);
 }
 
@@ -157,7 +157,7 @@ void ponyint_pool_free(void * p, size_t size) {
 #endif
     free(p);
     
-    //fprintf(stderr, "- %lu\n", (size_t)unsafe_pony_mapped_memory);
+    //pony_syslog2("Flynn", "- %lu\n", (size_t)unsafe_pony_mapped_memory);
 }
 
 pony_msg_t* pony_alloc_msg(size_t size, uint32_t msgId) {
@@ -178,7 +178,7 @@ void ponyint_pool_thread_cleanup() {
             if (p != NULL) {
                 atomic_fetch_sub_explicit(&unsafe_pony_mapped_memory, pool_size, memory_order_relaxed);
                 free(p);
-                //fprintf(stderr, "[%lu] after: %lu\n", pool_size, (size_t)unsafe_pony_mapped_memory);
+                //pony_syslog2("Flynn", "[%lu] after: %lu\n", pool_size, (size_t)unsafe_pony_mapped_memory);
             }
         }
     }

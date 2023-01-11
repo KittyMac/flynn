@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <syslog.h>
+#include <stdarg.h>
 
 #include "ponyrt.h"
 
@@ -34,7 +35,7 @@ static bool pony_is_inited = false;
 bool pony_startup() {
     if (pony_is_inited) { return true; }
     
-    //fprintf(stderr, "pony_startup()\n");
+    //pony_syslog2("Flynn", "pony_startup()\n");
     
     ponyint_cpu_init();
     
@@ -50,13 +51,13 @@ void pony_shutdown(bool waitForRemotes) {
     
     ponyint_sched_wait(waitForRemotes);
     
-    //fprintf(stderr, "pony remote shutdown\n");
+    //pony_syslog2("Flynn", "pony remote shutdown\n");
     pony_remote_shutdown();
     
-    //fprintf(stderr, "pony scheduler shutdown\n");
+    //pony_syslog2("Flynn", "pony scheduler shutdown\n");
     ponyint_sched_stop();
     
-    //fprintf(stderr, "pony shutdown finished\n");
+    //pony_syslog2("Flynn", "pony shutdown finished\n");
     pony_is_inited = false;
 }
 
@@ -233,5 +234,15 @@ unsigned long pony_mapped_memory() {
 
 void pony_syslog(const char * tag, const char * msg) {
     syslog(LOG_ERR, "%s: %s\n", tag, msg);
+}
+
+void pony_syslog2(const char * tag, const char *format, ...) {
+    char msg[1024] = {0};
+    va_list args;
+    va_start(args, format);
+    vsnprintf(msg, sizeof(msg), format, args);
+    va_end(args);
+
+    pony_syslog(tag, msg);
 }
 
