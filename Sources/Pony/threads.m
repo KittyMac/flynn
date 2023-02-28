@@ -80,7 +80,6 @@ void ponyint_thead_setname_actual(char * thread_name) {
     pthread_setname_np(pthread_self(), thread_name);
 #endif
     
-    signal(SIGUSR1, SIG_IGN);
     signal(SIGPIPE, SIG_IGN);
 }
 
