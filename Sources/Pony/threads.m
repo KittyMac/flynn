@@ -79,6 +79,9 @@ void ponyint_thead_setname_actual(char * thread_name) {
 #ifdef PLATFORM_IS_LINUX
     pthread_setname_np(pthread_self(), thread_name);
 #endif
+    
+    signal(SIGUSR1, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN);
 }
 
 void ponyint_thead_setname(int schedID, int schedAffinity) {
