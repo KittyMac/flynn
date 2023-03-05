@@ -64,77 +64,77 @@ open class Actor: Equatable {
 
     public var unsafeCoreAffinity: CoreAffinity {
         get {
-            guard safePonyActorPtr != nil else {
+            guard let actorPtr = safePonyActorPtr else {
                 print("Warning: unsafeCoreAffinity called on a cancelled actor")
                 return .none
             }
-            if let affinity = CoreAffinity(rawValue: pony_actor_getcoreAffinity(safePonyActorPtr)) {
+            if let affinity = CoreAffinity(rawValue: pony_actor_getcoreAffinity(actorPtr)) {
                 return affinity
             }
             return .none
         }
         set {
-            guard safePonyActorPtr != nil else {
+            guard let actorPtr = safePonyActorPtr else {
                 print("Warning: unsafeCoreAffinity called on a cancelled actor")
                 return
             }
             if pony_core_affinity_enabled() {
-                pony_actor_setcoreAffinity(safePonyActorPtr, newValue.rawValue)
+                pony_actor_setcoreAffinity(actorPtr, newValue.rawValue)
             } else {
-                pony_actor_setcoreAffinity(safePonyActorPtr, CoreAffinity.none.rawValue)
+                pony_actor_setcoreAffinity(actorPtr, CoreAffinity.none.rawValue)
             }
         }
     }
 
     public var unsafePriority: Int32 {
         get {
-            guard safePonyActorPtr != nil else {
+            guard let actorPtr = safePonyActorPtr else {
                 print("Warning: unsafePriority called on a cancelled actor")
                 return 0
             }
-            return pony_actor_getpriority(safePonyActorPtr)
+            return pony_actor_getpriority(actorPtr)
         }
         set {
-            guard safePonyActorPtr != nil else {
+            guard let actorPtr = safePonyActorPtr else {
                 print("Warning: unsafePriority called on a cancelled actor")
                 return
             }
-            pony_actor_setpriority(safePonyActorPtr, newValue)
+            pony_actor_setpriority(actorPtr, newValue)
         }
     }
 
     public var unsafeMessageBatchSize: Int32 {
         get {
-            guard safePonyActorPtr != nil else {
+            guard let actorPtr = safePonyActorPtr else {
                 print("Warning: unsafeMessageBatchSize called on a cancelled actor")
                 return 0
             }
-            return pony_actor_getbatchSize(safePonyActorPtr)
+            return pony_actor_getbatchSize(actorPtr)
         }
         set {
-            guard safePonyActorPtr != nil else {
+            guard let actorPtr = safePonyActorPtr else {
                 print("Warning: unsafeMessageBatchSize called on a cancelled actor")
                 return
             }
-            pony_actor_setbatchSize(safePonyActorPtr, newValue)
+            pony_actor_setbatchSize(actorPtr, newValue)
         }
     }
 
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
-        guard safePonyActorPtr != nil else {
+        guard let actorPtr = safePonyActorPtr else {
             print("Warning: unsafeWait() called on a cancelled actor")
             return
         }
-        pony_actor_wait(minMsgs, safePonyActorPtr)
+        pony_actor_wait(minMsgs, actorPtr)
     }
 
     public func unsafeYield() {
-        guard safePonyActorPtr != nil else {
+        guard let actorPtr = safePonyActorPtr else {
             print("Warning: unsafeYield() called on a cancelled actor")
             return
         }
-        pony_actor_yield(safePonyActorPtr)
+        pony_actor_yield(actorPtr)
     }
     
     public func unsafeCancel() {
@@ -144,35 +144,35 @@ open class Actor: Equatable {
         }
         safeThenMessages.removeAll()
         
-        if let safePonyActorPtr = safePonyActorPtr {
-            pony_actor_suspend(safePonyActorPtr)
-            pony_actor_destroy(safePonyActorPtr)
+        if let actorPtr = safePonyActorPtr {
+            pony_actor_suspend(actorPtr)
+            pony_actor_destroy(actorPtr)
         }
         safePonyActorPtr = nil
     }
     
     public func unsafeSuspend() {
-        guard safePonyActorPtr != nil else {
+        guard let actorPtr = safePonyActorPtr else {
             print("Warning: unsafeSuspend called on a cancelled actor")
             return
         }
-        pony_actor_suspend(safePonyActorPtr)
+        pony_actor_suspend(actorPtr)
     }
     
     public func unsafeResume() {
-        guard safePonyActorPtr != nil else {
+        guard let actorPtr = safePonyActorPtr else {
             print("Warning: unsafeResume called on a cancelled actor")
             return
         }
-        pony_actor_resume(safePonyActorPtr)
+        pony_actor_resume(actorPtr)
     }
 
     public var unsafeMessagesCount: Int32 {
-        guard safePonyActorPtr != nil else {
+        guard let actorPtr = safePonyActorPtr else {
             print("Warning: unsafeMessagesCount called on a cancelled actor")
             return 0
         }
-        return pony_actor_num_messages(safePonyActorPtr)
+        return pony_actor_num_messages(actorPtr)
     }
 
     private let initTime: TimeInterval = ProcessInfo.processInfo.systemUptime
@@ -193,8 +193,8 @@ open class Actor: Equatable {
         }
         safeThenMessages.removeAll()
         
-        if let safePonyActorPtr = safePonyActorPtr {
-            pony_actor_destroy(safePonyActorPtr)
+        if let actorPtr = safePonyActorPtr {
+            pony_actor_destroy(actorPtr)
         }
         safePonyActorPtr = nil
     }
@@ -203,22 +203,22 @@ open class Actor: Equatable {
     @available(macOS 10.15, *)
     @inlinable @inline(__always)
     public func safeTask(_ block: @escaping PonyTaskBlock) {
-        guard safePonyActorPtr != nil else {
+        guard let actorPtr = safePonyActorPtr else {
             print("Warning: safeTask called on a cancelled actor")
             return
         }
-        if pony_actor_is_suspended(safePonyActorPtr) {
+        if pony_actor_is_suspended(actorPtr) {
             fatalError("safeTask may not be called on an already suspended actor")
         }
         Task {
-            while pony_actor_is_suspended(safePonyActorPtr) == false {
+            while pony_actor_is_suspended(actorPtr) == false {
                 usleep(50)
             }
             await block {
-                pony_actor_resume(safePonyActorPtr)
+                pony_actor_resume(actorPtr)
             }
         }
-        pony_actor_suspend(safePonyActorPtr)
+        pony_actor_suspend(actorPtr)
     }
 
     public var unsafeStatus: String {
@@ -239,7 +239,7 @@ open class Actor: Equatable {
     @discardableResult
     @inlinable @inline(__always)
     public func unsafeSend(_ block: @escaping PonyBlock) -> Self {
-        guard safePonyActorPtr != nil else {
+        guard let actorPtr = safePonyActorPtr else {
             print("Warning: unsafeSend called on a cancelled actor")
             return self
         }
@@ -249,20 +249,20 @@ open class Actor: Equatable {
         let prevThenId = pony_actor_get_then_id()
         if prevThenId != 0 {
             safeThenMessages[prevThenId] = argumentPtr
-            pony_actor_then_message(safePonyActorPtr, thenId)
+            pony_actor_then_message(actorPtr, thenId)
         } else {
-            pony_actor_send_message(safePonyActorPtr, argumentPtr, thenId, handleMessage)
+            pony_actor_send_message(actorPtr, argumentPtr, thenId, handleMessage)
         }
         return self
     }
     
     @inlinable @inline(__always)
     public func safeThen(_ prevThenId: UInt64?) {
-        guard safePonyActorPtr != nil else { return }
+        guard let actorPtr = safePonyActorPtr else { return }
         
         if let prevThenId = prevThenId,
            let argumentPtr = safeThenMessages.removeValue(forKey: prevThenId) {
-            pony_actor_complete_then_message(safePonyActorPtr, argumentPtr, handleMessage)
+            pony_actor_complete_then_message(actorPtr, argumentPtr, handleMessage)
         }
     }
     
