@@ -120,7 +120,7 @@ extension FlynnPlugin: XcodeBuildToolPlugin {
         
         // let outputFilePath = context.pluginWorkDirectory.string + "/" + UUID().uuidString + ".swift"
         let outputFilePath = context.pluginWorkDirectory.string + "/FlynnPlugin.swift"
-        
+                
         return [
             .buildCommand(
                 displayName: "Flynn Plugin - generating behaviours...",
@@ -131,7 +131,7 @@ extension FlynnPlugin: XcodeBuildToolPlugin {
                 ],
                 inputFiles: allInputFiles,
                 outputFiles: [
-                    //PackagePlugin.Path(outputFilePath)
+                    PackagePlugin.Path(outputFilePath)
                 ]
             )
         ]
