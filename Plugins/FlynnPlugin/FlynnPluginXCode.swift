@@ -1,7 +1,7 @@
 import Foundation
 import PackagePlugin
 
-/*
+
 var logs: [String] = []
 
 internal func print(_ items: String..., filename: String = #file, function : String = #function, line: Int = #line, separator: String = " ", terminator: String = "\n") {
@@ -25,20 +25,23 @@ internal func exportLogs() {
     let logString = logs.joined(separator: "\n")
     try? logString.write(toFile: "/tmp/FlynnPlugin.log", atomically: false, encoding: .utf8)
 }
-*/
 
-@main struct FlynnPlugin: BuildToolPlugin {
+
+#if canImport(XcodeProjectPlugin)
+import XcodeProjectPlugin
+
+extension FlynnPlugin: XcodeBuildToolPlugin {
     
-    fileprivate func gatherSwiftInputFiles(targets: [Target],
+    fileprivate func gatherSwiftInputFiles(targets: [XcodeTarget],
                                            inputFiles: inout [PackagePlugin.Path]) {
         
         for target in targets {
             
-            var hasFlynnDependency = target.name == "Flynn"
+            var hasFlynnDependency = target.displayName == "Flynn"
             for dependency in target.dependencies {
                 switch dependency {
                 case .target(let target):
-                    if target.name == "Flynn" {
+                    if target.displayName == "Flynn" {
                         hasFlynnDependency = true
                     }
                     break
@@ -52,53 +55,23 @@ internal func exportLogs() {
                 }
             }
             
-            guard hasFlynnDependency else { continue }
+            guard hasFlynnDependency || targets.count == 1 else { continue }
             
-            let url = URL(fileURLWithPath: target.directory.string)
-            if let enumerator = FileManager.default.enumerator(at: url,
-                                                               includingPropertiesForKeys: [.isRegularFileKey],
-                                                               options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
-                for case let fileURL as URL in enumerator {
-                    do {
-                        let fileAttributes = try fileURL.resourceValues(forKeys:[.isRegularFileKey])
-                        if fileAttributes.isRegularFile == true && fileURL.pathExtension == "swift" {
-                            inputFiles.append(PackagePlugin.Path(fileURL.path))
-                        }
-                    } catch { print(error, fileURL) }
+            for targetFile in target.inputFiles {
+                if targetFile.type == .source && targetFile.path.extension == "swift" {
+                    inputFiles.append(targetFile.path)
                 }
             }
         }
     }
-    
-    func createBuildCommands(context: PluginContext, target: Target) async throws -> [Command] {
-        
-        guard let target = target as? SwiftSourceModuleTarget else {
-            return []
-        }
-        
+
+    func createBuildCommands(context: XcodePluginContext, target: XcodeTarget) throws -> [Command] {
+                
         // Note: We want to load the right pre-compiled tool for the right OS
         // There are currently two tools:
         // FlynnPluginTool-focal: supports macos and ubuntu-focal
         // FlynnPluginTool-focal: supports macos and amazonlinux2
-        //
-        // When we are compiling to build the precompiled tools, only the
-        // default ( FlynnPluginTool-focal ) is available.
-        //
-        // When we are running and want to use the pre-compiled tools, we look in
-        // /etc/os-release (available on linux) to see what distro we are running
-        // and to load the correct tool there.
-        var tool = try? context.tool(named: "FlynnPluginTool-focal")
-        
-        if let osFile = try? String(contentsOfFile: "/etc/os-release") {
-            if osFile.contains("Amazon Linux"),
-               let osTool = try? context.tool(named: "FlynnPluginTool-amazonlinux2") {
-                tool = osTool
-            }
-            if osFile.contains("Fedora Linux"),
-               let osTool = try? context.tool(named: "FlynnPluginTool-fedora") {
-                tool = osTool
-            }
-        }
+        let tool = try? context.tool(named: "FlynnPluginTool-focal")
         
         guard let tool = tool else {
             fatalError("FlynnPlugin unable to load FlynnPluginTool")
@@ -108,9 +81,27 @@ internal func exportLogs() {
         var rootFiles: [PackagePlugin.Path] = []
         var dependencyFiles: [PackagePlugin.Path] = []
         
+        
         gatherSwiftInputFiles(targets: [target],
                               inputFiles: &rootFiles)
-        gatherSwiftInputFiles(targets: target.recursiveTargetDependencies,
+        
+        var recursiveTargets: [XcodeTarget] = []
+        let recurseTargets: () -> () = {
+            for dependency in target.dependencies {
+                switch dependency {
+                case .target(let x):
+                    if recursiveTargets.contains(where: { $0.id == x.id }) == false {
+                        recursiveTargets.append(x)
+                    }
+                    break
+                default:
+                    break
+                }
+            }
+        }
+        recurseTargets()
+                
+        gatherSwiftInputFiles(targets: recursiveTargets,
                               inputFiles: &dependencyFiles)
         
         let allInputFiles = rootFiles + dependencyFiles
@@ -140,9 +131,11 @@ internal func exportLogs() {
                 ],
                 inputFiles: allInputFiles,
                 outputFiles: [
-                    PackagePlugin.Path(outputFilePath)
+                    //PackagePlugin.Path(outputFilePath)
                 ]
             )
         ]
     }
 }
+#endif
+
