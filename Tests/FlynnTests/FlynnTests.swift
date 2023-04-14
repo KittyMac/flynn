@@ -301,6 +301,16 @@ class FlynnTests: XCTestCase {
             .bePath("bundle://image.png")
         expectation.fulfill()
     }
+    
+    func testMainActor() {
+        let expectation = XCTestExpectation(description: "MainActor...")
+        
+        Flynn.main.unsafeSend { _ in
+            if Thread.isMainThread {
+                expectation.fulfill()
+            }
+        }
+    }
 
     func testShutdown() {
         let expectation = XCTestExpectation(description: "Flowable actors")

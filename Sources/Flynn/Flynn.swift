@@ -9,6 +9,25 @@ public enum CoreAffinity: Int32 {
     case none = 99
 }
 
+// MainActor is a special actor who will use GCD to dispatch
+// messages to be executed on the main thread. You can have
+// your own MainActor simply by subclasses MainActor. You can
+// also just use Flynn.main
+public class MainActor: Actor {
+    @discardableResult
+    @inlinable @inline(__always)
+    public override func unsafeSend(_ block: @escaping PonyBlock) -> Self {
+        guard let _ = safePonyActorPtr else {
+            print("Warning: unsafeSend called on a cancelled actor")
+            return self
+        }
+        DispatchQueue.main.async {
+            block(0)
+        }
+        return self
+    }
+}
+
 open class Flynn {
 
     // MARK: - User Configurable Settings
@@ -30,6 +49,7 @@ open class Flynn {
     private static var registeredActorsCheckRunning = false
 
     public static let any = Actor()
+    public static let main = MainActor()
     
     public static let ignore: () -> () = { }
     public static let warning: () -> () = {
