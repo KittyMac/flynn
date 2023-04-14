@@ -1,7 +1,7 @@
 import Foundation
 import PackagePlugin
 
-
+/*
 var logs: [String] = []
 
 internal func print(_ items: String..., filename: String = #file, function : String = #function, line: Int = #line, separator: String = " ", terminator: String = "\n") {
@@ -25,7 +25,7 @@ internal func exportLogs() {
     let logString = logs.joined(separator: "\n")
     try? logString.write(toFile: "/tmp/FlynnPlugin.log", atomically: false, encoding: .utf8)
 }
-
+*/
 
 #if canImport(XcodeProjectPlugin)
 import XcodeProjectPlugin
@@ -104,7 +104,7 @@ extension FlynnPlugin: XcodeBuildToolPlugin {
         gatherSwiftInputFiles(targets: recursiveTargets,
                               inputFiles: &dependencyFiles)
         
-        let allInputFiles = rootFiles + dependencyFiles
+        // let allInputFiles = rootFiles + dependencyFiles
                         
         let inputFilesFilePath = context.pluginWorkDirectory.string + "/inputFiles.txt"
         var inputFilesString = ""
@@ -120,7 +120,10 @@ extension FlynnPlugin: XcodeBuildToolPlugin {
         
         // let outputFilePath = context.pluginWorkDirectory.string + "/" + UUID().uuidString + ".swift"
         let outputFilePath = context.pluginWorkDirectory.string + "/FlynnPlugin.swift"
-                
+        
+        // Note: it seems that XcodeBuildToolPlugin (unlike BuildToolPlugin) won't compile the original
+        // source code if it is provided in inputFiles; it must make the assumption that you are
+        // replace that source code instead of just augmenting it. sigh.
         return [
             .buildCommand(
                 displayName: "Flynn Plugin - generating behaviours...",
@@ -129,7 +132,7 @@ extension FlynnPlugin: XcodeBuildToolPlugin {
                     inputFilesFilePath,
                     outputFilePath
                 ],
-                inputFiles: allInputFiles,
+                inputFiles: [],
                 outputFiles: [
                     PackagePlugin.Path(outputFilePath)
                 ]
