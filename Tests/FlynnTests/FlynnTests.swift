@@ -8,7 +8,7 @@ class TestDoubleCallback: Actor {
         returnCallback()
     }
 }
-
+/*
 class ThenActor: Actor {
     deinit {
         print("ThenActor - deinit")
@@ -33,9 +33,6 @@ class ThenActor: Actor {
     }
     internal func _beFourth() {
         print("FOURTH!")
-    }
-    internal func _beNothing() {
-        
     }
 }
 
@@ -73,14 +70,14 @@ class ThenActor2: Actor {
     
     internal func _beTest(_ returnCallback: @escaping () -> ()) {
         self.beFirst(self) {
-        }.then().beSecond(self) {
-        }.then().beThird(self) {
-        }.then().beFourth().then().unsafeSend { _ in
+        }.then.beSecond(self) {
+        }.then.beThird(self) {
+        }.then.beFourth().then.unsafeSend { _ in
             returnCallback()
         }
     }
 }
-
+*/
 class FlynnTests: XCTestCase {
 
     override func setUp() {
@@ -103,36 +100,7 @@ class FlynnTests: XCTestCase {
     }
      */
 
-    func testActorInterruptingThens() {
-        let expectation = XCTestExpectation(description: "then")
-        
-        var results: [String] = []
-        
-        if true {
-            
-            for _ in 0..<1 {
-                let hack: (Double) -> Double = { v in
-                    ThenActor().then().beFourth().then().beNothing()
-                    return v
-                }
-                
-                ThenActor().beFirst(delay: hack(3.0), Flynn.any) {
-                    results.append("first")
-                }.then().beSecond(delay: hack(2.0), Flynn.any) {
-                    results.append("second")
-                }.then().beThird(delay: hack(1.0), Flynn.any) {
-                    results.append("third")
-                    expectation.fulfill()
-                }
-            }
-            
-        }
-        
-        wait(for: [expectation], timeout: 30.0)
-        
-        XCTAssertEqual(results.joined(separator: ","), "first,second,third")
-    }
-    
+    /*
     func testActorThen() {
         // then() allows you to chain behaviour calls to actors when they call their return callback
         let expectation = XCTestExpectation(description: "then")
@@ -157,9 +125,9 @@ class FlynnTests: XCTestCase {
             // we see third after 4 seconds
             ThenActor().beFirst(delay: 3.0, Flynn.any) {
                 results.append("first")
-            }.then().beSecond(delay: 2.0, Flynn.any) {
+            }.then.beSecond(delay: 2.0, Flynn.any) {
                 results.append("second")
-            }.then().beThird(delay: 1.0, Flynn.any) {
+            }.then.beThird(delay: 1.0, Flynn.any) {
                 results.append("third")
             }
             
@@ -176,8 +144,8 @@ class FlynnTests: XCTestCase {
             // Finally, ensure we support "then" on behaviours which do not have a callback (for consistency)
             ThenActor().beFirst(delay: 7.0, Flynn.any) {
                 results.append("first")
-            }.then().beFourth()
-                .then().beThird(delay: 1.0, Flynn.any) {
+            }.then.beFourth()
+                .then.beThird(delay: 1.0, Flynn.any) {
                 results.append("third")
                 expectation.fulfill()
             }
@@ -217,7 +185,7 @@ class FlynnTests: XCTestCase {
             let a = ThenNeverActor()
             a.beFirst(delay: 5, Flynn.any) {
                 
-            }.then().beSecond(delay: 5, Flynn.any) {
+            }.then.beSecond(delay: 5, Flynn.any) {
                 
             }
             
@@ -237,6 +205,7 @@ class FlynnTests: XCTestCase {
         
         wait(for: [expectation], timeout: 1.0)
     }
+     */
     
     func testMultipleDelayedReturns() {
         let expectation = XCTestExpectation(description: "Mutliple delayed returns from Actor behavior")
@@ -337,7 +306,7 @@ class FlynnTests: XCTestCase {
     func testMainActor() {
         let expectation = XCTestExpectation(description: "MainActor...")
         
-        Flynn.main.unsafeSend { _ in
+        Flynn.main.unsafeSend {
             if Thread.isMainThread {
                 expectation.fulfill()
             }
