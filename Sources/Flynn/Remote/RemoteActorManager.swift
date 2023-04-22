@@ -20,13 +20,13 @@ private class MessageReply {
     }
 
     func run(_ data: Data) {
-        actor.unsafeSend {
+        actor.unsafeSend { _ in
             self.blockSuccess(data)
         }
     }
     
     func error() {
-        actor.unsafeSend {
+        actor.unsafeSend { _ in
             self.blockError()
         }
     }

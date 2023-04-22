@@ -102,7 +102,7 @@ public class FlowableState {
         }
     }
     fileprivate func beRetryEndFlowToNextTarget(_ actor: Flowable) {
-        actor.unsafeSend {
+        actor.unsafeSend { _ in
             self._beRetryEndFlowToNextTarget(actor)
         }
     }
@@ -138,20 +138,20 @@ public protocol Flowable: Actor {
 public extension Flowable {
 
     func beFlow(_ args: FlowableArgs) -> Self {
-        unsafeSend {
+        unsafeSend { _ in
             self._beFlow(args)
         }
         return self
     }
     
     func beTarget(_ target: Flowable) -> Self {
-        unsafeSend {
+        unsafeSend { _ in
             self.safeFlowable._beTarget(target)
         }
         return self
     }
     func beTargets(_ targets: [Flowable]) -> Self {
-        unsafeSend {
+        unsafeSend { _ in
             self.safeFlowable._beTargets(targets)
         }
         return self
