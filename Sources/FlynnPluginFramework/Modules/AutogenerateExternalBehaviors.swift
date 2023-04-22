@@ -877,160 +877,116 @@ class AutogenerateExternalBehaviors {
 
                     didHaveBehavior = true
 
-                    // Note: The information we need comes from two places:
-                    // 1. behavior.function.structure.name is formatted like this:
-                    //    _beSetCoreAffinity(theAffinity:arg2:)
-
-                    let (name, parameterLabels) = ast.parseFunctionDefinition(behavior.function.structure)
-                    var returnType = behavior.function.structure.typename
-                    if returnType == "Void" {
-                        returnType = nil
-                    }
-                    if returnType == nil && hasReturnCallback {
-                        returnType = "Void"
-                    }
-
-                    // 2. the names and type of the parameters are in the substructures
-                    if behavior.function.structure.has(attribute: .inlinable) {
-                        scratch.append("    @inlinable\n")
-                    }
-                    scratch.append("    @discardableResult\n")
-                    let functionNameHeader = "    public func \(name)("
-                    scratch.append(functionNameHeader)
-                    let parameterNameHeader = String(repeating: " ", count: functionNameHeader.count)
-                    if parameterLabels.count > minParameterCount {
-                        if let parameters = behavior.function.structure.substructure {
-                            var idx = 0
-                            for parameter in parameters where parameter.kind == .varParameter && parameter.name != "returnCallback" {
-                                let label = parameterLabels[idx]
-
-                                if idx != 0 {
-                                    scratch.append(parameterNameHeader)
-                                }
-
-                                if let typename = parameter.typename,
-                                    let name = parameter.name {
-                                    let typename = AST.getFullName(syntax, typename)
-                                    if label == name {
-                                        scratch.append("\(name): \(typename),\n")
-                                    } else {
-                                        scratch.append("\(label) \(name): \(typename),\n")
-                                    }
-                                }
-                                idx += 1
-                            }
+                    let createBehaviour: (Bool) -> () = { supportsThen in
+                        // Note: The information we need comes from two places:
+                        // 1. behavior.function.structure.name is formatted like this:
+                        //    _beSetCoreAffinity(theAffinity:arg2:)
+                        
+                        let (name, parameterLabels) = ast.parseFunctionDefinition(behavior.function.structure)
+                        var returnType = behavior.function.structure.typename
+                        if returnType == "Void" {
+                            returnType = nil
                         }
-                    }
-
-                    if let returnType = returnType {
-                        if parameterLabels.count > minParameterCount {
-                            scratch.append(parameterNameHeader)
-                        }
-                        scratch.append("_ sender: Actor,\n")
-
-                        if hasReturnCallback {
-                            scratch.append("\(parameterNameHeader)_ callback: @escaping ((")
-                            for type in returnCallbackParameters {
-                                scratch.append("\(type), ")
-                            }
-                            if scratch.hasSuffix(", ") {
-                                scratch.removeLast()
-                                scratch.removeLast()
-                            }
-                            scratch.append(") -> Void)")
-                        } else {
-                            scratch.append("\(parameterNameHeader)_ callback: @escaping ((\(returnType)) -> Void)")
-                        }
-                    } else {
-                        if scratch.hasSuffix(",\n") {
-                            scratch.removeLast()
-                            scratch.removeLast()
-                        }
-                    }
-                    scratch.append(") -> Self {\n")
-
-                    if returnType != nil {
-                        if hasReturnCallback == true {
-                            scratch.append("        #if DEBUG\n")
-                            scratch.append("        var onlyOnce = true\n")
-                            scratch.append("        #endif\n")
+                        if returnType == nil && hasReturnCallback {
+                            returnType = "Void"
                         }
                         
-                        scratch.append("        return unsafeSend { \n")
-
-                        if hasReturnCallback == false {
-                            scratch.append("            let result = self._\(name)(")
-                        } else {
-                            scratch.append("            self._\(name)(")
+                        var behaviourName = name
+                        if supportsThen {
+                            behaviourName = "do" + behaviourName.dropFirst(2)
                         }
-
-                        if let parameters = behavior.function.structure.substructure {
-                            var idx = 0
-                            for parameter in parameters where parameter.kind == .varParameter && parameter.name != "returnCallback" {
-                                let label = parameterLabels[idx]
-                                if label == "_" {
-                                    scratch.append("\(parameter.name!), ")
-                                } else {
-                                    scratch.append("\(label): \(parameter.name!), ")
+                        
+                        // 2. the names and type of the parameters are in the substructures
+                        if behavior.function.structure.has(attribute: .inlinable) {
+                            scratch.append("    @inlinable\n")
+                        }
+                        scratch.append("    @discardableResult\n")
+                        let functionNameHeader = "    public func \(behaviourName)("
+                        scratch.append(functionNameHeader)
+                        let parameterNameHeader = String(repeating: " ", count: functionNameHeader.count)
+                        if parameterLabels.count > minParameterCount {
+                            if let parameters = behavior.function.structure.substructure {
+                                var idx = 0
+                                for parameter in parameters where parameter.kind == .varParameter && parameter.name != "returnCallback" {
+                                    let label = parameterLabels[idx]
+                                    
+                                    if idx != 0 {
+                                        scratch.append(parameterNameHeader)
+                                    }
+                                    
+                                    if let typename = parameter.typename,
+                                       let name = parameter.name {
+                                        let typename = AST.getFullName(syntax, typename)
+                                        if label == name {
+                                            scratch.append("\(name): \(typename),\n")
+                                        } else {
+                                            scratch.append("\(label) \(name): \(typename),\n")
+                                        }
+                                    }
+                                    idx += 1
                                 }
-                                idx += 1
-                            }
-                            if scratch.hasSuffix(", ") {
-                                scratch.removeLast()
-                                scratch.removeLast()
                             }
                         }
-
-                        if hasReturnCallback {
-                            scratch.append(") { ")
-                            for idx in 0..<returnCallbackParameters.count {
-                                scratch.append("arg\(idx), ")
+                        
+                        if let returnType = returnType {
+                            if parameterLabels.count > minParameterCount {
+                                scratch.append(parameterNameHeader)
                             }
-                            if scratch.hasSuffix(", ") {
-                                scratch.removeLast()
-                                scratch.removeLast()
-                                scratch.append(" in\n")
+                            scratch.append("_ sender: Actor,\n")
+                            
+                            if hasReturnCallback {
+                                scratch.append("\(parameterNameHeader)_ callback: @escaping ((")
+                                for type in returnCallbackParameters {
+                                    scratch.append("\(type), ")
+                                }
+                                if scratch.hasSuffix(", ") {
+                                    scratch.removeLast()
+                                    scratch.removeLast()
+                                }
+                                scratch.append(") -> Void)")
                             } else {
-                                scratch.append("\n")
+                                scratch.append("\(parameterNameHeader)_ callback: @escaping ((\(returnType)) -> Void)")
                             }
-                            
-                            scratch.append("                #if DEBUG\n")
-                            scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
-                            scratch.append("                onlyOnce = false\n")
-                            scratch.append("                #endif\n")
-
-                            scratch.append("                sender.unsafeSend { \n")
-                            scratch.append("                    callback(")
-                            for idx in 0..<returnCallbackParameters.count {
-                                scratch.append("arg\(idx), ")
-                            }
-                            if scratch.hasSuffix(", ") {
-                                scratch.removeLast()
-                                scratch.removeLast()
-                            }
-                            scratch.append(")\n")
-                            
-                            // TODO: tell pony this message is done
-                            scratch.append("                    self.unsafeSend {  }\n")
-                            
-                            scratch.append("                }\n")
-                            scratch.append("            }\n")
                         } else {
-                            scratch.append(")\n")
-                            scratch.append("            sender.unsafeSend { \n")
-                            scratch.append("                callback(result)\n")
-                            scratch.append("                self.unsafeSend {  }\n")
-                            scratch.append("            }\n")
+                            if scratch.hasSuffix(",\n") {
+                                scratch.removeLast()
+                                scratch.removeLast()
+                            }
                         }
-
-                        scratch.append("        }\n")
-                        scratch.append("    }\n")
-                    } else {
-                        if parameterLabels.count == minParameterCount {
-                            scratch.append("        return unsafeSend { self._\(name)() }\n")
-                        } else {
-                            scratch.append("        return unsafeSend { self._\(name)(")
-
+                        
+                        var supportsThenCallArgs = ""
+                        var supportsThenUnsafeCallMethod = "unsafeSend"
+                        let supportsThenSafeThenCall = "self.safeThen(thenPtr)"
+                        if supportsThen {
+                            supportsThenUnsafeCallMethod = "unsafeDo"
+                            supportsThenCallArgs = ", file__internal, line__internal, column__internal"
+                            
+                            if parameterLabels.count > minParameterCount || returnType != nil {
+                                scratch.append(",\n")
+                                scratch.append(parameterNameHeader)
+                            }
+                            scratch.append("_ file__internal: StaticString = #file,\n")
+                            scratch.append(parameterNameHeader + "_ line__internal: UInt64 = #line,\n")
+                            scratch.append(parameterNameHeader + "_ column__internal: UInt64 = #column")
+                        }
+                        
+                        scratch.append(") -> Self {\n")
+                        
+                        if returnType != nil {
+                            if hasReturnCallback == true {
+                                scratch.append("        #if DEBUG\n")
+                                scratch.append("        var onlyOnce = true\n")
+                                scratch.append("        #endif\n")
+                            }
+                            
+                            scratch.append("        return \(supportsThenUnsafeCallMethod) ({ thenPtr in\n")
+                            
+                            if hasReturnCallback == false {
+                                scratch.append("            let result = self._\(name)(")
+                            } else {
+                                scratch.append("            self._\(name)(")
+                            }
+                            
                             if let parameters = behavior.function.structure.substructure {
                                 var idx = 0
                                 for parameter in parameters where parameter.kind == .varParameter && parameter.name != "returnCallback" {
@@ -1047,10 +1003,81 @@ class AutogenerateExternalBehaviors {
                                     scratch.removeLast()
                                 }
                             }
-                            scratch.append(") }\n")
+                            
+                            if hasReturnCallback {
+                                scratch.append(") { ")
+                                for idx in 0..<returnCallbackParameters.count {
+                                    scratch.append("arg\(idx), ")
+                                }
+                                if scratch.hasSuffix(", ") {
+                                    scratch.removeLast()
+                                    scratch.removeLast()
+                                    scratch.append(" in\n")
+                                } else {
+                                    scratch.append("\n")
+                                }
+                                
+                                scratch.append("                #if DEBUG\n")
+                                scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
+                                scratch.append("                onlyOnce = false\n")
+                                scratch.append("                #endif\n")
+                                
+                                scratch.append("                sender.unsafeSend { _ in\n")
+                                scratch.append("                    callback(")
+                                for idx in 0..<returnCallbackParameters.count {
+                                    scratch.append("arg\(idx), ")
+                                }
+                                if scratch.hasSuffix(", ") {
+                                    scratch.removeLast()
+                                    scratch.removeLast()
+                                }
+                                scratch.append(")\n")
+                                
+                                // TODO: tell pony this message is done
+                                scratch.append("                    self.unsafeSend { _ in \(supportsThenSafeThenCall) }\n")
+                                
+                                scratch.append("                }\n")
+                                scratch.append("            }\n")
+                            } else {
+                                scratch.append(")\n")
+                                scratch.append("            sender.unsafeSend { _ in\n")
+                                scratch.append("                callback(result)\n")
+                                scratch.append("                self.unsafeSend { _ in \(supportsThenSafeThenCall) }\n")
+                                scratch.append("            }\n")
+                            }
+                            
+                            scratch.append("        }\(supportsThenCallArgs))\n")
+                            scratch.append("    }\n")
+                        } else {
+                            if parameterLabels.count == minParameterCount {
+                                scratch.append("        return \(supportsThenUnsafeCallMethod) ({ thenPtr in self._\(name)(); \(supportsThenSafeThenCall) }\(supportsThenCallArgs))\n")
+                            } else {
+                                scratch.append("        return \(supportsThenUnsafeCallMethod) ({ thenPtr in self._\(name)(")
+                                
+                                if let parameters = behavior.function.structure.substructure {
+                                    var idx = 0
+                                    for parameter in parameters where parameter.kind == .varParameter && parameter.name != "returnCallback" {
+                                        let label = parameterLabels[idx]
+                                        if label == "_" {
+                                            scratch.append("\(parameter.name!), ")
+                                        } else {
+                                            scratch.append("\(label): \(parameter.name!), ")
+                                        }
+                                        idx += 1
+                                    }
+                                    if scratch.hasSuffix(", ") {
+                                        scratch.removeLast()
+                                        scratch.removeLast()
+                                    }
+                                }
+                                scratch.append("); \(supportsThenSafeThenCall) }\(supportsThenCallArgs))\n")
+                            }
+                            scratch.append("    }\n")
                         }
-                        scratch.append("    }\n")
                     }
+                    
+                    createBehaviour(false)
+                    createBehaviour(true)
                 }
 
                 scratch.append("\n}\n")

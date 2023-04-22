@@ -1,7 +1,7 @@
 import Foundation
 import Pony
 
-public typealias PonyBlock = () -> Void
+public typealias PonyBlock = (UInt64) -> Void
 public typealias PonyTaskBlock = (() -> ()) async -> Void
 
 @usableFromInline
@@ -32,8 +32,13 @@ class ActorMessage {
     var block: PonyBlock?
     
     @usableFromInline
-    init(_ block: @escaping PonyBlock) {
+    var thenId: UInt64
+
+    @usableFromInline
+    init(_ block: @escaping PonyBlock,
+         _ thenId: UInt64) {
         self.block = block
+        self.thenId = thenId
     }
 
     @inlinable @inline(__always)
@@ -43,7 +48,7 @@ class ActorMessage {
 
     @inlinable @inline(__always)
     func run() {
-        block?()
+        block?(thenId)
     }
 }
 
@@ -133,6 +138,14 @@ open class Actor: Equatable {
     }
     
     public func unsafeCancel() {
+        // Cancels all futures and suspends the actor
+        safeThenLock.lock()
+        for thenPtr in safeThenMessages.values {
+            if let _ : ActorMessage = Class(thenPtr) { }
+        }
+        safeThenMessages.removeAll()
+        safeThenLock.unlock()
+        
         if let actorPtr = safePonyActorPtr {
             pony_actor_suspend(actorPtr)
             pony_actor_destroy(actorPtr)
@@ -177,6 +190,13 @@ open class Actor: Equatable {
 
     deinit {
         //print("deinit - Actor")
+        safeThenLock.lock()
+        for thenPtr in safeThenMessages.values {
+            if let _ : ActorMessage = Class(thenPtr) { }
+        }
+        safeThenMessages.removeAll()
+        safeThenLock.unlock()
+        
         if let actorPtr = safePonyActorPtr {
             pony_actor_destroy(actorPtr)
         }
@@ -224,8 +244,68 @@ open class Actor: Equatable {
             return self
         }
         
-        let argumentPtr = Ptr(ActorMessage(block))
-        pony_actor_send_message(actorPtr, argumentPtr, 0, handleMessage)
+        let thenId = pony_actor_new_then_id()
+        let argumentPtr = Ptr(ActorMessage(block, thenId))
+        pony_actor_send_message(actorPtr, argumentPtr, thenId, handleMessage)
+        return self
+    }
+    
+    // MARK: - Then -> Do
+    @usableFromInline
+    internal var safeThenMessages: [UInt64: UnsafeMutableRawPointer] = [:]
+    @usableFromInline
+    internal let safeThenLock = NSLock()
+    
+    
+    @discardableResult
+    @inlinable @inline(__always)
+    public func unsafeDo(_ block: @escaping PonyBlock,
+                         _ file: StaticString = #file,
+                         _ line: UInt64 = #line,
+                         _ column: UInt64 = #column) -> Self {
+        guard let actorPtr = safePonyActorPtr else {
+            print("Warning: unsafeSend called on a cancelled actor")
+            return self
+        }
+
+        let thenId = pony_actor_new_then_id()
+        let argumentPtr = Ptr(ActorMessage(block, thenId))
+        let prevThenId = pony_actor_get_then_id(file.utf8Start, line, column)
+        
+        guard prevThenId != 0 else {
+            fatalError("do called but there is not a previous then to attach to at \(file):\(line)")
+        }
+        
+        safeThenLock.lock()
+        safeThenMessages[prevThenId] = argumentPtr
+        safeThenLock.unlock()
+        pony_actor_then_message(actorPtr, thenId)
+        
+        return self
+    }
+    
+    @inlinable @inline(__always)
+    public func safeThen(_ prevThenId: UInt64?) {
+        guard let actorPtr = safePonyActorPtr else { return }
+        guard let prevThenId = prevThenId else { return }
+        
+        safeThenLock.lock(); defer { safeThenLock.unlock() }
+        guard let argumentPtr = safeThenMessages.removeValue(forKey: prevThenId) else { return }
+        pony_actor_complete_then_message(actorPtr, argumentPtr, handleMessage)
+    }
+    
+    @inlinable @inline(__always)
+    public func then(_ file: StaticString = #file,
+                     _ line: UInt64 = #line,
+                     _ column: UInt64 = #column) -> Self {
+        // on the ponyrt side we store a thread local variable which we now flag so that we
+        // know the next behaviour call on this thread should be a then call
+        
+        // We need the file and line to create a "unique" value for which we can
+        // associated the correct call that happens right after the "then"
+        // The ruleset right now is that it must be the same file and it
+        // must be the same line
+        pony_actor_mark_then_id(file.utf8Start, line, column)
         return self
     }
 }
