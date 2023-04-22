@@ -110,18 +110,20 @@ class FlynnTests: XCTestCase {
         
         if true {
             
-            let hack: (Double) -> Double = { v in
-                ThenActor().beNothing()
-                return v
-            }
-            
-            ThenActor().beFirst(delay: hack(3.0), Flynn.any) {
-                results.append("first")
-            }.then().beSecond(delay: hack(2.0), Flynn.any) {
-                results.append("second")
-            }.then().beThird(delay: hack(1.0), Flynn.any) {
-                results.append("third")
-                expectation.fulfill()
+            for _ in 0..<1 {
+                let hack: (Double) -> Double = { v in
+                    ThenActor().then().beFourth().then().beNothing()
+                    return v
+                }
+                
+                ThenActor().beFirst(delay: hack(3.0), Flynn.any) {
+                    results.append("first")
+                }.then().beSecond(delay: hack(2.0), Flynn.any) {
+                    results.append("second")
+                }.then().beThird(delay: hack(1.0), Flynn.any) {
+                    results.append("third")
+                    expectation.fulfill()
+                }
             }
             
         }

@@ -13,10 +13,14 @@
 #include <string.h>
 #include <stdio.h>
 
+#define MAX_THEN 1024
+
+static __pony_thread_local uint64_t sendv_marked_idx_push = 0;
+static __pony_thread_local uint64_t sendv_marked_idx_pop = 0;
+
 static __pony_thread_local uint64_t sendv_last_then_id = 0;
-static __pony_thread_local uint64_t sendv_marked_then_id = 0;
-static __pony_thread_local uint64_t sendv_marked_then_id_hash_line = 0;
-static __pony_thread_local const void * sendv_marked_then_id_hash_file = 0;
+static __pony_thread_local uint64_t sendv_marked_then_id[MAX_THEN] = {0};
+static __pony_thread_local uint64_t sendv_marked_then_id_hash[MAX_THEN] = {0};
 
 void ponyint_actor_destroy(pony_actor_t* actor);
 
@@ -50,10 +54,12 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
                 pony_msgfunc_t * m = (pony_msgfunc_t *)msg;
                 if (m->func != NULL) {
                     sendv_last_then_id = 0;
-                    sendv_marked_then_id = 0;
+                    sendv_marked_idx_push = 0;
+                    sendv_marked_idx_pop = 0;
                     m->func(m->arg);
                     sendv_last_then_id = 0;
-                    sendv_marked_then_id = 0;
+                    sendv_marked_idx_push = 0;
+                    sendv_marked_idx_pop = 0;
                 }
             } break;
             case kDestroyMessage: {
@@ -194,33 +200,43 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
 }
 
 void pony_actor_mark_then_id(const void * file, uint64_t line) {
-    if (sendv_marked_then_id != 0) {
-        fprintf(stderr, "WARNING: dangling then() found at %s: %llu\n", (char *)file, line);
-    }
-    
-    sendv_marked_then_id = sendv_last_then_id;
-    sendv_marked_then_id_hash_file = file;
-    sendv_marked_then_id_hash_line = line;
+    uint64_t callerHash = ((uint64_t)file) + line;
+
+    //fprintf(stderr, "THEN_STACK: PUSH ID %llu IDX %llu HASH %llu\n", sendv_last_then_id, sendv_marked_idx_push, callerHash);
+    sendv_marked_then_id[sendv_marked_idx_push] = sendv_last_then_id;
+    sendv_marked_then_id_hash[sendv_marked_idx_push] = callerHash;
+    sendv_marked_idx_push = (sendv_marked_idx_push + 1) % MAX_THEN;
 
     sendv_last_then_id = 0;
 }
 
 uint64_t pony_actor_get_then_id(const void * file, uint64_t line) {
-    if (sendv_marked_then_id == 0) { return 0; }
+    if (sendv_marked_idx_push == sendv_marked_idx_pop) { return 0; }
     
+    // We are allowed to match any previous then which matches our source code hash
     uint64_t callerHash = ((uint64_t)file) + line;
-    uint64_t originHash = ((uint64_t)sendv_marked_then_id_hash_file) + sendv_marked_then_id_hash_line;
     
-    uint64_t then_id = 0;
-    if (callerHash == originHash) {
-        then_id = sendv_marked_then_id;
-        sendv_marked_then_id = 0;
-    } else {
-        fprintf(stderr, "WARNING: interrupting then() found at %s:%llu\n", (char *)file, line);
-        fprintf(stderr, "         for then() originating at %s:%llu\n", (char *)sendv_marked_then_id_hash_file, sendv_marked_then_id_hash_line);
+    uint64_t idx = sendv_marked_idx_pop;
+    while (idx != sendv_marked_idx_push) {
+        //fprintf(stderr, "CHECK_STACK: IDX %llu with %llu == %llu\n", idx, callerHash, sendv_marked_then_id_hash[idx]);
+        if (callerHash == sendv_marked_then_id_hash[idx]) {
+            //fprintf(stderr, "MATCH_STACK: ID %llu IDX %llu HASH %llu\n", then_id, idx, callerHash );
+            
+            uint64_t then_id = sendv_marked_then_id[idx];
+            sendv_marked_then_id_hash[idx] = 0;
+            
+            // advance the pop idx as far as it will go
+            while (sendv_marked_then_id_hash[sendv_marked_idx_pop] == 0 &&
+                   sendv_marked_idx_push != sendv_marked_idx_pop) {
+                sendv_marked_idx_pop = (sendv_marked_idx_pop + 1) % MAX_THEN;
+            }
+            
+            return then_id;
+        }
+        idx = (idx + 1) % MAX_THEN;
     }
     
-    return then_id;
+    return 0;
 }
 
 void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)
