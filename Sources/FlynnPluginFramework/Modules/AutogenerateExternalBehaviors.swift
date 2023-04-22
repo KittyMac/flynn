@@ -947,6 +947,14 @@ class AutogenerateExternalBehaviors {
                             scratch.removeLast()
                         }
                     }
+                    
+                    if parameterLabels.count > minParameterCount || returnType != nil {
+                        scratch.append(",\n")
+                        scratch.append(parameterNameHeader)
+                    }
+                    scratch.append("_ file: StaticString = #file,\n")
+                    scratch.append(parameterNameHeader + "_ line: UInt64 = #line")
+                    
                     scratch.append(") -> Self {\n")
 
                     if returnType != nil {
@@ -956,7 +964,7 @@ class AutogenerateExternalBehaviors {
                             scratch.append("        #endif\n")
                         }
                         
-                        scratch.append("        return unsafeSend { thenPtr in\n")
+                        scratch.append("        return unsafeSend({ thenPtr in\n")
 
                         if hasReturnCallback == false {
                             scratch.append("            let result = self._\(name)(")
@@ -1023,13 +1031,13 @@ class AutogenerateExternalBehaviors {
                             scratch.append("            }\n")
                         }
 
-                        scratch.append("        }\n")
+                        scratch.append("        }, file, line)\n")
                         scratch.append("    }\n")
                     } else {
                         if parameterLabels.count == minParameterCount {
-                            scratch.append("        return unsafeSend { thenPtr in self._\(name)(); self.safeThen(thenPtr) }\n")
+                            scratch.append("        return unsafeSend ({ thenPtr in self._\(name)(); self.safeThen(thenPtr) }, file, line)\n")
                         } else {
-                            scratch.append("        return unsafeSend { thenPtr in self._\(name)(")
+                            scratch.append("        return unsafeSend ({ thenPtr in self._\(name)(")
 
                             if let parameters = behavior.function.structure.substructure {
                                 var idx = 0
@@ -1047,7 +1055,7 @@ class AutogenerateExternalBehaviors {
                                     scratch.removeLast()
                                 }
                             }
-                            scratch.append("); self.safeThen(thenPtr) }\n")
+                            scratch.append("); self.safeThen(thenPtr) }, file, line)\n")
                         }
                         scratch.append("    }\n")
                     }

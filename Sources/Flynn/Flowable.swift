@@ -131,10 +131,19 @@ public protocol Flowable: Actor {
 
     @discardableResult
     func beFlow(_ args: FlowableArgs) -> Self
+    
+    func _beFlow(_ args: FlowableArgs)
 }
 
 public extension Flowable {
 
+    func beFlow(_ args: FlowableArgs) -> Self {
+        unsafeSend { thenPtr in
+            self._beFlow(args)
+        }
+        return self
+    }
+    
     func beTarget(_ target: Flowable) -> Self {
         unsafeSend { thenPtr in
             self.safeFlowable._beTarget(target)

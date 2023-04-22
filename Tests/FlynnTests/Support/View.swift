@@ -4,7 +4,7 @@ import Flynn
 protocol Viewable: Actor {
 
     @discardableResult
-    func beRender() -> Self
+    func beRender(_ file: StaticString, _ line: UInt64) -> Self
 }
 
 extension Viewable {

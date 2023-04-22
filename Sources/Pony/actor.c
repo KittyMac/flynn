@@ -15,6 +15,8 @@
 
 static __pony_thread_local uint64_t sendv_last_then_id = 0;
 static __pony_thread_local uint64_t sendv_marked_then_id = 0;
+static __pony_thread_local uint64_t sendv_marked_then_id_hash_line = 0;
+static __pony_thread_local const void * sendv_marked_then_id_hash_file = 0;
 
 void ponyint_actor_destroy(pony_actor_t* actor);
 
@@ -191,14 +193,33 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     return actor;
 }
 
-void pony_actor_mark_then_id() {
+void pony_actor_mark_then_id(const void * file, uint64_t line) {
+    if (sendv_marked_then_id != 0) {
+        fprintf(stderr, "WARNING: dangling then() found at %s: %llu\n", (char *)file, line);
+    }
+    
     sendv_marked_then_id = sendv_last_then_id;
+    sendv_marked_then_id_hash_file = file;
+    sendv_marked_then_id_hash_line = line;
+
     sendv_last_then_id = 0;
 }
 
-uint64_t pony_actor_get_then_id() {
-    uint64_t then_id = sendv_marked_then_id;
-    sendv_marked_then_id = 0;
+uint64_t pony_actor_get_then_id(const void * file, uint64_t line) {
+    if (sendv_marked_then_id == 0) { return 0; }
+    
+    uint64_t callerHash = ((uint64_t)file) + line;
+    uint64_t originHash = ((uint64_t)sendv_marked_then_id_hash_file) + sendv_marked_then_id_hash_line;
+    
+    uint64_t then_id = 0;
+    if (callerHash == originHash) {
+        then_id = sendv_marked_then_id;
+        sendv_marked_then_id = 0;
+    } else {
+        fprintf(stderr, "WARNING: interrupting then() found at %s:%llu\n", (char *)file, line);
+        fprintf(stderr, "         for then() originating at %s:%llu\n", (char *)sendv_marked_then_id_hash_file, sendv_marked_then_id_hash_line);
+    }
+    
     return then_id;
 }
 

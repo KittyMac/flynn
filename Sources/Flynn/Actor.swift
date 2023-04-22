@@ -238,7 +238,9 @@ open class Actor: Equatable {
     
     @discardableResult
     @inlinable @inline(__always)
-    public func unsafeSend(_ block: @escaping PonyBlock) -> Self {
+    public func unsafeSend(_ block: @escaping PonyBlock,
+                           _ file: StaticString = #file,
+                           _ line: UInt64 = #line) -> Self {
         guard let actorPtr = safePonyActorPtr else {
             print("Warning: unsafeSend called on a cancelled actor")
             return self
@@ -246,7 +248,7 @@ open class Actor: Equatable {
         
         let thenId = pony_actor_new_then_id()
         let argumentPtr = Ptr(ActorMessage(block, thenId))
-        let prevThenId = pony_actor_get_then_id()
+        let prevThenId = pony_actor_get_then_id(file.utf8Start, line)
         if prevThenId != 0 {
             safeThenMessages[prevThenId] = argumentPtr
             pony_actor_then_message(actorPtr, thenId)
@@ -267,10 +269,16 @@ open class Actor: Equatable {
     }
     
     @inlinable @inline(__always)
-    public var then: Self {
+    public func then(_ file: StaticString = #file,
+                     _ line: UInt64 = #line) -> Self {
         // on the ponyrt side we store a thread local variable which we now flag so that we
         // know the next behaviour call on this thread should be a then call
-        pony_actor_mark_then_id()
+        
+        // We need the file and line to create a "unique" value for which we can
+        // associated the correct call that happens right after the "then"
+        // The ruleset right now is that it must be the same file and it
+        // must be the same line
+        pony_actor_mark_then_id(file.utf8Start, line)
         return self
     }
 }

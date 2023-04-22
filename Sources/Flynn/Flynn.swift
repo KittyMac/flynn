@@ -16,7 +16,9 @@ public enum CoreAffinity: Int32 {
 public class MainActor: Actor {
     @discardableResult
     @inlinable @inline(__always)
-    public override func unsafeSend(_ block: @escaping PonyBlock) -> Self {
+    public override func unsafeSend(_ block: @escaping PonyBlock,
+                                    _ file: StaticString = #file,
+                                    _ line: UInt64 = #line) -> Self {
         guard let _ = safePonyActorPtr else {
             print("Warning: unsafeSend called on a cancelled actor")
             return self

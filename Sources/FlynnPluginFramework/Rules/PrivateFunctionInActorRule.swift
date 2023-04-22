@@ -112,6 +112,7 @@ struct PrivateFunctionInActorRule: Rule {
                         if !(function.name ?? "").hasPrefix(FlynnPluginTool.prefixUnsafe) &&
                             !(function.name ?? "").hasPrefix(FlynnPluginTool.prefixSafe) &&
                             !(function.name ?? "").hasPrefix(FlynnPluginTool.prefixBehaviorInternal) &&
+                            !(function.name ?? "").hasPrefix("then(") &&
                             !(function.name ?? "").hasPrefix("init(") &&
                             !(function.name ?? "").hasPrefix("deinit") &&
                             function.kind == .functionMethodInstance &&

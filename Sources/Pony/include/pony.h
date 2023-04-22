@@ -70,8 +70,8 @@ bool pony_core_affinity_enabled();
 
 void * pony_actor_create();
 
-void pony_actor_mark_then_id();
-uint64_t pony_actor_get_then_id();
+void pony_actor_mark_then_id(const void *  file, uint64_t then_id);
+uint64_t pony_actor_get_then_id(const void * file, uint64_t line);
 
 void pony_actor_send_message(void * actor, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message));
 void pony_actor_complete_then_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message));
