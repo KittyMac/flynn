@@ -146,9 +146,9 @@ struct FileSyntax {
                 if bodyoffset + bodylength <= body.count {
                     let regex = try NSRegularExpression(pattern: pattern, options: [])
                     let nsrange = NSRange(location: Int(bodyoffset), length: Int(bodylength))
-                    regex.enumerateMatches(in: body, options: [], range: nsrange) { (match, _, _) in
-                        guard let match = match else { return }
-
+                    let matches = regex.matches(in: body, options: [.withTransparentBounds], range: nsrange)
+                    
+                    for match in matches {
                         let fullBodyOffset = Int64(match.range.location)
 
                         // check this offset against all of the offsets in the syntax map.  If it is

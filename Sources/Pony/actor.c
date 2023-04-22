@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define MAX_THEN 1024
 
@@ -21,6 +22,9 @@ static __pony_thread_local uint64_t sendv_marked_idx_pop = 0;
 static __pony_thread_local uint64_t sendv_last_then_id = 0;
 static __pony_thread_local uint64_t sendv_marked_then_id[MAX_THEN] = {0};
 static __pony_thread_local uint64_t sendv_marked_then_id_hash[MAX_THEN] = {0};
+
+static __pony_thread_local const void * sendv_marked_then_id_file[MAX_THEN] = {0};
+static __pony_thread_local uint64_t sendv_marked_then_id_line[MAX_THEN] = {0};
 
 void ponyint_actor_destroy(pony_actor_t* actor);
 
@@ -57,6 +61,14 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
                     sendv_marked_idx_push = 0;
                     sendv_marked_idx_pop = 0;
                     m->func(m->arg);
+                    
+                    if (sendv_marked_idx_push != sendv_marked_idx_pop) {
+                        const char * file = sendv_marked_then_id_file[sendv_marked_idx_pop];
+                        uint64_t line = sendv_marked_then_id_line[sendv_marked_idx_pop];
+                        fprintf(stderr, "Fatal Error: Unbalanced then/do detected at %s:%llu\n", file, line);
+                        exit(55);
+                    }
+                    
                     sendv_last_then_id = 0;
                     sendv_marked_idx_push = 0;
                     sendv_marked_idx_pop = 0;
@@ -199,44 +211,71 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     return actor;
 }
 
-void pony_actor_mark_then_id(const void * file, uint64_t line) {
-    uint64_t callerHash = ((uint64_t)file) + line;
+void pony_actor_mark_then_id(const void * file, uint64_t line, uint64_t column) {
+    
+    uint64_t next_idx = (sendv_marked_idx_push + 1) % MAX_THEN;
+    
+    if (next_idx == sendv_marked_idx_pop) {
+        fprintf(stderr, "Fatal Error: then/do stack size exceeded at %s:%llu\n", (const char * )file, line);
+        exit(55);
+    }
+    
+    uint64_t callerHash = ((uint64_t)file) + line * 1024 + column;
 
-    //fprintf(stderr, "THEN_STACK: PUSH ID %llu IDX %llu HASH %llu\n", sendv_last_then_id, sendv_marked_idx_push, callerHash);
+    // fprintf(stderr, "THEN_STACK: PUSH ID %llu IDX %llu HASH %llu\n", sendv_last_then_id, sendv_marked_idx_push, callerHash);
     sendv_marked_then_id[sendv_marked_idx_push] = sendv_last_then_id;
+    sendv_marked_then_id_file[sendv_marked_idx_push] = file;
+    sendv_marked_then_id_line[sendv_marked_idx_push] = line;
     sendv_marked_then_id_hash[sendv_marked_idx_push] = callerHash;
-    sendv_marked_idx_push = (sendv_marked_idx_push + 1) % MAX_THEN;
+    sendv_marked_idx_push = next_idx;
 
     sendv_last_then_id = 0;
 }
 
-uint64_t pony_actor_get_then_id(const void * file, uint64_t line) {
+uint64_t pony_actor_get_then_id(const void * file, uint64_t line, uint64_t column) {
     if (sendv_marked_idx_push == sendv_marked_idx_pop) { return 0; }
     
     // We are allowed to match any previous then which matches our source code hash
-    uint64_t callerHash = ((uint64_t)file) + line;
+    uint64_t callerHash = ((uint64_t)file) + line * 1024 + column;
+    
+    
+    uint64_t potentialIdx = sendv_marked_idx_push;
+    uint64_t potentialIdxDistance = 9999999999999;
     
     uint64_t idx = sendv_marked_idx_pop;
     while (idx != sendv_marked_idx_push) {
-        //fprintf(stderr, "CHECK_STACK: IDX %llu with %llu == %llu\n", idx, callerHash, sendv_marked_then_id_hash[idx]);
-        if (callerHash == sendv_marked_then_id_hash[idx]) {
-            //fprintf(stderr, "MATCH_STACK: ID %llu IDX %llu HASH %llu\n", then_id, idx, callerHash );
+        uint64_t markedHash = sendv_marked_then_id_hash[idx];
+        if (markedHash != 0) {
+            uint64_t idxDistance = markedHash > callerHash ? markedHash - callerHash : callerHash - markedHash;
             
-            uint64_t then_id = sendv_marked_then_id[idx];
-            sendv_marked_then_id_hash[idx] = 0;
-            
-            // advance the pop idx as far as it will go
-            while (sendv_marked_then_id_hash[sendv_marked_idx_pop] == 0 &&
-                   sendv_marked_idx_push != sendv_marked_idx_pop) {
-                sendv_marked_idx_pop = (sendv_marked_idx_pop + 1) % MAX_THEN;
+            // fprintf(stderr, "CHECK_STACK: IDX %llu with distance %llu\n", idx, idxDistance);
+            if (idxDistance < potentialIdxDistance) {
+                potentialIdxDistance = idxDistance;
+                potentialIdx = idx;
             }
-            
-            return then_id;
         }
+        
         idx = (idx + 1) % MAX_THEN;
     }
     
-    return 0;
+    uint64_t matchedThenId = 0;
+    if (potentialIdx != sendv_marked_idx_push && potentialIdxDistance < 4096) {
+        
+        uint64_t then_id = sendv_marked_then_id[potentialIdx];
+        sendv_marked_then_id_hash[potentialIdx] = 0;
+        
+        // advance the pop idx as far as it will go
+        while (sendv_marked_then_id_hash[sendv_marked_idx_pop] == 0 &&
+               sendv_marked_idx_push != sendv_marked_idx_pop) {
+            sendv_marked_idx_pop = (sendv_marked_idx_pop + 1) % MAX_THEN;
+        }
+        
+        matchedThenId = then_id;
+        
+        // fprintf(stderr, "MATCH_STACK: ID %llu IDX %llu HASH %llu\n", then_id, idx, callerHash );
+    }
+    
+    return matchedThenId;
 }
 
 void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)

@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import FlynnPluginFramework
+@testable import FlynnPluginFramework
 
 class FlynnPluginTests: XCTestCase {
     var output = "/tmp/FlynnPlugin"
@@ -67,17 +67,13 @@ class FlynnPluginTests: XCTestCase {
         flynnplugin.process(input: "/Users/rjbowli/Development/smallplanet/npd_ReceiptPal_iOS/receiptpal_amazon/swift/ErrorLogServer/.build/plugins/outputs/errorlogserver/ErrorLogServerFramework/FlynnPlugin/inputFiles.txt",
                             output: "/tmp/FlynnPlugin.swift")
     }
-/*
-    func testOneRuleOneCode() throws {
-        let rule = PrivateFunctionInActorRule()
-        XCTAssert(rule.test("""
-            class TestActor: Actor {
-                private var string: String = ""
+    
+    #if DEBUG
 
-                interal func _bePrint() {
-                    print("Hello world")
-                }
-            }
+    func testOneRuleOneCode() throws {
+        let rule = DoNotPrecededByThenCall()
+        XCTAssert(rule.test("""
+            ThenActor().then().doFourth().then().doNothing()
         """))
     }
     
@@ -107,5 +103,7 @@ class FlynnPluginTests: XCTestCase {
         for rule in rules.all {
             XCTAssert(rule.test())
         }
-    }*/
+    }
+    
+    #endif
 }

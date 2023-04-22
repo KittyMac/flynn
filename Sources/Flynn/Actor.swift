@@ -139,10 +139,12 @@ open class Actor: Equatable {
     
     public func unsafeCancel() {
         // Cancels all futures and suspends the actor
+        safeThenLock.lock()
         for thenPtr in safeThenMessages.values {
             if let _ : ActorMessage = Class(thenPtr) { }
         }
         safeThenMessages.removeAll()
+        safeThenLock.unlock()
         
         if let actorPtr = safePonyActorPtr {
             pony_actor_suspend(actorPtr)
@@ -188,10 +190,12 @@ open class Actor: Equatable {
 
     deinit {
         //print("deinit - Actor")
+        safeThenLock.lock()
         for thenPtr in safeThenMessages.values {
             if let _ : ActorMessage = Class(thenPtr) { }
         }
         safeThenMessages.removeAll()
+        safeThenLock.unlock()
         
         if let actorPtr = safePonyActorPtr {
             pony_actor_destroy(actorPtr)
@@ -231,16 +235,10 @@ open class Actor: Equatable {
         scratch.append("Core Affinity: \(unsafeCoreAffinity)\n")
         return scratch
     }
-
-    // MARK: - Then
-    @usableFromInline
-    internal var safeThenMessages: [UInt64: UnsafeMutableRawPointer] = [:]
     
     @discardableResult
     @inlinable @inline(__always)
-    public func unsafeSend(_ block: @escaping PonyBlock,
-                           _ file: StaticString = #file,
-                           _ line: UInt64 = #line) -> Self {
+    public func unsafeSend(_ block: @escaping PonyBlock) -> Self {
         guard let actorPtr = safePonyActorPtr else {
             print("Warning: unsafeSend called on a cancelled actor")
             return self
@@ -248,29 +246,58 @@ open class Actor: Equatable {
         
         let thenId = pony_actor_new_then_id()
         let argumentPtr = Ptr(ActorMessage(block, thenId))
-        let prevThenId = pony_actor_get_then_id(file.utf8Start, line)
-        if prevThenId != 0 {
-            safeThenMessages[prevThenId] = argumentPtr
-            pony_actor_then_message(actorPtr, thenId)
-        } else {
-            pony_actor_send_message(actorPtr, argumentPtr, thenId, handleMessage)
+        pony_actor_send_message(actorPtr, argumentPtr, thenId, handleMessage)
+        return self
+    }
+    
+    // MARK: - Then -> Do
+    @usableFromInline
+    internal var safeThenMessages: [UInt64: UnsafeMutableRawPointer] = [:]
+    @usableFromInline
+    internal let safeThenLock = NSLock()
+    
+    
+    @discardableResult
+    @inlinable @inline(__always)
+    public func unsafeDo(_ block: @escaping PonyBlock,
+                         _ file: StaticString = #file,
+                         _ line: UInt64 = #line,
+                         _ column: UInt64 = #column) -> Self {
+        guard let actorPtr = safePonyActorPtr else {
+            print("Warning: unsafeSend called on a cancelled actor")
+            return self
         }
+
+        let thenId = pony_actor_new_then_id()
+        let argumentPtr = Ptr(ActorMessage(block, thenId))
+        let prevThenId = pony_actor_get_then_id(file.utf8Start, line, column)
+        
+        guard prevThenId != 0 else {
+            fatalError("do called but there is not a previous then to attach to at \(file):\(line)")
+        }
+        
+        safeThenLock.lock()
+        safeThenMessages[prevThenId] = argumentPtr
+        safeThenLock.unlock()
+        pony_actor_then_message(actorPtr, thenId)
+        
         return self
     }
     
     @inlinable @inline(__always)
     public func safeThen(_ prevThenId: UInt64?) {
         guard let actorPtr = safePonyActorPtr else { return }
+        guard let prevThenId = prevThenId else { return }
         
-        if let prevThenId = prevThenId,
-           let argumentPtr = safeThenMessages.removeValue(forKey: prevThenId) {
-            pony_actor_complete_then_message(actorPtr, argumentPtr, handleMessage)
-        }
+        safeThenLock.lock(); defer { safeThenLock.unlock() }
+        guard let argumentPtr = safeThenMessages.removeValue(forKey: prevThenId) else { return }
+        pony_actor_complete_then_message(actorPtr, argumentPtr, handleMessage)
     }
     
     @inlinable @inline(__always)
     public func then(_ file: StaticString = #file,
-                     _ line: UInt64 = #line) -> Self {
+                     _ line: UInt64 = #line,
+                     _ column: UInt64 = #column) -> Self {
         // on the ponyrt side we store a thread local variable which we now flag so that we
         // know the next behaviour call on this thread should be a then call
         
@@ -278,7 +305,7 @@ open class Actor: Equatable {
         // associated the correct call that happens right after the "then"
         // The ruleset right now is that it must be the same file and it
         // must be the same line
-        pony_actor_mark_then_id(file.utf8Start, line)
+        pony_actor_mark_then_id(file.utf8Start, line, column)
         return self
     }
 }

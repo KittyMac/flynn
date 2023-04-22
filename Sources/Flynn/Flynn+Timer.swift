@@ -6,7 +6,7 @@ public typealias TimerCallback = (_ timer: Flynn.Timer) -> Void
 
 public protocol Timerable: Actor {
     @discardableResult
-    func beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs, _ file: StaticString, _ line: UInt64) -> Self
+    func beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) -> Self
 }
 
 public extension Flynn {
@@ -63,12 +63,12 @@ public extension Flynn {
             Flynn.register(self)
         }
 
-        internal func fire(_ file: StaticString = #file, _ line: UInt64 = #line) {
+        internal func fire() {
             if cancelled {
                 return
             }
             if let target = target {
-                target.beTimerFired(self, args, file, line)
+                target.beTimerFired(self, args)
             } else if let callback = callback, let actor = actor {
                 actor.unsafeSend { thenPtr in callback(self) }
             } else {
