@@ -22,7 +22,7 @@ public class MainActor: Actor {
             return self
         }
         DispatchQueue.main.async {
-            block(0)
+            block()
         }
         return self
     }

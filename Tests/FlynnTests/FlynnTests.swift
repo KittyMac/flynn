@@ -8,7 +8,7 @@ class TestDoubleCallback: Actor {
         returnCallback()
     }
 }
-
+/*
 class ThenActor: Actor {
     deinit {
         print("ThenActor - deinit")
@@ -77,7 +77,7 @@ class ThenActor2: Actor {
         }
     }
 }
-
+*/
 class FlynnTests: XCTestCase {
 
     override func setUp() {
@@ -100,7 +100,7 @@ class FlynnTests: XCTestCase {
     }
      */
 
-    
+    /*
     func testActorThen() {
         // then() allows you to chain behaviour calls to actors when they call their return callback
         let expectation = XCTestExpectation(description: "then")
@@ -205,6 +205,7 @@ class FlynnTests: XCTestCase {
         
         wait(for: [expectation], timeout: 1.0)
     }
+     */
     
     func testMultipleDelayedReturns() {
         let expectation = XCTestExpectation(description: "Mutliple delayed returns from Actor behavior")
@@ -305,7 +306,7 @@ class FlynnTests: XCTestCase {
     func testMainActor() {
         let expectation = XCTestExpectation(description: "MainActor...")
         
-        Flynn.main.unsafeSend { _ in
+        Flynn.main.unsafeSend {
             if Thread.isMainThread {
                 expectation.fulfill()
             }
