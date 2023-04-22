@@ -952,8 +952,8 @@ class AutogenerateExternalBehaviors {
                         scratch.append(",\n")
                         scratch.append(parameterNameHeader)
                     }
-                    scratch.append("_ file: StaticString = #file,\n")
-                    scratch.append(parameterNameHeader + "_ line: UInt64 = #line")
+                    scratch.append("_ file__internal: StaticString = #file,\n")
+                    scratch.append(parameterNameHeader + "_ line__internal: UInt64 = #line")
                     
                     scratch.append(") -> Self {\n")
 
@@ -1031,11 +1031,11 @@ class AutogenerateExternalBehaviors {
                             scratch.append("            }\n")
                         }
 
-                        scratch.append("        }, file, line)\n")
+                        scratch.append("        }, file__internal, line__internal)\n")
                         scratch.append("    }\n")
                     } else {
                         if parameterLabels.count == minParameterCount {
-                            scratch.append("        return unsafeSend ({ thenPtr in self._\(name)(); self.safeThen(thenPtr) }, file, line)\n")
+                            scratch.append("        return unsafeSend ({ thenPtr in self._\(name)(); self.safeThen(thenPtr) }, file__internal, line__internal)\n")
                         } else {
                             scratch.append("        return unsafeSend ({ thenPtr in self._\(name)(")
 
@@ -1055,7 +1055,7 @@ class AutogenerateExternalBehaviors {
                                     scratch.removeLast()
                                 }
                             }
-                            scratch.append("); self.safeThen(thenPtr) }, file, line)\n")
+                            scratch.append("); self.safeThen(thenPtr) }, file__internal, line__internal)\n")
                         }
                         scratch.append("    }\n")
                     }
