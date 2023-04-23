@@ -131,18 +131,9 @@ public protocol Flowable: Actor {
 
     @discardableResult
     func beFlow(_ args: FlowableArgs) -> Self
-    
-    func _beFlow(_ args: FlowableArgs)
 }
 
 public extension Flowable {
-
-    func beFlow(_ args: FlowableArgs) -> Self {
-        unsafeSend { _ in
-            self._beFlow(args)
-        }
-        return self
-    }
     
     func beTarget(_ target: Flowable) -> Self {
         unsafeSend { _ in
