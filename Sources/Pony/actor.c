@@ -65,7 +65,7 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
                     if (sendv_marked_idx_push != sendv_marked_idx_pop) {
                         const char * file = sendv_marked_then_id_file[sendv_marked_idx_pop];
                         uint64_t line = sendv_marked_then_id_line[sendv_marked_idx_pop];
-                        fprintf(stderr, "Fatal Error: Unbalanced then/do detected at %s:%llu\n", file, line);
+                        fprintf(stderr, "Fatal Error: Unbalanced then/do detected at %s:%lu\n", file, (unsigned long)line);
                         exit(55);
                     }
                     
@@ -216,7 +216,7 @@ void pony_actor_mark_then_id(const void * file, uint64_t line, uint64_t column) 
     uint64_t next_idx = (sendv_marked_idx_push + 1) % MAX_THEN;
     
     if (next_idx == sendv_marked_idx_pop) {
-        fprintf(stderr, "Fatal Error: then/do stack size exceeded at %s:%llu\n", (const char * )file, line);
+        fprintf(stderr, "Fatal Error: then/do stack size exceeded at %s:%lu\n", (const char * )file, (unsigned long)line);
         exit(55);
     }
     
