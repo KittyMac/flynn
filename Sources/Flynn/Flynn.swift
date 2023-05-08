@@ -138,6 +138,20 @@ open class Flynn {
     public static func syslog(_ tag: String, _ message: String) {
         pony_syslog(tag, message)
     }
+    
+    public static func dns_resolve_cname(domain: String) -> String? {
+        guard let stringPtr = pony_dns_resolve_cname(domain) else { return nil }
+        let string = String(utf8String: stringPtr)
+        free(stringPtr)
+        return string
+    }
+    
+    public static func dns_resolve_txt(domain: String) -> String? {
+        guard let stringPtr = pony_dns_resolve_txt(domain) else { return nil }
+        let string = String(utf8String: stringPtr)
+        free(stringPtr)
+        return string
+    }
 
     internal static func wakeTimerLoop() {
         timerLoop?.wake()

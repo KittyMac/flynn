@@ -81,7 +81,8 @@ let package = Package(
         .target(
             name: "Pony",
             linkerSettings: [
-                .linkedLibrary("atomic", .when(platforms: [.linux, .android]))
+                .linkedLibrary("atomic", .when(platforms: [.linux, .android])),
+                .linkedLibrary("resolv")
             ]
         ),
         .target(

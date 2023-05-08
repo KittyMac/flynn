@@ -15,6 +15,8 @@
 void pony_remote_shutdown();
 void pony_syslog(const char * tag, const char * msg);
 void pony_syslog2(const char * tag, const char *format, ...);
+char * pony_dns_resolve_cname(const char * domain);
+char * pony_dns_resolve_txt(const char * domain);
 
 #define kDestroyMessage 0
 #define kMessagePointer 1

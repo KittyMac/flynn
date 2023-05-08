@@ -7,6 +7,11 @@
 #include <syslog.h>
 #include <stdarg.h>
 
+#include <arpa/nameser.h>
+#include <netinet/in.h>
+#include <resolv.h>
+#include <string.h>
+
 #include "ponyrt.h"
 
 #include "messageq.h"
@@ -244,5 +249,50 @@ void pony_syslog2(const char * tag, const char *format, ...) {
     va_end(args);
 
     pony_syslog(tag, msg);
+}
+
+
+static char * pony_dns_resolve(const char * domain, int type) {
+    static int didCallInit = 0;
+    
+    if (didCallInit == 0) {
+        didCallInit = 1;
+        
+        res_init();
+    }
+    
+    int response;
+    unsigned char query_buffer[1024];
+    char nsname[NS_MAXDNAME];
+    
+    response= res_query(domain, ns_c_in, type, query_buffer, sizeof(query_buffer));
+    if ( response > 0 ){
+        ns_msg msg;
+        ns_initparse(query_buffer, response, &msg);
+        
+        for (int x= 0; x < ns_msg_count(msg, ns_s_an); x++) {
+            ns_rr rr;
+            ns_parserr(&msg, ns_s_an, x, &rr);
+            ns_type msgType = ns_rr_type(rr);
+            
+            if (msgType == type) {
+                
+                if (ns_name_uncompress(ns_msg_base(msg), ns_msg_end(msg),
+                                       ns_rr_rdata(rr), nsname, NS_MAXDNAME) >= 0) {
+                    return strdup(nsname);
+                }
+            }
+        }
+    }
+    
+    return NULL;
+}
+
+char * pony_dns_resolve_cname(const char * domain) {
+    return pony_dns_resolve(domain, ns_t_cname);
+}
+
+char * pony_dns_resolve_txt(const char * domain) {
+    return pony_dns_resolve(domain, ns_t_txt);
 }
 

@@ -105,5 +105,7 @@ unsigned long pony_current_memory();
 unsigned long pony_mapped_memory();
 
 void pony_syslog(const char * tag, const char * msg);
+char * pony_dns_resolve_cname(const char * domain);
+char * pony_dns_resolve_txt(const char * domain);
 
 #endif

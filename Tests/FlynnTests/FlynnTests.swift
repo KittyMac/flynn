@@ -91,6 +91,16 @@ class FlynnTests: XCTestCase {
         Flynn.shutdown()
     }
     
+    func testDnsResolve() {
+        XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
+        XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
+        XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
+        XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
+        XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
+        XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
+        XCTAssertEqual(Flynn.dns_resolve_txt(domain: "staging.rover.smallplanet.com"), nil)
+    }
+    
     /*
     func testSuppressCallbackTwice() {
         let test = TestDoubleCallback()
