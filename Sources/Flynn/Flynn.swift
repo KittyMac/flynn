@@ -41,6 +41,17 @@ public class MainActor: Actor {
     }
 }
 
+public extension DispatchGroup {
+    func notify(actor: Actor,
+                _ block: @escaping () -> ()) {
+        notify(queue: .global()) {
+            actor.unsafeSend { _ in
+                block()
+            }
+        }
+    }
+}
+
 open class Flynn {
 
     // MARK: - User Configurable Settings
