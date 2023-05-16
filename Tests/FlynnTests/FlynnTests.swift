@@ -101,6 +101,13 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(Flynn.dns_resolve_txt(domain: "staging.rover.smallplanet.com"), nil)
     }
     
+    func testArray() {
+        let numbers = [0,1,2,3,4,5,6,7,8,9]
+        numbers.sync { item in
+            print(item)
+        }
+    }
+    
     /*
     func testSuppressCallbackTwice() {
         let test = TestDoubleCallback()

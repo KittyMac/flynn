@@ -11,7 +11,15 @@ extension Array {
     }
 }
 
-fileprivate let pool = Array<Actor>.init(count: 32, create: { return Actor() })
+fileprivate class CollectionActor: Actor {
+    override init() {
+        super.init()
+        unsafeMessageBatchSize = 1
+        unsafePriority = -1
+    }
+}
+
+fileprivate let pool = Array<Actor>.init(count: 32, create: { return CollectionActor() })
 
 // Simple parallel processing for common collections
 // Process each item concurrently and
