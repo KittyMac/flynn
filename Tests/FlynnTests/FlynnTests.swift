@@ -101,11 +101,47 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(Flynn.dns_resolve_txt(domain: "staging.rover.smallplanet.com"), nil)
     }
     
-    func testArray() {
+    func testArraySync() {
         let numbers = [0,1,2,3,4,5,6,7,8,9]
-        numbers.sync { item in
+        var total = 0
+        numbers.sync { item, synchronized in
+            // this scope happens in parallel on different actors; it would be
+            // unsafe to increment total here
             print(item)
+            
+            // Flynn provides a synchronized closure you can use
+            // to put unsafe processing in
+            synchronized {
+                total += item
+            }
         }
+        XCTAssertEqual(45, total)
+    }
+    
+    func testArrayAsync() {
+        let expectation = XCTestExpectation(description: #function)
+
+        let numbers = [0,1,2,3,4,5,6,7,8,9]
+        var total = 0
+        
+        numbers.async((Flynn.any)) { item, synchronized in
+            // this scope happens in parallel on different actors; it would be
+            // unsafe to increment total here
+            print(item)
+            
+            // Flynn provides a synchronized closure you can use
+            // to put unsafe processing in
+            synchronized {
+                total += item
+            }
+        } done: {
+            // When all of the processing is complete the done closure is called
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 30.0)
+
+        XCTAssertEqual(45, total)
     }
     
     /*
