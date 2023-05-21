@@ -222,7 +222,7 @@ void pony_actor_mark_then_id(const void * file, uint64_t line, uint64_t column) 
     
     uint64_t callerHash = ((uint64_t)file) + line * 1024 + column;
 
-    fprintf(stderr, "THEN_STACK: PUSH ID %llu IDX %llu HASH %llu\n", sendv_last_then_id, sendv_marked_idx_push, callerHash);
+    // fprintf(stderr, "THEN_STACK: PUSH ID %llu IDX %llu HASH %llu\n", sendv_last_then_id, sendv_marked_idx_push, callerHash);
     sendv_marked_then_id[sendv_marked_idx_push] = sendv_last_then_id;
     sendv_marked_then_id_file[sendv_marked_idx_push] = file;
     sendv_marked_then_id_line[sendv_marked_idx_push] = line;
@@ -248,7 +248,7 @@ uint64_t pony_actor_get_then_id(const void * file, uint64_t line, uint64_t colum
         if (markedHash != 0) {
             uint64_t idxDistance = markedHash > callerHash ? markedHash - callerHash : callerHash - markedHash;
             
-            fprintf(stderr, "CHECK_STACK: IDX %llu with distance %llu\n", idx, idxDistance);
+            // fprintf(stderr, "CHECK_STACK: IDX %llu with distance %llu\n", idx, idxDistance);
             if (idxDistance < potentialIdxDistance) {
                 potentialIdxDistance = idxDistance;
                 potentialIdx = idx;
@@ -272,7 +272,7 @@ uint64_t pony_actor_get_then_id(const void * file, uint64_t line, uint64_t colum
         
         matchedThenId = then_id;
         
-        fprintf(stderr, "MATCH_STACK: ID %llu IDX %llu HASH %llu\n", then_id, idx, callerHash );
+        // fprintf(stderr, "MATCH_STACK: ID %llu IDX %llu HASH %llu\n", then_id, idx, callerHash );
     }
     
     return matchedThenId;
