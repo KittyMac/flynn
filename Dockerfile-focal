@@ -13,7 +13,7 @@ COPY ./Tests ./Tests
 
 RUN swift build --configuration release
 
-FROM fedora:37
+FROM swift:5.7.1-focal
 
 WORKDIR /root/Flynn
 COPY --from=builder /root/Flynn/.build/release/FlynnPluginTool-focal .

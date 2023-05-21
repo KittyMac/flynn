@@ -157,7 +157,7 @@ class FlynnTests: XCTestCase {
      */
 
     func testActorInterruptingThens() {
-        let expectation = XCTestExpectation(description: "then")
+        let expectation = XCTestExpectation(description: #function)
         
         var results: [String] = []
         
@@ -189,9 +189,57 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(results.joined(separator: ","), "first,second,third")
     }
     
+    func testActorThenMultipleActors() {
+        // then() allows you to chain behaviour calls to actors when they call their return callback
+        let expectation = XCTestExpectation(description: #function)
+        
+        var results: [Int] = []
+
+        let a = Counter()
+        let b = Counter()
+        
+        a.beInc(1)
+        
+        a.beGetValue(Flynn.any) { value in
+            results.append(value)
+        }.then(b).doGetValue(Flynn.any) { value in
+            results.append(value)
+            expectation.fulfill()
+        }
+        //.then(a).doGetValue(Flynn.any) { value in
+        //    results.append(value)
+        //}.then(b).doGetValue(Flynn.any) { value in
+        //    results.append(value)
+        //}.then(a).doGetValue(Flynn.any) { value in
+        //    results.append(value)
+        //}.then(b).doGetValue(Flynn.any) { value in
+        //    results.append(value)
+        //    expectation.fulfill()
+        //}
+        
+        // let thenActor = ThenActor()
+        // thenActor.beFirst(delay: 3.0, Flynn.any) {
+        //     results.append("first")
+        //     //expectation.fulfill()
+        // }.then().doSecond(delay: 2.0, Flynn.any) {
+        //     results.append("second")
+        // }.then(counter).beGetValue(Flynn.any) { value in
+        //     results.append("\(value)")
+        // }.then(thenActor).doThird(delay: 1.0, Flynn.any) {
+        //     results.append("third")
+        // }.then().doThird(delay: 1.0, Flynn.any) {
+        //     results.append("third")
+        // }
+        wait(for: [expectation], timeout: 30.0)
+        
+        XCTAssertEqual(results.map({"\($0)"}).joined(separator: ","), "0,first")
+
+        
+    }
+    
     func testActorThen() {
         // then() allows you to chain behaviour calls to actors when they call their return callback
-        let expectation = XCTestExpectation(description: "then")
+        let expectation = XCTestExpectation(description: #function)
         
         var results: [String] = []
         /*
@@ -257,7 +305,7 @@ class FlynnTests: XCTestCase {
     }
     
     func testActorThen2() {
-        let expectation = XCTestExpectation(description: "then")
+        let expectation = XCTestExpectation(description: #function)
         
         var count = 1_000_000
         for _ in 0..<1_000_000 {
@@ -277,7 +325,7 @@ class FlynnTests: XCTestCase {
     }
     
     func testActorThen3() {
-        let expectation = XCTestExpectation(description: "then")
+        let expectation = XCTestExpectation(description: #function)
         
         // Note: both "a" and "b" should deinit, but "a" will ONLY
         // deinit if it's "then" (which will never arrive) is cancelled
@@ -307,7 +355,7 @@ class FlynnTests: XCTestCase {
     }
     
     func testMultipleDelayedReturns() {
-        let expectation = XCTestExpectation(description: "Mutliple delayed returns from Actor behavior")
+        let expectation = XCTestExpectation(description: #function)
 
         ActorExhaustive().beNoArgsTwoDelayedReturn(Flynn.any) { (string, int) in
             if string == "Hello World" && int == 42 {
@@ -322,7 +370,7 @@ class FlynnTests: XCTestCase {
     }
 
     func test0() {
-        let expectation = XCTestExpectation(description: "Warning when passing reference values")
+        let expectation = XCTestExpectation(description: #function)
 
         print("before")
         PassToMe().beNone()
@@ -332,7 +380,7 @@ class FlynnTests: XCTestCase {
     }
 
     func test1() {
-        let expectation = XCTestExpectation(description: "Wait for counter to finish")
+        let expectation = XCTestExpectation(description: #function)
 
         print("start")
         let counter = Counter()
@@ -352,7 +400,7 @@ class FlynnTests: XCTestCase {
     }
 
     func test2() {
-        let expectation = XCTestExpectation(description: "Wait for string builder to finish")
+        let expectation = XCTestExpectation(description: #function)
 
         let hello = "hello"
 
@@ -368,7 +416,7 @@ class FlynnTests: XCTestCase {
     }
 
     func testColor() {
-        let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
+        let expectation = XCTestExpectation(description: #function)
         let color = Color()
             .beAlpha()
             .beColor()
@@ -389,7 +437,7 @@ class FlynnTests: XCTestCase {
     }
 
     func testImage() {
-        let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
+        let expectation = XCTestExpectation(description: #function)
 
         let color: [Float] = [1, 0, 1, 0]
         Image().beSetColor(color)
@@ -403,7 +451,7 @@ class FlynnTests: XCTestCase {
     }
     
     func testMainActor() {
-        let expectation = XCTestExpectation(description: "MainActor...")
+        let expectation = XCTestExpectation(description: #function)
         
         Flynn.main.unsafeSend { _ in
             if Thread.isMainThread {
@@ -413,7 +461,7 @@ class FlynnTests: XCTestCase {
     }
 
     func testShutdown() {
-        let expectation = XCTestExpectation(description: "Flowable actors")
+        let expectation = XCTestExpectation(description: #function)
 
         let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args: FlowableArgs) in
             let value: String = args[x:0]
@@ -436,7 +484,7 @@ class FlynnTests: XCTestCase {
     }
 
     func testFlowable() {
-        let expectation = XCTestExpectation(description: "Flowable actors")
+        let expectation = XCTestExpectation(description: #function)
 
         let pipeline = Passthrough() |> Uppercase() |> Concatenate() |> Callback({ (args: FlowableArgs) in
             let value: String = args[x:0]
@@ -454,7 +502,7 @@ class FlynnTests: XCTestCase {
     }
 
     private func internalTestLoadBalancing(_ iterations: Int) {
-        let expectation = XCTestExpectation(description: "Load balancing")
+        let expectation = XCTestExpectation(description: #function)
 
         let pipeline = Passthrough() |> Array(count: Flynn.cores) { Uppercase() } |> Concatenate() |> Callback({ (args: FlowableArgs) in
             let value: String = args[x:0]
@@ -516,7 +564,7 @@ class FlynnTests: XCTestCase {
 
     func testMemoryBloatFromMessagePassing() {
 
-        let expectation = XCTestExpectation(description: "Memory overhead in calling behaviors")
+        let expectation = XCTestExpectation(description: #function)
 
         let pipeline = Passthrough() |> Array(count: Flynn.cores) { Passthrough() } |> Passthrough() |> Callback({ (args: FlowableArgs) in
             // let s:String = args[x:0]
@@ -540,7 +588,7 @@ class FlynnTests: XCTestCase {
     }
 
     func testMemoryBloatFromMessagePassing2() {
-        let expectation = XCTestExpectation(description: "MemoryBloatFromMessagePassing2")
+        let expectation = XCTestExpectation(description: #function)
 
         let counter = Counter()
         for _ in 0..<50000 {
@@ -555,7 +603,7 @@ class FlynnTests: XCTestCase {
     }
 
     func testTimerInterrupt() {
-        let expectation = XCTestExpectation(description: "Repeating Timer")
+        let expectation = XCTestExpectation(description: #function)
 
         Flynn.Timer(timeInterval: 20.0, repeats: false, Flynn.any, { (_) in })
 
@@ -571,7 +619,7 @@ class FlynnTests: XCTestCase {
     }
 
     func testTimerResolution() {
-        let expectation = XCTestExpectation(description: "Repeating Timer")
+        let expectation = XCTestExpectation(description: #function)
 
         var count = 0
 
@@ -598,7 +646,7 @@ class FlynnTests: XCTestCase {
     }
 
     func testRepeatingTimer() {
-        let expectation = XCTestExpectation(description: "Repeating Timer")
+        let expectation = XCTestExpectation(description: #function)
 
         let counter = Counter()
 
@@ -618,7 +666,7 @@ class FlynnTests: XCTestCase {
     }
 
     func testSortedTimers() {
-        let expectation = XCTestExpectation(description: "Sorted Timer")
+        let expectation = XCTestExpectation(description: #function)
 
         let builder = StringBuilder()
 

@@ -308,4 +308,20 @@ open class Actor: Equatable {
         pony_actor_mark_then_id(file.utf8Start, line, column)
         return self
     }
+    
+    @inlinable @inline(__always)
+    public func then<T:Actor>(_ actor: T,
+                              _ file: StaticString = #file,
+                              _ line: UInt64 = #line,
+                              _ column: UInt64 = #column) -> T {
+        // on the ponyrt side we store a thread local variable which we now flag so that we
+        // know the next behaviour call on this thread should be a then call
+        
+        // We need the file and line to create a "unique" value for which we can
+        // associated the correct call that happens right after the "then"
+        // The ruleset right now is that it must be the same file and it
+        // must be the same line
+        pony_actor_mark_then_id(file.utf8Start, line, column)
+        return actor
+    }
 }

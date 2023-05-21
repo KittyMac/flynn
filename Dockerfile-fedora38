@@ -1,7 +1,13 @@
-FROM swift:5.7.1-amazonlinux2 as builder
+FROM fedora:38 as builder
 
-RUN yum install -y \
-    unzip
+RUN dnf install -y \
+    git \
+    unzip \
+    swift-lang-5.7.3-2.fc38 \
+    javascriptcoregtk4.0-devel \
+    libatomic_ops
+
+RUN ln -s /usr/libexec/swift/*/lib/libsourcekitdInProc.so /usr/lib/libsourcekitdInProc.so
 
 WORKDIR /root/Flynn
 COPY ./dist ./dist
@@ -12,7 +18,7 @@ COPY ./Tests ./Tests
 
 RUN swift build --configuration release
 
-FROM swift:5.7.1-amazonlinux2
+FROM fedora:38
 
 WORKDIR /root/Flynn
 COPY --from=builder /root/Flynn/.build/release/FlynnPluginTool-focal .

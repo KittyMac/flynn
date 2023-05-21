@@ -49,6 +49,15 @@ release: build docker
 	rm -f ./dist/FlynnPluginTool-fedora.zip
 	cd ./dist && zip -r ./FlynnPluginTool-fedora.zip ./FlynnPluginTool-fedora.artifactbundle
 	
+	# Getting plugin for fedora38
+	docker pull kittymac/flynn-fedora38:latest
+	docker run --platform linux/arm64 --rm -v $(DIST):/outTemp kittymac/flynn-fedora38 /bin/bash -lc 'cp FlynnPluginTool-focal /outTemp/FlynnPluginTool-fedora38.artifactbundle/FlynnPluginTool-arm64/bin/FlynnPluginTool'
+	docker run --platform linux/amd64 --rm -v $(DIST):/outTemp kittymac/flynn-fedora38 /bin/bash -lc 'cp FlynnPluginTool-focal /outTemp/FlynnPluginTool-fedora38.artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool'
+	cp ./dist/FlynnPluginTool ./dist/FlynnPluginTool-fedora38.artifactbundle/FlynnPluginTool-macos/bin/FlynnPluginTool
+	
+	rm -f ./dist/FlynnPluginTool-fedora38.zip
+	cd ./dist && zip -r ./FlynnPluginTool-fedora38.zip ./FlynnPluginTool-fedora38.artifactbundle
+	
 	
 
 docker:
@@ -60,6 +69,7 @@ docker:
 	docker buildx build --file Dockerfile-focal --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-focal .
 	docker buildx build --file Dockerfile-amazonlinux2 --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-amazonlinux2 .
 	docker buildx build --file Dockerfile-fedora --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora .
+	docker buildx build --file Dockerfile-fedora38 --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora38 .
 
 docker-shell:
 	docker buildx build --file Dockerfile-fedora --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora .
