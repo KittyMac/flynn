@@ -53,6 +53,20 @@ public extension Flynn {
 
             schedule()
         }
+        
+        @discardableResult
+        public init(timeInterval: TimeInterval, immediate: Bool, repeats: Bool, _ actor: Actor, _ callback: @escaping TimerCallback) {
+            self.timeInterval = timeInterval
+            self.repeats = repeats
+            self.actor = actor
+            self.callback = callback
+            
+            if immediate {
+                callback(self)
+            }
+
+            schedule()
+        }
 
         public func cancel() {
             cancelled = true
