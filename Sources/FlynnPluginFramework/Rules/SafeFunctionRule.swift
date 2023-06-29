@@ -29,21 +29,7 @@ struct SafeFunctionRule: Rule {
                         self.safeFoo()
                     }
                 }
-            """),
-            Example("""
-                // flynn:ignore all
-                class SomeActor: Actor {
-                    func safeFoo() {
-                        print("hello world")
-                    }
-
-                    override func safeFlowProcess() {
-                        safeFoo()
-                    }
-                }
-                let a = SomeActor()
-                a.safeFlowProcess()
-            """),
+            """)
         ],
         triggeringExamples: [
             Example("""
@@ -127,10 +113,13 @@ struct SafeFunctionRule: Rule {
         ]
     )
 
+    func precheck(_ file: File) -> Bool {
+        guard file.contents.contains("// flynn:ignore all") == false else { return false }
+        guard file.contents.contains("// flynn:ignore \(description.name)") == false else { return false }
+        return true
+    }
+    
     func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
-        guard syntax.markup("ignore all", unbounded: true).isEmpty else { return true }
-        guard syntax.markup("ignore \(description.name)", unbounded: true).isEmpty else { return true }
-
         // Only functions of the class may call safe methods on a class
         if let functionCall = syntax.structure.name {
             if  functionCall.range(of: safeCallString) != nil &&
