@@ -83,7 +83,8 @@ struct FileSyntax {
     }
 
     func match(_ pattern: String,
-               includeComments: Bool = false) -> Int64? {
+               includeComments: Bool = false,
+               unbounded: Bool = false) -> Int64? {
         var firstOffendingMatchOffset: Int64?
 
         do {
@@ -91,11 +92,16 @@ struct FileSyntax {
             let structure = self.structure
             let map = self.tokens
 
-            if let bodyoffset = structure.offset, var bodylength = structure.length {
+            if var bodyoffset = structure.offset, var bodylength = structure.length {
+                if unbounded {
+                    bodyoffset = 0
+                    bodylength = Int64(body.count)
+                }
+                
                 if bodyoffset + bodylength > body.count {
                     bodylength = Int64(body.count) - bodyoffset
                 }
-                if bodyoffset + bodylength <= body.count {
+                if (bodyoffset + bodylength <= body.count) {
                     let regex = try NSRegularExpression(pattern: pattern, options: [])
                     let nsrange = NSRange(location: Int(bodyoffset), length: Int(bodylength))
                     regex.enumerateMatches(in: body, options: [], range: nsrange) { (match, _, stop) in
@@ -110,7 +116,7 @@ struct FileSyntax {
                                 if let type = SyntaxKind(rawValue: commentSection.type) {
                                     let offset = commentSection.offset.value
                                     let length = commentSection.length.value
-                                    if fullBodyOffset >= offset && fullBodyOffset <= (offset + length) {
+                                    if (fullBodyOffset >= offset && fullBodyOffset <= (offset + length)) {
                                         switch type {
                                         case .comment, .commentURL, .commentMark, .docComment, .docCommentField, .string, .stringInterpolationAnchor:
                                             return
@@ -180,7 +186,7 @@ struct FileSyntax {
         } catch { print("\(error)") }
     }
 
-    func markup(_ label: String) -> [(ByteCount, String)] {
+    func markup(_ label: String, unbounded: Bool) -> [(ByteCount, String)] {
         let body = self.file.contents
         let structure = self.structure
         let map = self.tokens
@@ -197,9 +203,9 @@ struct FileSyntax {
                 for commentSection in map {
                     if let type = SyntaxKind(rawValue: commentSection.type) {
                         let offset = commentSection.offset.value
-                        if offset >= bodyoffset && offset <= (bodyoffset + bodylength) {
+                        if unbounded || (offset >= bodyoffset && offset <= (bodyoffset + bodylength)) {
                             switch type {
-                            case .comment, .commentURL, .commentMark, .docComment, .docCommentField, .string, .stringInterpolationAnchor:
+                            case .comment, .commentURL, .commentMark, .docComment, .docCommentField:
                                 let stringView = StringView.init(body)
                                 if let commentString = stringView.substringWithByteRange(commentSection.range) {
                                     if let range = commentString.range(of: targetString) {
@@ -217,6 +223,7 @@ struct FileSyntax {
         return markup
     }
 }
+
 
 typealias ASTBuilderResult = ((AST) -> Void)
 

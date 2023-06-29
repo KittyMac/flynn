@@ -65,6 +65,8 @@ struct PrivateFunctionInActorRule: Rule {
     )
 
     func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
+        guard syntax.markup("ignoreall", unbounded: true).isEmpty else { return true }
+        
         // Every function defined in a class which is a subclass of Actor must follow these rules:
         // 1. its access control level (ACL) must be set to private
         // 2. if it starts with safe, its ACL may be anything. Other rules will keep anything

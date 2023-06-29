@@ -18,7 +18,9 @@ struct DoNotPrecededByThenCall: Rule {
         ]
     )
 
-    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {        
+    func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
+        guard syntax.markup("ignoreall", unbounded: true).isEmpty else { return true }
+        
         var errorOffsets: [Int64] = []
         
         // Check for then() which is not followed by a doCall()

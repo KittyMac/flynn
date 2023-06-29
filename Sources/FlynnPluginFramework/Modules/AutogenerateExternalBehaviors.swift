@@ -57,7 +57,7 @@ class AutogenerateExternalBehaviors {
                 }
                 
                 let isBinaryCodable: (FileSyntax) -> (Bool) = {
-                    let binaryCodableMarkup = $0.markup("codable")
+                    let binaryCodableMarkup = $0.markup("codable", unbounded: false)
                     if binaryCodableMarkup.count > 0 &&
                         binaryCodableMarkup[0].1.trimmingCharacters(in: .whitespacesAndNewlines) == "binary" {
                         return true

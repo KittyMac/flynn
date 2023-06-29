@@ -82,14 +82,18 @@ class FlynnPluginTests: XCTestCase {
             class TestActor: Actor {
                 private var string: String = ""
 
-                interal func _bePrint() {
+                internal func _bePrint() {
                     print("Hello world")
                 }
             }
         """
         let rules = Ruleset()
         for rule in rules.all {
-            XCTAssert(rule.test(code))
+            let result = rule.test(code)
+            if result == false {
+                print("failed rule: \(rule)")
+            }
+            XCTAssert(result)
         }
     }
 
