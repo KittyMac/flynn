@@ -19,7 +19,8 @@ struct DoNotPrecededByThenCall: Rule {
     )
 
     func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
-        guard syntax.markup("ignoreall", unbounded: true).isEmpty else { return true }
+        guard syntax.markup("ignore all", unbounded: true).isEmpty else { return true }
+        guard syntax.markup("ignore \(description.name)", unbounded: true).isEmpty else { return true }
         
         var errorOffsets: [Int64] = []
         

@@ -73,8 +73,9 @@ struct SafeVariableRule: Rule {
     }
 
     func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
-        guard syntax.markup("ignoreall", unbounded: true).isEmpty else { return true }
-        
+        guard syntax.markup("ignore all", unbounded: true).isEmpty else { return true }
+        guard syntax.markup("ignore \(description.name)", unbounded: true).isEmpty else { return true }
+
         // sourcekit doesn't give us structures for variable accesses. So the
         // best we can do is grep the body contents. Doing this, we are looking
         // or any instances of .safe which are not self.safe This is

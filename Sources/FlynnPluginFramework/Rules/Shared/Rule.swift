@@ -142,10 +142,17 @@ extension Rule {
                 return false
             }
             
-            // test flynn:ignoreall
-            let ignoreExample = "// flynn:ignoreall\n\n\(example)"
+            // test flynn:ignore all
+            let ignoreExample = "// flynn:ignore all\n\n\(example)"
             if test(ignoreExample) != true {
-                print("\(description.identifier) failed ignoreall on triggeringExamples:\n\(example)")
+                print("\(description.identifier) failed ignore all on triggeringExamples:\n\(example)")
+                return false
+            }
+            
+            // test flynn:ignore NAME
+            let ignoreNamedExample = "// flynn:ignore \(description.name)\n\n\(example)"
+            if test(ignoreNamedExample) != true {
+                print("\(description.identifier) failed ignore \(description.name) on triggeringExamples:\n\(example)")
                 return false
             }
         }

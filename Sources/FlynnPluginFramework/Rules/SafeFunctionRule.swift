@@ -31,7 +31,7 @@ struct SafeFunctionRule: Rule {
                 }
             """),
             Example("""
-                // flynn:ignoreall
+                // flynn:ignore all
                 class SomeActor: Actor {
                     func safeFoo() {
                         print("hello world")
@@ -128,8 +128,9 @@ struct SafeFunctionRule: Rule {
     )
 
     func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
-        guard syntax.markup("ignoreall", unbounded: true).isEmpty else { return true }
-        
+        guard syntax.markup("ignore all", unbounded: true).isEmpty else { return true }
+        guard syntax.markup("ignore \(description.name)", unbounded: true).isEmpty else { return true }
+
         // Only functions of the class may call safe methods on a class
         if let functionCall = syntax.structure.name {
             if  functionCall.range(of: safeCallString) != nil &&
