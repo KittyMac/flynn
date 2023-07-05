@@ -20,6 +20,16 @@ test:
 update:
 	swift package update
 
+profile: clean
+	mkdir -p /tmp/flynn.stats
+	swift build \
+		--configuration release \
+		-Xswiftc -stats-output-dir \
+		-Xswiftc /tmp/flynn.stats \
+		-Xswiftc -trace-stats-events \
+		-Xswiftc -driver-time-compilation \
+		-Xswiftc -debug-time-function-bodies
+
 release: build docker
 	
 	# Getting plugin for focal
