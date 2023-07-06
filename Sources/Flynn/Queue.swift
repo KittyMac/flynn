@@ -41,17 +41,17 @@ public class Queue<T: AnyObject> {
         //print("deinit - Queue")
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var isEmpty: Bool {
         return writeIdx == readIdx
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public var isFull: Bool {
         return ((writeIdx &+ 1) % arraySize) == readIdx
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     public func checkPressure() {
         underPressure = count > (arraySize * 3 / 4)
     }

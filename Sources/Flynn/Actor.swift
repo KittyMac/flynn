@@ -7,18 +7,18 @@ public typealias PonyTaskBlock = (() -> ()) async -> Void
 @usableFromInline
 typealias AnyPtr = UnsafeMutableRawPointer?
 
-@inlinable @inline(__always)
+@inlinable
 func Ptr <T: AnyObject>(_ obj: T) -> AnyPtr {
     return Unmanaged.passRetained(obj).toOpaque()
 }
 
-@inlinable @inline(__always)
+@inlinable
 func Class <T: AnyObject>(_ ptr: AnyPtr) -> T? {
     guard let ptr = ptr else { return nil }
     return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
 }
 
-@inlinable @inline(__always)
+@inlinable
 func handleMessage(_ argumentPtr: AnyPtr) {
     if let msg: ActorMessage = Class(argumentPtr) {
         msg.run()
@@ -41,12 +41,12 @@ class ActorMessage {
         self.thenId = thenId
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     func set(_ block: @escaping PonyBlock) {
         self.block = block
     }
 
-    @inlinable @inline(__always)
+    @inlinable
     func run() {
         block?(thenId)
     }
@@ -205,7 +205,7 @@ open class Actor: Equatable {
     
     @available(iOS 13.0, *)
     @available(macOS 10.15, *)
-    @inlinable @inline(__always)
+    @inlinable
     public func safeTask(_ block: @escaping PonyTaskBlock) {
         guard let actorPtr = safePonyActorPtr else {
             print("Warning: safeTask called on a cancelled actor")
@@ -237,7 +237,7 @@ open class Actor: Equatable {
     }
     
     @discardableResult
-    @inlinable @inline(__always)
+    @inlinable
     public func unsafeSend(_ block: @escaping PonyBlock) -> Self {
         guard let actorPtr = safePonyActorPtr else {
             print("Warning: unsafeSend called on a cancelled actor")
@@ -258,7 +258,7 @@ open class Actor: Equatable {
     
     
     @discardableResult
-    @inlinable @inline(__always)
+    @inlinable
     public func unsafeDo(_ block: @escaping PonyBlock,
                          _ file: StaticString = #file,
                          _ line: UInt64 = #line,
@@ -284,7 +284,7 @@ open class Actor: Equatable {
         return self
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func safeThen(_ prevThenId: UInt64?) {
         guard let actorPtr = safePonyActorPtr else { return }
         guard let prevThenId = prevThenId else { return }
@@ -294,7 +294,7 @@ open class Actor: Equatable {
         pony_actor_complete_then_message(actorPtr, argumentPtr, handleMessage)
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func then(_ file: StaticString = #file,
                      _ line: UInt64 = #line,
                      _ column: UInt64 = #column) -> Self {
@@ -309,7 +309,7 @@ open class Actor: Equatable {
         return self
     }
     
-    @inlinable @inline(__always)
+    @inlinable
     public func then<T:Actor>(_ actor: T,
                               _ file: StaticString = #file,
                               _ line: UInt64 = #line,

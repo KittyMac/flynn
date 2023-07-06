@@ -15,7 +15,7 @@ public enum CoreAffinity: Int32 {
 // also just use Flynn.main
 public class MainActor: Actor {
     @discardableResult
-    @inlinable @inline(__always)
+    @inlinable
     public override func unsafeSend(_ block: @escaping PonyBlock) -> Self {
         guard let _ = safePonyActorPtr else {
             print("Warning: unsafeSend called on a cancelled actor")
@@ -28,7 +28,7 @@ public class MainActor: Actor {
     }
     
     @discardableResult
-    @inlinable @inline(__always)
+    @inlinable
     public override func unsafeDo(_ block: @escaping PonyBlock,
                                   _ file: StaticString = #file,
                                   _ line: UInt64 = #line,
