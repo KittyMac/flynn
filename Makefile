@@ -22,6 +22,7 @@ clean-repo:
 	cd /tmp/clean-repo/flynn && cp -r dist ../dist.tmp
 	cd /tmp/clean-repo/flynn && git filter-repo --invert-paths --path dist
 	cd /tmp/clean-repo/flynn && mv ../dist.tmp dist
+	cd /tmp/clean-repo/flynn && git add dist
 	cd /tmp/clean-repo/flynn && git commit -a -m "clean-repo"
 	open /tmp/clean-repo/flynn
 	echo "clean complete; manual push required"
