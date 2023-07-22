@@ -26,6 +26,8 @@ clean-repo:
 	cd /tmp/clean-repo/flynn && git commit -a -m "clean-repo"
 	open /tmp/clean-repo/flynn
 	echo "clean complete; manual push required"
+	echo "git push origin --force --all"
+	echo "git push origin --force --tags"
 
 test:
 	swift test -v
