@@ -14,6 +14,18 @@ build:
 clean:
 	rm -rf .build
 
+.PHONY: clean-repo
+clean-repo:
+	rm -rf /tmp/clean-repo/
+	mkdir -p /tmp/clean-repo/
+	cd /tmp/clean-repo/ && git clone https://github.com/KittyMac/flynn.git/
+	cd /tmp/clean-repo/flynn && cp -r dist ../dist.tmp
+	cd /tmp/clean-repo/flynn && git filter-repo --invert-paths --path dist
+	cd /tmp/clean-repo/flynn && mv ../dist.tmp dist
+	open /tmp/clean-repo/flynn
+	git commit -a -m "clean-repo complete"
+	echo "clean complete; manual push required"
+
 test:
 	swift test -v
 
