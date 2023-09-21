@@ -104,7 +104,7 @@ class FlynnTests: XCTestCase {
     func testArraySync() {
         let numbers = [0,1,2,3,4,5,6,7,8,9]
         var total = 0
-        numbers.sync { item, synchronized in
+        numbers.sync(count: 10) { item, synchronized in
             // this scope happens in parallel on different actors; it would be
             // unsafe to increment total here
             print(item)
