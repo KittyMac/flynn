@@ -252,7 +252,6 @@ void pony_syslog2(const char * tag, const char *format, ...) {
     pony_syslog(tag, msg);
 }
 
-extern struct __res_state _res;
 
 static char * pony_dns_resolve(const char * domain, int type) {
     static int didCallInit = 0;
@@ -262,6 +261,8 @@ static char * pony_dns_resolve(const char * domain, int type) {
         
         res_init();
         
+        // Note: Android does not ship with a full libresolv implementation
+#ifdef RES_INIT
         _res.nscount = 2;
         _res.nsaddr_list[0].sin_family = AF_INET;
         _res.nsaddr_list[0].sin_addr.s_addr = inet_addr("8.8.8.8");
@@ -269,6 +270,7 @@ static char * pony_dns_resolve(const char * domain, int type) {
         _res.nsaddr_list[1].sin_family = AF_INET;
         _res.nsaddr_list[1].sin_addr.s_addr = inet_addr("8.8.4.4");
         _res.nsaddr_list[1].sin_port = htons(53);
+#endif
     }
     
     int response;
