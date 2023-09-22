@@ -8,6 +8,7 @@
 #include <stdarg.h>
 
 #include <arpa/nameser.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <resolv.h>
 #include <string.h>
@@ -259,6 +260,14 @@ static char * pony_dns_resolve(const char * domain, int type) {
         didCallInit = 1;
         
         res_init();
+        
+        _res.nscount = 2;
+        _res.nsaddr_list[0].sin_family = AF_INET;
+        _res.nsaddr_list[0].sin_addr.s_addr = inet_addr("8.8.8.8");
+        _res.nsaddr_list[0].sin_port = htons(53);
+        _res.nsaddr_list[1].sin_family = AF_INET;
+        _res.nsaddr_list[1].sin_addr.s_addr = inet_addr("8.8.4.4");
+        _res.nsaddr_list[1].sin_port = htons(53);
     }
     
     int response;
