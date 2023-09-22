@@ -252,6 +252,7 @@ void pony_syslog2(const char * tag, const char *format, ...) {
     pony_syslog(tag, msg);
 }
 
+extern struct __res_state _res;
 
 static char * pony_dns_resolve(const char * domain, int type) {
     static int didCallInit = 0;
