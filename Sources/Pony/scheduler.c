@@ -403,6 +403,10 @@ pony_ctx_t* ponyint_sched_init()
     uint32_t threads = ponyint_core_count();
     
     scheduler_count = threads;
+    if (scheduler_count < 4) {
+        pony_syslog2("Flynn", "Minimum scheduler count of 4 activated (only %d hardware cores available)", threads);
+        scheduler_count = 4;
+    }
     
     atomic_store_explicit(&active_scheduler_count, scheduler_count, memory_order_relaxed);
     atomic_store_explicit(&active_scheduler_count_check, scheduler_count, memory_order_relaxed);
