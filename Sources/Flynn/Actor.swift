@@ -60,22 +60,39 @@ open class Actor: Equatable {
     private static var recordedActors: [String: WeakActor] = [:]
     private static var recordedActorsLock = NSLock()
     
-    public static func record(actor: Actor) {
+    private static func releaseWeakActors() {
+        // Note: it is important we delay the deinit-ing of actors until we are outside
+        // the lock/unlock, as deinit-ing an actor can lead to another actor needing
+        // to be freed before we give up the lock
+        var weakActors: [Actor] = []
         recordedActorsLock.lock()
+        for recordedActor in recordedActors {
+            guard let recordedActor = recordedActor.value.actor else { continue }
+            weakActors.append(recordedActor)
+        }
         recordedActors = recordedActors.filter { $0.value.actor != nil }
+        recordedActorsLock.unlock()
+        weakActors.removeAll()
+    }
+    
+    public static func record(actor: Actor) {
+        releaseWeakActors()
+        
+        recordedActorsLock.lock()
         recordedActors[actor.unsafeUUID] = WeakActor(actor: actor)
         recordedActorsLock.unlock()
     }
     public static func release(actor: Actor) {
+        releaseWeakActors()
+        
         recordedActorsLock.lock()
-        recordedActors = recordedActors.filter { $0.value.actor != nil }
         recordedActors[actor.unsafeUUID] = nil
         recordedActorsLock.unlock()
     }
     public static func printLeakedActors() {
-        recordedActorsLock.lock()
-        recordedActors = recordedActors.filter { $0.value.actor != nil }
+        releaseWeakActors()
         
+        recordedActorsLock.lock()
         var actorCounts: [String: Int] = [:]
         for weakActor in recordedActors.values {
             guard let actor = weakActor.actor else { continue }

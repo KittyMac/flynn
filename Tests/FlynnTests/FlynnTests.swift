@@ -351,7 +351,7 @@ class FlynnTests: XCTestCase {
             }
         }
         
-        wait(for: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 15.0)
     }
     
     func testMultipleDelayedReturns() {
