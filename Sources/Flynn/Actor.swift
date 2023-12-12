@@ -53,6 +53,43 @@ class ActorMessage {
 }
 
 open class Actor: Equatable {
+    #if FLYNN_LEAK_ACTOR
+    struct WeakActor {
+        weak var actor: Actor?
+    }
+    private static var recordedActors: [String: WeakActor] = [:]
+    private static var recordedActorsLock = NSLock()
+    
+    public static func record(actor: Actor) {
+        recordedActorsLock.lock()
+        recordedActors = recordedActors.filter { $0.value.actor != nil }
+        recordedActors[actor.unsafeUUID] = WeakActor(actor: actor)
+        recordedActorsLock.unlock()
+    }
+    public static func release(actor: Actor) {
+        recordedActorsLock.lock()
+        recordedActors = recordedActors.filter { $0.value.actor != nil }
+        recordedActors[actor.unsafeUUID] = nil
+        recordedActorsLock.unlock()
+    }
+    public static func printLeakedActors() {
+        recordedActorsLock.lock()
+        recordedActors = recordedActors.filter { $0.value.actor != nil }
+        
+        var actorCounts: [String: Int] = [:]
+        for weakActor in recordedActors.values {
+            guard let actor = weakActor.actor else { continue }
+            let log = "\(actor)"
+            actorCounts[log] = (actorCounts[log] ?? 0) + 1
+        }
+        for (log, count) in actorCounts {
+            print("\(count) \(log)")
+        }
+        recordedActorsLock.unlock()
+    }
+    #endif
+    
+    
     public static func == (lhs: Actor, rhs: Actor) -> Bool {
         return lhs.unsafeUUID == rhs.unsafeUUID
     }
@@ -186,6 +223,10 @@ open class Actor: Equatable {
         Flynn.startup()
         unsafeUUID = UUID().uuidString
         safePonyActorPtr = pony_actor_create()
+        
+        #if FLYNN_LEAK_ACTOR
+        Actor.record(actor: self)
+        #endif
     }
 
     deinit {
@@ -201,6 +242,10 @@ open class Actor: Equatable {
             pony_actor_destroy(actorPtr)
         }
         safePonyActorPtr = nil
+        
+        #if FLYNN_LEAK_ACTOR
+        Actor.release(actor: self)
+        #endif
     }
     
     @available(iOS 13.0, *)
