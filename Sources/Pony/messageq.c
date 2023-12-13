@@ -46,6 +46,8 @@ void ponyint_messageq_init(messageq_t* q)
 
 void ponyint_messageq_destroy(messageq_t* q)
 {
+    while(ponyint_thread_messageq_pop(q) != NULL) { ; }
+
     pony_msg_t* tail = q->tail;
     assert((((uintptr_t)atomic_load_explicit(&q->head, memory_order_relaxed) & ~(uintptr_t)1)) == (uintptr_t)tail);
     
