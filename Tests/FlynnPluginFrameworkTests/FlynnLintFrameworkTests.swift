@@ -98,7 +98,7 @@ class FlynnPluginTests: XCTestCase {
     }
 
     func testOneRule() throws {
-        let rule = SafeFunctionRule()
+        let rule = FlynnAnyInActorRule()
         XCTAssert(rule.test())
     }
 

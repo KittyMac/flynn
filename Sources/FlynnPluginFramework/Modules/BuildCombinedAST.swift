@@ -72,7 +72,8 @@ struct FileSyntax {
                           dependency: dependency)
     }
 
-    func clone(substructure: SyntaxStructure) -> FileSyntax {
+    func clone(ancestry: [FileSyntax],
+               substructure: SyntaxStructure) -> FileSyntax {
         return FileSyntax(outputPath: outputPath,
                           file: file,
                           structure: substructure,
@@ -287,7 +288,8 @@ class ASTBuilder: Sequence {
         if let substructures = syntax.substructure {
             for substructure in substructures {
                 recursiveAdd(ancestory + [subSyntax],
-                             subSyntax.clone(substructure: substructure),
+                             subSyntax.clone(ancestry: ancestory,
+                                             substructure: substructure),
                              fileSyntax)
             }
         }

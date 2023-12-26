@@ -145,7 +145,8 @@ struct AST {
             function.kind == .functionMethodInstance &&
             function.accessibility == .internal {
                 internalBehaviors[name]?.append(Behavior(actor: actor,
-                                                         behavior: actor.clone(substructure: function)))
+                                                         behavior: actor.clone(ancestry: [],
+                                                                               substructure: function)))
         }
     }
 
@@ -166,7 +167,8 @@ struct AST {
             function.kind == .functionMethodInstance &&
             (function.accessibility == .public || function.accessibility == .open) {
                 externalBehaviors[name]?.append(Behavior(actor: actor,
-                                                         behavior: actor.clone(substructure: function)))
+                                                         behavior: actor.clone(ancestry: [],
+                                                                               substructure: function)))
         }
     }
 

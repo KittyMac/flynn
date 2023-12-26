@@ -10,6 +10,7 @@ struct Ruleset {
             PrivateFunctionInActorRule.self,
             SafeFunctionRule.self,
             InternalBehaviourRule.self,
+            FlynnAnyInActorRule.self,
             PrivateVariablesInActorRule.self,
             SafeVariableRule.self,
             WeakTimersRule.self,
