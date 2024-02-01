@@ -408,7 +408,7 @@ pony_ctx_t* ponyint_sched_init(int force_scheduler_count)
         scheduler_count = 4;
     }
     
-    if (force_scheduler_count > 4) {
+    if (force_scheduler_count > 1) {
         scheduler_count = force_scheduler_count;
     }
     
