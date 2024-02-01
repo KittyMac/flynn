@@ -85,13 +85,13 @@ open class Flynn {
     
     static var remotes = RemoteActorManager()
 
-    public class func startup() {
+    public class func startup(schedulerCount: Int = 0) {
         running.checkInactive {
             timeStart = ProcessInfo.processInfo.systemUptime
 
             timerLoop = TimerLoop()
             
-            pony_startup()
+            pony_startup(Int32(schedulerCount))
         }
     }
 

@@ -60,7 +60,7 @@ void pony_node_destroy_actor_to_root(int socketfd);
 
 uint64_t pony_actor_new_then_id();
 
-bool pony_startup(void);
+bool pony_startup(int scheduler_count);
 void pony_shutdown(bool waitForRemotes);
 
 int pony_core_count();
