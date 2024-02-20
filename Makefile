@@ -45,7 +45,10 @@ profile: clean
 		-Xswiftc -driver-time-compilation \
 		-Xswiftc -debug-time-function-bodies
 
-release: build docker
+release: build docker focal amazonlinux2 fedora fedora38
+	
+focal:
+	docker buildx build --file Dockerfile-focal --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-focal .
 	
 	# Getting plugin for focal
 	docker pull kittymac/flynn-focal:latest
@@ -56,6 +59,9 @@ release: build docker
 	rm -f ./dist/FlynnPluginTool-focal.zip
 	cd ./dist && zip -r ./FlynnPluginTool-focal.zip ./FlynnPluginTool-focal.artifactbundle
 	
+amazonlinux2:
+	docker buildx build --file Dockerfile-amazonlinux2 --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-amazonlinux2 .
+	
 	# Getting plugin for amazonlinux2
 	docker pull kittymac/flynn-amazonlinux2:latest
 	docker run --platform linux/arm64 --rm -v $(DIST):/outTemp kittymac/flynn-amazonlinux2 /bin/bash -lc 'cp FlynnPluginTool-focal /outTemp/FlynnPluginTool-amazonlinux2.artifactbundle/FlynnPluginTool-arm64/bin/FlynnPluginTool'
@@ -65,6 +71,9 @@ release: build docker
 	rm -f ./dist/FlynnPluginTool-amazonlinux2.zip
 	cd ./dist && zip -r ./FlynnPluginTool-amazonlinux2.zip ./FlynnPluginTool-amazonlinux2.artifactbundle
 	
+fedora:
+	docker buildx build --file Dockerfile-fedora --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora .
+	
 	# Getting plugin for fedora
 	docker pull kittymac/flynn-fedora:latest
 	docker run --platform linux/arm64 --rm -v $(DIST):/outTemp kittymac/flynn-fedora /bin/bash -lc 'cp FlynnPluginTool-focal /outTemp/FlynnPluginTool-fedora.artifactbundle/FlynnPluginTool-arm64/bin/FlynnPluginTool'
@@ -73,6 +82,9 @@ release: build docker
 	
 	rm -f ./dist/FlynnPluginTool-fedora.zip
 	cd ./dist && zip -r ./FlynnPluginTool-fedora.zip ./FlynnPluginTool-fedora.artifactbundle
+	
+fedora38:
+	docker buildx build --file Dockerfile-fedora38 --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora38 .
 	
 	# Getting plugin for fedora38
 	docker pull kittymac/flynn-fedora38:latest
@@ -91,10 +103,8 @@ docker:
 	-docker buildx use cluster_builder203
 	-docker buildx inspect --bootstrap
 	-docker login
-	docker buildx build --file Dockerfile-focal --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-focal .
-	docker buildx build --file Dockerfile-amazonlinux2 --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-amazonlinux2 .
-	docker buildx build --file Dockerfile-fedora --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora .
-	docker buildx build --file Dockerfile-fedora38 --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora38 .
+	
+	
 
 docker-shell:
 	docker buildx build --file Dockerfile-fedora --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora .

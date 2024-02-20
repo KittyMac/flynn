@@ -52,7 +52,7 @@ class ActorMessage {
     }
 }
 
-open class Actor: Equatable {
+open class Actor: Equatable, Hashable {
     #if FLYNN_LEAK_ACTOR
     struct WeakActor {
         weak var actor: Actor?
@@ -109,6 +109,10 @@ open class Actor: Equatable {
     
     public static func == (lhs: Actor, rhs: Actor) -> Bool {
         return lhs.unsafeUUID == rhs.unsafeUUID
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(unsafeUUID)
     }
 
     public let unsafeUUID: String

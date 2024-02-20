@@ -122,6 +122,7 @@ struct PrivateFunctionInActorRule: Rule {
                             !(function.name ?? "").hasPrefix("then(") &&
                             !(function.name ?? "").hasPrefix("init(") &&
                             !(function.name ?? "").hasPrefix("deinit") &&
+                            !(function.name ?? "").hasPrefix("hash(into") &&
                             function.kind == .functionMethodInstance &&
                             function.accessibility != .private {
                             output.append(error(function.offset, syntax))
