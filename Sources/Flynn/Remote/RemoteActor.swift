@@ -14,7 +14,15 @@ public typealias RemoteActor = ( InternalRemoteActor & BehaviorRegisterable )
 
 fileprivate var unsafeGlobalRunnerIdx = 0
 
-open class InternalRemoteActor {
+open class InternalRemoteActor: Equatable, Hashable {
+    
+    public static func == (lhs: InternalRemoteActor, rhs: InternalRemoteActor) -> Bool {
+        return lhs.unsafeUUID == rhs.unsafeUUID
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(unsafeUUID)
+    }
 
     public let unsafeRunnerIdx: Int
     public let unsafeUUID: String
