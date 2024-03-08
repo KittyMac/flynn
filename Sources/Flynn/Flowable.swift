@@ -28,6 +28,24 @@ public extension Array {
 infix operator |> : AssignmentPrecedence
 
 @discardableResult
+public func |> (left: Flowable?, right: Flowable) -> Flowable {
+    guard let left = left else {
+        return right
+    }
+    left.beTarget(right)
+    return left
+}
+
+@discardableResult
+public func |> (left: Flowable, right: Flowable?) -> Flowable {
+    guard let right = right else {
+        return left
+    }
+    left.beTarget(right)
+    return left
+}
+
+@discardableResult
 public func |> (left: Flowable, right: Flowable) -> Flowable {
     left.beTarget(right)
     return left
