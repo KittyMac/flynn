@@ -115,7 +115,7 @@ static bool pool_push(void * p, size_t size) {
     
     if (pool_index >= 0) {
         pool_local_t* pool = pool_local + pool_index;
-        if (pool->length < 512) {
+        if (pool->length < 16384) {
             pool_item_t* lp = (pool_item_t*)p;
             lp->next = pool->pool;
             pool->pool = lp;

@@ -205,7 +205,8 @@ open class Actor: Equatable, Hashable {
         safeThenLock.unlock()
         
         if let actorPtr = safePonyActorPtr {
-            pony_actor_suspend(actorPtr)
+            // Note: do not suspend the actor first, as a suspended actor will
+            // not be destroyed because it cannot receive its destroy message.
             pony_actor_destroy(actorPtr)
         }
         safePonyActorPtr = nil
