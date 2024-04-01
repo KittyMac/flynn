@@ -7,11 +7,16 @@
 
 #include <stdbool.h>
 
-/** Multithreading support.
- *
- */
+#ifdef PLATFORM_WINDOWS
+
+#else
+
 #include <pthread.h>
 #include <signal.h>
+
+typedef pthread_mutex_t PONY_MUTEX;
+
+#endif
 
 
 #define kCoreAffinity_PreferEfficiency 0
@@ -25,7 +30,6 @@
 
 #define kCoreAffinity_None 99
 
-
 #define pony_thread_id_t pthread_t
 #define pony_signal_event_t pthread_cond_t*
 
@@ -35,14 +39,15 @@ typedef void* (*thread_fn) (void* arg);
 
 #define __pony_thread_local __thread
 
+PONY_MUTEX * ponyint_mutex_create();
+void ponyint_mutex_destroy(PONY_MUTEX * mutex);
+void ponyint_mutex_lock(PONY_MUTEX * mutex);
+void ponyint_mutex_unlock(PONY_MUTEX * mutex);
+
 bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, void* arg);
-
 bool ponyint_thread_join(pony_thread_id_t thread);
-
 void ponyint_thread_detach(pony_thread_id_t thread);
-
 pony_thread_id_t ponyint_thread_self(void);
-
 void ponyint_thead_setname_actual(char * thread_name);
 void ponyint_thead_setname(int schedID, int schedAffinity);
 

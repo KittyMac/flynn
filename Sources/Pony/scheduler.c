@@ -20,9 +20,9 @@
 #define QOS_CLASS_UTILITY 1
 #endif
 
-pthread_mutex_t injectLock = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t injectHighPerformanceLock = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t injectHighEfficiencyLock = PTHREAD_MUTEX_INITIALIZER;
+PONY_MUTEX * injectLock = NULL;
+PONY_MUTEX * injectHighPerformanceLock = NULL;
+PONY_MUTEX * injectHighEfficiencyLock = NULL;
 
 #ifdef PLATFORM_IS_APPLE
 extern void *objc_autoreleasePoolPush();
@@ -45,17 +45,9 @@ static __pony_thread_local scheduler_t* this_scheduler;
 static __pony_thread_local void* autorelease_pool;
 static __pony_thread_local bool autorelease_pool_is_dirty;
 
-
-static pthread_mutex_t sched_mut;
-
-static pthread_once_t sched_mut_once = PTHREAD_ONCE_INIT;
+static PONY_MUTEX * sched_mut;
 
 static void pony_register_thread(void);
-
-void sched_mut_init()
-{
-    pthread_mutex_init(&sched_mut, NULL);
-}
 
 /**
  * Gets the current active scheduler count
@@ -70,9 +62,9 @@ uint32_t get_active_scheduler_count()
  */
 static pony_actor_t* pop(scheduler_t* sched)
 {
-    pthread_mutex_lock(&injectLock);
+    ponyint_mutex_lock(injectLock);
     pony_actor_t* actor = ponyint_mpmcq_pop(&sched->q);
-    pthread_mutex_unlock(&injectLock);
+    ponyint_mutex_unlock(injectLock);
     return actor;
 }
 
@@ -86,30 +78,30 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
         case kCoreAffinity_OnlyEfficiency:
             if (actor->coreAffinity != sched->coreAffinity) {
                 if (actor->coreAffinity == kCoreAffinity_OnlyPerformance) {
-                    //pthread_mutex_lock(&injectHighPerformanceLock);
+                    //ponyint_mutex_lock(injectHighPerformanceLock);
                     ponyint_mpmcq_push(&injectHighPerformance, actor);
-                    //pthread_mutex_unlock(&injectHighPerformanceLock);
+                    //ponyint_mutex_unlock(injectHighPerformanceLock);
                 } else {
-                    //pthread_mutex_lock(&injectHighEfficiencyLock);
+                    //ponyint_mutex_lock(injectHighEfficiencyLock);
                     ponyint_mpmcq_push(&injectHighEfficiency, actor);
-                    //pthread_mutex_unlock(&injectHighEfficiencyLock);
+                    //ponyint_mutex_unlock(injectHighEfficiencyLock);
                 }
                 return;
             }
             break;
         case kCoreAffinity_PreferEfficiency:
             if (sched->coreAffinity == kCoreAffinity_OnlyPerformance) {
-                //pthread_mutex_lock(&injectHighEfficiencyLock);
+                //ponyint_mutex_lock(injectHighEfficiencyLock);
                 ponyint_mpmcq_push(&injectHighEfficiency, actor);
-                //pthread_mutex_unlock(&injectHighEfficiencyLock);
+                //ponyint_mutex_unlock(injectHighEfficiencyLock);
                 return;
             }
             break;
         case kCoreAffinity_PreferPerformance:
             if (sched->coreAffinity == kCoreAffinity_OnlyEfficiency) {
-                //pthread_mutex_lock(&injectHighPerformanceLock);
+                //ponyint_mutex_lock(injectHighPerformanceLock);
                 ponyint_mpmcq_push(&injectHighPerformance, actor);
-                //pthread_mutex_unlock(&injectHighPerformanceLock);
+                //ponyint_mutex_unlock(injectHighPerformanceLock);
                 return;
             }
             break;
@@ -122,23 +114,23 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
  */
 static pony_actor_t* pop_global(scheduler_t* my_sched, scheduler_t* other_sched)
 {
-    pthread_mutex_lock(&injectLock);
+    ponyint_mutex_lock(injectLock);
     pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
-    pthread_mutex_unlock(&injectLock);
+    ponyint_mutex_unlock(injectLock);
     
     if(actor != NULL)
         return actor;
     
     switch (my_sched->coreAffinity) {
         case kCoreAffinity_OnlyPerformance:
-            pthread_mutex_lock(&injectHighPerformanceLock);
+            ponyint_mutex_lock(injectHighPerformanceLock);
             actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
-            pthread_mutex_unlock(&injectHighPerformanceLock);
+            ponyint_mutex_unlock(injectHighPerformanceLock);
             break;
         case kCoreAffinity_OnlyEfficiency:
-            pthread_mutex_lock(&injectHighEfficiencyLock);
+            ponyint_mutex_lock(injectHighEfficiencyLock);
             actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
-            pthread_mutex_unlock(&injectHighEfficiencyLock);
+            ponyint_mutex_unlock(injectHighEfficiencyLock);
             break;
     }
     if(actor != NULL)
@@ -375,13 +367,6 @@ static void ponyint_sched_shutdown()
         while(ponyint_thread_messageq_pop(&scheduler[i].mq) != NULL) { ; }
         ponyint_messageq_destroy(&scheduler[i].mq);
         ponyint_mpmcq_destroy(&scheduler[i].q);
-        
-        // destroy pthread condition object
-        pthread_cond_destroy(scheduler[i].sleep_object);
-        
-        ponyint_pool_free(scheduler[i].sleep_object, sizeof(pthread_cond_t));
-        // set sleep condition object to NULL
-        scheduler[i].sleep_object = NULL;
     }
     
     ponyint_pool_free(scheduler, scheduler_count * sizeof(scheduler_t));
@@ -417,20 +402,15 @@ pony_ctx_t* ponyint_sched_init(int force_scheduler_count)
     scheduler = (scheduler_t*)ponyint_pool_alloc(scheduler_count * sizeof(scheduler_t));
     memset(scheduler, 0, scheduler_count * sizeof(scheduler_t));
     
-    pthread_once(&sched_mut_once, sched_mut_init);
+    if (sched_mut == NULL) {
+        sched_mut = ponyint_mutex_create();
+        injectLock = ponyint_mutex_create();
+        injectHighPerformanceLock = ponyint_mutex_create();
+        injectHighEfficiencyLock = ponyint_mutex_create();
+    }
     
     for(uint32_t i = 0; i < scheduler_count; i++)
     {
-        // create pthread condition object
-        scheduler[i].sleep_object = ponyint_pool_alloc(sizeof(pthread_cond_t));
-        int ret = pthread_cond_init(scheduler[i].sleep_object, NULL);
-        if(ret != 0)
-        {
-            // if it failed, set `sleep_object` to `NULL` for error
-            ponyint_pool_free(scheduler[i].sleep_object, sizeof(pthread_cond_t));
-            scheduler[i].sleep_object = NULL;
-        }
-        
         scheduler[i].ctx.scheduler = &scheduler[i];
         scheduler[i].last_victim = &scheduler[i];
         scheduler[i].index = i;
@@ -452,10 +432,6 @@ bool ponyint_sched_start()
     uint32_t start = 0;
     for(uint32_t i = start; i < scheduler_count; i++)
     {
-        // there was an error creating a wait event or a pthread condition object
-        if(scheduler[i].sleep_object == NULL)
-            return false;
-        
         int qos = QOS_CLASS_USER_INITIATED;
         scheduler[i].coreAffinity = kCoreAffinity_OnlyPerformance;
         

@@ -47,7 +47,7 @@ typedef struct root_t
 
 static root_t roots[kMaxRoots+1] = {0};
 
-static pthread_mutex_t roots_mutex;
+static PONY_MUTEX * roots_mutex;
 static bool inited = false;
 
 static DECLARE_THREAD_FN(node_read_from_root_thread);
@@ -81,7 +81,7 @@ static bool node_add_root(const char * address,
                           RegisterActorsOnRootFunc registerActorsOnRootFuncPtr) {
     for (int i = 0; i < kMaxRoots; i++) {
         if (roots[i].read_thread_tid == 0) {
-            pthread_mutex_lock(&roots_mutex);
+            ponyint_mutex_lock(roots_mutex);
             strncpy(roots[i].address, address, kMaxIPAddress);
             roots[i].port = port;
             roots[i].automaticReconnect = automaticReconnect;
@@ -92,7 +92,7 @@ static bool node_add_root(const char * address,
             ponyint_messageq_init(&roots[i].write_queue);
             ponyint_thread_create(&roots[i].read_thread_tid, node_read_from_root_thread, QOS_CLASS_UTILITY, roots + i);
             ponyint_thread_create(&roots[i].write_thread_tid, node_write_to_root_thread, QOS_CLASS_UTILITY, roots + i);
-            pthread_mutex_unlock(&roots_mutex);
+            ponyint_mutex_unlock(roots_mutex);
             return true;
         }
     }
@@ -100,7 +100,7 @@ static bool node_add_root(const char * address,
 }
 
 static void node_remove_root(root_t * rootPtr) {
-    pthread_mutex_lock(&roots_mutex);
+    ponyint_mutex_lock(roots_mutex);
     if (rootPtr->read_thread_tid != 0) {
         close_socket(rootPtr->socketfd);
         
@@ -119,16 +119,20 @@ static void node_remove_root(root_t * rootPtr) {
         rootPtr->socketfd = -1;
         ponyint_messageq_destroy(&rootPtr->write_queue);
     }
-    pthread_mutex_unlock(&roots_mutex);
+    ponyint_mutex_unlock(roots_mutex);
 }
 
 static void node_remove_all_roots() {
+    if (inited == false) {
+        return;
+    }
+    
     // we just invalidate the socket, the root connections will remove themselves
     for (int i = 0; i < kMaxRoots; i++) {
-        pthread_mutex_lock(&roots_mutex);
+        ponyint_mutex_lock(roots_mutex);
         pony_thread_id_t write_thread_tid = roots[i].write_thread_tid;
         roots[i].socketfd = -1;
-        pthread_mutex_unlock(&roots_mutex);
+        ponyint_mutex_unlock(roots_mutex);
         
         if (write_thread_tid != 0) {
             ponyint_thread_join(write_thread_tid);
@@ -323,12 +327,12 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
             if (command == COMMAND_NULL) {
                 // At this point, we don't know if we timed out reading data or the server
                 // disconnected. So we send a heartbeat to the root, and if that fails we know
-                pthread_mutex_lock(&roots_mutex);
+                ponyint_mutex_lock(roots_mutex);
                 if (send_heartbeat(rootPtr->socketfd) <= 0) {
                     close_socket(rootPtr->socketfd);
                     rootPtr->socketfd = -1;
                 }
-                pthread_mutex_unlock(&roots_mutex);
+                ponyint_mutex_unlock(roots_mutex);
                 continue;
             }
             
@@ -431,7 +435,7 @@ void pony_node(const char * address,
     if (inited == false) {
         inited = true;
         init_all_roots();
-        pthread_mutex_init(&roots_mutex, NULL);
+        roots_mutex = ponyint_mutex_create();
     }
     
     if(!node_add_root(address,
@@ -457,29 +461,29 @@ void pony_node_send_actor_message_to_root(int socketfd, int messageID, const voi
     // The root knows which messages it sent which are expecting a reply, so it is garaunteed they
     // will be delivered back in order
     
-    pthread_mutex_lock(&roots_mutex);
+    ponyint_mutex_lock(roots_mutex);
     root_t * rootPtr = find_root_by_socket(socketfd);
     if (rootPtr != NULL) {
         pony_node_send_reply(rootPtr, messageID, bytes, count);
     }
-    pthread_mutex_unlock(&roots_mutex);
+    ponyint_mutex_unlock(roots_mutex);
 }
 
 void pony_register_node_to_root(int socketfd, const char * actorRegistrationString) {
     
-    pthread_mutex_lock(&roots_mutex);
+    ponyint_mutex_lock(roots_mutex);
     root_t * rootPtr = find_root_by_socket(socketfd);
     if (rootPtr != NULL) {
         pony_node_send_register(rootPtr, actorRegistrationString);
     }
-    pthread_mutex_unlock(&roots_mutex);
+    ponyint_mutex_unlock(roots_mutex);
 }
 
 void pony_node_destroy_actor_to_root(int socketfd) {
-    pthread_mutex_lock(&roots_mutex);
+    ponyint_mutex_lock(roots_mutex);
     root_t * rootPtr = find_root_by_socket(socketfd);
     if (rootPtr != NULL) {
         pony_node_send_destroy_actor_ack(rootPtr);
     }
-    pthread_mutex_unlock(&roots_mutex);
+    ponyint_mutex_unlock(roots_mutex);
 }

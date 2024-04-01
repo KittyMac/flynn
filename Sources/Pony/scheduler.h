@@ -35,7 +35,6 @@ struct scheduler_t
     int32_t coreAffinity;
     bool idle;
     bool terminate;
-    pony_signal_event_t sleep_object;
     
     // These are changed primarily by the owning scheduler thread.
     alignas(64) struct scheduler_t* last_victim;

@@ -2,6 +2,8 @@
 
 #include "platform.h"
 
+#ifdef PLATFORM_WINDOWS
+
 #define _GNU_SOURCE
 
 #include "threads.h"
@@ -22,47 +24,17 @@
 
 bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, void* arg)
 {
-    bool ret = true;
-    
-    bool setstack_called = false;
-    struct rlimit limit;
-    pthread_attr_t attr;
-    pthread_attr_t* attr_p = &attr;
-    pthread_attr_init(attr_p);
-    
-    // Some systems, e.g., macOS, hav a different default default
-    // stack size than the typical system's RLIMIT_STACK.
-    // Let's use RLIMIT_STACK's current limit if it is sane.
-    if(getrlimit(RLIMIT_STACK, &limit) == 0 &&
-       limit.rlim_cur != RLIM_INFINITY &&
-       limit.rlim_cur >= PTHREAD_STACK_MIN)
-    {
-        if(! setstack_called)
-            pthread_attr_setstacksize(&attr, (size_t)limit.rlim_cur);
-    } else {
-        attr_p = NULL;
-    }
-    
-#ifdef PLATFORM_IS_APPLE
-    pthread_attr_set_qos_class_np(&attr, qos, 0);
-#endif
-    
-    if(pthread_create(thread, attr_p, start, arg))
-        ret = false;
-    pthread_attr_destroy(&attr);
-    return ret;
+    return NULL;
 }
 
 bool ponyint_thread_join(pony_thread_id_t thread)
 {
-    if(pthread_join(thread, NULL))
-        return false;
-    return true;
+    return false;
 }
 
 void ponyint_thread_detach(pony_thread_id_t thread)
 {
-    pthread_detach(thread);
+    // pthread_detach(thread);
 }
 
 pony_thread_id_t ponyint_thread_self()
@@ -71,6 +43,7 @@ pony_thread_id_t ponyint_thread_self()
 }
 
 void ponyint_thead_setname_actual(char * thread_name) {
+    /*
 #ifdef PLATFORM_IS_APPLE
     [[NSThread currentThread] setName:[NSString stringWithUTF8String:thread_name]];
     pthread_setname_np(thread_name);
@@ -81,9 +54,12 @@ void ponyint_thead_setname_actual(char * thread_name) {
 #endif
     
     signal(SIGPIPE, SIG_IGN);
+     */
 }
 
 void ponyint_thead_setname(int schedID, int schedAffinity) {
+    
+    /*
     char thread_name[128] = {0};
     char * thread_affinity = "";
     switch (schedAffinity) {
@@ -97,4 +73,8 @@ void ponyint_thead_setname(int schedID, int schedAffinity) {
     snprintf(thread_name, sizeof(thread_name), "Flynn #%d %s", schedID, thread_affinity);
     
     ponyint_thead_setname_actual(thread_name);
+     */
 }
+
+
+#endif

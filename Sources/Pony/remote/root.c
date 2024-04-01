@@ -52,8 +52,8 @@ static node_t nodes[kMaxNodes+1] = {0};
 
 
 static bool inited = false;
-static pthread_mutex_t nodes_mutex;
-static pthread_mutex_t messageId_mutex;
+static PONY_MUTEX * nodes_mutex;
+static PONY_MUTEX * messageId_mutex;
 
 static pony_thread_id_t root_tid;
 static char root_ip_address[128] = {0};
@@ -89,7 +89,7 @@ static node_t * find_node_by_socket(int socketfd) {
 static node_t * root_get_next_node() {
     static int next_node_index = 0;
     
-    pthread_mutex_lock(&nodes_mutex);
+    ponyint_mutex_lock(nodes_mutex);
     node_t * nodePtr = nodes + next_node_index;
     for (int i = 0; i < kMaxNodes; i++) {
         nodePtr++;
@@ -99,11 +99,11 @@ static node_t * root_get_next_node() {
         if (nodePtr->read_thread_tid != 0) {
             next_node_index = (int)(nodePtr - nodes);
             
-            pthread_mutex_unlock(&nodes_mutex);
+            ponyint_mutex_unlock(nodes_mutex);
             return nodePtr;
         }
     }
-    pthread_mutex_unlock(&nodes_mutex);
+    ponyint_mutex_unlock(nodes_mutex);
     return NULL;
 }
 
@@ -117,7 +117,7 @@ int ponyint_remote_core_count_by_socket(int socketfd)
 }
 
 static bool root_add_node(int socketfd) {
-    pthread_mutex_lock(&nodes_mutex);
+    ponyint_mutex_lock(nodes_mutex);
     for (int i = 0; i < kMaxNodes; i++) {
         if (nodes[i].read_thread_tid == 0) {
             disableSIGPIPE(socketfd);
@@ -126,16 +126,16 @@ static bool root_add_node(int socketfd) {
             ponyint_thread_create(&nodes[i].read_thread_tid, root_read_from_node_thread, QOS_CLASS_UTILITY, nodes + i);
             ponyint_thread_create(&nodes[i].write_thread_tid, root_write_to_node_thread, QOS_CLASS_UTILITY, nodes + i);
             number_of_nodes++;
-            pthread_mutex_unlock(&nodes_mutex);
+            ponyint_mutex_unlock(nodes_mutex);
             return true;
         }
     }
-    pthread_mutex_unlock(&nodes_mutex);
+    ponyint_mutex_unlock(nodes_mutex);
     return false;
 }
 
 static void root_remove_node(node_t * nodePtr) {
-    pthread_mutex_lock(&nodes_mutex);
+    ponyint_mutex_lock(nodes_mutex);
     if (nodePtr->read_thread_tid != 0) {
         number_of_cores -= nodePtr->core_count;
         number_of_nodes--;
@@ -158,18 +158,22 @@ static void root_remove_node(node_t * nodePtr) {
         
         nodeDisconnectedPtr(socketfd);
     }
-    pthread_mutex_unlock(&nodes_mutex);
+    ponyint_mutex_unlock(nodes_mutex);
 }
 
 static void root_remove_all_nodes() {
+    if (inited == false) {
+        return;
+    }
+    
     // we just invalidate all sockets, the nodes will remove themselves
     for (int i = 0; i < kMaxNodes; i++) {
-        pthread_mutex_lock(&nodes_mutex);
+        ponyint_mutex_lock(nodes_mutex);
         pony_thread_id_t write_thread_tid = nodes[i].write_thread_tid;
         pony_thread_id_t read_thread_tid = nodes[i].read_thread_tid;
         close_socket(nodes[i].socketfd);
         nodes[i].socketfd = -1;
-        pthread_mutex_unlock(&nodes_mutex);
+        ponyint_mutex_unlock(nodes_mutex);
         
         if (write_thread_tid != 0) {
             ponyint_thread_join(write_thread_tid);
@@ -349,13 +353,13 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 }
             } break;
             case COMMAND_DESTROY_ACTOR_ACK: {
-                pthread_mutex_lock(&nodes_mutex);
+                ponyint_mutex_lock(nodes_mutex);
                 if (nodePtr->active_actors > 0) {
                     nodePtr->active_actors -= 1;
                 } else {
                     assert(false);
                 }
-                pthread_mutex_unlock(&nodes_mutex);
+                ponyint_mutex_unlock(nodes_mutex);
             } break;
             case COMMAND_REGISTER_WITH_ROOT: {
                 uint32_t payload_count = 0;
@@ -385,9 +389,9 @@ static DECLARE_THREAD_FN(root_read_from_node_thread)
                 recvall(nodePtr->socketfd, &core_count, sizeof(core_count));
                 core_count = ntohl(core_count);
                 
-                pthread_mutex_lock(&nodes_mutex);
+                ponyint_mutex_lock(nodes_mutex);
                 number_of_cores = number_of_cores - nodePtr->core_count + core_count;
-                pthread_mutex_unlock(&nodes_mutex);
+                ponyint_mutex_unlock(nodes_mutex);
 
                 nodePtr->core_count = core_count;
                 
@@ -485,8 +489,8 @@ void pony_root(const char * address,
     
     if (!inited) {
         inited = true;
-        pthread_mutex_init(&nodes_mutex, NULL);
-        pthread_mutex_init(&messageId_mutex, NULL);
+        nodes_mutex = ponyint_mutex_create();
+        messageId_mutex = ponyint_mutex_create();
         init_all_nodes();
     }
     
@@ -527,12 +531,12 @@ int pony_root_num_active_remotes() {
 
 int pony_next_messageId() {
     static uint32_t messageID = 1;
-    pthread_mutex_lock(&messageId_mutex);
+    ponyint_mutex_lock(messageId_mutex);
     messageID += 1;
     if (messageID < 0) {
         messageID = 1;
     }
-    pthread_mutex_unlock(&messageId_mutex);
+    ponyint_mutex_unlock(messageId_mutex);
     return messageID;
 }
 
@@ -547,11 +551,11 @@ int pony_root_send_actor_message_to_node(const char * actorUUID,
         return -1;
     }
     
-    pthread_mutex_lock(&nodes_mutex);
+    ponyint_mutex_lock(nodes_mutex);
     
     node_t * nodePtr = find_node_by_socket(nodeSocketFD);
     if (nodePtr == NULL) {
-        pthread_mutex_unlock(&nodes_mutex);
+        ponyint_mutex_unlock(nodes_mutex);
         return -1;
     }
     
@@ -569,18 +573,18 @@ int pony_root_send_actor_message_to_node(const char * actorUUID,
                            bytes,
                            count);
     
-    pthread_mutex_unlock(&nodes_mutex);
+    ponyint_mutex_unlock(nodes_mutex);
     
     return messageId;
 }
 
 void pony_root_destroy_actor_to_node(const char * actorUUID, int nodeSocketFD) {
     if (nodeSocketFD >= 0) {
-        pthread_mutex_lock(&nodes_mutex);
+        ponyint_mutex_lock(nodes_mutex);
         node_t * nodePtr = find_node_by_socket(nodeSocketFD);
         if (nodePtr != NULL) {
             pony_root_send_destroy_actor(nodePtr, actorUUID);
         }
-        pthread_mutex_unlock(&nodes_mutex);
+        ponyint_mutex_unlock(nodes_mutex);
     }
 }
