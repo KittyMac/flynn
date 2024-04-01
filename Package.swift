@@ -3,7 +3,7 @@ import PackageDescription
 
 // When runnning "make release" to build the binary tools change this to true
 // Otherwise always set it to false
-#if false
+#if os(Windows) || false
 let productsTarget: [PackageDescription.Product] = [
 ]
 let pluginTarget: [PackageDescription.Target] = [
@@ -30,10 +30,15 @@ let pluginTarget: [PackageDescription.Target] = [
         dependencies: [ "FlynnPluginFramework" ]
     )
 ]
-let pluginDependencies: [Package.Dependency] = [
-    .package(url: "https://github.com/jpsim/SourceKitten", exact: "0.32.0"),
+var pluginDependencies: [Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0")
 ]
+#if os(Windows)
+pluginDependencies.append(.package(url: "https://github.com/compnerd/SourceKitten", branch: "windows"))
+#else
+pluginDependencies.append(.package(url: "https://github.com/jpsim/SourceKitten", exact: "0.32.0"))
+#endif
+
 #else
 let productsTarget: [PackageDescription.Product] = [
     .library(name: "FlynnPluginTool", targets: [

@@ -55,7 +55,11 @@ public class FlynnPluginTool {
     private var buildCombinedAST = BuildCombinedAST()
 
     public init() {
+        #if os(Windows)
+        
+        #else
         SourceKittenConfiguration.preferInProcessSourceKit = true
+        #endif
     }
 
     @discardableResult
