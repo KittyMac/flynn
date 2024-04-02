@@ -54,7 +54,12 @@ internal func exportLogs() {
             
             guard hasFlynnDependency else { continue }
             
-            let url = URL(fileURLWithPath: target.directory.string)
+            var directoryPath = target.directory.string
+            #if os(Windows)
+            directoryPath = "C:" + directoryPath
+            #endif
+            
+            let url = URL(fileURLWithPath: directoryPath)
             if let enumerator = FileManager.default.enumerator(at: url,
                                                                includingPropertiesForKeys: [.isRegularFileKey],
                                                                options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
@@ -118,8 +123,8 @@ internal func exportLogs() {
                               inputFiles: &dependencyFiles)
         
         let allInputFiles = rootFiles + dependencyFiles
-                        
-        let inputFilesFilePath = context.pluginWorkDirectory.string + "/inputFiles.txt"
+        
+        var inputFilesFilePath = context.pluginWorkDirectory.string + "/inputFiles.txt"
         var inputFilesString = ""
                 
         for file in rootFiles {
@@ -132,7 +137,12 @@ internal func exportLogs() {
         try! inputFilesString.write(toFile: inputFilesFilePath, atomically: false, encoding: .utf8)
         
         // let outputFilePath = context.pluginWorkDirectory.string + "/" + UUID().uuidString + ".swift"
-        let outputFilePath = context.pluginWorkDirectory.string + "/FlynnPlugin.swift"
+        var outputFilePath = context.pluginWorkDirectory.string + "/FlynnPlugin.swift"
+        
+        #if os(Windows)
+        inputFilesFilePath = "C:" + inputFilesFilePath
+        outputFilePath = "C:" + outputFilePath
+        #endif
         
         return [
             .buildCommand(
