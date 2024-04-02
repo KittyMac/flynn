@@ -1,0 +1,24 @@
+{
+    "artifacts": {
+        "FlynnPluginTool-windows": {
+            "version": "v1.0.0",
+            "type": "executable",
+            "variants": [
+                {
+                    "path": "FlynnPluginTool-amd64/bin/FlynnPluginTool",
+                    "supportedTriples": [
+                        "x86_64-unknown-windows-msvc"
+                    ]
+                },
+                {
+                    "path": "FlynnPluginTool-macos/bin/FlynnPluginTool",
+                    "supportedTriples": [
+                        "x86_64-apple-macosx",
+                        "arm64-apple-macosx"
+                    ]
+                }
+            ]
+        }
+    },
+    "schemaVersion": "1.0"
+}

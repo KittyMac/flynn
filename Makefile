@@ -11,6 +11,14 @@ build:
 	lipo -create -output .build/FlynnPluginTool-focal .build/arm64-apple-macosx/release/FlynnPluginTool-focal .build/x86_64-apple-macosx/release/FlynnPluginTool-focal
 	cp .build/FlynnPluginTool-focal ./dist/FlynnPluginTool
 
+build-windows:
+	swift build $(SWIFT_BUILD_FLAGS)
+	-rm .build/FlynnPluginTool
+	cp ./dist/FlynnPluginTool ./dist/FlynnPluginTool-fedora.artifactbundle/FlynnPluginTool-macos/bin/FlynnPluginTool
+	cp .build/plugins/tools/debug/FlynnPluginTool-focal.exe ./dist/FlynnPluginTool-windows.artifactbundle/FlynnPluginTool-windows/bin/FlynnPluginTool
+	rm -f ./dist/FlynnPluginTool-windows.zip
+	cd ./dist && zip -r ./FlynnPluginTool-windows.zip ./FlynnPluginTool-windows.artifactbundle
+
 clean:
 	rm -rf .build
 
