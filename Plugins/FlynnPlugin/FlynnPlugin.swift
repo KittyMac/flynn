@@ -94,6 +94,12 @@ internal func exportLogs() {
         // and to load the correct tool there.
         var tool = try? context.tool(named: "FlynnPluginTool-focal")
         
+        #if os(Windows)
+        if let osTool = try? context.tool(named: "FlynnPluginTool-windows") {
+            tool = osTool
+        }
+        #endif
+        
         if let osFile = try? String(contentsOfFile: "/etc/os-release") {
             if osFile.contains("Amazon Linux"),
                let osTool = try? context.tool(named: "FlynnPluginTool-amazonlinux2") {

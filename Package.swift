@@ -3,7 +3,7 @@ import PackageDescription
 
 // When runnning "make release" to build the binary tools change this to true
 // Otherwise always set it to false
-#if os(Windows) || false
+#if false
 let productsTarget: [PackageDescription.Product] = [
 ]
 let pluginTarget: [PackageDescription.Target] = [
@@ -45,7 +45,8 @@ let productsTarget: [PackageDescription.Product] = [
         "FlynnPluginTool-focal",
         "FlynnPluginTool-amazonlinux2",
         "FlynnPluginTool-fedora",
-        "FlynnPluginTool-fedora38"
+        "FlynnPluginTool-fedora38",
+        "FlynnPluginTool-windows",
     ]),
 ]
 let pluginTarget: [PackageDescription.Target] = [
@@ -57,6 +58,8 @@ let pluginTarget: [PackageDescription.Target] = [
                   path: "dist/FlynnPluginTool-fedora.zip"),
     .binaryTarget(name: "FlynnPluginTool-fedora38",
                   path: "dist/FlynnPluginTool-fedora38.zip"),
+    .binaryTarget(name: "FlynnPluginTool-windows",
+                  path: "dist/FlynnPluginTool-windows.zip"),
     .plugin(
         name: "FlynnPlugin",
         capability: .buildTool(),
@@ -64,7 +67,8 @@ let pluginTarget: [PackageDescription.Target] = [
             "FlynnPluginTool-focal",
             "FlynnPluginTool-amazonlinux2",
             "FlynnPluginTool-fedora",
-            "FlynnPluginTool-fedora38"
+            "FlynnPluginTool-fedora38",
+            "FlynnPluginTool-windows"
         ]
     ),
 ]
