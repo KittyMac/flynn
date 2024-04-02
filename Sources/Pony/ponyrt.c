@@ -316,4 +316,18 @@ char * pony_dns_resolve_cname(const char * domain) {
 char * pony_dns_resolve_txt(const char * domain) {
     return pony_dns_resolve(domain, ns_t_txt);
 }
+#else
+
+static char * pony_dns_resolve(const char * domain, int type) {
+    return NULL;
+}
+
+char * pony_dns_resolve_cname(const char * domain) {
+    return NULL;
+}
+
+char * pony_dns_resolve_txt(const char * domain) {
+    return NULL;
+}
+
 #endif

@@ -338,6 +338,10 @@ void send_reply(int socketfd, uint32_t messageID, const void * bytes, uint32_t c
 
 // MARK: - SHUTDOWN
 
+int pony_remote_enabled() {
+    return 1;
+}
+
 void pony_remote_shutdown() {
     root_shutdown();
     node_shutdown();
@@ -346,6 +350,16 @@ void pony_remote_shutdown() {
 void close_socket(int fd) {
     shutdown(fd, SHUT_RDWR);
     close(fd);
+}
+
+#else
+
+int pony_remote_enabled() {
+    return 0;
+}
+
+void pony_remote_shutdown() {
+    
 }
 
 #endif

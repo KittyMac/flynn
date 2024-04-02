@@ -1,6 +1,16 @@
 
 #include "platform.h"
 
+#include "../ponyrt.h"
+
+#include "../messageq.h"
+#include "../scheduler.h"
+#include "../actor.h"
+#include "../cpu.h"
+#include "../memory.h"
+
+#include "remote.h"
+
 #ifdef PLATFORM_SUPPORTS_REMOTES
 
 #include <signal.h>
@@ -12,16 +22,6 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "../ponyrt.h"
-
-#include "../messageq.h"
-#include "../scheduler.h"
-#include "../actor.h"
-#include "../cpu.h"
-#include "../memory.h"
-
-#include "remote.h"
 
 // MARK: - ROOT
 
@@ -589,6 +589,52 @@ void pony_root_destroy_actor_to_node(const char * actorUUID, int nodeSocketFD) {
         }
         ponyint_mutex_unlock(nodes_mutex);
     }
+}
+
+#else
+
+int pony_next_messageId() {
+    return 0;
+}
+
+
+void pony_root(const char * address,
+               int port,
+               void * registerWithRoot,
+               void * createActorFunc,
+               void * replyFunc,
+               void * nodeDisconnected) {
+    
+}
+
+void pony_root_destroy_actor_to_node(const char * actorUUID, int nodeSocketFD) {
+    
+}
+
+int pony_root_num_active_remotes() {
+    return 0;
+}
+
+int pony_root_send_actor_message_to_node(const char * actorUUID,
+                                         const char * actorType,
+                                         const char * behaviorType,
+                                         bool actorNeedsCreated,
+                                         int nodeSocketFD,
+                                         const void * bytes,
+                                         int count) {
+    return -1;
+}
+
+int ponyint_remote_nodes_count() {
+    return 0;
+}
+
+int ponyint_remote_core_count() {
+    return 0;
+}
+
+int ponyint_remote_core_count_by_socket(int socketfd) {
+    return 0;
 }
 
 #endif

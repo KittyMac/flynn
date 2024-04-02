@@ -44,6 +44,8 @@ class FlynnRemoteTests: XCTestCase {
     }*/
 
     func testLocalExecutionFallback() {
+        guard Flynn.remoteEnabled else { return }
+        
         let expectation = XCTestExpectation(description: "Multiple nodes which service different RemoteActor types")
 
         let port = Int32.random(in: 8000..<65500)
@@ -73,6 +75,8 @@ class FlynnRemoteTests: XCTestCase {
     }
 
     func testVerySimpleRemote() {
+        guard Flynn.remoteEnabled else { return }
+        
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
 
         let port = Int32.random(in: 8000..<65500)
@@ -101,6 +105,8 @@ class FlynnRemoteTests: XCTestCase {
     }
 
     func testSimpleRemote() {
+        guard Flynn.remoteEnabled else { return }
+        
         let expectation = XCTestExpectation(description: "RemoteActor is run and prints message")
 
         let port = Int32.random(in: 8000..<65500)
@@ -152,6 +158,8 @@ class FlynnRemoteTests: XCTestCase {
     }
 
     func testHeterogenousNodes() {
+        guard Flynn.remoteEnabled else { return }
+        
         let expectation = XCTestExpectation(description: "Multiple nodes which service different RemoteActor types")
 
         let port = Int32.random(in: 8000..<65500)
@@ -203,6 +211,8 @@ class FlynnRemoteTests: XCTestCase {
     }
 
     func testNodeReconnect() {
+        guard Flynn.remoteEnabled else { return }
+        
         let expectation = XCTestExpectation(description: "Confirm nodes continuously try to connect")
 
         let port = Int32.random(in: 8000..<65500)
@@ -235,6 +245,8 @@ class FlynnRemoteTests: XCTestCase {
     }
 
     func testNodeRunOnAllCores() {
+        guard Flynn.remoteEnabled else { return }
+        
         let expectation = XCTestExpectation(description: "Confirm remote actors use all cores on remote node")
 
         let port = Int32.random(in: 8000..<65500)
@@ -268,6 +280,8 @@ class FlynnRemoteTests: XCTestCase {
     }
 
     func testRemoteService() {
+        guard Flynn.remoteEnabled else { return }
+        
         let expectation = XCTestExpectation(description: "RemoteActor as a service")
 
         // The idea behind remote services is that you can have a single, shared actor
@@ -322,6 +336,8 @@ class FlynnRemoteTests: XCTestCase {
     }
 
     func testDelayedReturnsForRemoteBehaviors() {
+        guard Flynn.remoteEnabled else { return }
+        
         // RemoteActors can now have behaviors which can make their response to the other
         // node on the network out-of-order. This test ensures that the correct return
         // callbacks are made to the correct behavior calls.

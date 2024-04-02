@@ -33,6 +33,8 @@ void pony_node(const char * address,
                MessageActorFunc messageActorFunc,
                RegisterActorsOnRootFunc registerActorsOnRootFunc);
 
+int pony_remote_enabled();
+
 int pony_remote_nodes_count();
 int pony_remote_core_count();
 int pony_remote_core_count_by_socket(int socketfd);

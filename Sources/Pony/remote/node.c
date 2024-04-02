@@ -1,6 +1,16 @@
 
 #include "platform.h"
 
+#include "../ponyrt.h"
+
+#include "../messageq.h"
+#include "../scheduler.h"
+#include "../actor.h"
+#include "../cpu.h"
+#include "../memory.h"
+
+#include "remote.h"
+
 #ifdef PLATFORM_SUPPORTS_REMOTES
 
 #include <stdlib.h>
@@ -11,16 +21,6 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "../ponyrt.h"
-
-#include "../messageq.h"
-#include "../scheduler.h"
-#include "../actor.h"
-#include "../cpu.h"
-#include "../memory.h"
-
-#include "remote.h"
 
 #ifndef max
     #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -488,6 +488,30 @@ void pony_node_destroy_actor_to_root(int socketfd) {
         pony_node_send_destroy_actor_ack(rootPtr);
     }
     ponyint_mutex_unlock(roots_mutex);
+}
+
+#else
+
+void pony_node(const char * address,
+               int port,
+               bool automaticReconnect,
+               void * createActorFuncPtr,
+               void * destroyActorFuncPtr,
+               void * messageActorFuncPtr,
+               void * registerActorsOnRootFuncPtr) {
+    
+}
+
+void pony_node_destroy_actor_to_root(int socketfd) {
+    
+}
+
+void pony_node_send_actor_message_to_root(int socketfd, int messageID, const void * bytes, int count) {
+    
+}
+
+void pony_register_node_to_root(int socketfd, const char * actorRegistrationString) {
+    
 }
 
 #endif

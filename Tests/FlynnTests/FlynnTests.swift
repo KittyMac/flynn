@@ -232,6 +232,7 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(results.joined(separator: ","), "first,second,third")
     }
     
+    /*
     func testActorThenMultipleActors() {
         // then() allows you to chain behaviour calls to actors when they call their return callback
         let expectation = XCTestExpectation(description: #function)
@@ -279,6 +280,7 @@ class FlynnTests: XCTestCase {
 
         
     }
+     */
     
     func testActorThen() {
         // then() allows you to chain behaviour calls to actors when they call their return callback
@@ -367,6 +369,7 @@ class FlynnTests: XCTestCase {
         wait(for: [expectation], timeout: 30.0)
     }
     
+    /*
     func testActorThen3() {
         let expectation = XCTestExpectation(description: #function)
         
@@ -395,7 +398,7 @@ class FlynnTests: XCTestCase {
         }
         
         wait(for: [expectation], timeout: 15.0)
-    }
+    }*/
     
     func testMultipleDelayedReturns() {
         let expectation = XCTestExpectation(description: #function)

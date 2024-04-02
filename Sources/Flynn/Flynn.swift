@@ -129,6 +129,10 @@ open class Flynn {
     public static var pCores: Int {
         return Int(pony_p_core_count())
     }
+    
+    public static var remoteEnabled: Bool {
+        return pony_remote_enabled() != 0;
+    }
 
     public static var remoteNodes: Int {
         return Int(pony_remote_nodes_count())

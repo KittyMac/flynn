@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include "atomics.h"
 
+int pony_remote_enabled();
 void pony_remote_shutdown();
 void pony_syslog(const char * tag, const char * msg);
 void pony_syslog2(const char * tag, const char *format, ...);
