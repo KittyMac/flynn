@@ -20,9 +20,9 @@
 #define QOS_CLASS_UTILITY 1
 #endif
 
-PONY_MUTEX * injectLock = NULL;
-PONY_MUTEX * injectHighPerformanceLock = NULL;
-PONY_MUTEX * injectHighEfficiencyLock = NULL;
+PONY_MUTEX injectLock = NULL;
+PONY_MUTEX injectHighPerformanceLock = NULL;
+PONY_MUTEX injectHighEfficiencyLock = NULL;
 
 #ifdef PLATFORM_IS_APPLE
 extern void *objc_autoreleasePoolPush();
@@ -45,7 +45,7 @@ static __pony_thread_local scheduler_t* this_scheduler;
 static __pony_thread_local void* autorelease_pool;
 static __pony_thread_local bool autorelease_pool_is_dirty;
 
-static PONY_MUTEX * sched_mut;
+static PONY_MUTEX sched_mut;
 
 static void pony_register_thread(void);
 

@@ -47,7 +47,7 @@ typedef struct root_t
 
 static root_t roots[kMaxRoots+1] = {0};
 
-static PONY_MUTEX * roots_mutex;
+static PONY_MUTEX roots_mutex;
 static bool inited = false;
 
 static DECLARE_THREAD_FN(node_read_from_root_thread);

@@ -7,14 +7,16 @@
 
 #include <stdbool.h>
 
-#ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_IS_WINDOWS
+
+typedef HANDLE PONY_MUTEX;
 
 #else
 
 #include <pthread.h>
 #include <signal.h>
 
-typedef pthread_mutex_t PONY_MUTEX;
+typedef pthread_mutex_t* PONY_MUTEX;
 
 #endif
 
@@ -39,10 +41,10 @@ typedef void* (*thread_fn) (void* arg);
 
 #define __pony_thread_local __thread
 
-PONY_MUTEX * ponyint_mutex_create();
-void ponyint_mutex_destroy(PONY_MUTEX * mutex);
-void ponyint_mutex_lock(PONY_MUTEX * mutex);
-void ponyint_mutex_unlock(PONY_MUTEX * mutex);
+PONY_MUTEX ponyint_mutex_create();
+void ponyint_mutex_destroy(PONY_MUTEX mutex);
+void ponyint_mutex_lock(PONY_MUTEX mutex);
+void ponyint_mutex_unlock(PONY_MUTEX mutex);
 
 bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, void* arg);
 bool ponyint_thread_join(pony_thread_id_t thread);

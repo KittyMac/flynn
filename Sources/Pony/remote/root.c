@@ -52,8 +52,8 @@ static node_t nodes[kMaxNodes+1] = {0};
 
 
 static bool inited = false;
-static PONY_MUTEX * nodes_mutex;
-static PONY_MUTEX * messageId_mutex;
+static PONY_MUTEX nodes_mutex;
+static PONY_MUTEX messageId_mutex;
 
 static pony_thread_id_t root_tid;
 static char root_ip_address[128] = {0};

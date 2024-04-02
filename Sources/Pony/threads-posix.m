@@ -2,7 +2,7 @@
 
 #include "platform.h"
 
-#ifndef PLATFORM_WINDOWS
+#ifndef PLATFORM_IS_WINDOWS
 
 #define _GNU_SOURCE
 
@@ -22,7 +22,7 @@
 #include <Foundation/Foundation.h>
 #endif
 
-PONY_MUTEX * ponyint_mutex_create() {
+PONY_MUTEX ponyint_mutex_create() {
     pthread_mutex_t * mutex = malloc(sizeof(pthread_mutex_t));
     if (pthread_mutex_init(mutex, NULL) != 0) {
         return NULL;
@@ -30,17 +30,17 @@ PONY_MUTEX * ponyint_mutex_create() {
     return mutex;
 }
 
-void ponyint_mutex_destroy(PONY_MUTEX * mutex) {
+void ponyint_mutex_destroy(PONY_MUTEX mutex) {
     if (mutex != NULL) {
         pthread_mutex_destroy(mutex);
     }
 }
 
-void ponyint_mutex_lock(PONY_MUTEX * mutex) {
+void ponyint_mutex_lock(PONY_MUTEX mutex) {
     pthread_mutex_lock(mutex);
 }
 
-void ponyint_mutex_unlock(PONY_MUTEX * mutex) {
+void ponyint_mutex_unlock(PONY_MUTEX mutex) {
     pthread_mutex_unlock(mutex);
 }
 
