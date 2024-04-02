@@ -13,7 +13,7 @@
 #include "actor.h"
 #include <string.h>
 #include <stdio.h>
-#include <pthread.h>
+#include <threads.h>
 
 #ifndef PLATFORM_IS_APPLE
 #define QOS_CLASS_USER_INITIATED 0

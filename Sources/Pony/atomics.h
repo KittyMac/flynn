@@ -18,29 +18,7 @@
 #  include <stdalign.h>
 #endif
 
-#ifdef _MSC_VER
-// MSVC has no support of C11 atomics.
-#  include <atomic>
-#  define PONY_ATOMIC(T) std::atomic<T>
-#  define PONY_ATOMIC_RVALUE(T) std::atomic<T>
-#  ifdef PONY_WANT_ATOMIC_DEFS
-using std::memory_order_relaxed;
-using std::memory_order_consume;
-using std::memory_order_acquire;
-using std::memory_order_release;
-using std::memory_order_acq_rel;
-using std::memory_order_seq_cst;
-
-using std::atomic_load_explicit;
-using std::atomic_store_explicit;
-using std::atomic_exchange_explicit;
-using std::atomic_compare_exchange_weak_explicit;
-using std::atomic_compare_exchange_strong_explicit;
-using std::atomic_fetch_add_explicit;
-using std::atomic_fetch_sub_explicit;
-using std::atomic_thread_fence;
-#  endif
-#elif defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 #  if ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((4) << 16) + (9))
 #    ifdef __cplusplus
 //     g++ doesn't like C11 atomics. We never need atomic ops in C++ files so
@@ -80,23 +58,6 @@ using std::atomic_thread_fence;
 #  error "Unsupported compiler"
 #endif
 
-#ifdef _MSC_VER
-namespace ponyint_atomics
-    {
-    template <typename T>
-    struct aba_protected_ptr_t
-    {
-        // Nested struct for uniform initialisation with GCC/Clang.
-        struct
-        {
-            T* object;
-            uintptr_t counter;
-        };
-    };
-    }
-#  define PONY_ABA_PROTECTED_PTR_DECLARE(T)
-#  define PONY_ABA_PROTECTED_PTR(T) ponyint_atomics::aba_protected_ptr_t<T>
-#else
 #  if defined(__LP64__) || defined(_WIN64)
 #    define PONY_DOUBLEWORD __int128_t
 #  else
@@ -113,7 +74,6 @@ uintptr_t counter; \
 PONY_DOUBLEWORD raw; \
 } aba_protected_##T;
 #  define PONY_ABA_PROTECTED_PTR(T) aba_protected_##T
-#endif
 
 // We provide our own implementation of big atomic objects (larger than machine
 // word size) because we need special functionalities that aren't provided by
@@ -124,54 +84,6 @@ PONY_DOUBLEWORD raw; \
 alignas(sizeof(PONY_ABA_PROTECTED_PTR(T))) PONY_ABA_PROTECTED_PTR(T)
 
 #ifdef PONY_WANT_ATOMIC_DEFS
-#  ifdef _MSC_VER
-#    pragma warning(push)
-#    pragma warning(disable:4164)
-#    pragma warning(disable:4800)
-#    pragma intrinsic(_InterlockedCompareExchange128)
-
-namespace ponyint_atomics
-    {
-    template <typename T>
-    inline PONY_ABA_PROTECTED_PTR(T) big_load(PONY_ABA_PROTECTED_PTR(T)* ptr)
-    {
-        PONY_ABA_PROTECTED_PTR(T) ret = {NULL, 0};
-        _InterlockedCompareExchange128((LONGLONG*)ptr, 0, 0, (LONGLONG*)&ret);
-        return ret;
-    }
-    
-    template <typename T>
-    inline void big_store(PONY_ABA_PROTECTED_PTR(T)* ptr,
-                          PONY_ABA_PROTECTED_PTR(T) val)
-    {
-        PONY_ABA_PROTECTED_PTR(T) tmp;
-        tmp.object = ptr->object;
-        tmp.counter = ptr->counter;
-        while(!_InterlockedCompareExchange128((LONGLONG*)ptr,
-                                              (LONGLONG)val.counter, (LONGLONG)val.object, (LONGLONG*)&tmp))
-        {}
-    }
-    
-    template <typename T>
-    inline bool big_cas(PONY_ABA_PROTECTED_PTR(T)* ptr,
-                        PONY_ABA_PROTECTED_PTR(T)* exp, PONY_ABA_PROTECTED_PTR(T) des)
-    {
-        return _InterlockedCompareExchange128((LONGLONG*)ptr, (LONGLONG)des.counter,
-                                              (LONGLONG)des.object, (LONGLONG*)exp);
-    }
-    }
-
-#    define bigatomic_load_explicit(PTR, MO) \
-ponyint_atomics::big_load(PTR)
-
-#    define bigatomic_store_explicit(PTR, VAL, MO) \
-ponyint_atomics::big_store(PTR, VAL)
-
-#    define bigatomic_compare_exchange_weak_explicit(PTR, EXP, DES, SUCC, FAIL) \
-ponyint_atomics::big_cas(PTR, EXP, DES)
-
-#    pragma warning(pop)
-#  else
 #    define bigatomic_load_explicit(PTR, MO) \
 ({ \
 _Static_assert(sizeof(*(PTR)) == (2 * sizeof(void*)), ""); \
@@ -190,7 +102,6 @@ _Static_assert(sizeof(*(PTR)) == (2 * sizeof(void*)), ""); \
 __atomic_compare_exchange_n(&(PTR)->raw, &(EXP)->raw, (DES).raw, true, \
 SUCC, FAIL); \
 })
-#  endif
 
 #  ifdef PONY_ATOMIC_BUILTINS
 #    define memory_order_relaxed __ATOMIC_RELAXED

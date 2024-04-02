@@ -1,6 +1,8 @@
 
 #include "platform.h"
 
+#ifdef PLATFORM_SUPPORTS_REMOTES
+
 #include <stdlib.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -487,3 +489,5 @@ void pony_node_destroy_actor_to_root(int socketfd) {
     }
     ponyint_mutex_unlock(roots_mutex);
 }
+
+#endif

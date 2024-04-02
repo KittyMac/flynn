@@ -1,6 +1,8 @@
 
 #include "platform.h"
 
+#ifdef PLATFORM_SUPPORTS_REMOTES
+
 #ifndef PLATFORM_IS_APPLE
 #define QOS_CLASS_USER_INTERACTIVE 0
 #define QOS_CLASS_USER_INITIATED 0
@@ -51,3 +53,5 @@ extern void send_buffer(int socketfd, char * bytes, size_t length);
 extern void close_socket(int fd);
 
 extern void disableSIGPIPE(int fd);
+
+#endif

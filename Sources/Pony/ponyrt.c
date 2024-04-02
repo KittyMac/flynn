@@ -4,13 +4,15 @@
 #include "platform.h"
 
 #include <stdlib.h>
-#include <syslog.h>
 #include <stdarg.h>
 
+#ifdef PLATFORM_SUPPORTS_DNS_LOOKUP
 #include <arpa/nameser.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <resolv.h>
+#endif
+
 #include <string.h>
 
 #include "ponyrt.h"
@@ -20,6 +22,10 @@
 #include "actor.h"
 #include "cpu.h"
 #include "memory.h"
+
+#ifdef PLATFORM_SUPPORTS_SYSLOG
+#include <syslog.h>
+#endif
 
 extern int ponyint_remote_nodes_count();
 extern int ponyint_remote_core_count();
@@ -239,7 +245,11 @@ unsigned long pony_mapped_memory() {
 }
 
 void pony_syslog(const char * tag, const char * msg) {
+    #ifdef PLATFORM_SUPPORTS_SYSLOG
     syslog(LOG_ERR, "%s: %s\n", tag, msg);
+    #else
+    fprintf(stderr, "%s: %s\n", tag, msg);
+    #endif
 }
 
 void pony_syslog2(const char * tag, const char *format, ...) {
@@ -248,11 +258,10 @@ void pony_syslog2(const char * tag, const char *format, ...) {
     va_start(args, format);
     vsnprintf(msg, sizeof(msg), format, args);
     va_end(args);
-
     pony_syslog(tag, msg);
 }
 
-
+#ifdef PLATFORM_SUPPORTS_DNS_LOOKUP
 static char * pony_dns_resolve(const char * domain, int type) {
     static int didCallInit = 0;
     
@@ -307,4 +316,4 @@ char * pony_dns_resolve_cname(const char * domain) {
 char * pony_dns_resolve_txt(const char * domain) {
     return pony_dns_resolve(domain, ns_t_txt);
 }
-
+#endif

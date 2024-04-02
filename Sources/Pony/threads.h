@@ -9,15 +9,36 @@
 
 #ifdef PLATFORM_IS_WINDOWS
 
-typedef HANDLE PONY_MUTEX;
+    #include <windows.h>
+    #include <process.h>
+
+    typedef HANDLE PONY_MUTEX;
+
+    #define pony_thread_id_t HANDLE
+    #define pony_signal_event_t HANDLE
+
+    typedef unsigned int (*thread_fn) (void* arg);
+
+    #define DECLARE_THREAD_FN(NAME) unsigned int NAME (void* arg)
+    
+    #define __pony_thread_local __thread
 
 #else
 
-#include <pthread.h>
-#include <signal.h>
+    #include <pthread.h>
+    #include <signal.h>
 
-typedef pthread_mutex_t* PONY_MUTEX;
+    typedef pthread_mutex_t* PONY_MUTEX;
+    
+    #define pony_thread_id_t pthread_t
+    #define pony_signal_event_t pthread_cond_t*
 
+    typedef void* (*thread_fn) (void* arg);
+
+    #define DECLARE_THREAD_FN(NAME) void* NAME (void* arg)
+    
+    #define __pony_thread_local __thread
+    
 #endif
 
 
@@ -31,15 +52,6 @@ typedef pthread_mutex_t* PONY_MUTEX;
 #define COREAFFINITY_PREFER_TO_ONLY(x) (x + 2)
 
 #define kCoreAffinity_None 99
-
-#define pony_thread_id_t pthread_t
-#define pony_signal_event_t pthread_cond_t*
-
-typedef void* (*thread_fn) (void* arg);
-
-#define DECLARE_THREAD_FN(NAME) void* NAME (void* arg)
-
-#define __pony_thread_local __thread
 
 PONY_MUTEX ponyint_mutex_create();
 void ponyint_mutex_destroy(PONY_MUTEX mutex);

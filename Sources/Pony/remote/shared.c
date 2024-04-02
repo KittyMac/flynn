@@ -1,6 +1,8 @@
 
 #include "platform.h"
 
+#ifdef PLATFORM_SUPPORTS_REMOTES
+
 #include <stdlib.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -345,3 +347,5 @@ void close_socket(int fd) {
     shutdown(fd, SHUT_RDWR);
     close(fd);
 }
+
+#endif

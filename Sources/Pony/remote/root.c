@@ -1,6 +1,8 @@
 
 #include "platform.h"
 
+#ifdef PLATFORM_SUPPORTS_REMOTES
+
 #include <signal.h>
 #include <stdlib.h>
 #include <netdb.h>
@@ -588,3 +590,5 @@ void pony_root_destroy_actor_to_node(const char * actorUUID, int nodeSocketFD) {
         ponyint_mutex_unlock(nodes_mutex);
     }
 }
+
+#endif

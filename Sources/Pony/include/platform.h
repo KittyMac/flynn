@@ -25,3 +25,14 @@
 #endif
 
 #endif
+
+
+#ifdef PLATFORM_IS_WINDOWS
+
+#else
+
+#define PLATFORM_SUPPORTS_SYSLOG
+#define PLATFORM_SUPPORTS_REMOTES
+#define PLATFORM_SUPPORTS_DNS_LOOKUP
+
+#endif

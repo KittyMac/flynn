@@ -9,9 +9,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <sys/mman.h>
+#ifdef PLATFORM_IS_WINDOWS
+
+#else
+//#include <sys/mman.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
 
 #ifdef PLATFORM_IS_APPLE
 #include <mach/vm_statistics.h>
@@ -32,6 +36,9 @@ size_t getPeakRSS();
 size_t getCurrentRSS();
 
 void ponyint_update_memory_usage() {
+    #ifdef PLATFORM_IS_WINDOWS
+    
+    #else
     // gate this so that we only do it once every second
     static struct timeval previous = {0};
     struct timeval now;
@@ -43,6 +50,7 @@ void ponyint_update_memory_usage() {
         max_memory_allocated = getPeakRSS();
     }
     previous = now;
+    #endif
 }
 
 size_t ponyint_total_memory()

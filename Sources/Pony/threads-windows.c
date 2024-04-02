@@ -9,14 +9,6 @@
 #include "threads.h"
 #include "ponyrt.h"
 
-#include <pthread.h>
-#include <sched.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/mman.h>
-#include <limits.h>
-#include <stdio.h>
-
 PONY_MUTEX ponyint_mutex_create() {
     return CreateMutex(NULL, FALSE, NULL);
 }
