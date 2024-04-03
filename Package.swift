@@ -3,7 +3,7 @@ import PackageDescription
 
 // When runnning "make release" to build the binary tools change this to true
 // Otherwise always set it to false
-#if false
+#if true
 let productsTarget: [PackageDescription.Product] = [
 ]
 let pluginTarget: [PackageDescription.Target] = [
@@ -95,7 +95,9 @@ let package = Package(
             name: "Pony",
             linkerSettings: [
                 .linkedLibrary("atomic", .when(platforms: [.linux, .android])),
-                .linkedLibrary("resolv", .when(platforms: [.linux, .macOS, .iOS]))
+                .linkedLibrary("resolv", .when(platforms: [.linux, .macOS, .iOS])),
+                .linkedLibrary("swiftCore", .when(platforms: [.windows])),
+                // .linkedLibrary("atomic", .when(platforms: [.windows])),
             ]
         ),
         .target(

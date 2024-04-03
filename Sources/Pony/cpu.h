@@ -26,4 +26,8 @@ void ponyint_cpu_relax(void);
 
 uint64_t ponyint_cpu_tick(void);
 
+#ifdef PLATFORM_IS_WINDOWS
+void usleep(__int64 usec);
+#endif
+
 #endif
