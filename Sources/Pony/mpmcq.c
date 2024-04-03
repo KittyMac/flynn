@@ -113,9 +113,19 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
         
         xchg.object = next;
         xchg.counter = cmp.counter + 1;
+        
+        // NOTE: unlike the original ponyrt, we only call into ponyint_mpmcq_pop() when blocked by mutexes
+        // therefore, there will be no thread contention in the execution of this function and we don't
+        // need to bigatomic_compare_exchange_weak_explicit();
+        if (q->tail.object == cmp.object) {
+            q->tail = xchg;
+            continue;
+        }
+        break;
     }
-    while(!bigatomic_compare_exchange_weak_explicit(&q->tail, &cmp, xchg,
-                                                    memory_order_acq_rel, memory_order_acquire));
+    while(true);
+    // while(!bigatomic_compare_exchange_weak_explicit(&q->tail, &cmp, xchg,
+    //                                                 memory_order_acq_rel, memory_order_acquire));
     
     // Synchronise on tail->next to ensure we see the write to next->data from
     // the push. Also synchronise on next->data (see comment below).
