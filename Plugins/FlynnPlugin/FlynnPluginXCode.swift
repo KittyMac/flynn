@@ -18,12 +18,12 @@ internal func print(_ items: Any..., separator: String = " ", terminator: String
 }
 
 internal func clearLogs() {
-    try? FileManager.default.removeItem(atPath: "/tmp/FlynnPlugin.log")
+    try? FileManager.default.removeItem(atPath: "\(flynnTempPath)/FlynnPlugin.log")
 }
 
 internal func exportLogs() {
     let logString = logs.joined(separator: "\n")
-    try? logString.write(toFile: "/tmp/FlynnPlugin.log", atomically: false, encoding: .utf8)
+    try? logString.write(toFile: "\(flynnTempPath)/FlynnPlugin.log", atomically: false, encoding: .utf8)
 }
 */
 

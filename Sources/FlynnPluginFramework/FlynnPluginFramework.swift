@@ -1,6 +1,12 @@
 import Foundation
 import SourceKittenFramework
 
+#if os(Windows)
+public let flynnTempPath = "C:/WINDOWS/Temp/"
+#else
+public let flynnTempPath = "/tmp/"
+#endif
+
 // Note: FlynnPluginFramework used to use Flynn, but in order to implement FlynnPluginFramework
 // as a Swift Package Manager Build Tool FlynnPluginFramework cannot have Flynn as
 // as a dependency (it introduces a circular dependency). Much of this
@@ -24,12 +30,12 @@ internal func print(_ items: Any..., separator: String = " ", terminator: String
 }
 
 internal func clearLogs() {
-    try? FileManager.default.removeItem(atPath: "/tmp/FlynnPluginFramework.log")
+    try? FileManager.default.removeItem(atPath: "\(flynnTempPath)/FlynnPluginFramework.log")
 }
 
 internal func exportLogs() {
     let logString = logs.joined(separator: "\n")
-    try? logString.write(toFile: "/tmp/FlynnPluginFramework.log", atomically: false, encoding: .utf8)
+    try? logString.write(toFile: "\(flynnTempPath)/FlynnPluginFramework.log", atomically: false, encoding: .utf8)
 }
  */
 
@@ -85,7 +91,7 @@ public class FlynnPluginTool {
         let ruleset = Ruleset()
         
         let uuid = UUID().uuidString
-        let tempOutput = "/tmp/\(uuid).flynn.swift"
+        let tempOutput = "\(flynnTempPath)/\(uuid).flynn.swift"
         
         try? FileManager.default.removeItem(atPath: tempOutput)
         try? "import Foundation\n".write(toFile: tempOutput, atomically: false, encoding: .utf8)

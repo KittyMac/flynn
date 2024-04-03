@@ -6,11 +6,17 @@
 //  Copyright © 2020 Rocco Bowling. All rights reserved.
 //
 
+#if os(Windows)
+public let flynnTempPath = "C:/WINDOWS/Temp/"
+#else
+public let flynnTempPath = "/tmp/"
+#endif
+
 import XCTest
 @testable import FlynnPluginFramework
 
 class FlynnPluginTests: XCTestCase {
-    var output = "/tmp/FlynnPlugin"
+    var output = "\(flynnTempPath)/FlynnPlugin"
     var packageRoot = ""
     
     override func setUpWithError() throws {
@@ -22,7 +28,7 @@ class FlynnPluginTests: XCTestCase {
     func testExample() throws {
         let flynnplugin = FlynnPluginTool()
         flynnplugin.process(input: "/Users/rjbowli/Development/chimerasw/Flynn/Examples/HelloWorld/Sources/HelloWorld/main.swift",
-                            output: "/tmp/FlynnPlugin.swift")
+                            output: "\(flynnTempPath)/FlynnPlugin.swift")
     }
     
     func testFlynn() throws {
@@ -45,7 +51,7 @@ class FlynnPluginTests: XCTestCase {
         ]
         
         flynnplugin.process(inputs: files,
-                            output: "/tmp/FlynnPlugin.swift")
+                            output: "\(flynnTempPath)/FlynnPlugin.swift")
         
         
     }
@@ -53,19 +59,19 @@ class FlynnPluginTests: XCTestCase {
     func testFlynn2() throws {
         let flynnplugin = FlynnPluginTool()
         flynnplugin.process(input: "/Users/rjbowli/Library/Developer/Xcode/DerivedData/Flynn-atlbddvexwtcxmbjhpgyyonyzrrj/SourcePackages/flynn/FlynnTests/FlynnPlugin/inputFiles.txt",
-                            output: "/tmp/FlynnPlugin.swift")
+                            output: "\(flynnTempPath)/FlynnPlugin.swift")
     }
     
     func testFlynn3() throws {
         let flynnplugin = FlynnPluginTool()
         flynnplugin.process(input: "/Users/rjbowli/Development/chimerasw/Picaroon/.build/plugins/outputs/picaroon/Picaroon/FlynnPlugin/inputFiles.txt",
-                            output: "/tmp/FlynnPlugin.swift")
+                            output: "\(flynnTempPath)/FlynnPlugin.swift")
     }
     
     func testFlynn4() throws {
         let flynnplugin = FlynnPluginTool()
         flynnplugin.process(input: "/Users/rjbowli/Development/smallplanet/npd_ReceiptPal_iOS/receiptpal_amazon/swift/ErrorLogServer/.build/plugins/outputs/errorlogserver/ErrorLogServerFramework/FlynnPlugin/inputFiles.txt",
-                            output: "/tmp/FlynnPlugin.swift")
+                            output: "\(flynnTempPath)/FlynnPlugin.swift")
     }
     
     #if DEBUG
