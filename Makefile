@@ -15,9 +15,10 @@ build-windows:
 	swift build $(SWIFT_BUILD_FLAGS)
 	-rm .build/FlynnPluginTool
 	cp ./dist/FlynnPluginTool ./dist/FlynnPluginTool-fedora.artifactbundle/FlynnPluginTool-macos/bin/FlynnPluginTool
-	cp .build/plugins/tools/debug/FlynnPluginTool-focal.exe ./dist/FlynnPluginTool-windows.artifactbundle/FlynnPluginTool-windows/bin/FlynnPluginTool
-	rm -f ./dist/FlynnPluginTool-windows.zip
-	cd ./dist && zip -r ./FlynnPluginTool-windows.zip ./FlynnPluginTool-windows.artifactbundle
+	cp .build/plugins/tools/debug/FlynnPluginTool-focal.exe ./dist/FlynnPluginTool-windows.artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool.exe
+	-rm ./dist/FlynnPluginTool-windows.zip
+	# cd ./dist && zip -r ./FlynnPluginTool-windows.zip ./FlynnPluginTool-windows.artifactbundle
+	Compress-Archive -Path ./dist/FlynnPluginTool-windows.artifactbundle -DestinationPath ./dist/FlynnPluginTool-windows.zip
 
 clean:
 	rm -rf .build

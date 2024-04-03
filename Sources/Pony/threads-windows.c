@@ -39,6 +39,7 @@ bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, v
 bool ponyint_thread_join(pony_thread_id_t thread) {
     while (WaitForSingleObjectEx(thread, INFINITE, true) == WAIT_IO_COMPLETION);
     CloseHandle(thread);
+    return true;
 }
 
 void ponyint_thread_detach(pony_thread_id_t thread) {
