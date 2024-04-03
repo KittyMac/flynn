@@ -283,7 +283,7 @@ open class Actor: Equatable, Hashable {
         }
         Task {
             while pony_actor_is_suspended(actorPtr) == false {
-                usleep(50)
+                Flynn.usleep(50)
             }
             await block {
                 pony_actor_resume(actorPtr)

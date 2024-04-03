@@ -90,7 +90,7 @@ class FlynnRemoteTests: XCTestCase {
                            namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
-            usleep(500)
+            Flynn.usleep(500)
         }
 
         Echo().beToLower("HELLO WORLD", Flynn.any, Flynn.fatal) { (result) in
@@ -126,7 +126,7 @@ class FlynnRemoteTests: XCTestCase {
                            namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
-            usleep(500)
+            Flynn.usleep(500)
         }
 
         Echo().bePrint("Hello Remote Actor 1!")
@@ -179,7 +179,7 @@ class FlynnRemoteTests: XCTestCase {
                            namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
-            usleep(500)
+            Flynn.usleep(500)
         }
 
         var numSuccess = 0
@@ -229,7 +229,7 @@ class FlynnRemoteTests: XCTestCase {
         // Right now this is necessary, we need to wait until
         // we know the node is connected before using remote actors
         while Flynn.remoteCores == 0 {
-            usleep(500)
+            Flynn.usleep(500)
         }
 
         Echo().beToLower("HELLO WORLD", Flynn.any, Flynn.fatal) { (lowered) in
@@ -261,7 +261,7 @@ class FlynnRemoteTests: XCTestCase {
                            namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
-            usleep(500)
+            Flynn.usleep(500)
         }
 
         var num = 0
@@ -304,7 +304,7 @@ class FlynnRemoteTests: XCTestCase {
 
         // Wait until the node has connected
         while Flynn.remoteCores == 0 {
-            usleep(500)
+            Flynn.usleep(500)
         }
 
         // Wait until the shared service has been
@@ -312,7 +312,7 @@ class FlynnRemoteTests: XCTestCase {
         var echoService: Echo?
         while echoService == nil {
             Flynn.Root.remoteActorByUUID(echoServiceName, Flynn.any) { echoService = $0 as? Echo }
-            usleep(500)
+            Flynn.usleep(500)
         }
 
         let printReply = { (lowered: String) in
@@ -353,7 +353,7 @@ class FlynnRemoteTests: XCTestCase {
                            namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
-            usleep(500)
+            Flynn.usleep(500)
         }
 
         let echo = Echo()
@@ -392,7 +392,7 @@ class FlynnRemoteTests: XCTestCase {
                            namedRemoteActors: [])
 
         while Flynn.remoteCores == 0 {
-            usleep(500)
+            Flynn.usleep(500)
         }
 
         let echo = Echo()

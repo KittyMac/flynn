@@ -18,8 +18,8 @@ static uint32_t hybrid_cpu_enabled = 0;
 static uint32_t hw_e_core_count = 0;
 static uint32_t hw_p_core_count = 0;
 
-void usleep(__int64 usec) 
-{ 
+void pony_usleep(__int64 usec)
+{
     HANDLE timer; 
     LARGE_INTEGER ft; 
 

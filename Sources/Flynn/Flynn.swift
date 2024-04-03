@@ -110,6 +110,10 @@ open class Flynn {
         }
     }
     
+    public class func usleep(_ nanoseconds: useconds_t) {
+        pony_usleep(nanoseconds)
+    }
+    
     public class func dock(_ actor: Actor) {
         dockedQueue.enqueue(actor)
     }

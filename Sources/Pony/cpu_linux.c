@@ -27,7 +27,10 @@ static uint32_t hybrid_cpu_enabled = 0;
 static uint32_t hw_e_core_count = 0;
 static uint32_t hw_p_core_count = 0;
 
-
+void pony_usleep(useconds_t usec)
+{
+    usleep(usec);
+}
 
 static bool cpu_physical(uint32_t cpu)
 {
