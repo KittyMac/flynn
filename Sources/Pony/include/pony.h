@@ -10,6 +10,10 @@
 #include <sys/types.h>
 #include <stdint.h>
 
+#ifdef PLATFORM_IS_WINDOWS
+void usleep(__int64 usec);
+#endif
+
 typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);
 typedef void (*NodeDisconnectedFunc)(int socketFD);
 typedef void (*CreateActorFunc)(const char * actorUUID, const char * actorType, bool shouldBeProxy, int socketFD);
