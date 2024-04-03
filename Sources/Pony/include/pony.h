@@ -11,9 +11,9 @@
 #include <stdint.h>
 
 #ifdef PLATFORM_IS_WINDOWS
-void pony_usleep(__int64 usec);
+void pony_usleep(uint64_t usec);
 #else
-void pony_usleep(useconds_t usec);
+void pony_usleep(uint64_t usec);
 #endif
 
 typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);

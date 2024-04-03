@@ -110,7 +110,7 @@ open class Flynn {
         }
     }
     
-    public class func usleep(_ nanoseconds: useconds_t) {
+    public class func usleep(_ nanoseconds: UInt64) {
         pony_usleep(nanoseconds)
     }
     

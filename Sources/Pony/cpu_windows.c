@@ -18,7 +18,7 @@ static uint32_t hybrid_cpu_enabled = 0;
 static uint32_t hw_e_core_count = 0;
 static uint32_t hw_p_core_count = 0;
 
-void pony_usleep(__int64 usec)
+void pony_usleep(uint64_t usec)
 {
     HANDLE timer; 
     LARGE_INTEGER ft; 
@@ -61,14 +61,13 @@ uint32_t ponyint_hybrid_cores_enabled()
 
 void ponyint_cpu_sleep(int ns)
 {
-    usleep(ns);
+    pony_usleep(ns);
 }
 
 void ponyint_cpu_relax()
 {
-    //asm volatile("pause" ::: "memory");
-    usleep(1);
-} 
+    pony_usleep(1);
+}
 
 uint64_t ponyint_cpu_tick()
 {

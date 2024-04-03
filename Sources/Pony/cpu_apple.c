@@ -36,9 +36,9 @@
 	#define CTL_HW 6 
 #endif
 
-void pony_usleep(useconds_t usec)
+void pony_usleep(uint64_t usec)
 {
-    usleep(usec);
+    usleep((useconds_t)usec);
 }
 
 static uint32_t get_sys_info(int type_specifier, const char* name, uint32_t default_value) {
