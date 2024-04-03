@@ -114,6 +114,10 @@ open class Flynn {
         pony_usleep(nanoseconds)
     }
     
+    public class func sleep(_ seconds: UInt64) {
+        pony_usleep(seconds * 1_000_000)
+    }
+    
     public class func dock(_ actor: Actor) {
         dockedQueue.enqueue(actor)
     }

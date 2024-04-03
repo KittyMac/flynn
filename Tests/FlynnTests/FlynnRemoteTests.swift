@@ -38,11 +38,11 @@ class FlynnRemoteTests: XCTestCase {
             count += 1
         }
         
-        sleep(2)
+        Flynn.sleep(2)
         
         Flynn.shutdown()
     }*/
-
+    
     func testLocalExecutionFallback() {
         guard Flynn.remoteEnabled else { return }
         
@@ -220,7 +220,7 @@ class FlynnRemoteTests: XCTestCase {
         Flynn.Node.connect("127.0.0.1", port, false,
                            remoteActorTypes: [Echo.self],
                            namedRemoteActors: [])
-        sleep(2)
+        Flynn.sleep(2)
         Flynn.Root.listen("127.0.0.1", port,
                           remoteActorTypes: [Echo.self],
                           fallbackRemoteActorTypes: [],
@@ -366,7 +366,7 @@ class FlynnRemoteTests: XCTestCase {
         echo.beTestDelayedReturn("hello world f", Flynn.any, Flynn.fatal) { if $0 == "HELLO WORLD F" { numCorrect += 1 } }
         echo.beTestDelayedReturn("hello world g", Flynn.any, Flynn.fatal) { if $0 == "HELLO WORLD G" { numCorrect += 1 } }
 
-        sleep(4)
+        Flynn.sleep(4)
 
         XCTAssertEqual(numCorrect, 7)
 

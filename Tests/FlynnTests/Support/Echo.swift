@@ -12,7 +12,7 @@ class Echo: RemoteActor {
     @inlinable
     internal func _bePrintThreadName() -> Int {
         if let name = Thread.current.name {
-            sleep(1)
+            Flynn.sleep(1)
             print("Echo running on \(name)")
         }
         return 0

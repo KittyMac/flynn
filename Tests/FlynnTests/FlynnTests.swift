@@ -194,7 +194,7 @@ class FlynnTests: XCTestCase {
         test.beFunc(Flynn.any) {
             count += 1
         }
-        sleep(2)
+        Flynn.sleep(2)
         XCTAssertEqual(count, 1)
     }
      */
@@ -744,7 +744,7 @@ class FlynnTests: XCTestCase {
             // it has been coded to dock itself with Flynn and undock itself after 3 seconds.
             // this feature allows you to spawn actors which don't need to be tethered to a parent
             let _ = WeakTimer() 
-            sleep(4)
+            Flynn.sleep(4)
         }
     }
 }
