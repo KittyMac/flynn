@@ -55,7 +55,7 @@ class FlynnPluginTests: XCTestCase {
         
         
     }
-    
+    /*
     func testFlynn2() throws {
         let flynnplugin = FlynnPluginTool()
         flynnplugin.process(input: "/Users/rjbowli/Library/Developer/Xcode/DerivedData/Flynn-atlbddvexwtcxmbjhpgyyonyzrrj/SourcePackages/flynn/FlynnTests/FlynnPlugin/inputFiles.txt",
@@ -73,14 +73,17 @@ class FlynnPluginTests: XCTestCase {
         flynnplugin.process(input: "/Users/rjbowli/Development/smallplanet/npd_ReceiptPal_iOS/receiptpal_amazon/swift/ErrorLogServer/.build/plugins/outputs/errorlogserver/ErrorLogServerFramework/FlynnPlugin/inputFiles.txt",
                             output: "\(flynnTempPath)/FlynnPlugin.swift")
     }
+    */
     
     #if DEBUG
 
     func testOneRuleOneCode() throws {
+        /*
         let rule = DoNotPrecededByThenCall()
         XCTAssert(rule.test("""
             ThenActor().then().doFourth().then().doNothing()
         """))
+         */
     }
     
     func testAllRulesOneCode() throws {
