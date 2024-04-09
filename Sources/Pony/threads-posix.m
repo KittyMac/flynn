@@ -16,6 +16,7 @@
 #include <sys/mman.h>
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef PLATFORM_IS_APPLE
 #undef id
