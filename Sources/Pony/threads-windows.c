@@ -28,7 +28,7 @@ void ponyint_mutex_unlock(PONY_MUTEX mutex) {
 }
 
 bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, void* arg) {
-    uintptr_t p = _beginthreadex(NULL, 0, start, arg, 0, NULL);
+    uintptr_t p = _beginthreadex(NULL, 8 * 1024 * 1024, start, arg, 0, NULL);
     if (!p) {
         return false;
     }
