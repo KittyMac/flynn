@@ -13,7 +13,7 @@ build:
 
 build-windows:
 	swift build --configuration release
-	cp .build/plugins/tools/release/FlynnPluginTool-focal.exe ./dist/FlynnPluginTool-windows.artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool.exe
+	cp .build/release/FlynnPluginTool-focal.exe ./dist/FlynnPluginTool-windows.artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool.exe
 	rm ./dist/FlynnPluginTool-windows.zip
 	Compress-Archive -Path ./dist/FlynnPluginTool-windows.artifactbundle -DestinationPath ./dist/FlynnPluginTool-windows.zip
 
