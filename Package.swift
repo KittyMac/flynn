@@ -40,16 +40,24 @@ pluginDependencies.append(.package(url: "https://github.com/jpsim/SourceKitten",
 #endif
 
 #else
-let productsTarget: [PackageDescription.Product] = [
-    .library(name: "FlynnPluginTool", targets: [
-        "FlynnPluginTool-focal",
-        "FlynnPluginTool-amazonlinux2",
-        "FlynnPluginTool-fedora",
-        "FlynnPluginTool-fedora38",
-        "FlynnPluginTool-windows",
-    ]),
+
+var plugins = [
+    "FlynnPluginTool-focal",
+    "FlynnPluginTool-amazonlinux2",
+    "FlynnPluginTool-fedora",
+    "FlynnPluginTool-fedora38",
 ]
-let pluginTarget: [PackageDescription.Target] = [
+
+#if os(Windows)
+plugins += [
+    "FlynnPluginTool-windows"
+]
+#endif
+
+var productsTarget: [PackageDescription.Product] = [
+    .library(name: "FlynnPluginTool", targets: plugins),
+]
+var pluginTarget: [PackageDescription.Target] = [
     .binaryTarget(name: "FlynnPluginTool-focal",
                   path: "dist/FlynnPluginTool-focal.zip"),
     .binaryTarget(name: "FlynnPluginTool-amazonlinux2",
@@ -58,23 +66,23 @@ let pluginTarget: [PackageDescription.Target] = [
                   path: "dist/FlynnPluginTool-fedora.zip"),
     .binaryTarget(name: "FlynnPluginTool-fedora38",
                   path: "dist/FlynnPluginTool-fedora38.zip"),
-    .binaryTarget(name: "FlynnPluginTool-windows",
-                  path: "dist/FlynnPluginTool-windows.zip"),
     .plugin(
         name: "FlynnPlugin",
         capability: .buildTool(),
-        dependencies: [
-            "FlynnPluginTool-focal",
-            "FlynnPluginTool-amazonlinux2",
-            "FlynnPluginTool-fedora",
-            "FlynnPluginTool-fedora38",
-            "FlynnPluginTool-windows"
-        ]
+        dependencies: plugins.map({ Target.Dependency(stringLiteral: $0) })
     ),
 ]
-let pluginDependencies: [Package.Dependency] = [
+var pluginDependencies: [Package.Dependency] = [
     
 ]
+
+#if os(Windows)
+pluginTarget += [
+    .binaryTarget(name: "FlynnPluginTool-windows",
+                  path: "dist/FlynnPluginTool-windows.zip")
+]
+#endif
+
 #endif
 
 let package = Package(
@@ -97,7 +105,6 @@ let package = Package(
                 .linkedLibrary("atomic", .when(platforms: [.linux, .android])),
                 .linkedLibrary("resolv", .when(platforms: [.linux, .macOS, .iOS])),
                 .linkedLibrary("swiftCore", .when(platforms: [.windows])),
-                // .linkedLibrary("atomic", .when(platforms: [.windows])),
             ]
         ),
         .target(
