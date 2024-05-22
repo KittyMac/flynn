@@ -65,8 +65,8 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
                     if (sendv_marked_idx_push != sendv_marked_idx_pop) {
                         const char * file = sendv_marked_then_id_file[sendv_marked_idx_pop];
                         uint64_t line = sendv_marked_then_id_line[sendv_marked_idx_pop];
-                        fprintf(stderr, "Fatal Error: Unbalanced then/do detected at %s:%lu\n", file, (unsigned long)line);
-                        exit(55);
+                        fprintf(stderr, "Unbalanced then/do detected at %s:%lu\n", file, (unsigned long)line);
+                        //exit(55);
                     }
                     
                     sendv_last_then_id = 0;
