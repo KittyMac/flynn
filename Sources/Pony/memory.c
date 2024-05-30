@@ -80,7 +80,7 @@ typedef struct pool_local_t {
     size_t length;
 } pool_local_t;
 
-static __pony_thread_local pool_local_t pool_local[6] = {0};
+static __pony_thread_local pool_local_t pool_local[12] = {0};
 
 static int32_t ponyint_pool_index(size_t size) {
     if (size <= 32) { return 0; }
