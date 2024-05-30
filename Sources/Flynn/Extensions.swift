@@ -82,25 +82,24 @@ fileprivate func _async<T: Collection>(count: Int,
 // as far as the flynn scheduler is concerned, which can be useful especially
 // for sync() operations or those which require file i/o
 fileprivate func _syncOOB<T: Collection>(count: Int,
+                                         timeout: TimeInterval,
                                          _ collection: T,
                                          _ block: @escaping (T.Element, @escaping synchronizedBlock) -> ()) {
-    let queue = OperationQueue()
+    let queue = TimedOperationQueue()
     queue.maxConcurrentOperationCount = min(maxActors, count > 0 && count < Flynn.cores ? count : Flynn.cores)
     
-    let group = DispatchGroup()
     let lock = NSLock()
     for item in collection {
-        group.enter()
-        queue.addOperation {
+        queue.addOperation(timeout: timeout) {
             block(item) { synchronized in
                 lock.lock()
                 synchronized()
                 lock.unlock()
             }
-            group.leave()
         }
     }
-    group.wait()
+    
+    queue.run()
 }
 
 fileprivate func _asyncOOB<T: Collection>(count: Int,
@@ -139,12 +138,13 @@ public extension Collection {
     }
     
     func asyncOOB(count: Int = 0,
+                  timeout: TimeInterval,
                   _ sender: Actor,
                   each: @escaping (Self.Element, @escaping synchronizedBlock) -> (),
                   done: @escaping () -> ()) {
         _asyncOOB(count: count, self, each, sender, done)
     }
-    func syncOOB(count: Int = 0, _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
-        _syncOOB(count: count, self, block)
+    func syncOOB(count: Int = 0, timeout: TimeInterval, _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
+        _syncOOB(count: count, timeout: timeout, self, block)
     }
 }

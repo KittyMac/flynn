@@ -144,10 +144,25 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(45, total)
     }
     
+    func testArraySyncOOBWithTimeout() {
+        let numbers = [0,1,2,3,4,5,6,7,8,9]
+        var total = 0
+        numbers.syncOOB(count: 10, timeout: 1) { item, synchronized in
+            // this scope happens in parallel on different actors; it would be
+            // unsafe to increment total here
+            synchronized {
+                total += item
+            }
+
+            while true { }
+        }
+        XCTAssertEqual(45, total)
+    }
+    
     func testArraySyncOOB() {
         let numbers = [0,1,2,3,4,5,6,7,8,9]
         var total = 0
-        numbers.syncOOB(count: 10) { item, synchronized in
+        numbers.syncOOB(count: 10, timeout: 0) { item, synchronized in
             // this scope happens in parallel on different actors; it would be
             // unsafe to increment total here
             print(item)
@@ -167,7 +182,7 @@ class FlynnTests: XCTestCase {
         let numbers = [0,1,2,3,4,5,6,7,8,9]
         var total = 0
         
-        numbers.asyncOOB((Flynn.any)) { item, synchronized in
+        numbers.asyncOOB(timeout: 0, (Flynn.any)) { item, synchronized in
             // this scope happens in parallel on different actors; it would be
             // unsafe to increment total here
             print(item)
