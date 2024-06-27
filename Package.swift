@@ -3,7 +3,7 @@ import PackageDescription
 
 // When runnning "make release" to build the binary tools change this to true
 // Otherwise always set it to false
-#if false
+#if true
 let productsTarget: [PackageDescription.Product] = [
 ]
 let pluginTarget: [PackageDescription.Target] = [
