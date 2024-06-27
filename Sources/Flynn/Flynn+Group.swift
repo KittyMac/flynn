@@ -27,13 +27,15 @@ public extension Flynn {
         var count: Int = 0
         fileprivate var observers: [GroupObserver] = []
         
-        func enter() {
+        public init() { }
+        
+        public func enter() {
             lock.lock()
             count += 1
             lock.unlock()
         }
         
-        func leave() {
+        public func leave() {
             lock.lock()
             count -= 1
             
@@ -50,13 +52,13 @@ public extension Flynn {
             lock.unlock()
         }
         
-        func wait() {
+        public func wait() {
             while count > 0 {
                 Flynn.usleep(50_000)
             }
         }
         
-        func notify(actor: Actor,
+        public func notify(actor: Actor,
                     _ block: @escaping () -> ()) {
             lock.lock()
             
