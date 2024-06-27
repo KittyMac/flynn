@@ -143,8 +143,12 @@ static pony_actor_t* pop_global(scheduler_t* my_sched, scheduler_t* other_sched)
 
 static scheduler_t* choose_victim(scheduler_t* sched)
 {
+    if (sched == NULL) {
+        return NULL;
+    }
+    
     // we have work to do or the global inject does, we can return right away
-    if(sched->last_victim->q.num_messages > 0) {
+    if(sched->last_victim != NULL && sched->last_victim->q.num_messages > 0) {
         return sched->last_victim;
     }
     

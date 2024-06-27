@@ -108,7 +108,6 @@ static void node_remove_root(root_t * rootPtr) {
         
         pony_thread_id_t read_thread = rootPtr->read_thread_tid;
         pony_thread_id_t write_thread = rootPtr->write_thread_tid;
-        int socketfd = rootPtr->socketfd;
         rootPtr->read_thread_tid = 0;
         rootPtr->write_thread_tid = 0;
         rootPtr->port = 0;
@@ -277,7 +276,6 @@ static DECLARE_THREAD_FN(node_read_from_root_thread)
         
     socklen_t len;
     struct sockaddr_in servaddr = {0};
-    struct sockaddr_in clientaddr = {0};
     
     servaddr.sin_family = AF_INET;
     inet_pton(AF_INET, rootPtr->address, &(servaddr.sin_addr));

@@ -26,6 +26,7 @@
 PONY_MUTEX ponyint_mutex_create() {
     pthread_mutex_t * mutex = malloc(sizeof(pthread_mutex_t));
     if (pthread_mutex_init(mutex, NULL) != 0) {
+        free(mutex);
         return NULL;
     }
     return mutex;
