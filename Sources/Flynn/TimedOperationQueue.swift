@@ -22,6 +22,8 @@ private class TimedOperation {
     
     func start() {
         thread = Thread {
+            Thread.current.name = "TimedOperation"
+            
             self.localExecuting = true
             self.executionDate = Date()
             self.block()
