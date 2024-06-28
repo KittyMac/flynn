@@ -54,6 +54,10 @@ public class TimedOperationQueue {
     private var waiting: [TimedOperation] = []
     private var executing: [TimedOperation] = []
     
+    public init() {
+        
+    }
+    
     public func addOperation(timeout: TimeInterval, _ block: @escaping () -> ()) {
         waiting.append(TimedOperation(timeout: timeout, block: block))
     }
