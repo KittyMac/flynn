@@ -151,6 +151,10 @@ open class Flynn {
         pony_syslog(tag, message)
     }
     
+    public static func threadSetName(_ name: String) {
+        pony_set_thread_name(name)
+    }
+    
     public static func dns_resolve_cname(domain: String) -> String? {
         guard let stringPtr = pony_dns_resolve_cname(domain) else { return nil }
         let string = String(utf8String: stringPtr)

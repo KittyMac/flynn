@@ -62,7 +62,7 @@ bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, v
 bool ponyint_thread_join(pony_thread_id_t thread);
 void ponyint_thread_detach(pony_thread_id_t thread);
 pony_thread_id_t ponyint_thread_self(void);
-void ponyint_thead_setname_actual(char * thread_name);
+void ponyint_thead_setname_actual(const char * thread_name);
 void ponyint_thead_setname(int schedID, int schedAffinity);
 
 #endif

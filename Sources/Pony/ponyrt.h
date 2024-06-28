@@ -14,6 +14,7 @@
 
 int pony_remote_enabled();
 void pony_remote_shutdown();
+void pony_set_thread_name(const char * name);
 void pony_syslog(const char * tag, const char * msg);
 void pony_syslog2(const char * tag, const char *format, ...);
 char * pony_dns_resolve_cname(const char * domain);

@@ -244,6 +244,10 @@ unsigned long pony_mapped_memory() {
     return (unsigned long)ponyint_usafe_mapped_memory();
 }
 
+void pony_set_thread_name(const char * name) {
+    ponyint_thead_setname_actual(name);
+}
+
 void pony_syslog(const char * tag, const char * msg) {
     #ifdef PLATFORM_SUPPORTS_SYSLOG
     syslog(LOG_ERR, "%s: %s\n", tag, msg);

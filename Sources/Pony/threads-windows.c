@@ -50,7 +50,7 @@ pony_thread_id_t ponyint_thread_self() {
     return GetCurrentThread();
 }
 
-void ponyint_thead_setname_actual(char * thread_name) {
+void ponyint_thead_setname_actual(const char * thread_name) {
     
 }
 

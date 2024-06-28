@@ -22,7 +22,7 @@ private class TimedOperation {
     
     func start() {
         thread = Thread {
-            Thread.current.name = "TimedOperation"
+            Flynn.threadSetName("TimedOperation")
             
             self.localExecuting = true
             self.executionDate = Date()
@@ -57,9 +57,13 @@ public class TimedOperationQueue {
     
     private let lock = NSLock()
     
+    // TODO: combine this checker into a single thread
+    // TODO: TimedOperation should use a single pool of threads maintained by someone
+    // (instead of creating a new thread each run)
     public init() {
         Thread { [weak self] in
-            Thread.current.name = "TimedOperationQueue"
+            Flynn.threadSetName("TimedOperationQueue")
+            
             while true {
                 guard let self = self else { break }
                 self.advance()

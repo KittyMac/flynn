@@ -96,7 +96,7 @@ pony_thread_id_t ponyint_thread_self()
     return pthread_self();
 }
 
-void ponyint_thead_setname_actual(char * thread_name) {
+void ponyint_thead_setname_actual(const char * thread_name) {
 #ifdef PLATFORM_IS_APPLE
     [[NSThread currentThread] setName:[NSString stringWithUTF8String:thread_name]];
     pthread_setname_np(thread_name);
