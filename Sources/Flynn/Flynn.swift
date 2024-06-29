@@ -152,7 +152,11 @@ open class Flynn {
     }
     
     public static func threadSetName(_ name: String) {
+        #if os(Linux)
+        pony_set_thread_name(name.prefix(15).description)
+        #else
         pony_set_thread_name(name)
+        #endif
     }
     
     public static func dns_resolve_cname(domain: String) -> String? {
