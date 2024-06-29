@@ -32,7 +32,7 @@ fileprivate let pool = Array<Actor>.init(count: maxActors, create: { return Coll
 fileprivate func _sync<T: Collection>(count: Int,
                                       _ collection: T,
                                       _ block: @escaping (T.Element, @escaping synchronizedBlock) -> ()) {
-    let group = Flynn.Group()
+    let group = DispatchGroup()
     var actorIdx = 0
     let lock = NSLock()
     let poolCount = min(maxActors, count > 0 && count < Flynn.cores ? count : Flynn.cores)
@@ -58,7 +58,7 @@ fileprivate func _async<T: Collection>(count: Int,
                                        _ block: @escaping (T.Element, @escaping synchronizedBlock) -> (),
                                        _ sender: Actor,
                                        _ returnComplete: @escaping () -> ()) {
-    let group = Flynn.Group()
+    let group = DispatchGroup()
     var actorIdx = 0
     let lock = NSLock()
     let poolCount = min(maxActors, count > 0 && count < Flynn.cores ? count : Flynn.cores)
@@ -110,7 +110,7 @@ fileprivate func _asyncOOB<T: Collection>(count: Int,
     let queue = OperationQueue()
     queue.maxConcurrentOperationCount = min(maxActors, count > 0 && count < Flynn.cores ? count : Flynn.cores)
     
-    let group = Flynn.Group()
+    let group = DispatchGroup()
     let lock = NSLock()
     for item in collection {
         group.enter()
