@@ -48,6 +48,10 @@ private class TimedOperation {
     }
 }
 
+private struct WeakTimedOperationQueue {
+    weak var timedOperationQueue: TimedOperationQueue?
+}
+
 public class TimedOperationQueue {
     
     public var maxConcurrentOperationCount: Int = 1
@@ -57,19 +61,36 @@ public class TimedOperationQueue {
     
     private let lock = NSLock()
     
-    // TODO: combine this checker into a single thread
+    private static var didBeginWatchThread = false
+    private static let staticLock = NSLock()
+    private static var weakTimedOperationQueues: [WeakTimedOperationQueue] = []
+    private static func register(_ timedOperationQueue: TimedOperationQueue) {
+        staticLock.lock()
+        weakTimedOperationQueues.append(
+            WeakTimedOperationQueue(timedOperationQueue: timedOperationQueue)
+        )
+        
+        if didBeginWatchThread == false {
+            didBeginWatchThread = true
+            Thread {
+                Flynn.threadSetName("TimedOperationQueue")
+                while true {
+                    weakTimedOperationQueues = weakTimedOperationQueues.filter {
+                        $0.timedOperationQueue?.advance()
+                        return $0.timedOperationQueue != nil
+                    }
+                    
+                    Flynn.usleep(50_000)
+                }
+            }.start()
+        }
+        staticLock.unlock()
+    }
+    
     // TODO: TimedOperation should use a single pool of threads maintained by someone
     // (instead of creating a new thread each run)
     public init() {
-        Thread { [weak self] in
-            Flynn.threadSetName("TimedOperationQueue")
-            
-            while true {
-                guard let self = self else { break }
-                self.advance()
-                Flynn.usleep(50_000)
-            }
-        }.start()
+        TimedOperationQueue.register(self)
     }
     
     public func addOperation(timeout: TimeInterval, _ block: @escaping () -> ()) {
