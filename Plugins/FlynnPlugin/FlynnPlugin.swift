@@ -98,7 +98,7 @@ internal func exportLogs() {
         // When we are running and want to use the pre-compiled tools, we look in
         // /etc/os-release (available on linux) to see what distro we are running
         // and to load the correct tool there.
-        var toolName = "FlynnPluginTool"
+        let toolName = "FlynnPluginTool"
         var osName = "focal"
         var swiftVersion = "unknown"
         
