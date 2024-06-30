@@ -3,6 +3,9 @@ define DOCKER_BUILD_TOOL
 	
 	# Getting plugin for $(1)
 	docker pull kittymac/flynn-$(1):latest
+	mkdir -p ./dist/FlynnPluginTool-$(1).artifactbundle/FlynnPluginTool-arm64/bin/
+	mkdir -p ./dist/FlynnPluginTool-$(1).artifactbundle/FlynnPluginTool-amd64/bin/
+	mkdir -p ./dist/FlynnPluginTool-$(1).artifactbundle/FlynnPluginTool-macos/bin/
 	docker run --platform linux/arm64 --rm -v $(DIST):/outTemp kittymac/flynn-$(1) /bin/bash -lc 'cp FlynnPluginTool /outTemp/FlynnPluginTool-$(1).artifactbundle/FlynnPluginTool-arm64/bin/FlynnPluginTool'
 	docker run --platform linux/amd64 --rm -v $(DIST):/outTemp kittymac/flynn-$(1) /bin/bash -lc 'cp FlynnPluginTool /outTemp/FlynnPluginTool-$(1).artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool'
 	cp ./dist/FlynnPluginTool ./dist/FlynnPluginTool-$(1).artifactbundle/FlynnPluginTool-macos/bin/FlynnPluginTool
@@ -66,10 +69,13 @@ profile: clean
 		-Xswiftc -driver-time-compilation \
 		-Xswiftc -debug-time-function-bodies
 
-release: build docker focal-571 focal-592 fedora38-573
-	
+release: build docker focal-571 fedora38-573 focal-580 focal-592
+
 focal-571:
 	@$(call DOCKER_BUILD_TOOL,focal-571)
+
+focal-580:
+	@$(call DOCKER_BUILD_TOOL,focal-580)
 	
 focal-592:
 	@$(call DOCKER_BUILD_TOOL,focal-592)

@@ -43,6 +43,7 @@ pluginDependencies.append(.package(url: "https://github.com/jpsim/SourceKitten",
 
 var plugins = [
     "FlynnPluginTool-focal-571",
+    "FlynnPluginTool-focal-580",
     "FlynnPluginTool-focal-592",
     "FlynnPluginTool-fedora38-573",
 ]
@@ -59,10 +60,12 @@ var productsTarget: [PackageDescription.Product] = [
 var pluginTarget: [PackageDescription.Target] = [
     .binaryTarget(name: "FlynnPluginTool-focal-571",
                   path: "dist/FlynnPluginTool-focal-571.zip"),
-    .binaryTarget(name: "FlynnPluginTool-focal-592",
-                  path: "dist/FlynnPluginTool-focal-592.zip"),
     .binaryTarget(name: "FlynnPluginTool-fedora38-573",
                   path: "dist/FlynnPluginTool-fedora38-573.zip"),
+    .binaryTarget(name: "FlynnPluginTool-focal-580",
+                  path: "dist/FlynnPluginTool-focal-580.zip"),
+    .binaryTarget(name: "FlynnPluginTool-focal-592",
+                  path: "dist/FlynnPluginTool-focal-592.zip"),
     .plugin(
         name: "FlynnPlugin",
         capability: .buildTool(),

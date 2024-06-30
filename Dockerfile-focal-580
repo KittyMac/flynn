@@ -1,0 +1,20 @@
+FROM swift:5.8.0-focal as builder
+
+RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true && apt-get -q update && \
+    apt-get install -y \
+    unzip
+
+WORKDIR /root/Flynn
+COPY ./dist ./dist
+COPY ./Package.swift ./Package.swift
+COPY ./Plugins ./Plugins
+COPY ./Sources ./Sources
+COPY ./Tests ./Tests
+
+RUN swift build --configuration release
+
+FROM swift:focal
+
+WORKDIR /root/Flynn
+COPY --from=builder /root/Flynn/.build/release/FlynnPluginTool .
+COPY --from=builder /root/Flynn/.build/release/FlynnPluginTool .

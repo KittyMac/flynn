@@ -34,7 +34,6 @@ internal func exportLogs() {
 */
 
 func binaryTool(named toolName: String) -> String {
-    let toolName = "FlynnPluginTool"
     var osName = "focal"
     var swiftVersion = "unknown"
     
@@ -56,6 +55,8 @@ func binaryTool(named toolName: String) -> String {
     
 #if swift(>=5.9.2)
     swiftVersion = "592"
+#elseif swift(>=5.8.0)
+    swiftVersion = "580"
 #elseif swift(>=5.7.3)
     swiftVersion = "573"
 #elseif swift(>=5.7.1)
