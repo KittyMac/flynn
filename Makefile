@@ -25,6 +25,8 @@ build:
 	cp .build/FlynnPluginTool ./dist/FlynnPluginTool
 
 build-windows:
+	# note: you probably don't have make on windows, so you need to run these manually
+	swift test
 	swift build --configuration release
 	cp .build/release/FlynnPluginTool.exe ./dist/FlynnPluginTool-windows.artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool.exe
 	rm ./dist/FlynnPluginTool-windows.zip
