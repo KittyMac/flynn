@@ -3,19 +3,19 @@ import PackageDescription
 
 // When runnning "make release" to build the binary tools change this to true
 // Otherwise always set it to false
-#if true
+#if false
 let productsTarget: [PackageDescription.Product] = [
 ]
 let pluginTarget: [PackageDescription.Target] = [
     .executableTarget(
-        name: "FlynnPluginTool-focal",
+        name: "FlynnPluginTool",
         dependencies: ["FlynnPluginFramework"]
     ),
     .plugin(
         name: "FlynnPlugin",
         capability: .buildTool(),
         dependencies: [
-            "FlynnPluginTool-focal"
+            "FlynnPluginTool"
         ]
     ),
     .target(
@@ -42,10 +42,9 @@ pluginDependencies.append(.package(url: "https://github.com/jpsim/SourceKitten",
 #else
 
 var plugins = [
-    "FlynnPluginTool-focal",
-    "FlynnPluginTool-amazonlinux2",
-    "FlynnPluginTool-fedora",
-    "FlynnPluginTool-fedora38",
+    "FlynnPluginTool-focal-571",
+    "FlynnPluginTool-focal-592",
+    "FlynnPluginTool-fedora38-573",
 ]
 
 #if os(Windows)
@@ -58,14 +57,12 @@ var productsTarget: [PackageDescription.Product] = [
     .library(name: "FlynnPluginTool", targets: plugins),
 ]
 var pluginTarget: [PackageDescription.Target] = [
-    .binaryTarget(name: "FlynnPluginTool-focal",
-                  path: "dist/FlynnPluginTool-focal.zip"),
-    .binaryTarget(name: "FlynnPluginTool-amazonlinux2",
-                  path: "dist/FlynnPluginTool-amazonlinux2.zip"),
-    .binaryTarget(name: "FlynnPluginTool-fedora",
-                  path: "dist/FlynnPluginTool-fedora.zip"),
-    .binaryTarget(name: "FlynnPluginTool-fedora38",
-                  path: "dist/FlynnPluginTool-fedora38.zip"),
+    .binaryTarget(name: "FlynnPluginTool-focal-571",
+                  path: "dist/FlynnPluginTool-focal-571.zip"),
+    .binaryTarget(name: "FlynnPluginTool-focal-592",
+                  path: "dist/FlynnPluginTool-focal-592.zip"),
+    .binaryTarget(name: "FlynnPluginTool-fedora38-573",
+                  path: "dist/FlynnPluginTool-fedora38-573.zip"),
     .plugin(
         name: "FlynnPlugin",
         capability: .buildTool(),

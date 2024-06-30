@@ -98,31 +98,37 @@ internal func exportLogs() {
         // When we are running and want to use the pre-compiled tools, we look in
         // /etc/os-release (available on linux) to see what distro we are running
         // and to load the correct tool there.
-        var tool = try? context.tool(named: "FlynnPluginTool-focal")
+        var toolName = "FlynnPluginTool"
+        var osName = "focal"
+        var swiftVersion = "unknown"
         
         #if os(Windows)
-        if let osTool = try? context.tool(named: "FlynnPluginTool-windows") {
-            tool = osTool
+        osName = "windows"
+        #else
+        if let osFile = try? String(contentsOfFile: "/etc/os-release") {
+            if osFile.contains("Amazon Linux") {
+                osName = "amazonlinux2"
+            }
+            if osFile.contains("Fedora Linux 37") {
+                osName = "fedora37"
+            }
+            if osFile.contains("Fedora Linux 38") {
+                osName = "fedora38"
+            }
         }
         #endif
         
-        if let osFile = try? String(contentsOfFile: "/etc/os-release") {
-            if osFile.contains("Amazon Linux"),
-               let osTool = try? context.tool(named: "FlynnPluginTool-amazonlinux2") {
-                tool = osTool
-            }
-            if osFile.contains("Fedora Linux 37"),
-               let osTool = try? context.tool(named: "FlynnPluginTool-fedora") {
-                tool = osTool
-            }
-            if osFile.contains("Fedora Linux 38"),
-               let osTool = try? context.tool(named: "FlynnPluginTool-fedora38") {
-                tool = osTool
-            }
-        }
-        
-        guard let tool = tool else {
-            fatalError("FlynnPlugin unable to load FlynnPluginTool")
+#if swift(>=5.9.2)
+        swiftVersion = "592"
+#elseif swift(>=5.7.3)
+        swiftVersion = "573"
+#elseif swift(>=5.7.1)
+        swiftVersion = "571"
+#endif
+
+        let binaryToolName = "\(toolName)-\(osName)-\(swiftVersion)"
+        guard let tool = (try? context.tool(named: binaryToolName)) ?? (try? context.tool(named: toolName)) else {
+            fatalError("FlynnPlugin unable to load \(binaryToolName)")
         }
         
         // Find all .swift files in our target and all of our target's dependencies, add them as input files
