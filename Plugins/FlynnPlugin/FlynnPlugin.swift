@@ -33,6 +33,38 @@ internal func exportLogs() {
 }
 */
 
+func binaryTool(named toolName: String) -> String {
+    let toolName = "FlynnPluginTool"
+    var osName = "focal"
+    var swiftVersion = "unknown"
+    
+    #if os(Windows)
+    osName = "windows"
+    #else
+    if let osFile = try? String(contentsOfFile: "/etc/os-release") {
+        if osFile.contains("Amazon Linux") {
+            osName = "amazonlinux2"
+        }
+        if osFile.contains("Fedora Linux 37") {
+            osName = "fedora37"
+        }
+        if osFile.contains("Fedora Linux 38") {
+            osName = "fedora38"
+        }
+    }
+    #endif
+    
+#if swift(>=5.9.2)
+    swiftVersion = "592"
+#elseif swift(>=5.7.3)
+    swiftVersion = "573"
+#elseif swift(>=5.7.1)
+    swiftVersion = "571"
+#endif
+
+    return "\(toolName)-\(osName)-\(swiftVersion)"
+}
+
 @main struct FlynnPlugin: BuildToolPlugin {
     
     fileprivate func gatherSwiftInputFiles(targets: [Target],
@@ -87,46 +119,8 @@ internal func exportLogs() {
             return []
         }
         
-        // Note: We want to load the right pre-compiled tool for the right OS
-        // There are currently two tools:
-        // FlynnPluginTool-focal: supports macos and ubuntu-focal
-        // FlynnPluginTool-focal: supports macos and amazonlinux2
-        //
-        // When we are compiling to build the precompiled tools, only the
-        // default ( FlynnPluginTool-focal ) is available.
-        //
-        // When we are running and want to use the pre-compiled tools, we look in
-        // /etc/os-release (available on linux) to see what distro we are running
-        // and to load the correct tool there.
         let toolName = "FlynnPluginTool"
-        var osName = "focal"
-        var swiftVersion = "unknown"
-        
-        #if os(Windows)
-        osName = "windows"
-        #else
-        if let osFile = try? String(contentsOfFile: "/etc/os-release") {
-            if osFile.contains("Amazon Linux") {
-                osName = "amazonlinux2"
-            }
-            if osFile.contains("Fedora Linux 37") {
-                osName = "fedora37"
-            }
-            if osFile.contains("Fedora Linux 38") {
-                osName = "fedora38"
-            }
-        }
-        #endif
-        
-#if swift(>=5.9.2)
-        swiftVersion = "592"
-#elseif swift(>=5.7.3)
-        swiftVersion = "573"
-#elseif swift(>=5.7.1)
-        swiftVersion = "571"
-#endif
-
-        let binaryToolName = "\(toolName)-\(osName)-\(swiftVersion)"
+        let binaryToolName = binaryTool(named: toolName)
         guard let tool = (try? context.tool(named: binaryToolName)) ?? (try? context.tool(named: toolName)) else {
             fatalError("FlynnPlugin unable to load \(binaryToolName)")
         }
