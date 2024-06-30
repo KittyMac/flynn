@@ -33,9 +33,8 @@ internal func exportLogs() {
 }
 */
 
-func binaryTool(named toolName: String) -> String {
+func binaryTool(context: PluginContext, named toolName: String) -> String {
     var osName = "focal"
-    var swiftVersion = "unknown"
     
     #if os(Windows)
     osName = "windows"
@@ -53,17 +52,29 @@ func binaryTool(named toolName: String) -> String {
     }
     #endif
     
+    var swiftVersions: [String] = []
 #if swift(>=5.9.2)
-    swiftVersion = "592"
-#elseif swift(>=5.8.0)
-    swiftVersion = "580"
-#elseif swift(>=5.7.3)
-    swiftVersion = "573"
-#elseif swift(>=5.7.1)
-    swiftVersion = "571"
+    swiftVersions.append("592")
 #endif
+#if swift(>=5.8.0)
+    swiftVersions.append("580")
+#endif
+#if swift(>=5.7.3)
+    swiftVersions.append("573")
+#endif
+#if swift(>=5.7.1)
+    swiftVersions.append("571")
+#endif
+    
+    // Find the most recent version of swift we support and return that
+    for swiftVersion in swiftVersions {
+        let toolName = "\(toolName)-\(osName)-\(swiftVersion)"
+        if let _ = try? context.tool(named: toolName) {
+            return toolName
+        }
+    }
 
-    return "\(toolName)-\(osName)-\(swiftVersion)"
+    return "\(toolName)-\(osName)-\(swiftVersions.first!)"
 }
 
 @main struct FlynnPlugin: BuildToolPlugin {
@@ -121,7 +132,7 @@ func binaryTool(named toolName: String) -> String {
         }
         
         let toolName = "FlynnPluginTool"
-        let binaryToolName = binaryTool(named: toolName)
+        let binaryToolName = binaryTool(context: context, named: toolName)
         guard let tool = (try? context.tool(named: binaryToolName)) ?? (try? context.tool(named: toolName)) else {
             fatalError("FlynnPlugin unable to load \(binaryToolName)")
         }
