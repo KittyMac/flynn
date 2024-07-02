@@ -99,7 +99,7 @@ fileprivate func _syncOOB<T: Collection>(count: Int,
         }
     }
     
-    queue.run()
+    queue.waitUntilAllOperationsAreFinished()
 }
 
 fileprivate func _asyncOOB<T: Collection>(count: Int,
