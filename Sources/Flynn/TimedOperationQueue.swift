@@ -1,8 +1,9 @@
 import Foundation
 
-// Like OperationQueue, but allows the following:
+// Wrapper around OperationQueue, but allows the following:
 // - ability to force cancel infinite looping operations
 // - ability to provide a timeout for operations (and cancelling when exceeding said timeout)
+// - ability to provide a retry which preserves the order of queued operations
 
 private class TimedOperation: Equatable {
     static func == (lhs: TimedOperation, rhs: TimedOperation) -> Bool {
@@ -15,9 +16,9 @@ private class TimedOperation: Equatable {
     let timeout: TimeInterval?
     
     var retry: Int
-    var thread: Thread? = nil
     
     var executionDate: Date? = nil
+    var operation: Operation? = nil
     
     init(timeout: TimeInterval?,
          retry: Int,
@@ -27,23 +28,25 @@ private class TimedOperation: Equatable {
         self.block = block
     }
     
-    func start(retry: @escaping () -> (), finished: @escaping () -> ()) {
-        thread = Thread {
-            Flynn.threadSetName("TimedOperation")
-            
+    func start(operationQueue: OperationQueue,
+               retry: @escaping () -> (), finished: @escaping () -> ()) {
+        
+        let blockOperation = BlockOperation {
             self.executionDate = Date()
             if self.block() == false {
                 retry()
             }
             finished()
         }
-        thread?.start()
+        operation = blockOperation
+        
+        operationQueue.addOperation(blockOperation)
     }
-    func shouldTimeout() -> Bool {
+    func shouldTimeout(operationQueue: OperationQueue) -> Bool {
         if let executionDate = executionDate,
            let timeout = timeout,
            abs(executionDate.timeIntervalSinceNow) > timeout {
-            thread?.cancel()
+            operation?.cancel()
             return true
         }
         return false
@@ -56,12 +59,21 @@ private struct WeakTimedOperationQueue {
 
 public class TimedOperationQueue {
     
-    public var maxConcurrentOperationCount: Int = 1
+    public var maxConcurrentOperationCount: Int {
+        get {
+            return operationQueue.maxConcurrentOperationCount
+        }
+        set {
+            operationQueue.maxConcurrentOperationCount = newValue
+        }
+    }
     
     private var waiting: [TimedOperation] = []
     private var executing: [TimedOperation] = []
     
     private let lock = NSLock()
+    
+    private let operationQueue = OperationQueue()
     
     private static var didBeginWatchThread = false
     private static let staticLock = NSLock()
@@ -77,20 +89,21 @@ public class TimedOperationQueue {
             Thread {
                 Flynn.threadSetName("TimedOperationQueue")
                 while true {
+                    
+                    staticLock.lock()
                     weakTimedOperationQueues = weakTimedOperationQueues.filter {
                         $0.timedOperationQueue?.advance()
                         return $0.timedOperationQueue != nil
                     }
-                    
-                    Flynn.usleep(50_000)
+                    staticLock.unlock()
+                                        
+                    Flynn.usleep(500_000)
                 }
             }.start()
         }
         staticLock.unlock()
     }
     
-    // TODO: TimedOperation should use a single pool of threads maintained by someone
-    // (instead of creating a new thread each run)
     public init() {
         TimedOperationQueue.register(self)
     }
@@ -98,45 +111,57 @@ public class TimedOperationQueue {
     public func addOperation(retry: Int,
                              _ block: @escaping () -> Bool) {
         lock.lock()
+
         waiting.append(TimedOperation(timeout: nil,
                                       retry: retry,
                                       block: block))
         lock.unlock()
+        
+        advance()
     }
     
     public func addOperation(timeout: TimeInterval,
                              retry: Int,
                              _ block: @escaping () -> Bool) {
         lock.lock()
+
         waiting.append(TimedOperation(timeout: timeout,
                                       retry: retry,
                                       block: block))
         lock.unlock()
+        
+        advance()
     }
     
     public func addOperation(timeout: TimeInterval,
                              _ block: @escaping () -> Bool) {
         lock.lock()
+
         waiting.append(TimedOperation(timeout: timeout,
                                       retry: 0,
                                       block: block))
         lock.unlock()
+        
+        advance()
     }
     
     public func addOperation(_ block: @escaping () -> (Bool)) {
         lock.lock()
+        
         waiting.append(TimedOperation(timeout: nil,
                                       retry: 0,
                                       block: block))
         lock.unlock()
+        
+        advance()
     }
     
     fileprivate func advance() {
         lock.lock()
-        
+                
         for idx in stride(from: executing.count-1, through: 0, by: -1) {
             let operation = executing[idx]
-            if operation.shouldTimeout() {
+            if operation.shouldTimeout(operationQueue: operationQueue) {
                 executing.remove(at: idx)
             }
         }
@@ -144,23 +169,23 @@ public class TimedOperationQueue {
         while executing.count < maxConcurrentOperationCount && waiting.count > 0 {
             let next = waiting.removeFirst()
             executing.append(next)
-            next.start {
+            next.start(operationQueue: operationQueue) {
                 self.lock.lock()
                 if next.retry > 0 {
                     next.retry -= 1
                     self.waiting.insert(next, at: 0)
                 }
                 self.lock.unlock()
+                
+                self.advance()
             } finished: {
                 self.lock.lock()
                 if let index = self.executing.firstIndex(of: next) {
                     self.executing.remove(at: index)
-                } else {
-                    #if DEBUG
-                    fatalError("operation missing on TimedOperationQueue")
-                    #endif
                 }
                 self.lock.unlock()
+                
+                self.advance()
             }
         }
         lock.unlock()

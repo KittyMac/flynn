@@ -208,14 +208,14 @@ class FlynnTests: XCTestCase {
         var result = ""
         
         // Will retry 3 times...
-        queue.addOperation(timeout: 0, retry: 3) {
+        queue.addOperation(retry: 3) {
             result.append("1")
             return false
         }
         
         // will retry 6 times
         var count = 0
-        queue.addOperation(timeout: 0, retry: 60) {
+        queue.addOperation(retry: 60) {
             result.append("2")
             count += 1
             return count > 5
