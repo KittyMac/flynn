@@ -4,16 +4,20 @@ import Foundation
 // - ability to force cancel infinite looping operations
 // - ability to provide a timeout for operations (and cancelling when exceeding said timeout)
 
-private class TimedOperation {
+private class TimedOperation: Equatable {
+    static func == (lhs: TimedOperation, rhs: TimedOperation) -> Bool {
+        return lhs.uuid == rhs.uuid
+    }
+    
+    let uuid = UUID().uuidString
+    
     let block: () -> Bool
     let timeout: TimeInterval?
     
-    var queuedDate: Date = Date()
-    var executionDate: Date? = nil
-    var localExecuting = false
-    var localFinished = false
     var retry: Int
     var thread: Thread? = nil
+    
+    var executionDate: Date? = nil
     
     init(timeout: TimeInterval?,
          retry: Int,
@@ -23,26 +27,19 @@ private class TimedOperation {
         self.block = block
     }
     
-    func start(retry: @escaping () -> ()) {
+    func start(retry: @escaping () -> (), finished: @escaping () -> ()) {
         thread = Thread {
             Flynn.threadSetName("TimedOperation")
             
-            self.localExecuting = true
             self.executionDate = Date()
             if self.block() == false {
                 retry()
             }
-            self.localExecuting = false
-            self.localFinished = true
+            finished()
         }
         thread?.start()
     }
-    
-    func isFinished() -> Bool {
-        if localFinished {
-            return true
-        }
-        
+    func shouldTimeout() -> Bool {
         if let executionDate = executionDate,
            let timeout = timeout,
            abs(executionDate.timeIntervalSinceNow) > timeout {
@@ -139,18 +136,31 @@ public class TimedOperationQueue {
         
         for idx in stride(from: executing.count-1, through: 0, by: -1) {
             let operation = executing[idx]
-            if operation.isFinished() {
+            if operation.shouldTimeout() {
                 executing.remove(at: idx)
             }
         }
+        
         while executing.count < maxConcurrentOperationCount && waiting.count > 0 {
             let next = waiting.removeFirst()
             executing.append(next)
             next.start {
+                self.lock.lock()
                 if next.retry > 0 {
                     next.retry -= 1
                     self.waiting.insert(next, at: 0)
                 }
+                self.lock.unlock()
+            } finished: {
+                self.lock.lock()
+                if let index = self.executing.firstIndex(of: next) {
+                    self.executing.remove(at: index)
+                } else {
+                    #if DEBUG
+                    fatalError("operation missing on TimedOperationQueue")
+                    #endif
+                }
+                self.lock.unlock()
             }
         }
         lock.unlock()
