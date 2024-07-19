@@ -98,13 +98,22 @@ public class TimedOperationQueue {
         TimedOperationQueue.register(self)
     }
     
+    public func addOperation(retry: Int,
+                             _ block: @escaping () -> Bool) {
+        lock.lock()
+        waiting.append(TimedOperation(timeout: nil,
+                                      retry: retry,
+                                      block: block))
+        lock.unlock()
+    }
+    
     public func addOperation(timeout: TimeInterval,
                              retry: Int,
                              _ block: @escaping () -> Bool) {
         lock.lock()
         waiting.append(TimedOperation(timeout: timeout,
                                       retry: retry,
-                                    block: block))
+                                      block: block))
         lock.unlock()
     }
     
