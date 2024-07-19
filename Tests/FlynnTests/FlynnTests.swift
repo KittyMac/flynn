@@ -202,6 +202,37 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(45, total)
     }
     
+    func testTimedOperationQueueRetry() {
+        let queue = TimedOperationQueue()
+        
+        var result = ""
+        
+        // Will retry 3 times...
+        queue.addOperation(timeout: 0, retry: 3) {
+            result.append("1")
+            return false
+        }
+        
+        // will retry 6 times
+        var count = 0
+        queue.addOperation(timeout: 0, retry: 60) {
+            result.append("2")
+            count += 1
+            return count > 5
+        }
+        
+        // will not retry
+        queue.addOperation {
+            result.append("3")
+            return true
+        }
+
+        queue.waitUntilAllOperationsAreFinished()
+
+        XCTAssertEqual(6, count)
+        XCTAssertEqual(result, "11112222223")
+    }
+    
     /*
     func testSuppressCallbackTwice() {
         let test = TestDoubleCallback()

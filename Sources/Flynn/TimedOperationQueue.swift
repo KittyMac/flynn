@@ -5,28 +5,33 @@ import Foundation
 // - ability to provide a timeout for operations (and cancelling when exceeding said timeout)
 
 private class TimedOperation {
-    let block: () -> ()
-    let timeout: TimeInterval
+    let block: () -> Bool
+    let timeout: TimeInterval?
     
     var queuedDate: Date = Date()
     var executionDate: Date? = nil
     var localExecuting = false
     var localFinished = false
+    var retry: Int
     var thread: Thread? = nil
     
-    init(timeout: TimeInterval,
-         block: @escaping () -> Void) {
+    init(timeout: TimeInterval?,
+         retry: Int,
+         block: @escaping () -> Bool) {
+        self.retry = retry
         self.timeout = timeout
         self.block = block
     }
     
-    func start() {
+    func start(retry: @escaping () -> ()) {
         thread = Thread {
-            Thread.current.name = "TimedOperation"
+            Flynn.threadSetName("TimedOperation")
             
             self.localExecuting = true
             self.executionDate = Date()
-            self.block()
+            if self.block() == false {
+                retry()
+            }
             self.localExecuting = false
             self.localFinished = true
         }
@@ -39,12 +44,17 @@ private class TimedOperation {
         }
         
         if let executionDate = executionDate,
+           let timeout = timeout,
            abs(executionDate.timeIntervalSinceNow) > timeout {
             thread?.cancel()
             return true
         }
         return false
     }
+}
+
+private struct WeakTimedOperationQueue {
+    weak var timedOperationQueue: TimedOperationQueue?
 }
 
 public class TimedOperationQueue {
@@ -54,31 +64,96 @@ public class TimedOperationQueue {
     private var waiting: [TimedOperation] = []
     private var executing: [TimedOperation] = []
     
-    public init() {
+    private let lock = NSLock()
+    
+    private static var didBeginWatchThread = false
+    private static let staticLock = NSLock()
+    private static var weakTimedOperationQueues: [WeakTimedOperationQueue] = []
+    private static func register(_ timedOperationQueue: TimedOperationQueue) {
+        staticLock.lock()
+        weakTimedOperationQueues.append(
+            WeakTimedOperationQueue(timedOperationQueue: timedOperationQueue)
+        )
         
+        if didBeginWatchThread == false {
+            didBeginWatchThread = true
+            Thread {
+                Flynn.threadSetName("TimedOperationQueue")
+                while true {
+                    weakTimedOperationQueues = weakTimedOperationQueues.filter {
+                        $0.timedOperationQueue?.advance()
+                        return $0.timedOperationQueue != nil
+                    }
+                    
+                    Flynn.usleep(50_000)
+                }
+            }.start()
+        }
+        staticLock.unlock()
     }
     
-    public func addOperation(timeout: TimeInterval, _ block: @escaping () -> ()) {
-        waiting.append(TimedOperation(timeout: timeout, block: block))
+    // TODO: TimedOperation should use a single pool of threads maintained by someone
+    // (instead of creating a new thread each run)
+    public init() {
+        TimedOperationQueue.register(self)
     }
     
-    public func run() {
-        while waiting.count + executing.count > 0 {
-            Flynn.usleep(500)
-            
-            for idx in stride(from: executing.count-1, through: 0, by: -1) {
-                let operation = executing[idx]
-                if operation.isFinished() {
-                    executing.remove(at: idx)
+    public func addOperation(timeout: TimeInterval,
+                             retry: Int,
+                             _ block: @escaping () -> Bool) {
+        lock.lock()
+        waiting.append(TimedOperation(timeout: timeout,
+                                      retry: retry,
+                                    block: block))
+        lock.unlock()
+    }
+    
+    public func addOperation(timeout: TimeInterval,
+                             _ block: @escaping () -> Bool) {
+        lock.lock()
+        waiting.append(TimedOperation(timeout: timeout,
+                                      retry: 0,
+                                      block: block))
+        lock.unlock()
+    }
+    
+    public func addOperation(_ block: @escaping () -> (Bool)) {
+        lock.lock()
+        waiting.append(TimedOperation(timeout: nil,
+                                      retry: 0,
+                                      block: block))
+        lock.unlock()
+    }
+    
+    fileprivate func advance() {
+        lock.lock()
+        
+        for idx in stride(from: executing.count-1, through: 0, by: -1) {
+            let operation = executing[idx]
+            if operation.isFinished() {
+                executing.remove(at: idx)
+            }
+        }
+        while executing.count < maxConcurrentOperationCount && waiting.count > 0 {
+            let next = waiting.removeFirst()
+            executing.append(next)
+            next.start {
+                if next.retry > 0 {
+                    next.retry -= 1
+                    self.waiting.insert(next, at: 0)
                 }
             }
-            
-            if executing.count < maxConcurrentOperationCount,
-               waiting.count > 0 {
-                let next = waiting.removeFirst()
-                executing.append(next)
-                next.start()
-            }
+        }
+        lock.unlock()
+    }
+    
+    public func waitUntilAllOperationsAreFinished() {
+        var done = false
+        while !done {
+            lock.lock()
+            done = waiting.count + executing.count <= 0
+            lock.unlock()
+            Flynn.usleep(50_000)
         }
     }
 }

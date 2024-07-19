@@ -96,10 +96,11 @@ fileprivate func _syncOOB<T: Collection>(count: Int,
                 synchronized()
                 lock.unlock()
             }
+            return true
         }
     }
     
-    queue.run()
+    queue.waitUntilAllOperationsAreFinished()
 }
 
 fileprivate func _asyncOOB<T: Collection>(count: Int,
