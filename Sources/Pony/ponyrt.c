@@ -276,6 +276,9 @@ static char * pony_dns_resolve(const char * domain, int type) {
         
         // Note: Android does not ship with a full libresolv implementation
 #ifdef RES_INIT
+        _res.retrans = 3;  // Retransmission timeout
+        _res.retry = 3;    // Number of retries
+        
         _res.nscount = 2;
         _res.nsaddr_list[0].sin_family = AF_INET;
         _res.nsaddr_list[0].sin_addr.s_addr = inet_addr("8.8.8.8");
