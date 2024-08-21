@@ -511,9 +511,9 @@ void root_shutdown() {
     close_socket(root_listen_socket);
     root_listen_socket = -1;
     
-    if (root_tid != NULL) {
+    if (root_tid) {
         ponyint_thread_join(root_tid);
-        root_tid = NULL;
+        root_tid = (pony_thread_id_t)0;
     }
     
     root_remove_all_nodes();
