@@ -37,6 +37,7 @@ private class TimedOperation: Equatable {
                 retry()
             }
             finished()
+            self.operation = nil
         }
         operation = blockOperation
         
@@ -47,6 +48,7 @@ private class TimedOperation: Equatable {
            let timeout = timeout,
            abs(executionDate.timeIntervalSinceNow) > timeout {
             operation?.cancel()
+            operation = nil
             return true
         }
         return false
@@ -169,7 +171,9 @@ public class TimedOperationQueue {
         while executing.count < maxConcurrentOperationCount && waiting.count > 0 {
             let next = waiting.removeFirst()
             executing.append(next)
-            next.start(operationQueue: operationQueue) {
+            next.start(operationQueue: operationQueue) { [weak self] in
+                guard let self = self else { return }
+                
                 self.lock.lock()
                 if next.retry > 0 {
                     next.retry -= 1
@@ -178,7 +182,9 @@ public class TimedOperationQueue {
                 self.lock.unlock()
                 
                 self.advance()
-            } finished: {
+            } finished: { [weak self] in
+                guard let self = self else { return }
+                
                 self.lock.lock()
                 if let index = self.executing.firstIndex(of: next) {
                     self.executing.remove(at: index)
