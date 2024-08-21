@@ -63,7 +63,10 @@ public class TimedOperationQueue {
     
     public var maxConcurrentOperationCount: Int {
         get {
-            return operationQueue.maxConcurrentOperationCount
+            if operationQueue.maxConcurrentOperationCount >= 1 {
+                return operationQueue.maxConcurrentOperationCount
+            }
+            return 1
         }
         set {
             operationQueue.maxConcurrentOperationCount = newValue

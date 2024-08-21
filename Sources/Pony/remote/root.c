@@ -510,7 +510,11 @@ void pony_root(const char * address,
 void root_shutdown() {
     close_socket(root_listen_socket);
     root_listen_socket = -1;
-    ponyint_thread_join(root_tid);
+    
+    if (root_tid != NULL) {
+        ponyint_thread_join(root_tid);
+        root_tid = NULL;
+    }
     
     root_remove_all_nodes();
     

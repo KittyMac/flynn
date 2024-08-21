@@ -154,7 +154,8 @@ class FlynnTests: XCTestCase {
                 total += item
             }
 
-            while true { }
+            let date = Date()
+            while abs(date.timeIntervalSinceNow) < 10 { }
         }
         XCTAssertEqual(45, total)
     }
