@@ -123,13 +123,13 @@ static bool pool_push(void * p, size_t size) {
     
     if (pool_index >= 0) {
         pool_local_t* pool = pool_local + pool_index;
-        if (pool->length < 16384) {
+        //if (pool->length < 16384) {
             pool_item_t* lp = (pool_item_t*)p;
             lp->next = pool->pool;
             pool->pool = lp;
             pool->length++;
             return true;
-        }
+        //}
     }
     return false;
 }
@@ -163,9 +163,9 @@ void ponyint_pool_free(void * p, size_t size) {
 #if DEBUG
     memset(p, 55, size);
 #endif
-    free(p);
+    // free(p);
     
-    //pony_syslog2("Flynn", "- %lu\n", (size_t)unsafe_pony_mapped_memory);
+    // pony_syslog2("Flynn", "- %lu\n", (size_t)unsafe_pony_mapped_memory);
 }
 
 pony_msg_t* pony_alloc_msg(size_t size, uint32_t msgId) {
