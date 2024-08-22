@@ -44,14 +44,14 @@ uint64_t pony_actor_new_then_id() {
 
 static bool pony_is_inited = false;
 
-bool pony_startup(int scheduler_count) {
+bool pony_startup(int scheduler_count, int min_scheduler_count) {
     if (pony_is_inited) { return true; }
     
     //pony_syslog2("Flynn", "pony_startup()\n");
     
     ponyint_cpu_init();
     
-    ponyint_sched_init(scheduler_count);
+    ponyint_sched_init(scheduler_count, min_scheduler_count);
     
     pony_is_inited = ponyint_sched_start();
     

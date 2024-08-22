@@ -48,7 +48,7 @@ struct scheduler_t
 
 pony_ctx_t* pony_ctx(void);
 
-pony_ctx_t* ponyint_sched_init(int force_scheduler_count);;
+pony_ctx_t* ponyint_sched_init(int force_scheduler_count, int minimum_scheduler_count);;
 
 bool ponyint_sched_start(void);
 

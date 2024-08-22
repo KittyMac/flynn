@@ -385,16 +385,20 @@ static void ponyint_sched_shutdown()
     //pony_syslog2("Flynn", "max memory usage: %0.2f MB\n", ponyint_max_memory() / (1024.0f * 1024.0f));
 }
 
-pony_ctx_t* ponyint_sched_init(int force_scheduler_count)
+pony_ctx_t* ponyint_sched_init(int force_scheduler_count, int minimum_scheduler_count)
 {
     pony_register_thread();
     
     uint32_t threads = ponyint_core_count();
     
+    if (minimum_scheduler_count < 4) {
+        minimum_scheduler_count = 4;
+    }
+    
     scheduler_count = threads;
-    if (scheduler_count < 4) {
-        pony_syslog2("Flynn", "Minimum scheduler count of 4 activated (only %d hardware cores available)", threads);
-        scheduler_count = 4;
+    if (scheduler_count < minimum_scheduler_count) {
+        pony_syslog2("Flynn", "Minimum scheduler count of %d activated (only %d hardware cores available)", minimum_scheduler_count, threads);
+        scheduler_count = minimum_scheduler_count;
     }
     
     if (force_scheduler_count > 1) {

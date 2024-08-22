@@ -72,7 +72,7 @@ static uint32_t get_sys_info_by_name(const char* type_specifier, uint32_t defaul
 
 static uint32_t hybrid_cpu_enabled = 0;
 
-static uint32_t hw_core_count;
+static uint32_t hw_core_count = 0;
 
 static uint32_t hw_e_core_count = 0;
 static uint32_t hw_p_core_count = 0;
