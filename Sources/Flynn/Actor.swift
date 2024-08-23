@@ -20,6 +20,7 @@ func Class <T: AnyObject>(_ ptr: AnyPtr) -> T? {
 
 @inlinable
 func handleMessage(_ argumentPtr: AnyPtr) {
+    guard let argumentPtr = argumentPtr else { return }
     if let msg: ActorMessage = Class(argumentPtr) {
         msg.run()
     }

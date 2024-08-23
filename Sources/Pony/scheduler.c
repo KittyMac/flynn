@@ -20,6 +20,10 @@
 #define QOS_CLASS_UTILITY 1
 #endif
 
+#ifdef PLATFORM_IS_LINUX
+#include "malloc.h"
+#endif
+
 PONY_MUTEX injectLock = NULL;
 PONY_MUTEX injectHighPerformanceLock = NULL;
 PONY_MUTEX injectHighEfficiencyLock = NULL;
@@ -387,6 +391,10 @@ static void ponyint_sched_shutdown()
 
 pony_ctx_t* ponyint_sched_init(int force_scheduler_count, int minimum_scheduler_count)
 {
+#ifdef PLATFORM_IS_LINUX
+    mallopt(M_CHECK_ACTION, 0);
+#endif
+    
     pony_register_thread();
     
     uint32_t threads = ponyint_core_count();
