@@ -90,7 +90,7 @@ fileprivate func _syncOOB<T: Collection>(count: Int,
     
     let lock = NSLock()
     for item in collection {
-        queue.addOperation(timeout: timeout) {
+        queue.addOperation(timeout: timeout) { retryCount in
             block(item) { synchronized in
                 lock.lock()
                 synchronized()

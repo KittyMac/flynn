@@ -12,7 +12,7 @@ private class TimedOperation: Equatable {
     
     let uuid = UUID().uuidString
     
-    let block: () -> Bool
+    let block: (Int) -> Bool
     let timeout: TimeInterval?
     
     var retry: Int
@@ -22,7 +22,7 @@ private class TimedOperation: Equatable {
     
     init(timeout: TimeInterval?,
          retry: Int,
-         block: @escaping () -> Bool) {
+         block: @escaping (Int) -> Bool) {
         self.retry = retry
         self.timeout = timeout
         self.block = block
@@ -33,7 +33,7 @@ private class TimedOperation: Equatable {
         
         let blockOperation = BlockOperation {
             self.executionDate = Date()
-            if self.block() == false {
+            if self.block(self.retry) == false {
                 retry()
             }
             finished()
@@ -114,7 +114,7 @@ public class TimedOperationQueue {
     }
     
     public func addOperation(retry: Int,
-                             _ block: @escaping () -> Bool) {
+                             _ block: @escaping (Int) -> Bool) {
         lock.lock()
 
         waiting.append(TimedOperation(timeout: nil,
@@ -127,7 +127,7 @@ public class TimedOperationQueue {
     
     public func addOperation(timeout: TimeInterval,
                              retry: Int,
-                             _ block: @escaping () -> Bool) {
+                             _ block: @escaping (Int) -> Bool) {
         lock.lock()
 
         waiting.append(TimedOperation(timeout: timeout,
@@ -139,7 +139,7 @@ public class TimedOperationQueue {
     }
     
     public func addOperation(timeout: TimeInterval,
-                             _ block: @escaping () -> Bool) {
+                             _ block: @escaping (Int) -> Bool) {
         lock.lock()
 
         waiting.append(TimedOperation(timeout: timeout,
@@ -150,7 +150,7 @@ public class TimedOperationQueue {
         advance()
     }
     
-    public func addOperation(_ block: @escaping () -> (Bool)) {
+    public func addOperation(_ block: @escaping (Int) -> (Bool)) {
         lock.lock()
         
         waiting.append(TimedOperation(timeout: nil,

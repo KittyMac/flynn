@@ -209,21 +209,27 @@ class FlynnTests: XCTestCase {
         var result = ""
         
         // Will retry 3 times...
-        queue.addOperation(retry: 3) {
+        queue.addOperation(retry: 3) { retryCount in
+            print("retryCount1: \(retryCount)")
             result.append("1")
+            if retryCount == 0 {
+                print("... giving up")
+            }
             return false
         }
         
         // will retry 6 times
         var count = 0
-        queue.addOperation(retry: 60) {
+        queue.addOperation(retry: 60) { retryCount in
+            print("retryCount2: \(retryCount)")
             result.append("2")
             count += 1
             return count > 5
         }
         
         // will not retry
-        queue.addOperation {
+        queue.addOperation { retryCount in
+            print("retryCount3: \(retryCount)")
             result.append("3")
             return true
         }
