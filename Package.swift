@@ -50,7 +50,7 @@ var plugins = [
 
 #if os(Windows)
 plugins += [
-    "FlynnPluginTool-windows"
+    "FlynnPluginTool-windows-592"
 ]
 #endif
 
@@ -78,8 +78,8 @@ var pluginDependencies: [Package.Dependency] = [
 
 #if os(Windows)
 pluginTarget += [
-    .binaryTarget(name: "FlynnPluginTool-windows",
-                  path: "dist/FlynnPluginTool-windows.zip")
+    .binaryTarget(name: "FlynnPluginTool-windows-592",
+                  path: "dist/FlynnPluginTool-windows-592.zip")
 ]
 #endif
 
