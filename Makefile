@@ -29,6 +29,7 @@ build:
 
 build-windows:
 	# note: you probably don't have make on windows, so you need to run these manually
+	Stop-Process -Name "FlynnPackageTests.xctest"
 	rm -Recurse -Force .build
 	swift test
 	swift build --configuration release
