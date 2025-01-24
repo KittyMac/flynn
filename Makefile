@@ -29,6 +29,7 @@ build:
 
 build-windows:
 	# note: you probably don't have make on windows, so you need to run these manually
+	rm -Recurse -Force .build
 	swift test
 	swift build --configuration release
 	cp .build/release/FlynnPluginTool.exe ./dist/FlynnPluginTool-windows-592.artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool.exe
