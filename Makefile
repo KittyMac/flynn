@@ -31,9 +31,9 @@ build-windows:
 	# note: you probably don't have make on windows, so you need to run these manually
 	swift test
 	swift build --configuration release
-	cp .build/release/FlynnPluginTool.exe ./dist/FlynnPluginTool-windows.artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool.exe
-	rm ./dist/FlynnPluginTool-windows.zip
-	Compress-Archive -Path ./dist/FlynnPluginTool-windows.artifactbundle -DestinationPath ./dist/FlynnPluginTool-windows.zip
+	cp .build/release/FlynnPluginTool.exe ./dist/FlynnPluginTool-windows-592.artifactbundle/FlynnPluginTool-amd64/bin/FlynnPluginTool.exe
+	rm ./dist/FlynnPluginTool-windows-592.zip
+	Compress-Archive -Path ./dist/FlynnPluginTool-windows-592.artifactbundle -DestinationPath ./dist/FlynnPluginTool-windows-592.zip
 
 clean:
 	rm -rf .build
