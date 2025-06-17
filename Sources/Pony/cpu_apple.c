@@ -85,35 +85,23 @@ void ponyint_cpu_init()
         hw_core_count = get_sys_info_by_name("hw.physicalcpu", 1);
     }
     
-    const uint32_t cpu_family = get_sys_info_by_name("hw.cpufamily", 0);
-    switch (cpu_family) {
-        case CPUFAMILY_ARM_MONSOON_MISTRAL:
-            /* 2x Monsoon + 4x Mistral cores */
-            hw_e_core_count = 4;
-            hw_p_core_count = 2;
-            hybrid_cpu_enabled = 1;
-            break;
-        case CPUFAMILY_ARM_VORTEX_TEMPEST:
-        case CPUFAMILY_ARM_LIGHTNING_THUNDER:
-            /* Hexa-core: 2x Vortex + 4x Tempest; Octa-core: 4x Cortex + 4x Tempest */
-            /* Hexa-core: 2x Lightning + 4x Thunder; Octa-core (presumed): 4x Lightning + 4x Thunder */
-            if (hw_core_count == 6) {
-                hw_e_core_count = 4;
-                hw_p_core_count = 2;
-                hybrid_cpu_enabled = 1;
-            }
-            if (hw_core_count == 8) {
-                hw_e_core_count = 4;
-                hw_p_core_count = 4;
-                hybrid_cpu_enabled = 1;
-            }
-            break;
+    size_t size = sizeof(uint32_t);
+    // Performance cores (big cores)
+    if (sysctlbyname("hw.perflevel0.logicalcpu", &hw_p_core_count, &size, NULL, 0) == -1) {
+        hw_p_core_count = 0;
     }
     
+    // Efficiency cores (little cores)
+    if (sysctlbyname("hw.perflevel1.logicalcpu", &hw_e_core_count, &size, NULL, 0) == -1) {
+        hw_e_core_count = 0;
+    }
+    
+    hybrid_cpu_enabled = 1;
     if (hw_e_core_count == 0 || hw_p_core_count == 0) {
-        pony_syslog2("Flynn", "Warning: Actor core affinities have been disabled, unrecognized cpu family detected (0x%08X)\n", cpu_family);
+        pony_syslog2("Flynn", "Warning: Actor core affinities have been disabled unable to determine core counts\n");
         hw_e_core_count = 1;
         hw_p_core_count = hw_core_count - hw_e_core_count;
+        hybrid_cpu_enabled = 0;
     }
     
     if (hw_e_core_count == 0) {
