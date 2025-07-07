@@ -39,11 +39,15 @@ void ponyint_mutex_destroy(PONY_MUTEX mutex) {
 }
 
 void ponyint_mutex_lock(PONY_MUTEX mutex) {
-    pthread_mutex_lock(mutex);
+    if (mutex != NULL) {
+        pthread_mutex_lock(mutex);
+    }
 }
 
 void ponyint_mutex_unlock(PONY_MUTEX mutex) {
-    pthread_mutex_unlock(mutex);
+    if (mutex != NULL) {
+        pthread_mutex_unlock(mutex);
+    }
 }
 
 bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, void* arg)
