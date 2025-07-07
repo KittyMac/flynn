@@ -49,10 +49,16 @@ func binaryTool(context: PluginContext, named toolName: String) -> String {
         if osFile.contains("Fedora Linux 38") {
             osName = "fedora38"
         }
+        if osFile.contains("jammy") {
+            osName = "jammy"
+        }
     }
     #endif
     
     var swiftVersions: [String] = []
+#if swift(>=6.1.2)
+    swiftVersions.append("612")
+#endif
 #if swift(>=5.9.2)
     swiftVersions.append("592")
 #endif

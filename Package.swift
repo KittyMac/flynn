@@ -3,7 +3,7 @@ import PackageDescription
 
 // When runnning "make release" to build the binary tools change this to true
 // Otherwise always set it to false
-#if false
+#if true
 let productsTarget: [PackageDescription.Product] = [
 ]
 let pluginTarget: [PackageDescription.Target] = [
@@ -36,7 +36,7 @@ var pluginDependencies: [Package.Dependency] = [
 #if os(Windows)
 pluginDependencies.append(.package(url: "https://github.com/compnerd/SourceKitten", branch: "windows"))
 #else
-pluginDependencies.append(.package(url: "https://github.com/jpsim/SourceKitten", exact: "0.32.0"))
+pluginDependencies.append(.package(url: "https://github.com/jpsim/SourceKitten", exact: "0.37.2"))
 #endif
 
 #else
@@ -45,6 +45,7 @@ var plugins = [
     "FlynnPluginTool-focal-571",
     "FlynnPluginTool-focal-580",
     "FlynnPluginTool-focal-592",
+    "FlynnPluginTool-jammy-612",
     "FlynnPluginTool-fedora38-573",
 ]
 
@@ -66,6 +67,8 @@ var pluginTarget: [PackageDescription.Target] = [
                   path: "dist/FlynnPluginTool-focal-580.zip"),
     .binaryTarget(name: "FlynnPluginTool-focal-592",
                   path: "dist/FlynnPluginTool-focal-592.zip"),
+    .binaryTarget(name: "FlynnPluginTool-jammy-612",
+                  path: "dist/FlynnPluginTool-jammy-612.zip"),
     .plugin(
         name: "FlynnPlugin",
         capability: .buildTool(),
@@ -88,6 +91,7 @@ pluginTarget += [
 let package = Package(
     name: "Flynn",
     platforms: [
+        .macOS(.v12),
         .iOS(.v9)
     ],
     products: productsTarget + [

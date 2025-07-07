@@ -1,0 +1,36 @@
+{
+  "configurations" : [
+    {
+      "id" : "4CC7A8BC-0B05-4D88-AC1B-F228E4907E59",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:",
+      "identifier" : "FlynnPluginTool-focal",
+      "name" : "FlynnPluginTool-focal"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FlynnTests",
+        "name" : "FlynnTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FlynnPluginFrameworkTests",
+        "name" : "FlynnPluginFrameworkTests"
+      }
+    }
+  ],
+  "version" : 1
+}
