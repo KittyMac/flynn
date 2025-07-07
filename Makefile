@@ -71,7 +71,7 @@ profile: clean
 		-Xswiftc -driver-time-compilation \
 		-Xswiftc -debug-time-function-bodies
 
-release: build docker focal-571 fedora38-573 focal-580 focal-592 jammy-612
+release: build docker focal-571 fedora38-573 focal-580 focal-592 jammy-592
 
 focal-571:
 	@$(call DOCKER_BUILD_TOOL,focal-571)
@@ -82,8 +82,8 @@ focal-580:
 focal-592:
 	@$(call DOCKER_BUILD_TOOL,focal-592)
 	
-jammy-612:
-	@$(call DOCKER_BUILD_TOOL,jammy-612)
+jammy-592:
+	@$(call DOCKER_BUILD_TOOL,jammy-592)
 
 fedora38-573:
 	@$(call DOCKER_BUILD_TOOL,fedora38-573)
@@ -99,6 +99,6 @@ docker:
 	
 
 docker-shell:
-	docker buildx build --file Dockerfile-fedora --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-fedora .
-	docker pull kittymac/flynn-fedora
-	docker run --rm -it --entrypoint bash kittymac/flynn-fedora
+	docker buildx build --file Dockerfile-fedora --platform linux/amd64,linux/arm64 --push -t kittymac/flynn-jammy-592 .
+	docker pull kittymac/flynn-jammy-592
+	docker run --rm -it --entrypoint bash kittymac/flynn-jammy-592
