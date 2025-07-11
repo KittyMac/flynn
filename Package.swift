@@ -4,6 +4,7 @@ import PackageDescription
 // When runnning "make release" to build the binary tools change this to true
 // Otherwise always set it to false
 #if false
+let platforms: [PackageDescription.SupportedPlatform] = [ .macOS(.v12) ]
 let productsTarget: [PackageDescription.Product] = [
 ]
 let pluginTarget: [PackageDescription.Target] = [
@@ -40,6 +41,7 @@ pluginDependencies.append(.package(url: "https://github.com/jpsim/SourceKitten",
 #endif
 
 #else
+let platforms: [PackageDescription.SupportedPlatform] = [ ]
 
 var plugins = [
     "FlynnPluginTool-focal-571",
@@ -90,10 +92,7 @@ pluginTarget += [
 
 let package = Package(
     name: "Flynn",
-    platforms: [
-        .macOS(.v12),
-        .iOS(.v9)
-    ],
+    platforms: platforms,
     products: productsTarget + [
         .library(name: "Flynn", targets: ["Flynn"]),
         .library(name: "PonyLib", type: .dynamic, targets: ["Pony"]),
