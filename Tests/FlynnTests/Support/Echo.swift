@@ -1,3 +1,5 @@
+// flynn:ignore Reentrant ReturnCallbacks
+
 import XCTest
 import Flynn
 

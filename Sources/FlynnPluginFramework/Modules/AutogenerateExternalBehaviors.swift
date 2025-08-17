@@ -19,7 +19,8 @@ class AutogenerateExternalBehaviors {
                                                       _ numOfExtensions: inout Int,
                                                       _ newExtensionString: inout String,
                                                       _ actorSyntax: FileSyntax,
-                                                      _ firstTime: Bool) -> Bool {
+                                                      _ firstTime: Bool,
+                                                      _ disableFatalErrors: Bool) -> Bool {
         if  actorSyntax.file == syntax.file {
             let fullActorName = AST.getFullName(syntax,
                                                 actorSyntax.ancestry,
@@ -621,9 +622,11 @@ class AutogenerateExternalBehaviors {
                                 scratch.append("            let msg = try! JSONDecoder().decode(\(codableName(name))Request.self, from: data)\n")
                             }
                             
-                            scratch.append("            #if DEBUG\n")
-                            scratch.append("            var onlyOnce = true\n")
-                            scratch.append("            #endif\n")
+                            if disableFatalErrors == false {
+                                scratch.append("            #if DEBUG\n")
+                                scratch.append("            var onlyOnce = true\n")
+                                scratch.append("            #endif\n")
+                            }
 
                             scratch.append("            self._\(name)(")
                             if let parameters = behavior.function.structure.substructure {
@@ -641,10 +644,12 @@ class AutogenerateExternalBehaviors {
 
                             scratch.append(") {\n")
                             
-                            scratch.append("                #if DEBUG\n")
-                            scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
-                            scratch.append("                onlyOnce = false\n")
-                            scratch.append("                #endif\n")
+                            if disableFatalErrors == false {
+                                scratch.append("                #if DEBUG\n")
+                                scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
+                                scratch.append("                onlyOnce = false\n")
+                                scratch.append("                #endif\n")
+                            }
 
                             if returnCallbackParameters.count > 0 {
                                 scratch.append("                callback(\n")
@@ -674,9 +679,11 @@ class AutogenerateExternalBehaviors {
                         } else {
                             scratch.append("        safeRegisterDelayedRemoteBehavior(\"\(name)\") { [unowned self] (_, callback) in\n")
 
-                            scratch.append("            #if DEBUG\n")
-                            scratch.append("            var onlyOnce = true\n")
-                            scratch.append("            #endif\n")
+                            if disableFatalErrors == false {
+                                scratch.append("            #if DEBUG\n")
+                                scratch.append("            var onlyOnce = true\n")
+                                scratch.append("            #endif\n")
+                            }
                             
                             if returnCallbackParameters.count > 1 {
                                 var idx = 0
@@ -695,10 +702,12 @@ class AutogenerateExternalBehaviors {
                                 scratch.append("            self._\(name) {\n")
                             }
                             
-                            scratch.append("                #if DEBUG\n")
-                            scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
-                            scratch.append("                onlyOnce = false\n")
-                            scratch.append("                #endif\n")
+                            if disableFatalErrors == false {
+                                scratch.append("                #if DEBUG\n")
+                                scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
+                                scratch.append("                onlyOnce = false\n")
+                                scratch.append("                #endif\n")
+                            }
 
                             if returnCallbackParameters.count > 0 {
                                 scratch.append("                callback(\n")
@@ -832,7 +841,8 @@ class AutogenerateExternalBehaviors {
                                                 _ ast: AST,
                                                 _ numOfExtensions: inout Int,
                                                 _ newExtensionString: inout String,
-                                                _ actorSyntax: FileSyntax) {
+                                                _ actorSyntax: FileSyntax,
+                                                _ disableFatalErrors: Bool) {
         let fullActorName = AST.getFullName(syntax,
                                             actorSyntax.ancestry,
                                             actorSyntax)
@@ -974,9 +984,11 @@ class AutogenerateExternalBehaviors {
                         
                         if returnType != nil {
                             if hasReturnCallback == true {
-                                scratch.append("        #if DEBUG\n")
-                                scratch.append("        var onlyOnce = true\n")
-                                scratch.append("        #endif\n")
+                                if disableFatalErrors == false {
+                                    scratch.append("        #if DEBUG\n")
+                                    scratch.append("        var onlyOnce = true\n")
+                                    scratch.append("        #endif\n")
+                                }
                             }
                             
                             scratch.append("        return \(supportsThenUnsafeCallMethod) ({ thenPtr in\n")
@@ -1017,10 +1029,12 @@ class AutogenerateExternalBehaviors {
                                     scratch.append("\n")
                                 }
                                 
-                                scratch.append("                #if DEBUG\n")
-                                scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
-                                scratch.append("                onlyOnce = false\n")
-                                scratch.append("                #endif\n")
+                                if disableFatalErrors == false {
+                                    scratch.append("                #if DEBUG\n")
+                                    scratch.append("                guard onlyOnce == true else { fatalError(\"returnCallback called more than once\") }\n")
+                                    scratch.append("                onlyOnce = false\n")
+                                    scratch.append("                #endif\n")
+                                }
                                 
                                 scratch.append("                sender.unsafeSend { _ in\n")
                                 scratch.append("                    callback(")
@@ -1105,6 +1119,8 @@ class AutogenerateExternalBehaviors {
             let ast: AST = packet.ast
             let syntax: FileSyntax = packet.syntax
             let fileOnly: Bool = packet.fileOnly
+            
+            let disableFatalErrors = syntax.file.contents.contains("// flynn:ignore Reentrant ReturnCallbacks")
 
             if fileOnly {
 
@@ -1141,7 +1157,8 @@ class AutogenerateExternalBehaviors {
                                                    ast,
                                                    &numOfExtensions,
                                                    &newExtensionString,
-                                                   actorSyntax)
+                                                   actorSyntax,
+                                                   disableFatalErrors)
                 }
 
                 for actorSyntax in ast.extensions {
@@ -1151,7 +1168,8 @@ class AutogenerateExternalBehaviors {
                                                    ast,
                                                    &numOfExtensions,
                                                    &newExtensionString,
-                                                   actorSyntax)
+                                                   actorSyntax,
+                                                   disableFatalErrors)
                 }
 
                 var first = true
@@ -1161,7 +1179,8 @@ class AutogenerateExternalBehaviors {
                                                             &numOfExtensions,
                                                             &newExtensionString,
                                                             actorSyntax,
-                                                            first) {
+                                                            first,
+                                                            disableFatalErrors) {
                         first = false
                     }
                 }
@@ -1174,7 +1193,8 @@ class AutogenerateExternalBehaviors {
                                                             &numOfExtensions,
                                                             &newExtensionString,
                                                             actorSyntax,
-                                                            first) {
+                                                            first,
+                                                            disableFatalErrors) {
                         first = false
                     }
                 }

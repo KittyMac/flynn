@@ -27,7 +27,7 @@ class FlynnPluginTests: XCTestCase {
     
     func testExample() throws {
         let flynnplugin = FlynnPluginTool()
-        flynnplugin.process(input: "/Users/rjbowli/Development/chimerasw/Flynn/Examples/HelloWorld/Sources/HelloWorld/main.swift",
+        flynnplugin.process(input: "/Users/rjbowli/Development/chimerasw/flynn/Examples/HelloWorld/Sources/HelloWorld/main.swift",
                             output: "\(flynnTempPath)/FlynnPlugin.swift")
     }
     
@@ -47,7 +47,8 @@ class FlynnPluginTests: XCTestCase {
             "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActorManager.swift",
             "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActorRunner.swift",
             "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActor.swift",
-            "/Users/rjbowli/Development/chimerasw/Flynn/Tests/FlynnTests/Support/WeakTimer.swift"
+            "/Users/rjbowli/Development/chimerasw/Flynn/Tests/FlynnTests/Support/WeakTimer.swift",
+            "/Users/rjbowli/Development/chimerasw/flynn/Tests/FlynnTests/Support/Echo.swift"
         ]
         
         flynnplugin.process(inputs: files,
