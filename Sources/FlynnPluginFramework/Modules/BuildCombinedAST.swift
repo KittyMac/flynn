@@ -265,7 +265,26 @@ class ASTBuilder: Sequence {
             switch syntax.kind {
             case .class:
                 let fullName = AST.getFullName(fileSyntax, ancestory, subSyntax)
-                classes[fullName] = subSyntax.clone(ancestry: ancestory)
+                if let existingClass = classes[fullName],
+                   existingClass.file.path != subSyntax.file.path {
+                    // if we have two classes named the same thing, prioritze the one who is an actor
+                    if isActor(existingClass) == true && isActor(subSyntax) == false {
+                        // prefer to keep the actor over the non-actor
+                    } else if isActor(existingClass) == false && isActor(subSyntax) == true {
+                        classes[fullName] = subSyntax.clone(ancestry: ancestory)
+                    } else if isActor(existingClass) == true && isActor(subSyntax) == true {
+                        if let path = existingClass.file.path {
+                            print("\(path): warning: multiple \(fullName) Actors might break behavioural generation in Flynn")
+                        }
+                        if let path = subSyntax.file.path {
+                            print("\(path): warning: multiple \(fullName) Actors might break behavioural generation in Flynn")
+                        }
+                    } else {
+                        // we care less about non actors
+                    }
+                } else {
+                    classes[fullName] = subSyntax.clone(ancestry: ancestory)
+                }
             case .protocol, .extensionProtocol:
                 let fullName = AST.getFullName(fileSyntax, ancestory, subSyntax)
                 protocols[fullName] = subSyntax.clone(ancestry: ancestory)
@@ -293,6 +312,21 @@ class ASTBuilder: Sequence {
                              fileSyntax)
             }
         }
+    }
+    
+    func isActor(_ syntax: FileSyntax) -> Bool {
+        if syntax.structure.name == "Actor" || syntax.structure.name == "RemoteActor" {
+            return true
+        }
+        if let inheritedTypes = syntax.structure.inheritedTypes {
+            for type in inheritedTypes where (type["key.name"] as? String) == "Actor" {
+                return true
+            }
+            for type in inheritedTypes where (type["key.name"] as? String) == "RemoteActor" {
+                return true
+            }
+        }
+        return false
     }
 
     func build() -> AST {

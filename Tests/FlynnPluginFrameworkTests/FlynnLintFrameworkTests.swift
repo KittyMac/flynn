@@ -48,7 +48,11 @@ class FlynnPluginTests: XCTestCase {
             "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActorRunner.swift",
             "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActor.swift",
             "/Users/rjbowli/Development/chimerasw/Flynn/Tests/FlynnTests/Support/WeakTimer.swift",
-            "/Users/rjbowli/Development/chimerasw/flynn/Tests/FlynnTests/Support/Echo.swift"
+            "/Users/rjbowli/Development/chimerasw/flynn/Tests/FlynnTests/Support/Echo.swift",
+            
+            "/Users/rjbowli/Desktop/RoverServerMessageBusA.swift",
+            "/Users/rjbowli/Desktop/RoverServerMessageBusB.swift",
+            
         ]
         
         flynnplugin.process(inputs: files,
