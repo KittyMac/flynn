@@ -101,6 +101,26 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(Flynn.dns_resolve_txt(domain: "staging.rover.smallplanet.com"), nil)
     }
     
+    func testDnsResolveThreadingTest() {
+        
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 20
+        
+        for idx in 0..<100 {
+            queue.addOperation {
+                for _ in 0..<10 {
+                    _ = Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")
+                }
+                print(idx)
+            }
+            queue.addOperation {
+                _ = Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")
+            }
+        }
+        
+        queue.waitUntilAllOperationsAreFinished()
+    }
+    
     func testArraySync() {
         let numbers = [0,1,2,3,4,5,6,7,8,9]
         var total = 0

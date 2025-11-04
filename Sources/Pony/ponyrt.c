@@ -268,6 +268,9 @@ void pony_syslog2(const char * tag, const char *format, ...) {
 #ifdef PLATFORM_SUPPORTS_DNS_LOOKUP
 static char * pony_dns_resolve(const char * domain, int type) {
     static int didCallInit = 0;
+    static pthread_mutex_t resolve_mutex = PTHREAD_MUTEX_INITIALIZER;
+    
+    pthread_mutex_lock(&resolve_mutex);
     
     if (didCallInit == 0) {
         didCallInit = 1;
@@ -307,11 +310,16 @@ static char * pony_dns_resolve(const char * domain, int type) {
                 
                 if (ns_name_uncompress(ns_msg_base(msg), ns_msg_end(msg),
                                        ns_rr_rdata(rr), nsname, NS_MAXDNAME) >= 0) {
+                    
+                    pthread_mutex_unlock(&resolve_mutex);
+                    
                     return strdup(nsname);
                 }
             }
         }
     }
+    
+    pthread_mutex_unlock(&resolve_mutex);
     
     return NULL;
 }
