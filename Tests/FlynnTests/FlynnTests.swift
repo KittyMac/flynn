@@ -104,17 +104,17 @@ class FlynnTests: XCTestCase {
     func testDnsResolveThreadingTest() {
         
         let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 20
+        queue.maxConcurrentOperationCount = 100
         
-        for idx in 0..<100 {
+        for idx in 0..<1000 {
             queue.addOperation {
                 for _ in 0..<10 {
-                    _ = Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")
+                    XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
                 }
                 print(idx)
             }
             queue.addOperation {
-                _ = Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")
+                XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
             }
         }
         

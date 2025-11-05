@@ -266,63 +266,59 @@ void pony_syslog2(const char * tag, const char *format, ...) {
 }
 
 #ifdef PLATFORM_SUPPORTS_DNS_LOOKUP
-static char * pony_dns_resolve(const char * domain, int type) {
-    static int didCallInit = 0;
+static char *pony_dns_resolve(const char *domain, int type) {
     static pthread_mutex_t resolve_mutex = PTHREAD_MUTEX_INITIALIZER;
     
     pthread_mutex_lock(&resolve_mutex);
-    
-    if (didCallInit == 0) {
-        didCallInit = 1;
-        
-        res_init();
-        
-        // Note: Android does not ship with a full libresolv implementation
+
+    // Each thread gets its own resolver state, copied from the template
+    struct __res_state res;
+    memset(&res, 0, sizeof(res));
+    res_ninit(&res);
+
 #ifdef RES_INIT
-        _res.retrans = 3;  // Retransmission timeout
-        _res.retry = 3;    // Number of retries
-        
-        _res.nscount = 2;
-        _res.nsaddr_list[0].sin_family = AF_INET;
-        _res.nsaddr_list[0].sin_addr.s_addr = inet_addr("8.8.8.8");
-        _res.nsaddr_list[0].sin_port = htons(53);
-        _res.nsaddr_list[1].sin_family = AF_INET;
-        _res.nsaddr_list[1].sin_addr.s_addr = inet_addr("8.8.4.4");
-        _res.nsaddr_list[1].sin_port = htons(53);
+    res.retrans = 3;  // Retransmission timeout
+    res.retry   = 3;  // Number of retries
+
+    res.nscount = 2;
+    res.nsaddr_list[0].sin_family = AF_INET;
+    res.nsaddr_list[0].sin_addr.s_addr = inet_addr("8.8.8.8");
+    res.nsaddr_list[0].sin_port = htons(53);
+    res.nsaddr_list[1].sin_family = AF_INET;
+    res.nsaddr_list[1].sin_addr.s_addr = inet_addr("8.8.4.4");
+    res.nsaddr_list[1].sin_port = htons(53);
 #endif
-    }
-    
-    int response;
+
     unsigned char query_buffer[1024];
     char nsname[NS_MAXDNAME];
-    
-    response= res_query(domain, ns_c_in, type, query_buffer, sizeof(query_buffer));
-    if ( response > 0 ){
+
+    int response = res_nquery(&res, domain, ns_c_in, type, query_buffer, sizeof(query_buffer));
+
+    if (response > 0) {
         ns_msg msg;
-        ns_initparse(query_buffer, response, &msg);
-        
-        for (int x= 0; x < ns_msg_count(msg, ns_s_an); x++) {
-            ns_rr rr;
-            ns_parserr(&msg, ns_s_an, x, &rr);
-            ns_type msgType = ns_rr_type(rr);
-            
-            if (msgType == type) {
-                
-                if (ns_name_uncompress(ns_msg_base(msg), ns_msg_end(msg),
-                                       ns_rr_rdata(rr), nsname, NS_MAXDNAME) >= 0) {
-                    
-                    pthread_mutex_unlock(&resolve_mutex);
-                    
-                    return strdup(nsname);
+        if (ns_initparse(query_buffer, response, &msg) == 0) {
+            int count = ns_msg_count(msg, ns_s_an);
+            for (int x = 0; x < count; x++) {
+                ns_rr rr;
+                if (ns_parserr(&msg, ns_s_an, x, &rr) == 0) {
+                    if (ns_rr_type(rr) == type) {
+                        if (ns_name_uncompress(ns_msg_base(msg), ns_msg_end(msg),
+                                               ns_rr_rdata(rr), nsname, sizeof(nsname)) >= 0) {
+                            res_nclose(&res);
+                            pthread_mutex_unlock(&resolve_mutex);
+                            return strdup(nsname);
+                        }
+                    }
                 }
             }
         }
     }
-    
+
+    res_nclose(&res);
     pthread_mutex_unlock(&resolve_mutex);
-    
     return NULL;
 }
+
 
 char * pony_dns_resolve_cname(const char * domain) {
     return pony_dns_resolve(domain, ns_t_cname);
