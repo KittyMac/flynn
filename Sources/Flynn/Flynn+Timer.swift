@@ -11,13 +11,19 @@ public protocol Timerable: Actor {
 
 public extension Flynn {
 
-    class Timer {
+    class Timer: CustomStringConvertible {
+        public var description: String {
+            return "Timer: \(caller)"
+        }
+        
         var fireTime: TimeInterval = 0.0
 
         var cancelled: Bool = false
 
         let timeInterval: TimeInterval
         let repeats: Bool
+        
+        let caller: String
 
         weak var target: Timerable?
         var args: TimerArgs = []
@@ -30,6 +36,7 @@ public extension Flynn {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.target = target
+            self.caller = ""
 
             schedule()
         }
@@ -40,26 +47,40 @@ public extension Flynn {
             self.repeats = repeats
             self.target = target
             self.args = args
+            self.caller = ""
 
             schedule()
         }
 
         @discardableResult
-        public init(timeInterval: TimeInterval, repeats: Bool, _ actor: Actor, _ callback: @escaping TimerCallback) {
+        public init(timeInterval: TimeInterval,
+                    repeats: Bool,
+                    _ actor: Actor,
+                    _ callback: @escaping TimerCallback,
+                    _ callingFunctionName: String = #function,
+                    _ callingFunctionLine: Int = #line) {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.actor = actor
             self.callback = callback
+            self.caller = "\(callingFunctionName):\(callingFunctionLine)"
 
             schedule()
         }
         
         @discardableResult
-        public init(timeInterval: TimeInterval, immediate: Bool, repeats: Bool, _ actor: Actor, _ callback: @escaping TimerCallback) {
+        public init(timeInterval: TimeInterval,
+                    immediate: Bool,
+                    repeats: Bool,
+                    _ actor: Actor,
+                    _ callback: @escaping TimerCallback,
+                    _ callingFunctionName: String = #function,
+                    _ callingFunctionLine: Int = #line) {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.actor = actor
             self.callback = callback
+            self.caller = "\(callingFunctionName):\(callingFunctionLine)"
             
             if immediate {
                 callback(self)
@@ -119,7 +140,7 @@ public extension Flynn {
 
         registeredTimersQueue.dequeueAny { (timer) in
             let timeDelta = timer.fireTime - currentTime
-            if timeDelta < 0 {
+            if timeDelta < 0 || timer.cancelled {
                 completedTimers.append(timer)
                 return true
             }
