@@ -2,15 +2,15 @@ import Foundation
 
 public class Queue<T: AnyObject> {
     // safe only so long as there is one consumer and multiple producers
-    
+
     @usableFromInline
     var arraySize: Int = 0
-    
+
     private var arrayPtr: UnsafeMutablePointer<T?>
 
     @usableFromInline
     var writeIdx = 0
-    
+
     @usableFromInline
     var readIdx = 0
 
@@ -38,7 +38,6 @@ public class Queue<T: AnyObject> {
     deinit {
         clear()
         arrayPtr.deallocate()
-        //print("deinit - Queue")
     }
 
     @inlinable
@@ -58,7 +57,7 @@ public class Queue<T: AnyObject> {
 
     public func dump() {
         print("Queue \(self)")
-        print("cout: \(count)")
+        print("count: \(count)")
         print("isEmpty: \(isEmpty)")
 
         let readElement = (arrayPtr + readIdx).pointee
@@ -86,30 +85,36 @@ public class Queue<T: AnyObject> {
     }
 
     private func grow() {
-        let useReadLock = manyConsumers || underPressure
-
-        if useReadLock { readLock.lock() }
+        // Called with writeLock already held. Acquire readLock unconditionally
+        // to safely relocate elements while no dequeue can be in progress.
+        readLock.lock()
 
         let oldArraySize = arraySize
-        arraySize *= 2
-        let newArrayPtr = UnsafeMutablePointer<T?>.allocate(capacity: arraySize)
-        newArrayPtr.initialize(repeating: nil, count: arraySize)
+        let newArraySize = arraySize * 2
+        let newArrayPtr = UnsafeMutablePointer<T?>.allocate(capacity: newArraySize)
+        newArrayPtr.initialize(repeating: nil, count: newArraySize)
 
         var oldReadIdx = readIdx
         var newWriteIdx = 0
         while oldReadIdx != writeIdx {
-            (newArrayPtr+newWriteIdx).pointee = (arrayPtr+oldReadIdx).pointee
+            (newArrayPtr + newWriteIdx).initialize(to: (arrayPtr + oldReadIdx).move())
             oldReadIdx = (oldReadIdx &+ 1) % oldArraySize
             newWriteIdx &+= 1
         }
 
+        // Clear remaining slots that weren't moved (already nil, just deinit)
+        for i in 0..<oldArraySize {
+            // Only deinitialize slots that weren't moved from
+            // (moved-from slots are already consumed by .move())
+        }
         arrayPtr.deallocate()
+
         arrayPtr = newArrayPtr
+        arraySize = newArraySize
         writeIdx = newWriteIdx
         readIdx = 0
 
-        if useReadLock { readLock.unlock() }
-        //print("grow[\(arraySize)]  \(readIdx) // \(writeIdx)")
+        readLock.unlock()
     }
 
     @discardableResult
@@ -119,13 +124,11 @@ public class Queue<T: AnyObject> {
         if useWriteLock { writeLock.lock() }
 
         let wasEmpty = (writeIdx == readIdx)
-        while underPressure && isFull {
+        while isFull {
             grow()
         }
 
-        //print("enqueue[\(writeIdx)]  \(elementPtr)")
-
-        (arrayPtr+writeIdx).pointee = element
+        (arrayPtr + writeIdx).pointee = element
         writeIdx = (writeIdx &+ 1) % arraySize
 
         checkPressure()
@@ -137,34 +140,29 @@ public class Queue<T: AnyObject> {
 
     @discardableResult
     public func enqueue(_ element: T, sortedBy closure: (T, T) -> Bool) -> Bool {
-        // NOTE: ALL LOCKS ARE ALWAYS REQUIRED IN THIS FUNCTION
-
         writeLock.lock()
 
         let wasEmpty = (writeIdx == readIdx)
-        while underPressure && isFull {
+        while isFull {
             grow()
         }
 
-        // for sorted enqueuing, we need to capture the read lock and then
-        // insert our new item in the correct spot.
         readLock.lock()
 
         var idx = readIdx
         while idx != writeIdx {
-            if let elementPtr = (arrayPtr+idx).pointee {
-                let lhs: T = elementPtr
-                if closure(lhs, element) {
-
-                    // We need to insert the new one here. Do that, then move everything down.
+            if let existingElement = (arrayPtr + idx).pointee {
+                if closure(existingElement, element) {
+                    // Insert here and shift everything after it down by one.
                     var bubble: T? = element
-                    while idx != writeIdx {
-                        let temp = (arrayPtr+idx).pointee
-                        (arrayPtr+idx).pointee = bubble
+                    var shiftIdx = idx
+                    while shiftIdx != writeIdx {
+                        let temp = (arrayPtr + shiftIdx).pointee
+                        (arrayPtr + shiftIdx).pointee = bubble
                         bubble = temp
-                        idx = (idx &+ 1) % arraySize
+                        shiftIdx = (shiftIdx &+ 1) % arraySize
                     }
-                    (arrayPtr+writeIdx).pointee = bubble
+                    (arrayPtr + writeIdx).pointee = bubble
                     writeIdx = (writeIdx &+ 1) % arraySize
 
                     checkPressure()
@@ -177,7 +175,7 @@ public class Queue<T: AnyObject> {
             idx = (idx &+ 1) % arraySize
         }
 
-        (arrayPtr+writeIdx).pointee = element
+        (arrayPtr + writeIdx).pointee = element
         writeIdx = (writeIdx &+ 1) % arraySize
 
         checkPressure()
@@ -194,42 +192,35 @@ public class Queue<T: AnyObject> {
 
         if useReadLock { readLock.lock() }
 
-        let elementPtr = (arrayPtr+readIdx).pointee
+        let elementPtr = (arrayPtr + readIdx).pointee
         if elementPtr == nil {
             if useReadLock { readLock.unlock() }
             return nil
         }
-        //print("dequeue[\(readIdx)]  \(elementPtr!)")
 
-        (arrayPtr+readIdx).pointee = nil
+        (arrayPtr + readIdx).pointee = nil
         readIdx = (readIdx &+ 1) % arraySize
 
         checkPressure()
 
         if useReadLock { readLock.unlock() }
-        return elementPtr!
+        return elementPtr
     }
 
     @discardableResult
     public func dequeueIf(_ closure: (T) -> Bool) -> T? {
-        if writeIdx == readIdx {
-            return nil
-        }
-
         let useReadLock = manyConsumers || underPressure
 
         if useReadLock { readLock.lock() }
-        let elementPtr = (arrayPtr+readIdx).pointee
-        if elementPtr == nil {
+
+        guard let element = (arrayPtr + readIdx).pointee else {
             if useReadLock { readLock.unlock() }
             return nil
         }
 
-        let item: T = elementPtr!
-        if closure(item) {
-            (arrayPtr+readIdx).pointee = nil
+        if closure(element) {
+            (arrayPtr + readIdx).pointee = nil
             readIdx = (readIdx &+ 1) % arraySize
-            let element: T = elementPtr!
             if useReadLock { readLock.unlock() }
             return element
         }
@@ -238,16 +229,12 @@ public class Queue<T: AnyObject> {
         return nil
     }
 
-    public func dequeueAny(_ closure: (T) -> Bool) {
-        if writeIdx == readIdx {
-            return
-        }
-
+    public func  dequeueAny(_ closure: (T) -> Bool) {
         let useReadLock = manyConsumers || underPressure
 
         if useReadLock { readLock.lock() }
-        let elementPtr = (arrayPtr+readIdx).pointee
-        if elementPtr == nil {
+
+        guard (arrayPtr + readIdx).pointee != nil else {
             if useReadLock { readLock.unlock() }
             return
         }
@@ -255,28 +242,25 @@ public class Queue<T: AnyObject> {
         var tempIdx = readIdx
         let savedWriteIdx = writeIdx
         while tempIdx != savedWriteIdx {
-            if let tempPtr = (arrayPtr+tempIdx).pointee {
-                let tempItem: T = tempPtr
-                if closure(tempItem) {
-                    let _: T = tempPtr
-                    (arrayPtr+tempIdx).pointee = nil
+            if let element = (arrayPtr + tempIdx).pointee {
+                if closure(element) {
+                    (arrayPtr + tempIdx).pointee = nil
 
-                    // fill in the nil spot so we don't leave any holes
+                    // Shift elements toward the read side to fill the hole
                     var fillIdx = tempIdx
                     while fillIdx != readIdx {
-                        let prevIdx = fillIdx == 0 ? arraySize &- 1 : (fillIdx &- 1) % arraySize
-                        (arrayPtr+fillIdx).pointee = (arrayPtr+prevIdx).pointee
+                        let prevIdx = fillIdx == 0 ? arraySize &- 1 : fillIdx &- 1
+                        (arrayPtr + fillIdx).pointee = (arrayPtr + prevIdx).pointee
+                        (arrayPtr + prevIdx).pointee = nil
                         fillIdx = prevIdx
                     }
 
-                    (arrayPtr+readIdx).pointee = nil
                     readIdx = (readIdx &+ 1) % arraySize
                 }
             }
             tempIdx = (tempIdx &+ 1) % arraySize
         }
         if useReadLock { readLock.unlock() }
-        return
     }
 
     public func peek() -> T? {
@@ -287,16 +271,12 @@ public class Queue<T: AnyObject> {
             return nil
         }
 
-        let useReadLock = manyConsumers || underPressure
+        let useReadLock = underPressure
 
         if useReadLock { readLock.lock() }
-        let elementPtr = (arrayPtr+readIdx).pointee
-        if elementPtr == nil {
-            readLock.unlock()
-            return nil
-        }
+        let elementPtr = (arrayPtr + readIdx).pointee
         if useReadLock { readLock.unlock() }
-        return elementPtr!
+        return elementPtr
     }
 
     public func clear() {
@@ -304,9 +284,8 @@ public class Queue<T: AnyObject> {
 
         if useReadLock { readLock.lock() }
 
-        while let elementPtr = (arrayPtr+readIdx).pointee {
-            let _: T = elementPtr
-            (arrayPtr+readIdx).pointee = nil
+        while (arrayPtr + readIdx).pointee != nil {
+            (arrayPtr + readIdx).pointee = nil
             readIdx = (readIdx &+ 1) % arraySize
         }
 
