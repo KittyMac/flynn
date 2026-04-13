@@ -1,3 +1,5 @@
+// flynn:ignore Access Level Violation: Unsafe variables should not be used
+
 import Foundation
 import Pony
 
