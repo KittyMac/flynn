@@ -22,7 +22,7 @@ fileprivate class CollectionActor: Actor {
 fileprivate let maxActors = 128
 
 public typealias emptyBlock = () -> ()
-public typealias synchronizedBlock = (emptyBlock) -> ()
+public typealias synchronizedBlock = (@escaping emptyBlock) -> ()
 
 fileprivate let pool = Array<Actor>.init(count: maxActors, create: { return CollectionActor() })
 
@@ -82,19 +82,19 @@ fileprivate func _async<T: Collection>(count: Int,
 // as far as the flynn scheduler is concerned, which can be useful especially
 // for sync() operations or those which require file i/o
 fileprivate func _syncOOB<T: Collection>(count: Int,
-                                         timeout: TimeInterval,
+                                         timeout: TimeInterval?,
                                          _ collection: T,
                                          _ block: @escaping (T.Element, @escaping synchronizedBlock) -> ()) {
     let queue = TimedOperationQueue()
     queue.maxConcurrentOperationCount = min(maxActors, count > 0 && count < Flynn.cores ? count : Flynn.cores)
     
-    let lock = NSLock()
+    let actor = Actor()
     for item in collection {
         queue.addOperation(timeout: timeout) { retryCount in
             block(item) { synchronized in
-                lock.lock()
-                synchronized()
-                lock.unlock()
+                actor.unsafeSend { _ in
+                    synchronized()
+                }
             }
             return true
         }
@@ -112,14 +112,14 @@ fileprivate func _asyncOOB<T: Collection>(count: Int,
     queue.maxConcurrentOperationCount = min(maxActors, count > 0 && count < Flynn.cores ? count : Flynn.cores)
     
     let group = DispatchGroup()
-    let lock = NSLock()
+    let actor = Actor()
     for item in collection {
         group.enter()
         queue.addOperation {
             block(item) { synchronized in
-                lock.lock()
-                synchronized()
-                lock.unlock()
+                actor.unsafeSend { _ in
+                    synchronized()
+                }
             }
             group.leave()
         }
@@ -139,13 +139,15 @@ public extension Collection {
     }
     
     func asyncOOB(count: Int = 0,
-                  timeout: TimeInterval,
+                  timeout: TimeInterval?,
                   _ sender: Actor,
                   each: @escaping (Self.Element, @escaping synchronizedBlock) -> (),
                   done: @escaping () -> ()) {
         _asyncOOB(count: count, self, each, sender, done)
     }
-    func syncOOB(count: Int = 0, timeout: TimeInterval, _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
+    func syncOOB(count: Int = 0,
+                 timeout: TimeInterval?,
+                 _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
         _syncOOB(count: count, timeout: timeout, self, block)
     }
 }
