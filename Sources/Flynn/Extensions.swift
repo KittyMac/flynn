@@ -82,7 +82,7 @@ fileprivate func _async<T: Collection>(count: Int,
 // as far as the flynn scheduler is concerned, which can be useful especially
 // for sync() operations or those which require file i/o
 fileprivate func _syncOOB<T: Collection>(count: Int,
-                                         timeout: TimeInterval?,
+                                         timeout: TimeInterval,
                                          _ collection: T,
                                          _ block: @escaping (T.Element, @escaping synchronizedBlock) -> ()) {
     let queue = TimedOperationQueue()
@@ -146,7 +146,7 @@ public extension Collection {
         _asyncOOB(count: count, self, each, sender, done)
     }
     func syncOOB(count: Int = 0,
-                 timeout: TimeInterval?,
+                 timeout: TimeInterval,
                  _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
         _syncOOB(count: count, timeout: timeout, self, block)
     }
