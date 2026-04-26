@@ -22,7 +22,7 @@ fileprivate class CollectionActor: Actor {
 fileprivate let maxActors = 128
 
 public typealias emptyBlock = () -> ()
-public typealias synchronizedBlock = (@escaping emptyBlock) -> ()
+public typealias synchronizedBlock = (emptyBlock) -> ()
 
 fileprivate let pool = Array<Actor>.init(count: maxActors, create: { return CollectionActor() })
 
@@ -88,13 +88,13 @@ fileprivate func _syncOOB<T: Collection>(count: Int,
     let queue = TimedOperationQueue()
     queue.maxConcurrentOperationCount = min(maxActors, count > 0 && count < Flynn.cores ? count : Flynn.cores)
     
-    let actor = Actor()
+    let lock = NSLock()
     for item in collection {
         queue.addOperation(timeout: timeout) { retryCount in
             block(item) { synchronized in
-                actor.unsafeSend { _ in
-                    synchronized()
-                }
+                lock.lock()
+                synchronized()
+                lock.unlock()
             }
             return true
         }
@@ -112,14 +112,14 @@ fileprivate func _asyncOOB<T: Collection>(count: Int,
     queue.maxConcurrentOperationCount = min(maxActors, count > 0 && count < Flynn.cores ? count : Flynn.cores)
     
     let group = DispatchGroup()
-    let actor = Actor()
+    let lock = NSLock()
     for item in collection {
         group.enter()
         queue.addOperation {
             block(item) { synchronized in
-                actor.unsafeSend { _ in
-                    synchronized()
-                }
+                lock.lock()
+                synchronized()
+                lock.unlock()
             }
             group.leave()
         }
@@ -139,15 +139,13 @@ public extension Collection {
     }
     
     func asyncOOB(count: Int = 0,
-                  timeout: TimeInterval?,
+                  timeout: TimeInterval,
                   _ sender: Actor,
                   each: @escaping (Self.Element, @escaping synchronizedBlock) -> (),
                   done: @escaping () -> ()) {
         _asyncOOB(count: count, self, each, sender, done)
     }
-    func syncOOB(count: Int = 0,
-                 timeout: TimeInterval,
-                 _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
+    func syncOOB(count: Int = 0, timeout: TimeInterval, _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
         _syncOOB(count: count, timeout: timeout, self, block)
     }
 }
