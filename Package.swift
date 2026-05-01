@@ -49,6 +49,7 @@ var plugins = [
     "FlynnPluginTool-focal-592",
     "FlynnPluginTool-jammy-580",
     "FlynnPluginTool-jammy-592",
+    "FlynnPluginTool-noble-592",
     "FlynnPluginTool-fedora38-573",
 ]
 
@@ -74,6 +75,8 @@ var pluginTarget: [PackageDescription.Target] = [
                   path: "dist/FlynnPluginTool-jammy-580.zip"),
     .binaryTarget(name: "FlynnPluginTool-jammy-592",
                   path: "dist/FlynnPluginTool-jammy-592.zip"),
+    .binaryTarget(name: "FlynnPluginTool-noble-592",
+                  path: "dist/FlynnPluginTool-noble-592.zip"),
     .plugin(
         name: "FlynnPlugin",
         capability: .buildTool(),
