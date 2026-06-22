@@ -140,8 +140,9 @@ void ponyint_cpu_relax()
 
 uint64_t ponyint_cpu_tick()
 {
-    // TODO: linux
-    return 0;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec;
 }
 
 #endif

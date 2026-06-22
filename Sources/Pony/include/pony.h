@@ -94,6 +94,19 @@ int pony_actor_getbatchSize(void * actor);
 void pony_actor_setcoreAffinity(void * actor, int coreAffinity);
 int pony_actor_getcoreAffinity(void * actor);
 
+// ---- Lightweight per-actor-type profiler ----
+// Tag an actor with a dense type id (assigned on the Swift side). 0 == untyped.
+void pony_actor_setProfileTypeID(void * actor, int typeID);
+// Turn measurement on/off. When off, the hot path cost is a single relaxed load.
+void pony_profiler_enable(bool on);
+// Zero all accumulated samples.
+void pony_profiler_reset(void);
+// Maximum number of distinct type ids the profiler can track.
+int pony_profiler_max_types(void);
+// Sum per-scheduler samples into per-type totals. outNs/outCount must each hold
+// at least maxTypes entries. Returns the number of type slots written.
+int pony_profiler_collect(uint64_t * outNs, uint64_t * outCount, int maxTypes);
+
 void pony_actor_yield(void * actor);
 void pony_actor_suspend(void * actor);
 void pony_actor_resume(void * actor);

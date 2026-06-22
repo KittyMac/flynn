@@ -20,6 +20,7 @@ typedef struct pony_actor_t
     int32_t priority;
     int32_t coreAffinity;
     int32_t batchSize;
+    int32_t profileTypeID;
     bool suspended;
     bool yield;
     bool destroy;
@@ -47,6 +48,8 @@ void ponyint_actor_setbatchSize(pony_actor_t* actor, int32_t batchSize);
 
 int32_t ponyint_actor_getcoreAffinity(pony_actor_t* actor);
 void ponyint_actor_setcoreAffinity(pony_actor_t* actor, int32_t coreAffinity);
+
+void ponyint_actor_setProfileTypeID(pony_actor_t* actor, int32_t typeID);
 
 void ponyint_yield_actor(pony_actor_t* actor);
 void ponyint_suspend_actor(pony_actor_t* actor);

@@ -151,6 +151,11 @@ int pony_actor_getcoreAffinity(void * actor) {
     return ponyint_actor_getcoreAffinity(actor);
 }
 
+void pony_actor_setProfileTypeID(void * actor, int typeID) {
+    if (pony_is_inited == false) { return; }
+    ponyint_actor_setProfileTypeID(actor, typeID);
+}
+
 void pony_actor_yield(void * actor) {
     if (pony_is_inited == false) { return; }
     ponyint_yield_actor(actor);

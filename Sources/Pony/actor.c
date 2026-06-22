@@ -125,6 +125,11 @@ void ponyint_actor_setcoreAffinity(pony_actor_t* actor, int32_t coreAffinity)
     actor->coreAffinity = coreAffinity;
 }
 
+void ponyint_actor_setProfileTypeID(pony_actor_t* actor, int32_t typeID)
+{
+    actor->profileTypeID = typeID;
+}
+
 void ponyint_yield_actor(pony_actor_t* actor)
 {
     actor->yield = true;

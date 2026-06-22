@@ -13,7 +13,21 @@
 #include "actor.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include "threads.h"
+
+#define PONY_PROFILE_MAX_TYPES 1024
+
+typedef struct prof_bucket_t { uint64_t ns; uint64_t count; } prof_bucket_t;
+
+static prof_bucket_t* g_prof = NULL;
+static PONY_ATOMIC(bool) g_prof_enabled = false;
+
+void pony_profiler_enable(bool on)
+{
+    atomic_store_explicit(&g_prof_enabled, on, memory_order_relaxed);
+}
 
 #ifndef PLATFORM_IS_APPLE
 #define QOS_CLASS_USER_INITIATED 0
@@ -38,6 +52,33 @@ static uint32_t scheduler_count;
 static PONY_ATOMIC(uint32_t) active_scheduler_count;
 static PONY_ATOMIC(uint32_t) active_scheduler_count_check;
 static scheduler_t* scheduler;
+
+void pony_profiler_reset(void)
+{
+    if (g_prof == NULL) { return; }
+    memset(g_prof, 0,
+           (size_t)scheduler_count * PONY_PROFILE_MAX_TYPES * sizeof(prof_bucket_t));
+}
+
+int pony_profiler_max_types(void)
+{
+    return PONY_PROFILE_MAX_TYPES;
+}
+
+int pony_profiler_collect(uint64_t* outNs, uint64_t* outCount, int maxTypes)
+{
+    int n = maxTypes < PONY_PROFILE_MAX_TYPES ? maxTypes : PONY_PROFILE_MAX_TYPES;
+    for (int t = 0; t < n; t++) { outNs[t] = 0; outCount[t] = 0; }
+    if (g_prof == NULL) { return n; }
+    for (uint32_t s = 0; s < scheduler_count; s++) {
+        prof_bucket_t* row = &g_prof[(size_t)s * PONY_PROFILE_MAX_TYPES];
+        for (int t = 0; t < n; t++) {
+            outNs[t]    += row[t].ns;
+            outCount[t] += row[t].count;
+        }
+    }
+    return n;
+}
 static mpmcq_t inject;
 static mpmcq_t injectHighPerformance;
 static mpmcq_t injectHighEfficiency;
@@ -283,7 +324,22 @@ static void run(scheduler_t* sched)
             // result < 0 means the actor was destroyed (pointer invalid)
             // result == 0 means don't reschedule the actor
             // result > 0 means to reschedule the actor
+
+            // Capture profiling state BEFORE the call: a result of -1 means the
+            // actor was freed inside ponyint_actor_run, so we must not touch it
+            // afterward. The accumulator lives on g_prof (indexed by this
+            // scheduler), not on the actor, so it stays valid regardless.
+            int32_t  profTypeID = actor->profileTypeID;
+            bool     profOn     = atomic_load_explicit(&g_prof_enabled, memory_order_relaxed);
+            uint64_t profStart  = profOn ? ponyint_cpu_tick() : 0;
+
             int result = ponyint_actor_run(&sched->ctx, actor, actor->batchSize);
+
+            if (profOn && g_prof != NULL && profTypeID >= 0 && profTypeID < PONY_PROFILE_MAX_TYPES) {
+                prof_bucket_t* b = &g_prof[(size_t)sched->index * PONY_PROFILE_MAX_TYPES + profTypeID];
+                b->ns    += (ponyint_cpu_tick() - profStart);   // own thread only -> no atomics
+                b->count += 1;
+            }
                         
             pony_actor_t* next = pop_global(sched, sched);
             
@@ -375,6 +431,12 @@ static void ponyint_sched_shutdown()
     
     ponyint_pool_free(scheduler, scheduler_count * sizeof(scheduler_t));
     scheduler = NULL;
+
+    if (g_prof != NULL) {
+        free(g_prof);
+        g_prof = NULL;
+    }
+
     scheduler_count = 0;
     atomic_store_explicit(&active_scheduler_count, 0, memory_order_relaxed);
     
@@ -409,6 +471,11 @@ pony_ctx_t* ponyint_sched_init(int force_scheduler_count, int minimum_scheduler_
     atomic_store_explicit(&active_scheduler_count_check, scheduler_count, memory_order_relaxed);
     scheduler = (scheduler_t*)ponyint_pool_alloc(scheduler_count * sizeof(scheduler_t));
     memset(scheduler, 0, scheduler_count * sizeof(scheduler_t));
+
+    // Allocate the per-scheduler profiler matrix (zero-initialized). Uses calloc
+    // rather than the pony pool because it is a single large, long-lived buffer.
+    g_prof = (prof_bucket_t*)calloc((size_t)scheduler_count * PONY_PROFILE_MAX_TYPES,
+                                    sizeof(prof_bucket_t));
     
     if (sched_mut == NULL) {
         sched_mut = ponyint_mutex_create();
