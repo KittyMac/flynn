@@ -255,7 +255,7 @@ open class Actor: Equatable, Hashable {
         unsafeUUID = UUID().uuidString
         _ponyActorPtr = pony_actor_create()
 
-        if Flynn.Profiler.enabled, let actorPtr = _ponyActorPtr {
+        if let actorPtr = _ponyActorPtr {
             pony_actor_setProfileTypeID(actorPtr, Flynn.Profiler.typeID(for: type(of: self)))
         }
 
