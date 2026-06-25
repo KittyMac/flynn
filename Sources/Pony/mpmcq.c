@@ -40,6 +40,7 @@ void ponyint_mpmcq_init(mpmcq_t* q)
     q->tail.counter = 0;
     
     atomic_store_explicit(&q->num_messages, 0, memory_order_relaxed);
+    atomic_store_explicit(&q->pop_lock, false, memory_order_relaxed);
 }
 
 void ponyint_mpmcq_destroy(mpmcq_t* q)
@@ -85,6 +86,9 @@ void ponyint_mpmcq_push_single(mpmcq_t* q, void* data)
 
 void* ponyint_mpmcq_pop(mpmcq_t* q)
 {
+    while(atomic_exchange_explicit(&q->pop_lock, true, memory_order_acquire))
+        ponyint_cpu_relax();
+
     PONY_ABA_PROTECTED_PTR(mpmcq_node_t) cmp;
     PONY_ABA_PROTECTED_PTR(mpmcq_node_t) xchg;
     mpmcq_node_t* tail;
@@ -101,22 +105,25 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
         tail = cmp.object;
         // Get the next node rather than the tail. The tail is either a stub or has
         // already been consumed.
-        if(tail == NULL)
+        if(tail == NULL) {
+            atomic_store_explicit(&q->pop_lock, false, memory_order_release);
             return NULL;
+        }
         
         // Note: Xcode address sanitizer fails on this call. unclear whether this is
         // an actual problem with this fencing mechanism or a red herring
         next = atomic_load_explicit(&tail->next, memory_order_relaxed);
         
-        if(next == NULL)
+        if(next == NULL) {
+            atomic_store_explicit(&q->pop_lock, false, memory_order_release);
             return NULL;
+        }
         
         xchg.object = next;
         xchg.counter = cmp.counter + 1;
         
-        // NOTE: unlike the original ponyrt, we only call into ponyint_mpmcq_pop() when blocked by mutexes
-        // therefore, there will be no thread contention in the execution of this function and we don't
-        // need to bigatomic_compare_exchange_weak_explicit();
+        // NOTE: the per-queue pop_lock guarantees we are the only consumer of this
+        // queue right now, so the tail update need not be an atomic RMW.
         if (q->tail.object == cmp.object) {
             q->tail = xchg;
             continue;
@@ -124,8 +131,6 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
         break;
     }
     while(true);
-    // while(!bigatomic_compare_exchange_weak_explicit(&q->tail, &cmp, xchg,
-    //                                                 memory_order_acq_rel, memory_order_acquire));
     
     // Synchronise on tail->next to ensure we see the write to next->data from
     // the push. Also synchronise on next->data (see comment below).
@@ -159,5 +164,6 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
         atomic_fetch_sub_explicit(&q->num_messages, 1, memory_order_relaxed);
     }
     
+    atomic_store_explicit(&q->pop_lock, false, memory_order_release);
     return data;
 }

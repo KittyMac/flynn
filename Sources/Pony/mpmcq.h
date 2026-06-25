@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdalign.h>
+#include <stdbool.h>
 #include "atomics.h"
 
 typedef struct mpmcq_node_t mpmcq_node_t;
@@ -20,6 +21,7 @@ typedef struct mpmcq_t
     alignas(64) PONY_ATOMIC(mpmcq_node_t*) head;
     PONY_ATOMIC_ABA_PROTECTED_PTR(mpmcq_node_t) tail;
     PONY_ATOMIC(int64_t) num_messages;
+    alignas(64) PONY_ATOMIC(bool) pop_lock;
 } mpmcq_t;
 
 void ponyint_mpmcq_init(mpmcq_t* q);

@@ -34,10 +34,6 @@ void pony_profiler_enable(bool on)
 #define QOS_CLASS_UTILITY 1
 #endif
 
-PONY_MUTEX injectLock = NULL;
-PONY_MUTEX injectHighPerformanceLock = NULL;
-PONY_MUTEX injectHighEfficiencyLock = NULL;
-
 #ifdef PLATFORM_IS_APPLE
 extern void *objc_autoreleasePoolPush();
 extern void objc_autoreleasePoolPop(void *);
@@ -103,10 +99,7 @@ uint32_t get_active_scheduler_count()
  */
 static pony_actor_t* pop(scheduler_t* sched)
 {
-    ponyint_mutex_lock(injectLock);
-    pony_actor_t* actor = ponyint_mpmcq_pop(&sched->q);
-    ponyint_mutex_unlock(injectLock);
-    return actor;
+    return ponyint_mpmcq_pop(&sched->q);
 }
 
 /**
@@ -119,30 +112,22 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
         case kCoreAffinity_OnlyEfficiency:
             if (actor->coreAffinity != sched->coreAffinity) {
                 if (actor->coreAffinity == kCoreAffinity_OnlyPerformance) {
-                    //ponyint_mutex_lock(injectHighPerformanceLock);
                     ponyint_mpmcq_push(&injectHighPerformance, actor);
-                    //ponyint_mutex_unlock(injectHighPerformanceLock);
                 } else {
-                    //ponyint_mutex_lock(injectHighEfficiencyLock);
                     ponyint_mpmcq_push(&injectHighEfficiency, actor);
-                    //ponyint_mutex_unlock(injectHighEfficiencyLock);
                 }
                 return;
             }
             break;
         case kCoreAffinity_PreferEfficiency:
             if (sched->coreAffinity == kCoreAffinity_OnlyPerformance) {
-                //ponyint_mutex_lock(injectHighEfficiencyLock);
                 ponyint_mpmcq_push(&injectHighEfficiency, actor);
-                //ponyint_mutex_unlock(injectHighEfficiencyLock);
                 return;
             }
             break;
         case kCoreAffinity_PreferPerformance:
             if (sched->coreAffinity == kCoreAffinity_OnlyEfficiency) {
-                //ponyint_mutex_lock(injectHighPerformanceLock);
                 ponyint_mpmcq_push(&injectHighPerformance, actor);
-                //ponyint_mutex_unlock(injectHighPerformanceLock);
                 return;
             }
             break;
@@ -155,23 +140,17 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
  */
 static pony_actor_t* pop_global(scheduler_t* my_sched, scheduler_t* other_sched)
 {
-    ponyint_mutex_lock(injectLock);
     pony_actor_t* actor = (pony_actor_t*)ponyint_mpmcq_pop(&inject);
-    ponyint_mutex_unlock(injectLock);
     
     if(actor != NULL)
         return actor;
     
     switch (my_sched->coreAffinity) {
         case kCoreAffinity_OnlyPerformance:
-            ponyint_mutex_lock(injectHighPerformanceLock);
             actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighPerformance);
-            ponyint_mutex_unlock(injectHighPerformanceLock);
             break;
         case kCoreAffinity_OnlyEfficiency:
-            ponyint_mutex_lock(injectHighEfficiencyLock);
             actor = (pony_actor_t*)ponyint_mpmcq_pop(&injectHighEfficiency);
-            ponyint_mutex_unlock(injectHighEfficiencyLock);
             break;
     }
     if(actor != NULL)
@@ -249,7 +228,7 @@ static pony_actor_t* steal(scheduler_t* sched)
     int scaling_sleep = 0;
     int scaling_sleep_delta = 4;
     int scaling_sleep_min = 50;      // The minimum value we start actually sleeping at
-    int scaling_sleep_max = 500000;     // The maximimum amount of time we are allowed to sleep at any single call
+    int scaling_sleep_max = 5000;     // The maximimum amount of time we are allowed to sleep at any single call
     
     while(true)
     {
@@ -479,9 +458,6 @@ pony_ctx_t* ponyint_sched_init(int force_scheduler_count, int minimum_scheduler_
     
     if (sched_mut == NULL) {
         sched_mut = ponyint_mutex_create();
-        injectLock = ponyint_mutex_create();
-        injectHighPerformanceLock = ponyint_mutex_create();
-        injectHighEfficiencyLock = ponyint_mutex_create();
     }
     
     for(uint32_t i = 0; i < scheduler_count; i++)
