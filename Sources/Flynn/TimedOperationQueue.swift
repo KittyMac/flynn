@@ -95,14 +95,12 @@ public class TimedOperationQueue {
                 Flynn.threadSetName("TimedOperationQueue")
                 while true {
                     
-                    autoreleasepool {
-                        staticLock.lock()
-                        weakTimedOperationQueues = weakTimedOperationQueues.filter {
-                            $0.timedOperationQueue?.advance()
-                            return $0.timedOperationQueue != nil
-                        }
-                        staticLock.unlock()
+                    staticLock.lock()
+                    weakTimedOperationQueues = weakTimedOperationQueues.filter {
+                        $0.timedOperationQueue?.advance()
+                        return $0.timedOperationQueue != nil
                     }
+                    staticLock.unlock()
                                         
                     Flynn.usleep(500_000)
                 }
