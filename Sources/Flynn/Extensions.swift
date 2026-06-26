@@ -40,10 +40,12 @@ fileprivate func _sync<T: Collection>(count: Int,
         actorIdx = (actorIdx + 1) % poolCount
         group.enter()
         pool[actorIdx].unsafeSend { _ in
-            block(item) { synchronized in
-                lock.lock()
-                synchronized()
-                lock.unlock()
+            autoreleasepool {
+                block(item) { synchronized in
+                    lock.lock()
+                    synchronized()
+                    lock.unlock()
+                }
             }
             group.leave()
         }
@@ -66,10 +68,12 @@ fileprivate func _async<T: Collection>(count: Int,
         actorIdx = (actorIdx + 1) % poolCount
         group.enter()
         pool[actorIdx].unsafeSend { _ in
-            block(item) { synchronized in
-                lock.lock()
-                synchronized()
-                lock.unlock()
+            autoreleasepool {
+                block(item) { synchronized in
+                    lock.lock()
+                    synchronized()
+                    lock.unlock()
+                }
             }
             group.leave()
         }
@@ -91,10 +95,12 @@ fileprivate func _syncOOB<T: Collection>(count: Int,
     let lock = NSLock()
     for item in collection {
         queue.addOperation(timeout: timeout) { retryCount in
-            block(item) { synchronized in
-                lock.lock()
-                synchronized()
-                lock.unlock()
+            autoreleasepool {
+                block(item) { synchronized in
+                    lock.lock()
+                    synchronized()
+                    lock.unlock()
+                }
             }
             return true
         }
@@ -116,10 +122,12 @@ fileprivate func _asyncOOB<T: Collection>(count: Int,
     for item in collection {
         group.enter()
         queue.addOperation {
-            block(item) { synchronized in
-                lock.lock()
-                synchronized()
-                lock.unlock()
+            autoreleasepool {
+                block(item) { synchronized in
+                    lock.lock()
+                    synchronized()
+                    lock.unlock()
+                }
             }
             group.leave()
         }
