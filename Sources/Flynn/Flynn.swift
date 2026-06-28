@@ -103,6 +103,10 @@ open class Flynn {
         pony_usleep(seconds * 1_000_000)
     }
     
+    public class func malloc_trim(pad: size_t) {
+        pony_malloc_trim(pad)
+    }
+    
     public class func dock(_ actor: Actor) {
         dockedQueue.enqueue(actor)
     }

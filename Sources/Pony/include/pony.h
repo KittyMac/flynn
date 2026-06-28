@@ -10,11 +10,8 @@
 #include <sys/types.h>
 #include <stdint.h>
 
-#ifdef PLATFORM_IS_WINDOWS
 void pony_usleep(uint64_t usec);
-#else
-void pony_usleep(uint64_t usec);
-#endif
+void pony_malloc_trim(size_t pad);
 
 typedef void (*RegisterWithRootFunc)(const char * registrationString, int socketFD);
 typedef void (*NodeDisconnectedFunc)(int socketFD);

@@ -41,6 +41,10 @@ void pony_usleep(uint64_t usec)
     usleep((useconds_t)usec);
 }
 
+void pony_malloc_trim(size_t pad) {
+    
+}
+
 static uint32_t get_sys_info(int type_specifier, const char* name, uint32_t default_value) {
     size_t size = 0;
     uint32_t result = default_value;

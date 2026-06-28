@@ -31,6 +31,10 @@ void pony_usleep(uint64_t usec)
     CloseHandle(timer); 
 }
 
+void pony_malloc_trim(size_t pad) {
+    
+}
+
 void ponyint_cpu_init()
 {
     hw_core_count = 12;

@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <malloc.h>
 
 static uint32_t avail_cpu_count;
 
@@ -30,6 +31,10 @@ static uint32_t hw_p_core_count = 0;
 void pony_usleep(uint64_t usec)
 {
     usleep(usec);
+}
+
+void pony_malloc_trim(size_t pad) {
+    malloc_trim(pad);
 }
 
 static bool cpu_physical(uint32_t cpu)
