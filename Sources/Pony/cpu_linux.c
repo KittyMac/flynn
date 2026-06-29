@@ -34,7 +34,9 @@ void pony_usleep(uint64_t usec)
 }
 
 void pony_malloc_trim(size_t pad) {
+#if defined(__GLIBC__)
     malloc_trim(pad);
+#endif
 }
 
 static bool cpu_physical(uint32_t cpu)
