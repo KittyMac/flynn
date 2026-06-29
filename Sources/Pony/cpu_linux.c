@@ -34,11 +34,7 @@ void pony_usleep(uint64_t usec)
 }
 
 void pony_malloc_trim(size_t pad) {
-#ifdef PLATFORM_IS_ANDROID
-    mallopt(M_PURGE, 0);
-#else
     malloc_trim(pad);
-#endif
 }
 
 static bool cpu_physical(uint32_t cpu)
