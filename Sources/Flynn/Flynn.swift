@@ -76,6 +76,11 @@ open class Flynn {
                               minSchedulerCount: Int = 0,
                               memoryTrimLimit: Int = 0) {
         running.checkInactive {
+            if memoryTrimLimit > 0 {
+                setenv("MALLOC_ARENA_MAX", "2", 1)
+                setenv("MALLOC_TRIM_THRESHOLD_", "268435456", 1)
+            }
+            
             timeStart = ProcessInfo.processInfo.systemUptime
 
             timerLoop = TimerLoop()
@@ -83,9 +88,6 @@ open class Flynn {
             pony_startup(Int32(schedulerCount), Int32(minSchedulerCount))
             
             if memoryTrimLimit > 0 {
-                setenv("MALLOC_ARENA_MAX", "2", 1)
-                setenv("MALLOC_TRIM_THRESHOLD_", "268435456", 1)
-                
                 let actor = Actor()
                 Flynn.Timer(timeInterval: 30.0, immediate: false, repeats: true, actor) { timer in
                     if Flynn.appCurrentMemory > memoryTrimLimit {
