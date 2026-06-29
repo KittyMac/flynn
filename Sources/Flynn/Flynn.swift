@@ -1,3 +1,6 @@
+// flynn:ignore Weak Timer Violation: Flynn.Timer callbacks should use [weak self]
+// flynn:ignore Access Level Violation: Unsafe functions should not be used
+
 import Foundation
 import Pony
 
@@ -70,13 +73,26 @@ open class Flynn {
     static var remotes = RemoteActorManager()
 
     public class func startup(schedulerCount: Int = 0,
-                              minSchedulerCount: Int = 0) {
+                              minSchedulerCount: Int = 0,
+                              memoryTrimLimit: Int = 0) {
         running.checkInactive {
             timeStart = ProcessInfo.processInfo.systemUptime
 
             timerLoop = TimerLoop()
             
             pony_startup(Int32(schedulerCount), Int32(minSchedulerCount))
+            
+            if memoryTrimLimit > 0 {
+                setenv("MALLOC_ARENA_MAX", "2", 1)
+                setenv("MALLOC_TRIM_THRESHOLD_", "268435456", 1)
+                
+                let actor = Actor()
+                Flynn.Timer(timeInterval: 30.0, immediate: false, repeats: true, actor) { timer in
+                    if Flynn.appCurrentMemory > memoryTrimLimit {
+                        Flynn.malloc_trim(pad: 0)
+                    }
+                }
+            }
         }
     }
 

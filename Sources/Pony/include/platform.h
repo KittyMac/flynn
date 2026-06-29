@@ -18,6 +18,10 @@
 #  define PLATFORM_IS_WINDOWS
 #endif
 
+#if defined(__ANDROID__)
+#  define PLATFORM_IS_ANDROID
+#endif
+
 #if defined(__LP64__)
 #  define PLATFORM_IS_LP64
 #else
