@@ -395,7 +395,7 @@ class AutogenerateExternalBehaviors {
                             scratch.append("    @discardableResult\n")
                             scratch.append("    public func \(name)(_ sender: Actor,\n")
                             scratch.append("                \(namespaces) _ error: @escaping () -> Void,\n")
-                            scratch.append("                \(namespaces) _ returnCallback: @escaping (")
+                            scratch.append("                \(namespaces) _ callback: @escaping (")
                             for part in returnCallbackParameters {
                                 scratch.append("\(part), ")
                             }
@@ -412,7 +412,7 @@ class AutogenerateExternalBehaviors {
                             } else {
                                 scratch.append("            let response = (try! JSONDecoder().decode(\(codableName(name))Response.self, from: $0))\n")
                             }
-                            scratch.append("            returnCallback(\n")
+                            scratch.append("            callback(\n")
                             for idx in 0..<returnCallbackParameters.count {
                                 scratch.append("                response.response\(idx),\n")
                             }
@@ -432,9 +432,9 @@ class AutogenerateExternalBehaviors {
                             scratch.append("    @discardableResult\n")
                             scratch.append("    public func \(name)(_ sender: Actor,\n")
                             scratch.append("                \(namespaces) _ error: @escaping () -> Void,\n")
-                            scratch.append("                \(namespaces) _ returnCallback: @escaping (\(returnType)) -> Void) -> Self {\n")
+                            scratch.append("                \(namespaces) _ callback: @escaping (\(returnType)) -> Void) -> Self {\n")
                             scratch.append("        unsafeSendToRemote(\"\(fullActorName)\", \"\(name)\", Data(), sender, error) {\n")
-                            scratch.append("            returnCallback(\n")
+                            scratch.append("            callback(\n")
                             scratch.append("                // swiftlint:disable:next force_try\n")
                             if binaryCodable {
                                 scratch.append("                (try! BinaryDataDecoder().decode(\(codableName(name))Response.self, from: $0)).response\n")
@@ -488,11 +488,11 @@ class AutogenerateExternalBehaviors {
                         if returnCallbackParameters.count > 0 {
                             scratch.append("\(parameterNameHeader)_ sender: Actor,\n")
                             scratch.append("\(parameterNameHeader)_ error: @escaping () -> Void,\n")
-                            scratch.append("\(parameterNameHeader)_ returnCallback: @escaping (\(returnCallbackParameters.joined(separator: ", "))) -> Void,\n")
+                            scratch.append("\(parameterNameHeader)_ callback: @escaping (\(returnCallbackParameters.joined(separator: ", "))) -> Void,\n")
                         } else if let returnType = returnType {
                             scratch.append("\(parameterNameHeader)_ sender: Actor,\n")
                             scratch.append("\(parameterNameHeader)_ error: @escaping () -> Void,\n")
-                            scratch.append("\(parameterNameHeader)_ returnCallback: @escaping (\(returnType)) -> Void,\n")
+                            scratch.append("\(parameterNameHeader)_ callback: @escaping (\(returnType)) -> Void,\n")
                         }
                         
 
@@ -539,7 +539,7 @@ class AutogenerateExternalBehaviors {
                                 } else {
                                     scratch.append("            let msg = try! JSONDecoder().decode(\(codableName(name))Response.self, from: $0)\n")
                                 }
-                                scratch.append("            returnCallback((\n")
+                                scratch.append("            callback((\n")
                                 for _ in parts {
                                     scratch.append("                msg.response\(idx),\n")
                                     idx += 1
@@ -559,7 +559,7 @@ class AutogenerateExternalBehaviors {
                                 } else {
                                     scratch.append("            let msg = try! JSONDecoder().decode(\(codableName(name))Response.self, from: $0)\n")
                                 }
-                                scratch.append("            returnCallback(\n")
+                                scratch.append("            callback(\n")
                                 for _ in returnCallbackParameters {
                                     scratch.append("                msg.response\(idx),\n")
                                     idx += 1
@@ -571,7 +571,7 @@ class AutogenerateExternalBehaviors {
                                 scratch.append("            )\n")
                                 
                             } else {
-                                scratch.append("            returnCallback(\n")
+                                scratch.append("            callback(\n")
                                 scratch.append("                // swiftlint:disable:next force_try\n")
                                 if binaryCodable {
                                     scratch.append("                (try! BinaryDataDecoder().decode(\(codableName(name))Response.self, from: $0).response)\n")
@@ -614,7 +614,7 @@ class AutogenerateExternalBehaviors {
                     if hasReturnCallback {
 
                         if parameterLabels.count > minParameterCount {
-                            scratch.append("        safeRegisterDelayedRemoteBehavior(\"\(name)\") { [unowned self] (data, returnCallback) in\n")
+                            scratch.append("        safeRegisterDelayedRemoteBehavior(\"\(name)\") { [unowned self] (data, callback) in\n")
                             scratch.append("            // swiftlint:disable:next force_try\n")
                             if binaryCodable {
                                 scratch.append("            let msg = try! BinaryDataDecoder().decode(\(codableName(name))Request.self, from: data)\n")
@@ -652,7 +652,7 @@ class AutogenerateExternalBehaviors {
                             }
 
                             if returnCallbackParameters.count > 0 {
-                                scratch.append("                returnCallback(\n")
+                                scratch.append("                callback(\n")
                                 scratch.append("                    // swiftlint:disable:next force_try\n")
                                 if binaryCodable {
                                     scratch.append("                    try! BinaryDataEncoder().encode(\n")
@@ -671,13 +671,13 @@ class AutogenerateExternalBehaviors {
                                 scratch.append("                    )\n")
                                 scratch.append("                )\n")
                             } else {
-                                scratch.append("                returnCallback(Data())\n")
+                                scratch.append("                callback(Data())\n")
                             }
                             scratch.append("            }\n")
 
                             scratch.append("        }\n")
                         } else {
-                            scratch.append("        safeRegisterDelayedRemoteBehavior(\"\(name)\") { [unowned self] (_, returnCallback) in\n")
+                            scratch.append("        safeRegisterDelayedRemoteBehavior(\"\(name)\") { [unowned self] (_, callback) in\n")
 
                             if disableFatalErrors == false {
                                 scratch.append("            #if DEBUG\n")
@@ -710,7 +710,7 @@ class AutogenerateExternalBehaviors {
                             }
 
                             if returnCallbackParameters.count > 0 {
-                                scratch.append("                returnCallback(\n")
+                                scratch.append("                callback(\n")
                                 scratch.append("                    // swiftlint:disable:next force_try\n")
                                 if binaryCodable {
                                     scratch.append("                    try! BinaryDataEncoder().encode(\n")
@@ -729,7 +729,7 @@ class AutogenerateExternalBehaviors {
                                 scratch.append("                    )\n")
                                 scratch.append("                )\n")
                             } else {
-                                scratch.append("                returnCallback(Data())\n")
+                                scratch.append("                callback(Data())\n")
                             }
                             scratch.append("            }\n")
                             scratch.append("        }\n")
@@ -945,7 +945,7 @@ class AutogenerateExternalBehaviors {
                             scratch.append("_ sender: Actor,\n")
                             
                             if hasReturnCallback {
-                                scratch.append("\(parameterNameHeader)_ returnCallback: @escaping ((")
+                                scratch.append("\(parameterNameHeader)_ callback: @escaping ((")
                                 for type in returnCallbackParameters {
                                     scratch.append("\(type), ")
                                 }
@@ -955,7 +955,7 @@ class AutogenerateExternalBehaviors {
                                 }
                                 scratch.append(") -> Void)")
                             } else {
-                                scratch.append("\(parameterNameHeader)_ returnCallback: @escaping ((\(returnType)) -> Void)")
+                                scratch.append("\(parameterNameHeader)_ callback: @escaping ((\(returnType)) -> Void)")
                             }
                         } else {
                             if scratch.hasSuffix(",\n") {
@@ -987,17 +987,20 @@ class AutogenerateExternalBehaviors {
                             let (prefixName, prefixParameterLabels) = ast.parseFunctionDefinition(prefix.function.structure)
                             // is this the prefix for this behaviour?
                             if name.dropFirst(2) == prefixName.dropFirst(3) {
+                                scratch.append("        let (")
                                 if let parameters = prefix.function.structure.substructure {
-                                    for parameter in parameters where parameter.kind == .varParameter {
-                                        if let name = parameter.name,
-                                           parameter.typename?.contains("inout") == true {
-                                            scratch.append("        var \(name) = \(name)\n")
+                                    let parameterNames = parameters.compactMap { parameter in
+                                        if parameter.kind == .varParameter && parameter.name != "returnCallback" {
+                                            return parameter.name
                                         }
+                                        return nil
                                     }
-                                    
-                                    scratch.append("        Self._\(prefixName)(\n")
+                                    scratch.append(parameterNames.joined())
+                                }
+                                scratch.append(") = Self._\(prefixName)(\n")
+                                if let parameters = prefix.function.structure.substructure {
                                     var idx = 0
-                                    for parameter in parameters where parameter.kind == .varParameter {
+                                    for parameter in parameters where parameter.kind == .varParameter && parameter.name != "returnCallback" {
                                         let label = prefixParameterLabels[idx]
                                         
                                         if let name = parameter.name {
@@ -1008,25 +1011,13 @@ class AutogenerateExternalBehaviors {
                                                     scratch.append("            \(label): self,\n")
                                                 }
                                             } else {
-                                                if parameter.typename?.contains("inout") == true {
-                                                    if label == name {
-                                                        scratch.append("            \(name): &\(name),\n")
-                                                    } else {
-                                                        if label != "_" {
-                                                            scratch.append("            \(label): &\(name),\n")
-                                                        } else {
-                                                            scratch.append("            &\(name),\n")
-                                                        }
-                                                    }
+                                                if label == name {
+                                                    scratch.append("            \(name): \(name),\n")
                                                 } else {
-                                                    if label == name {
-                                                        scratch.append("            \(name): \(name),\n")
+                                                    if label != "_" {
+                                                        scratch.append("            \(label): \(name),\n")
                                                     } else {
-                                                        if label != "_" {
-                                                            scratch.append("            \(label): \(name),\n")
-                                                        } else {
-                                                            scratch.append("            \(name),\n")
-                                                        }
+                                                        scratch.append("            \(name),\n")
                                                     }
                                                 }
                                             }
@@ -1093,7 +1084,7 @@ class AutogenerateExternalBehaviors {
                                 }
                                 
                                 scratch.append("                sender.unsafeSend { _ in\n")
-                                scratch.append("                    returnCallback(")
+                                scratch.append("                    callback(")
                                 for idx in 0..<returnCallbackParameters.count {
                                     scratch.append("arg\(idx), ")
                                 }
@@ -1111,7 +1102,7 @@ class AutogenerateExternalBehaviors {
                             } else {
                                 scratch.append(")\n")
                                 scratch.append("            sender.unsafeSend { _ in\n")
-                                scratch.append("                returnCallback(result)\n")
+                                scratch.append("                callback(result)\n")
                                 scratch.append("                self.unsafeSend { _ in \(supportsThenSafeThenCall) }\n")
                                 scratch.append("            }\n")
                             }
