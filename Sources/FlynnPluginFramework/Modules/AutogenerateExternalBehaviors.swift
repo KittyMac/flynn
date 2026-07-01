@@ -27,7 +27,7 @@ class AutogenerateExternalBehaviors {
                                                 actorSyntax)
             guard ast.isRemoteActor(fullActorName) else { return false }
 
-            let (internals, _) = ast.getBehaviorsForActor(actorSyntax)
+            let (internals, _, _) = ast.getBehaviorsForActor(actorSyntax)
 
             if internals.count >= 0 {
                 var scratch = ""
@@ -850,7 +850,7 @@ class AutogenerateExternalBehaviors {
         if  actorSyntax.file == syntax.file &&
             ast.isActor(fullActorName) {
 
-            let (internals, _) = ast.getBehaviorsForActor(actorSyntax)
+            let (internals, _, prefixes) = ast.getBehaviorsForActor(actorSyntax)
             
             if internals.count > 0 {
                 var didHaveBehavior = false
@@ -981,6 +981,53 @@ class AutogenerateExternalBehaviors {
                         }
                         
                         scratch.append(") -> Self {\n")
+                        
+                        // does this have a synchronous header?
+                        for prefix in prefixes {
+                            let (prefixName, prefixParameterLabels) = ast.parseFunctionDefinition(prefix.function.structure)
+                            // is this the prefix for this behaviour?
+                            if name.dropFirst(2) == prefixName.dropFirst(3) {
+                                scratch.append("        let (")
+                                if let parameters = prefix.function.structure.substructure {
+                                    let parameterNames = parameters.compactMap { parameter in
+                                        if parameter.kind == .varParameter && parameter.name != "returnCallback" {
+                                            return parameter.name
+                                        }
+                                        return nil
+                                    }
+                                    scratch.append(parameterNames.joined())
+                                }
+                                scratch.append(") = Self._\(prefixName)(\n")
+                                if let parameters = prefix.function.structure.substructure {
+                                    var idx = 0
+                                    for parameter in parameters where parameter.kind == .varParameter && parameter.name != "returnCallback" {
+                                        let label = prefixParameterLabels[idx]
+                                        
+                                        if let name = parameter.name {
+                                            if name == "actor" {
+                                                if label == name {
+                                                    scratch.append("            \(name): self,\n")
+                                                } else {
+                                                    scratch.append("            \(label): self,\n")
+                                                }
+                                            } else {
+                                                if label == name {
+                                                    scratch.append("            \(name): \(name),\n")
+                                                } else {
+                                                    if label != "_" {
+                                                        scratch.append("            \(label): \(name),\n")
+                                                    } else {
+                                                        scratch.append("            \(name),\n")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        idx += 1
+                                    }
+                                }
+                                scratch.append("        )\n")
+                            }
+                        }
                         
                         if returnType != nil {
                             if hasReturnCallback == true {

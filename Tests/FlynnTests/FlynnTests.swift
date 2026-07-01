@@ -820,4 +820,19 @@ class FlynnTests: XCTestCase {
             Flynn.sleep(4)
         }
     }
+    
+    func testSynchronousHeaderBehavious() {
+        let expectation = XCTestExpectation(description: #function)
+        
+        let actor = SyncHeader()
+        
+        actor.beSync1(string: "beSync1", Flynn.any) { result in
+            XCTAssertEqual(result, "besync1")
+        }.then().doSync2(string: "doSync2", Flynn.any) { result in
+            XCTAssertEqual(result, "DOSYNC2")
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 1.0)
+    }
 }
