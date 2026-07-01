@@ -83,7 +83,6 @@ struct AST {
 
     let classes: [String: FileSyntax]
     let protocols: [String: FileSyntax]
-    var internalPrefixes: [String: [Behavior]]
     var internalBehaviors: [String: [Behavior]]
     var externalBehaviors: [String: [Behavior]]
     let extensions: [FileSyntax]
@@ -92,19 +91,16 @@ struct AST {
         self.classes = classes
         self.protocols = protocols
         self.extensions = extensions
-        self.internalPrefixes = [:]
         self.internalBehaviors = [:]
         self.externalBehaviors = [:]
 
         for actor in classes.values {
             cacheInternalBehaviorsByClass(actor)
             cacheExternalBehaviorsByClass(actor)
-            cacheInternalPrefixesByClass(actor)
         }
         for actor in extensions {
             cacheInternalBehaviorsByClass(actor)
             cacheExternalBehaviorsByClass(actor)
-            cacheInternalPrefixesByClass(actor)
         }
 
     }
@@ -129,30 +125,6 @@ struct AST {
             }
         }
         return "\(path): warning: \(message)"
-    }
-    
-    private mutating func cacheInternalPrefixesByClass(_ actor: FileSyntax) {
-        // Find all instances of internal prefix functions:
-        //  class Test: Actor {
-        //    private static func _prePrint() { }
-        //    internal func _bePrint() { }
-        //  }
-
-        guard let name = actor.structure.name else { return }
-        guard let functions = actor.structure.substructure else { return }
-
-        if internalPrefixes[name] == nil {
-           internalPrefixes[name] = []
-        }
-
-        for function in functions where
-            (function.name ?? "").hasPrefix(FlynnPluginTool.prefixHeaderInternal) &&
-            function.kind == .functionMethodStatic &&
-            function.accessibility == .internal {
-                internalPrefixes[name]?.append(Behavior(actor: actor,
-                                                          behavior: actor.clone(ancestry: [],
-                                                                                substructure: function)))
-        }
     }
 
     private mutating func cacheInternalBehaviorsByClass(_ actor: FileSyntax) {
@@ -222,10 +194,9 @@ struct AST {
         return protocols[name]
     }
 
-    func getBehaviorsForActor(_ actor: FileSyntax) -> ([Behavior], [Behavior], [Behavior]) {
+    func getBehaviorsForActor(_ actor: FileSyntax) -> ([Behavior], [Behavior]) {
         var internals: [Behavior] = []
         var externals: [Behavior] = []
-        var prefixes: [Behavior] = []
 
         if let name = actor.structure.name {
             if let behaviors = internalBehaviors[name] {
@@ -234,12 +205,9 @@ struct AST {
             if let behaviors = externalBehaviors[name] {
                 externals.append(contentsOf: behaviors)
             }
-            if let behaviors = internalPrefixes[name] {
-                prefixes.append(contentsOf: behaviors)
-            }
         }
 
-        return (internals, externals, prefixes)
+        return (internals, externals)
     }
 
     func getInternalBehaviors(_ name: String) -> [Behavior] {

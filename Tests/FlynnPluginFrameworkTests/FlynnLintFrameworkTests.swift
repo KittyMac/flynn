@@ -27,7 +27,7 @@ class FlynnPluginTests: XCTestCase {
     
     func testExample() throws {
         let flynnplugin = FlynnPluginTool()
-        flynnplugin.process(inputs: ["/Users/rjbowli/Development/chimerasw/flynn/Tests/FlynnTests/Support/SyncHeader.swift"],
+        flynnplugin.process(input: "/Users/rjbowli/Development/chimerasw/flynn/Examples/HelloWorld/Sources/HelloWorld/main.swift",
                             output: "\(flynnTempPath)/FlynnPlugin.swift")
     }
     

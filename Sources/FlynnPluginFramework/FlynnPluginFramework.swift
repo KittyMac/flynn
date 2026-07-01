@@ -53,7 +53,6 @@ public class FlynnPluginTool {
 
     static let prefixBehaviorExternal = "be"
     static let prefixBehaviorInternal = "_be"
-    static let prefixHeaderInternal = "_pre"
     static let prefixSafe = "safe"
     static let prefixUnsafe = "unsafe"
 
