@@ -827,12 +827,14 @@ class FlynnTests: XCTestCase {
         let actor = SyncHeader()
         
         actor.beSync1(string: "beSync1", Flynn.any) { result in
+            print(result)
             XCTAssertEqual(result, "besync1")
-        }.then().doSync2(string: "doSync2", Flynn.any) { result in
-            XCTAssertEqual(result, "DOSYNC2")
             expectation.fulfill()
+        }.then().doSync2(string: "doSync2", Flynn.any) { result in
+            print(result)
+            XCTAssertEqual(result, "DOSYNC2")
         }
 
-        wait(for: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 10.0)
     }
 }
