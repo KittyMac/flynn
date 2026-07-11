@@ -75,6 +75,7 @@ public class TimedOperationQueue {
     
     private var waiting: [TimedOperation] = []
     private var executing: [TimedOperation] = []
+    private var _count = 0
     
     private let lock = NSLock()
     
@@ -113,6 +114,10 @@ public class TimedOperationQueue {
         TimedOperationQueue.register(self)
     }
     
+    public func count() -> Int {
+        return _count
+    }
+    
     public func addOperation(retry: Int,
                              _ block: @escaping (Int) -> Bool) {
         lock.lock()
@@ -120,6 +125,7 @@ public class TimedOperationQueue {
         waiting.append(TimedOperation(timeout: nil,
                                       retry: retry,
                                       block: block))
+        _count = waiting.count + executing.count
         lock.unlock()
         
         advance()
@@ -133,6 +139,7 @@ public class TimedOperationQueue {
         waiting.append(TimedOperation(timeout: timeout,
                                       retry: retry,
                                       block: block))
+        _count = waiting.count + executing.count
         lock.unlock()
         
         advance()
@@ -145,6 +152,7 @@ public class TimedOperationQueue {
         waiting.append(TimedOperation(timeout: timeout,
                                       retry: 0,
                                       block: block))
+        _count = waiting.count + executing.count
         lock.unlock()
         
         advance()
@@ -156,6 +164,7 @@ public class TimedOperationQueue {
         waiting.append(TimedOperation(timeout: nil,
                                       retry: 0,
                                       block: block))
+        _count = waiting.count + executing.count
         lock.unlock()
         
         advance()
@@ -182,6 +191,7 @@ public class TimedOperationQueue {
                     next.retry -= 1
                     self.waiting.insert(next, at: 0)
                 }
+                _count = waiting.count + executing.count
                 self.lock.unlock()
                 
                 self.advance()
@@ -192,11 +202,14 @@ public class TimedOperationQueue {
                 if let index = self.executing.firstIndex(of: next) {
                     self.executing.remove(at: index)
                 }
+                _count = waiting.count + executing.count
                 self.lock.unlock()
                 
                 self.advance()
             }
         }
+        
+        _count = waiting.count + executing.count
         lock.unlock()
     }
     
