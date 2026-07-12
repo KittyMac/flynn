@@ -112,7 +112,7 @@ class FlynnPluginTests: XCTestCase {
     }
 
     func testOneRule() throws {
-        let rule = FlynnAnyInActorRule()
+        let rule = InitEscapeRule()
         XCTAssert(rule.test())
     }
 

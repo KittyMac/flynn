@@ -7,6 +7,7 @@ struct Ruleset {
 
     init() {
         let allRules: [Rule.Type] = [
+            InitEscapeRule.self,
             PrivateFunctionInActorRule.self,
             SafeFunctionRule.self,
             InternalBehaviourRule.self,
