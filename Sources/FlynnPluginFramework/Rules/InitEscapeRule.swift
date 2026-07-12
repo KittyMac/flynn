@@ -199,8 +199,8 @@ struct InitEscapeRule: Rule {
                     output.append(error(substructure.offset, syntax, description.console("unsafe behaviour call in init; wrap with unsafeSend")))
                     return false
                 } else {
-                    output.append(error(substructure.offset, syntax, description.console("potentially unsafe behaviour call in init; wrap with unsafeSend")))
-                    return false
+                    // output.append(warning(substructure.offset, syntax, description.console("potentially unsafe behaviour call in init; wrap with unsafeSend")))
+                    // return false
                 }
             }
             

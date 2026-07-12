@@ -12,6 +12,8 @@ define DOCKER_BUILD_TOOL
 	
 	rm -f ./dist/FlynnPluginTool-$(1).zip
 	cd ./dist && zip -r ./FlynnPluginTool-$(1).zip ./FlynnPluginTool-$(1).artifactbundle
+	
+	sleep 10
 endef
 
 DIST:=$(shell cd dist && pwd)
