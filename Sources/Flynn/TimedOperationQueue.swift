@@ -204,8 +204,8 @@ public class TimedOperationQueue {
                     next.retry -= 1
                     self.waiting.insert(next, at: 0)
                 }
-                _waitingCount = waiting.count
-                _activeCount = executing.count
+                self._waitingCount = self.waiting.count
+                self._activeCount = self.executing.count
                 self.lock.unlock()
                 
                 self.advance()
@@ -216,8 +216,8 @@ public class TimedOperationQueue {
                 if let index = self.executing.firstIndex(of: next) {
                     self.executing.remove(at: index)
                 }
-                _waitingCount = waiting.count
-                _activeCount = executing.count
+                self._waitingCount = self.waiting.count
+                self._activeCount = self.executing.count
                 self.lock.unlock()
                 
                 self.advance()
