@@ -190,12 +190,17 @@ public class TimedOperationQueue {
             let operation = executing[idx]
             if operation.shouldTimeout(operationQueue: operationQueue) {
                 executing.remove(at: idx)
+                _waitingCount = waiting.count
+                _activeCount = executing.count
             }
         }
         
         while executing.count < maxConcurrentOperationCount && waiting.count > 0 {
             let next = waiting.removeFirst()
             executing.append(next)
+            _waitingCount = waiting.count
+            _activeCount = executing.count
+            
             next.start(operationQueue: operationQueue) { [weak self] in
                 guard let self = self else { return }
                 
