@@ -1,6 +1,6 @@
 import Foundation
 
-public class Queue<T: AnyObject> {
+internal class Queue<T: AnyObject> {
     // safe only so long as there is one consumer and multiple producers
     
     @usableFromInline
@@ -103,6 +103,7 @@ public class Queue<T: AnyObject> {
             newWriteIdx &+= 1
         }
 
+        arrayPtr.deinitialize(count: oldArraySize)
         arrayPtr.deallocate()
         arrayPtr = newArrayPtr
         writeIdx = newWriteIdx
