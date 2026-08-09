@@ -55,6 +55,12 @@ static bool actor_park(pony_actor_t* actor)
     return atomic_exchange_explicit(&actor->parked, false, memory_order_acq_rel);
 }
 
+static bool actor_unsuspend(pony_actor_t* actor)
+{
+    atomic_store_explicit(&actor->suspended, false, memory_order_seq_cst);
+    return atomic_exchange_explicit(&actor->parked, false, memory_order_acq_rel);
+}
+
 int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
 {
     pony_msg_t* msg;
@@ -105,12 +111,19 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     }
     
     if (actor->destroy) {
+        // Note this is checked before the suspended/park branch below on purpose:
+        // a destroying actor must never park, or it would never be freed.
+        if(!ponyint_messageq_markempty(&actor->queue)) {
+            return 1;
+        }
+        
         ponyint_actor_setpendingdestroy(actor);
-        ponyint_messageq_markempty(&actor->queue);
         ponyint_actor_destroy(actor);
         return -1;
     }
     
+    // A behaviour may have suspended us part way through the batch. The queue
+    // can still hold messages, so we must not mark it empty -- park instead.
     if(atomic_load_explicit(&actor->suspended, memory_order_acquire)) {
         return actor_park(actor) ? 1 : 0;
     }
@@ -163,9 +176,7 @@ void ponyint_suspend_actor(pony_actor_t* actor)
 
 void ponyint_resume_actor(pony_ctx_t* ctx, pony_actor_t* actor)
 {
-    atomic_store_explicit(&actor->suspended, false, memory_order_seq_cst);
-    
-    if(atomic_exchange_explicit(&actor->parked, false, memory_order_acq_rel)) {
+    if(actor_unsuspend(actor)) {
         ponyint_sched_add(ctx, actor);
         return;
     }
@@ -182,16 +193,11 @@ void ponyint_actor_destroy(pony_actor_t* actor)
 {
     assert(has_flag(actor, FLAG_PENDINGDESTROY));
     
-    // Make sure the actor being destroyed has finished marking its queue
-    // as empty. Otherwise, it may spuriously see that tail and head are not
-    // the same and fail to mark the queue as empty, resulting in it getting
-    // rescheduled.
-    pony_msg_t* head = NULL;
-    do {
-        head = atomic_load_explicit(&actor->queue.head, memory_order_relaxed);
-    } while(((uintptr_t)head & (uintptr_t)1) != (uintptr_t)1);
-    
-    atomic_thread_fence(memory_order_acquire);
+    pony_msg_t* head = atomic_load_explicit(&actor->queue.head, memory_order_acquire);
+    if(((uintptr_t)head & (uintptr_t)1) != (uintptr_t)1) {
+        pony_syslog2("Flynn", "ponyint_actor_destroy: queue not empty for actor %d, leaking", actor->uid);
+        return;
+    }
     
     ponyint_messageq_destroy(&actor->queue);
     
@@ -342,8 +348,14 @@ void pony_then_message(pony_ctx_t* ctx, pony_actor_t* to, uint64_t then_id)
 
 void ponyint_destroy_actor(pony_actor_t* actor)
 {
+    pony_ctx_t* ctx = pony_ctx();
+    
     // For an actor to be destroyed fully, it needs to get scheduled at least one more time
     // so send it a dummy message
     pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kDestroyMessage);
-    pony_sendv(pony_ctx(), actor, &m->msg, &m->msg);
+    pony_sendv(ctx, actor, &m->msg, &m->msg);
+    
+    if(actor_unsuspend(actor)) {
+        ponyint_sched_add(ctx, actor);
+    }
 }
