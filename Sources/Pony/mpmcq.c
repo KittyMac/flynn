@@ -78,7 +78,7 @@ void ponyint_mpmcq_push(mpmcq_t* q, void* data)
     
     mpmcq_node_t* prev = atomic_exchange_explicit(&q->head, node, memory_order_relaxed);
     
-    atomic_store_explicit(&prev->next, node, memory_order_relaxed);
+    atomic_store_explicit(&prev->next, node, memory_order_release);
 }
 
 void ponyint_mpmcq_push_single(mpmcq_t* q, void* data)
@@ -94,6 +94,11 @@ void ponyint_mpmcq_push_single(mpmcq_t* q, void* data)
     // If we have a single producer, the fence can be replaced with a store
     // release on prev->next.
     atomic_store_explicit(&prev->next, node, memory_order_release);
+}
+
+int64_t ponyint_mpmcq_num_messages(mpmcq_t* q)
+{
+    return atomic_load_explicit(&q->num_messages, memory_order_relaxed);
 }
 
 void* ponyint_mpmcq_pop(mpmcq_t* q)

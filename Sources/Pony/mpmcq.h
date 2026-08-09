@@ -34,4 +34,6 @@ void ponyint_mpmcq_push_single(mpmcq_t* q, void* data);
 
 void* ponyint_mpmcq_pop(mpmcq_t* q);
 
+int64_t ponyint_mpmcq_num_messages(mpmcq_t* q);
+
 #endif /* mpmcq_h */

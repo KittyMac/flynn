@@ -44,6 +44,12 @@ struct scheduler_t
     // These are accessed by other scheduler threads. The mpmcq_t is aligned.
     mpmcq_t q;
     messageq_t mq;
+
+    // Sleep/wake state. parked is published by the owner just before it commits
+    // to sleeping and read by whichever thread is pushing work; keep both off
+    // the lines the owner touches while it is actually running.
+    alignas(64) PONY_ATOMIC(bool) parked;
+    pony_park_t park;
 };
 
 pony_ctx_t* pony_ctx(void);

@@ -6,6 +6,7 @@
 #define PLATFORM_THREADS_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef PLATFORM_IS_WINDOWS
 
@@ -23,6 +24,13 @@
     
     #define __pony_thread_local __thread
 
+    typedef struct pony_park_t
+    {
+        CRITICAL_SECTION mutex;
+        CONDITION_VARIABLE cond;
+        bool signalled;
+    } pony_park_t;
+
 #else
 
     #include <pthread.h>
@@ -38,6 +46,13 @@
     #define DECLARE_THREAD_FN(NAME) void* NAME (void* arg)
     
     #define __pony_thread_local __thread
+
+    typedef struct pony_park_t
+    {
+        pthread_mutex_t mutex;
+        pthread_cond_t cond;
+        bool signalled;
+    } pony_park_t;
     
 #endif
 
@@ -52,6 +67,11 @@
 #define COREAFFINITY_PREFER_TO_ONLY(x) (x + 2)
 
 #define kCoreAffinity_None 99
+
+void ponyint_park_init(pony_park_t* park);
+void ponyint_park_destroy(pony_park_t* park);
+void ponyint_park_wait(pony_park_t* park, uint64_t timeout_us);
+void ponyint_park_wake(pony_park_t* park);
 
 PONY_MUTEX ponyint_mutex_create();
 void ponyint_mutex_destroy(PONY_MUTEX mutex);

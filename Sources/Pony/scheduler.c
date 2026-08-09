@@ -78,6 +78,45 @@ int pony_profiler_collect(uint64_t* outNs, uint64_t* outCount, int maxTypes)
 static mpmcq_t inject;
 static mpmcq_t injectHighPerformance;
 static mpmcq_t injectHighEfficiency;
+
+// Cleared before the scheduler array is torn down. wake_one_sleeper() can be
+// called from threads that are not schedulers -- the timer loop, remote node
+// threads, the main thread -- and those threads are not joined before
+// ponyint_sched_shutdown() frees the array, so without this they can dereference
+// freed scheduler_t memory and lock a destroyed mutex.
+static PONY_ATOMIC(bool) schedulers_running;
+
+// Number of schedulers currently parked. Read on every push, so the common
+// loaded case -- nobody parked -- costs a single load of a line that stays
+// shared across cores rather than a scan.
+static PONY_ATOMIC(int32_t) sleeping_count;
+
+static void wake_one_sleeper(void)
+{
+    if(atomic_load_explicit(&schedulers_running, memory_order_acquire) == false)
+        return;
+
+    if(scheduler == NULL)
+        return;
+
+    atomic_thread_fence(memory_order_seq_cst);
+
+    if(atomic_load_explicit(&sleeping_count, memory_order_relaxed) <= 0)
+        return;
+
+    // Wake exactly one. Waking all of them would have every scheduler contend
+    // for a single actor and go straight back to sleep; a scheduler that finds
+    // work and discovers more will push it, which wakes the next one in turn.
+    for(uint32_t i = 0; i < scheduler_count; i++)
+    {
+        if(atomic_load_explicit(&scheduler[i].parked, memory_order_acquire))
+        {
+            ponyint_park_wake(&scheduler[i].park);
+            return;
+        }
+    }
+}
+
 static __pony_thread_local scheduler_t* this_scheduler;
 static __pony_thread_local void* autorelease_pool;
 static __pony_thread_local bool autorelease_pool_is_dirty;
@@ -116,18 +155,21 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
                 } else {
                     ponyint_mpmcq_push(&injectHighEfficiency, actor);
                 }
+                wake_one_sleeper();
                 return;
             }
             break;
         case kCoreAffinity_PreferEfficiency:
             if (sched->coreAffinity == kCoreAffinity_OnlyPerformance) {
                 ponyint_mpmcq_push(&injectHighEfficiency, actor);
+                wake_one_sleeper();
                 return;
             }
             break;
         case kCoreAffinity_PreferPerformance:
             if (sched->coreAffinity == kCoreAffinity_OnlyEfficiency) {
                 ponyint_mpmcq_push(&injectHighPerformance, actor);
+                wake_one_sleeper();
                 return;
             }
             break;
@@ -204,6 +246,45 @@ void check_memory_usage(scheduler_t* sched) {
     }
 }
 
+static bool work_available(scheduler_t* sched)
+{
+    if(ponyint_mpmcq_num_messages(&inject) > 0)
+        return true;
+
+    switch(sched->coreAffinity) {
+        case kCoreAffinity_OnlyPerformance:
+            if(ponyint_mpmcq_num_messages(&injectHighPerformance) > 0)
+                return true;
+            break;
+        case kCoreAffinity_OnlyEfficiency:
+            if(ponyint_mpmcq_num_messages(&injectHighEfficiency) > 0)
+                return true;
+            break;
+    }
+
+    for(uint32_t i = 0; i < scheduler_count; i++)
+    {
+        if(ponyint_mpmcq_num_messages(&scheduler[i].q) > 0)
+            return true;
+    }
+
+    return false;
+}
+
+static void park_scheduler(scheduler_t* sched, uint64_t timeout_us)
+{
+    atomic_store_explicit(&sched->parked, true, memory_order_release);
+    atomic_fetch_add_explicit(&sleeping_count, 1, memory_order_relaxed);
+
+    atomic_thread_fence(memory_order_seq_cst);
+
+    if(work_available(sched) == false && sched->terminate == false)
+        ponyint_park_wait(&sched->park, timeout_us);
+
+    atomic_store_explicit(&sched->parked, false, memory_order_release);
+    atomic_fetch_sub_explicit(&sleeping_count, 1, memory_order_relaxed);
+}
+
 /**
  * Use mpmcqs to allow stealing directly from a victim, without waiting for a
  * response.
@@ -215,23 +296,21 @@ static pony_actor_t* steal(scheduler_t* sched)
 
     // Backoff policy for a scheduler that has run out of work.
     //
-    // We spin without sleeping for a bounded number of rounds first: work very
-    // often shows up within a few hundred nanoseconds, and sleeping costs far
-    // more than the spin does. Past that point we ramp the sleep exponentially.
+    // Spin briefly first: work often shows up within a few hundred nanoseconds,
+    // and a park/unpark round trip costs far more than the spin does. Past that
+    // we park, which unlike a sleep can be woken the moment work is pushed.
     //
-    // The ramp used to be linear (+4us per round), which took 1238 wakeups
-    // spread over 3.13 seconds just to reach the 5ms ceiling -- an average of
-    // ~396 wakeups/sec while ramping, which is worse than the ~200/sec steady
-    // state it was climbing toward. Doubling reaches the same ceiling in 8
-    // wakeups over 11ms, without changing either the initial spin (so latency
-    // under load is unaffected) or the ceiling (so wake latency from deep idle
-    // is unaffected).
-    const int spin_rounds = 12;      // failed rounds before we start sleeping
-    const int sleep_min = 50;        // us, first sleep once spinning is done
-    const int sleep_max = 5000;      // us, ceiling for any single sleep
+    // The timeout is a backstop, not the discovery mechanism -- a parked
+    // scheduler is woken by wake_one_sleeper(), so wake latency no longer has
+    // anything to do with how long we are willing to sleep for. That decoupling
+    // is the point: the previous exponential sleep had to trade idle CPU
+    // against wake latency, and could not give both.
+    const int spin_rounds = 12;
+    const uint64_t park_timeout_min = 1000;      // us
+    const uint64_t park_timeout_max = 100000;    // us
 
     int spins = 0;
-    int scaling_sleep = 0;
+    uint64_t park_timeout = 0;
     
     while(true)
     {
@@ -254,13 +333,18 @@ static pony_actor_t* steal(scheduler_t* sched)
         if (spins < spin_rounds) {
             spins++;
         } else {
-            scaling_sleep = (scaling_sleep == 0) ? sleep_min : scaling_sleep * 2;
-            if (scaling_sleep > sleep_max) {
-                scaling_sleep = sleep_max;
-            }
             // Sample memory on the same throttle the busy path in run() uses.
             check_memory_usage(sched);
-            ponyint_cpu_sleep(scaling_sleep);
+
+            // Ramp the backstop rather than jumping straight to the maximum, so
+            // that if a wakeup is ever missed it is caught in a millisecond
+            // rather than a tenth of a second.
+            park_timeout = (park_timeout == 0) ? park_timeout_min : park_timeout * 2;
+            if (park_timeout > park_timeout_max) {
+                park_timeout = park_timeout_max;
+            }
+
+            park_scheduler(sched, park_timeout);
         }
         
         if (sched->terminate) {
@@ -402,8 +486,21 @@ static void ponyint_sched_shutdown()
     
     start = 0;
     
+    // Stop anyone outside the scheduler threads from reaching into the array
+    // before we start tearing it down.
+    atomic_store_explicit(&schedulers_running, false, memory_order_release);
+
+    // Signal every scheduler before joining any of them. Setting terminate and
+    // joining in the same loop serialises shutdown behind scheduler 0, which
+    // matters far more now that a scheduler can be parked: each one would
+    // otherwise have to wait out its own backstop timeout in turn.
     for(uint32_t i = start; i < scheduler_count; i++) {
         scheduler[i].terminate = true;
+    }
+    for(uint32_t i = start; i < scheduler_count; i++) {
+        ponyint_park_wake(&scheduler[i].park);
+    }
+    for(uint32_t i = start; i < scheduler_count; i++) {
         ponyint_thread_join(scheduler[i].tid);
     }
     
@@ -412,6 +509,7 @@ static void ponyint_sched_shutdown()
         while(ponyint_thread_messageq_pop(&scheduler[i].mq) != NULL) { ; }
         ponyint_messageq_destroy(&scheduler[i].mq);
         ponyint_mpmcq_destroy(&scheduler[i].q);
+        ponyint_park_destroy(&scheduler[i].park);
     }
     
     ponyint_pool_free(scheduler, scheduler_count * sizeof(scheduler_t));
@@ -424,6 +522,7 @@ static void ponyint_sched_shutdown()
 
     scheduler_count = 0;
     atomic_store_explicit(&active_scheduler_count, 0, memory_order_relaxed);
+    atomic_store_explicit(&sleeping_count, 0, memory_order_relaxed);
     
     ponyint_mpmcq_destroy(&inject);
     ponyint_mpmcq_destroy(&injectHighEfficiency);
@@ -454,6 +553,7 @@ pony_ctx_t* ponyint_sched_init(int force_scheduler_count, int minimum_scheduler_
     
     atomic_store_explicit(&active_scheduler_count, scheduler_count, memory_order_relaxed);
     atomic_store_explicit(&active_scheduler_count_check, scheduler_count, memory_order_relaxed);
+    atomic_store_explicit(&sleeping_count, 0, memory_order_relaxed);
     scheduler = (scheduler_t*)ponyint_pool_alloc(scheduler_count * sizeof(scheduler_t));
     memset(scheduler, 0, scheduler_count * sizeof(scheduler_t));
 
@@ -473,11 +573,16 @@ pony_ctx_t* ponyint_sched_init(int force_scheduler_count, int minimum_scheduler_
         scheduler[i].index = i;
         ponyint_messageq_init(&scheduler[i].mq);
         ponyint_mpmcq_init(&scheduler[i].q);
+        ponyint_park_init(&scheduler[i].park);
+        atomic_store_explicit(&scheduler[i].parked, false, memory_order_relaxed);
     }
     
     ponyint_mpmcq_init(&inject);
     ponyint_mpmcq_init(&injectHighEfficiency);
     ponyint_mpmcq_init(&injectHighPerformance);
+
+    // Only now is every park initialised and safe for another thread to touch.
+    atomic_store_explicit(&schedulers_running, true, memory_order_release);
     
     return pony_ctx();
 }
@@ -557,9 +662,15 @@ void ponyint_sched_stop()
 void ponyint_sched_add(pony_ctx_t* ctx, pony_actor_t* actor)
 {
     if(ctx->scheduler != NULL) {
+        // push() wakes a sleeper itself
         push(ctx->scheduler, actor);
     } else {
+        // Sends from threads that are not schedulers -- the timer loop, remote
+        // node threads, the main thread -- land here. pony_register_thread()
+        // zeroes its placeholder scheduler_t, so ctx->scheduler is NULL for
+        // them and all of their work funnels through the inject queue.
         ponyint_mpmcq_push(&inject, actor);
+        wake_one_sleeper();
     }
 }
 

@@ -100,13 +100,13 @@ open class Flynn {
 
     public class func shutdown(waitForRemotes: Bool = false) {
         running.checkActive {
+            timerLoop?.join()
+            timerLoop = nil
+
             pony_shutdown(waitForRemotes)
             
             remotes.unsafeReset()
             remotes = RemoteActorManager()
-            
-            timerLoop?.join()
-            timerLoop = nil
 
             // wait until the registered actors thread ends
             clearRegisteredTimers()

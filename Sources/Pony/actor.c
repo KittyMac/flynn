@@ -238,8 +238,8 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     
     memset(actor, 0, typeSize);
     
-    static int32_t actorUID = 1;
-    actor->uid = actorUID++;
+    static PONY_ATOMIC(int32_t) actorUID = 1;
+    actor->uid = atomic_fetch_add_explicit(&actorUID, 1, memory_order_relaxed);
     actor->coreAffinity = kCoreAffinity_None;
     actor->batchSize = 1000;
     

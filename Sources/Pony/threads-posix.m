@@ -24,6 +24,66 @@
 #include <Foundation/Foundation.h>
 #endif
 
+void ponyint_park_init(pony_park_t* park) {
+    pthread_mutex_init(&park->mutex, NULL);
+#if defined(PLATFORM_IS_APPLE)
+    // Apple has no pthread_condattr_setclock; the relative-wait variant below is
+    // immune to wall clock changes without needing one.
+    pthread_cond_init(&park->cond, NULL);
+#else
+    // Wait against CLOCK_MONOTONIC so that a wall clock adjustment (NTP step,
+    // manual change) cannot stretch or collapse the backstop timeout.
+    pthread_condattr_t attr;
+    pthread_condattr_init(&attr);
+    pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
+    pthread_cond_init(&park->cond, &attr);
+    pthread_condattr_destroy(&attr);
+#endif
+    park->signalled = false;
+}
+
+void ponyint_park_destroy(pony_park_t* park) {
+    pthread_cond_destroy(&park->cond);
+    pthread_mutex_destroy(&park->mutex);
+}
+
+void ponyint_park_wait(pony_park_t* park, uint64_t timeout_us) {
+    pthread_mutex_lock(&park->mutex);
+
+    // If a wake landed while we were deciding to park, consume it and return
+    // without sleeping. This is the case the mutex exists to close.
+    if (park->signalled == false) {
+        struct timespec ts;
+#if defined(PLATFORM_IS_APPLE)
+        ts.tv_sec = (time_t)(timeout_us / 1000000);
+        ts.tv_nsec = (long)((timeout_us % 1000000) * 1000);
+        pthread_cond_timedwait_relative_np(&park->cond, &park->mutex, &ts);
+#else
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        ts.tv_sec += (time_t)(timeout_us / 1000000);
+        ts.tv_nsec += (long)((timeout_us % 1000000) * 1000);
+        if (ts.tv_nsec >= 1000000000L) {
+            ts.tv_sec += 1;
+            ts.tv_nsec -= 1000000000L;
+        }
+        pthread_cond_timedwait(&park->cond, &park->mutex, &ts);
+#endif
+    }
+
+    // Spurious wakeups need no loop here: the caller's response to waking is to
+    // go re-poll the queues, which is exactly the right thing to do anyway.
+    park->signalled = false;
+    pthread_mutex_unlock(&park->mutex);
+}
+
+void ponyint_park_wake(pony_park_t* park) {
+    pthread_mutex_lock(&park->mutex);
+    park->signalled = true;
+    // Only ever one waiter per park, so signal rather than broadcast.
+    pthread_cond_signal(&park->cond);
+    pthread_mutex_unlock(&park->mutex);
+}
+
 PONY_MUTEX ponyint_mutex_create() {
     pthread_mutex_t * mutex = malloc(sizeof(pthread_mutex_t));
     if (pthread_mutex_init(mutex, NULL) != 0) {
