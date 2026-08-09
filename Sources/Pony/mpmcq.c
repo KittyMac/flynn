@@ -18,6 +18,18 @@ struct mpmcq_node_t
     PONY_ATOMIC(void*) data;
 };
 
+#define MPMCQ_MAX_SPINS 64
+
+static inline void mpmcq_backoff(uint32_t* spins)
+{
+    if(++(*spins) < MPMCQ_MAX_SPINS) {
+        ponyint_cpu_relax();
+    } else {
+        ponyint_cpu_yield();
+        *spins = 0;
+    }
+}
+
 static mpmcq_node_t* node_alloc(void* data)
 {
     mpmcq_node_t* node = ponyint_pool_alloc(sizeof(mpmcq_node_t));
@@ -86,8 +98,16 @@ void ponyint_mpmcq_push_single(mpmcq_t* q, void* data)
 
 void* ponyint_mpmcq_pop(mpmcq_t* q)
 {
-    while(atomic_exchange_explicit(&q->pop_lock, true, memory_order_acquire))
-        ponyint_cpu_relax();
+    if(atomic_load_explicit(&q->num_messages, memory_order_relaxed) <= 0)
+        return NULL;
+
+    uint32_t spins = 0;
+
+    while(atomic_exchange_explicit(&q->pop_lock, true, memory_order_acquire)) {
+        do {
+            mpmcq_backoff(&spins);
+        } while(atomic_load_explicit(&q->pop_lock, memory_order_relaxed));
+    }
 
     PONY_ABA_PROTECTED_PTR(mpmcq_node_t) cmp;
     PONY_ABA_PROTECTED_PTR(mpmcq_node_t) xchg;
@@ -150,8 +170,9 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
     // freeing it.
     atomic_store_explicit(&next->data, NULL, memory_order_release);
     
+    spins = 0;
     while(atomic_load_explicit(&tail->data, memory_order_acquire) != NULL)
-        ponyint_cpu_relax();
+        mpmcq_backoff(&spins);
     
     // Synchronise on tail->data to make sure we see every previous write to the
     // old tail before freeing it. This is a standalone fence to avoid

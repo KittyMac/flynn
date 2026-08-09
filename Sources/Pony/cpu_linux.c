@@ -139,11 +139,10 @@ void ponyint_cpu_sleep(int ns)
     usleep(ns);
 }
 
-void ponyint_cpu_relax()
+void ponyint_cpu_yield()
 {
-    //asm volatile("pause" ::: "memory");
-    usleep(1);
-} 
+    sched_yield();
+}
 
 uint64_t ponyint_cpu_tick()
 {

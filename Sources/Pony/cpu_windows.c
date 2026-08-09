@@ -68,9 +68,9 @@ void ponyint_cpu_sleep(int ns)
     pony_usleep(ns);
 }
 
-void ponyint_cpu_relax()
+void ponyint_cpu_yield()
 {
-    pony_usleep(1);
+    SwitchToThread();
 }
 
 uint64_t ponyint_cpu_tick()
