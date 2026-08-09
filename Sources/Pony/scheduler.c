@@ -474,6 +474,7 @@ static DECLARE_THREAD_FN(run_thread)
     this_scheduler = sched;
     
     ponyint_thead_setname(sched->index, sched->coreAffinity);
+    ponyint_cpu_apply_thread_affinity(sched->coreAffinity);
     
     run(sched);
     ponyint_pool_thread_cleanup();

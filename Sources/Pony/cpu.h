@@ -24,6 +24,8 @@ uint32_t ponyint_core_count(void);
 
 uint32_t ponyint_hybrid_cores_enabled();
 
+void ponyint_cpu_apply_thread_affinity(int coreAffinity);
+
 void ponyint_cpu_sleep(int ns);
 
 static inline void ponyint_cpu_relax(void)

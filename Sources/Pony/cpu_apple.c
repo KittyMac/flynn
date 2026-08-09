@@ -138,6 +138,11 @@ uint32_t ponyint_hybrid_cores_enabled()
     return hybrid_cpu_enabled;
 }
 
+void ponyint_cpu_apply_thread_affinity(int coreAffinity)
+{
+    (void)coreAffinity;
+}
+
 void ponyint_cpu_sleep(int ns)
 {
     usleep(ns);
