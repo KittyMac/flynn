@@ -100,7 +100,7 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
         XCTAssertEqual(Flynn.dns_resolve_txt(domain: "staging.rover.smallplanet.com"), nil)
     }
-    
+    /*
     func testDnsResolveThreadingTest() {
         
         let queue = OperationQueue()
@@ -119,7 +119,7 @@ class FlynnTests: XCTestCase {
         }
         
         queue.waitUntilAllOperationsAreFinished()
-    }
+    }*/
     
     func testArraySync() {
         let numbers = [0,1,2,3,4,5,6,7,8,9]

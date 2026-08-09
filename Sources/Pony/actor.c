@@ -42,13 +42,28 @@ static void set_flag(pony_actor_t* actor, uint8_t flag)
     atomic_store_explicit(&actor->flags, flags | flag, memory_order_relaxed);
 }
 
+static bool actor_park(pony_actor_t* actor)
+{
+    atomic_store_explicit(&actor->parked, true, memory_order_seq_cst);
+    
+    if(atomic_load_explicit(&actor->suspended, memory_order_seq_cst)) {
+        // Still suspended. ponyint_resume_actor() owns the actor now.
+        return false;
+    }
+    
+    // Resumed underneath us. Whoever wins the exchange does the rescheduling.
+    return atomic_exchange_explicit(&actor->parked, false, memory_order_acq_rel);
+}
+
 int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
 {
     pony_msg_t* msg;
     int n = 0;
     
-    if (actor->suspended) {
-        return 0;
+    atomic_store_explicit(&actor->yield, false, memory_order_relaxed);
+    
+    if(atomic_load_explicit(&actor->suspended, memory_order_acquire)) {
+        return actor_park(actor) ? 1 : 0;
     }
     
     while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&actor->queue)) != NULL) {
@@ -82,7 +97,9 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
         ponyint_actor_messageq_pop_mark_done(&actor->queue);
         
         n++;
-        if (n > max_msgs || actor->yield || actor->suspended) {
+        if (n > max_msgs ||
+            atomic_load_explicit(&actor->yield, memory_order_relaxed) ||
+            atomic_load_explicit(&actor->suspended, memory_order_relaxed)) {
             break;
         }
     }
@@ -92,6 +109,10 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
         ponyint_messageq_markempty(&actor->queue);
         ponyint_actor_destroy(actor);
         return -1;
+    }
+    
+    if(atomic_load_explicit(&actor->suspended, memory_order_acquire)) {
+        return actor_park(actor) ? 1 : 0;
     }
     
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
@@ -132,24 +153,29 @@ void ponyint_actor_setProfileTypeID(pony_actor_t* actor, int32_t typeID)
 
 void ponyint_yield_actor(pony_actor_t* actor)
 {
-    actor->yield = true;
+    atomic_store_explicit(&actor->yield, true, memory_order_relaxed);
 }
 
 void ponyint_suspend_actor(pony_actor_t* actor)
 {
-    actor->suspended = true;
+    atomic_store_explicit(&actor->suspended, true, memory_order_seq_cst);
 }
 
 void ponyint_resume_actor(pony_ctx_t* ctx, pony_actor_t* actor)
 {
-    actor->suspended = false;
+    atomic_store_explicit(&actor->suspended, false, memory_order_seq_cst);
+    
+    if(atomic_exchange_explicit(&actor->parked, false, memory_order_acq_rel)) {
+        ponyint_sched_add(ctx, actor);
+        return;
+    }
+    
     pony_send_message(ctx, actor, NULL, 0, NULL);
-    ponyint_sched_add(ctx, actor);
 }
 
 bool ponyint_actor_is_suspended(pony_actor_t* actor)
 {
-    return actor->suspended;
+    return atomic_load_explicit(&actor->suspended, memory_order_acquire);
 }
 
 void ponyint_actor_destroy(pony_actor_t* actor)

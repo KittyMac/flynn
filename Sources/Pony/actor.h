@@ -21,8 +21,12 @@ typedef struct pony_actor_t
     int32_t coreAffinity;
     int32_t batchSize;
     int32_t profileTypeID;
-    bool suspended;
-    bool yield;
+
+    PONY_ATOMIC(bool) suspended;
+    PONY_ATOMIC(bool) yield;
+
+    PONY_ATOMIC(bool) parked;
+
     bool destroy;
 } pony_actor_t;
 

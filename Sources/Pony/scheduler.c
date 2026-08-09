@@ -326,9 +326,9 @@ static void run(scheduler_t* sched)
             autorelease_pool_is_dirty = true;
 #endif
             
-            if(result == 1 && actor->suspended == false) {
-                bool actor_did_yield = actor->yield;
-                actor->yield = false;
+            if(result == 1) {
+                bool actor_did_yield =
+                    atomic_load_explicit(&actor->yield, memory_order_relaxed);
                 
                 if(next != NULL) {
                     if (actor_did_yield == false && actor->priority > next->priority) {
