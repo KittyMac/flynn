@@ -194,11 +194,11 @@ static scheduler_t* choose_victim(scheduler_t* sched)
     return NULL;
 }
 
-void check_memory_usage(scheduler_t* sched, bool now) {
+void check_memory_usage(scheduler_t* sched) {
     if(sched->index == 0) {
         static int not_all_the_time = 0;
         not_all_the_time++;
-        if (now || (not_all_the_time % 1000 == 0)) {
+        if (not_all_the_time % 1000 == 0) {
             ponyint_update_memory_usage();
         }
     }
@@ -212,23 +212,26 @@ static pony_actor_t* steal(scheduler_t* sched)
 {
     pony_actor_t* actor = NULL;
     scheduler_t* victim = NULL;
-    /*
-#if TARGET_OS_IPHONE
+
+    // Backoff policy for a scheduler that has run out of work.
+    //
+    // We spin without sleeping for a bounded number of rounds first: work very
+    // often shows up within a few hundred nanoseconds, and sleeping costs far
+    // more than the spin does. Past that point we ramp the sleep exponentially.
+    //
+    // The ramp used to be linear (+4us per round), which took 1238 wakeups
+    // spread over 3.13 seconds just to reach the 5ms ceiling -- an average of
+    // ~396 wakeups/sec while ramping, which is worse than the ~200/sec steady
+    // state it was climbing toward. Doubling reaches the same ceiling in 8
+    // wakeups over 11ms, without changing either the initial spin (so latency
+    // under load is unaffected) or the ceiling (so wake latency from deep idle
+    // is unaffected).
+    const int spin_rounds = 12;      // failed rounds before we start sleeping
+    const int sleep_min = 50;        // us, first sleep once spinning is done
+    const int sleep_max = 5000;      // us, ceiling for any single sleep
+
+    int spins = 0;
     int scaling_sleep = 0;
-    int scaling_sleep_delta = 250;
-    int scaling_sleep_min = 500;      // The minimum value we start actually sleeping at
-    int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
-#else
-    int scaling_sleep = 0;
-    int scaling_sleep_delta = 1;
-    int scaling_sleep_min = 50;      // The minimum value we start actually sleeping at
-    int scaling_sleep_max = 50000;     // The maximimum amount of time we are allowed to sleep at any single call
-#endif
-     */
-    int scaling_sleep = 0;
-    int scaling_sleep_delta = 4;
-    int scaling_sleep_min = 50;      // The minimum value we start actually sleeping at
-    int scaling_sleep_max = 5000;     // The maximimum amount of time we are allowed to sleep at any single call
     
     while(true)
     {
@@ -248,12 +251,15 @@ static pony_actor_t* steal(scheduler_t* sched)
                 break;
         }
         
-        scaling_sleep += scaling_sleep_delta;
-        if (scaling_sleep > scaling_sleep_max) {
-            scaling_sleep = scaling_sleep_max;
-        }
-        if(scaling_sleep >= scaling_sleep_min) {
-            check_memory_usage(sched, true);
+        if (spins < spin_rounds) {
+            spins++;
+        } else {
+            scaling_sleep = (scaling_sleep == 0) ? sleep_min : scaling_sleep * 2;
+            if (scaling_sleep > sleep_max) {
+                scaling_sleep = sleep_max;
+            }
+            // Sample memory on the same throttle the busy path in run() uses.
+            check_memory_usage(sched);
             ponyint_cpu_sleep(scaling_sleep);
         }
         
@@ -282,7 +288,7 @@ static void run(scheduler_t* sched)
     
     while(true) {
         
-        check_memory_usage(sched, false);
+        check_memory_usage(sched);
         
         if(actor == NULL) {
             actor = pop_global(sched, sched);
