@@ -98,6 +98,17 @@ public extension Flynn {
             Flynn.register(self)
         }
 
+        internal func reschedule() {
+            fireTime += timeInterval
+
+            let now = ProcessInfo.processInfo.systemUptime
+            if fireTime < now {
+                fireTime = now + timeInterval
+            }
+
+            Flynn.register(self)
+        }
+
         internal func fire() {
             if cancelled {
                 return
@@ -111,7 +122,7 @@ public extension Flynn {
             }
 
             if !cancelled && repeats {
-                schedule()
+                reschedule()
             }
         }
     }
@@ -130,17 +141,23 @@ public extension Flynn {
         wakeTimerLoop()
     }
 
+    private static let minimumTimerSleep: TimeInterval = 0.0001
+
+    /// Returns `.infinity` when nothing is registered at all, meaning "sleep until
+    /// register() wakes us" rather than "poll again shortly".
     @discardableResult
     fileprivate static func checkRegisteredTimers() -> TimeInterval {
         let currentTime = ProcessInfo.processInfo.systemUptime
-        var nextTimerMinTime: TimeInterval = 10.0
+        var nextTimerMinTime: TimeInterval = .infinity
 
         var completedTimers: [Flynn.Timer] = []
-        completedTimers.reserveCapacity(registeredTimersQueue.count)
 
         registeredTimersQueue.dequeueAny { (timer) in
+            if timer.cancelled {
+                return true
+            }
             let timeDelta = timer.fireTime - currentTime
-            if timeDelta < 0 || timer.cancelled {
+            if timeDelta < 0 {
                 completedTimers.append(timer)
                 return true
             }
@@ -152,7 +169,10 @@ public extension Flynn {
 
         completedTimers.forEach { $0.fire() }
 
-        return max(nextTimerMinTime / 2, 0)
+        if nextTimerMinTime.isFinite == false {
+            return .infinity
+        }
+        return max(nextTimerMinTime, minimumTimerSleep)
     }
 
     internal class TimerLoop {
@@ -181,19 +201,24 @@ public extension Flynn {
             waitingForWorkSemaphore.signal()
         }
 
-        #if os(Linux) || os(Android) || os(Windows)
-        func run() {
+        private func runLoop() {
             while running {
                 let timeout = Flynn.checkRegisteredTimers()
-                _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
+                if timeout.isFinite {
+                    _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
+                } else {
+                    waitingForWorkSemaphore.wait()
+                }
             }
+        }
+
+        #if os(Linux) || os(Android) || os(Windows)
+        func run() {
+            runLoop()
         }
         #else
         @objc func run() {
-            while running {
-                let timeout = Flynn.checkRegisteredTimers()
-                _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
-            }
+            runLoop()
         }
         #endif
 

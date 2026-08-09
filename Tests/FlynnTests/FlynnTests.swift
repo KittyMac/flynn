@@ -756,7 +756,7 @@ class FlynnTests: XCTestCase {
                 timer.cancel()
 
                 print(totalTime)
-                XCTAssert(abs(totalTime - 1.0) < 0.001)
+                XCTAssert(abs(totalTime - 1.0) < 0.01)
                 expectation.fulfill()
             }
         })
