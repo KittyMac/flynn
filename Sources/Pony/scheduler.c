@@ -175,6 +175,7 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
             break;
     }
     ponyint_mpmcq_push_single(&sched->q, actor);
+    wake_one_sleeper();
 }
 
 /**
@@ -278,7 +279,7 @@ static void park_scheduler(scheduler_t* sched, uint64_t timeout_us)
 
     atomic_thread_fence(memory_order_seq_cst);
 
-    if(work_available(sched) == false && sched->terminate == false)
+    if(work_available(sched) == false && atomic_load_explicit(&sched->terminate, memory_order_relaxed) == false)
         ponyint_park_wait(&sched->park, timeout_us);
 
     atomic_store_explicit(&sched->parked, false, memory_order_release);
@@ -347,14 +348,14 @@ static pony_actor_t* steal(scheduler_t* sched)
             park_scheduler(sched, park_timeout);
         }
         
-        if (sched->terminate) {
+        if (atomic_load_explicit(&sched->terminate, memory_order_relaxed)) {
             return NULL;
         }
         
-        sched->idle = true;
+        atomic_store_explicit(&sched->idle, true, memory_order_relaxed);
     }
     
-    sched->idle = false;
+    atomic_store_explicit(&sched->idle, false, memory_order_relaxed);
     
     return actor;
 }
@@ -381,7 +382,7 @@ static void run(scheduler_t* sched)
             actor = steal(sched);
         }
         if(actor != NULL) {
-            sched->idle = false;
+            atomic_store_explicit(&sched->idle, false, memory_order_relaxed);
             
             if (COREAFFINITY_IS_INCOMPATIBLE(actor->coreAffinity, sched->coreAffinity)) {
                 push(sched, actor);
@@ -439,7 +440,7 @@ static void run(scheduler_t* sched)
                         int targetAffinity = COREAFFINITY_PREFER_TO_ONLY(actor->coreAffinity);
                         if (targetAffinity != sched->coreAffinity) {
                             for (int i = 0; i < scheduler_count; i++){
-                                if (scheduler[i].idle == true && scheduler[i].coreAffinity == targetAffinity) {
+                                if (atomic_load_explicit(&scheduler[i].idle, memory_order_relaxed) == true && scheduler[i].coreAffinity == targetAffinity) {
                                     push(sched, actor);
                                     actor = NULL;
                                     break;
@@ -461,7 +462,7 @@ static void run(scheduler_t* sched)
                 autorelease_pool_is_dirty = false;
             }
 #endif
-        } else if(sched->terminate) {
+        } else if(atomic_load_explicit(&sched->terminate, memory_order_relaxed)) {
             break;
         }
     }
@@ -495,7 +496,7 @@ static void ponyint_sched_shutdown()
     // matters far more now that a scheduler can be parked: each one would
     // otherwise have to wait out its own backstop timeout in turn.
     for(uint32_t i = start; i < scheduler_count; i++) {
-        scheduler[i].terminate = true;
+        atomic_store_explicit(&scheduler[i].terminate, true, memory_order_relaxed);
     }
     for(uint32_t i = start; i < scheduler_count; i++) {
         ponyint_park_wake(&scheduler[i].park);
@@ -621,7 +622,7 @@ void ponyint_sched_wait(bool waitForRemotes)
         uint32_t active = 0;
         
         for(uint32_t i = 0; i < scheduler_count; i++) {
-            if (scheduler[i].idle == false) {
+            if (atomic_load_explicit(&scheduler[i].idle, memory_order_relaxed) == false) {
                 active += 1;
             }
         }

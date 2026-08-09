@@ -33,8 +33,8 @@ struct scheduler_t
     pony_thread_id_t tid;
     int32_t index;
     int32_t coreAffinity;
-    bool idle;
-    bool terminate;
+    PONY_ATOMIC(bool) idle;
+    PONY_ATOMIC(bool) terminate;
     
     // These are changed primarily by the owning scheduler thread.
     alignas(64) struct scheduler_t* last_victim;

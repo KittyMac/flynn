@@ -352,10 +352,11 @@ void ponyint_destroy_actor(pony_actor_t* actor)
     
     // For an actor to be destroyed fully, it needs to get scheduled at least one more time
     // so send it a dummy message
+    bool was_parked = actor_unsuspend(actor);
     pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kDestroyMessage);
-    pony_sendv(ctx, actor, &m->msg, &m->msg);
+    bool was_unscheduled = ponyint_actor_messageq_push(&actor->queue, &m->msg, &m->msg);
     
-    if(actor_unsuspend(actor)) {
+    if (was_parked || was_unscheduled) {
         ponyint_sched_add(ctx, actor);
     }
 }
