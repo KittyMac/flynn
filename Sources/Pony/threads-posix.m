@@ -128,7 +128,7 @@ bool ponyint_thread_create(pony_thread_id_t* thread, thread_fn start, int qos, v
     }
 
     // ...but never below our floor
-    size_t floor = (8 * 1024 * 1024);
+    size_t floor = (4 * 1024 * 1024);
     if (desired < floor) {
         desired = floor;
     }

@@ -91,7 +91,26 @@ static PONY_ATOMIC(bool) schedulers_running;
 // shared across cores rather than a scan.
 static PONY_ATOMIC(int32_t) sleeping_count;
 
-static void wake_one_sleeper(void)
+// Wake one parked scheduler that is actually able to service the queue the
+// caller just pushed to.
+//
+// for_affinity is the affinity a scheduler must have to be able to pop that
+// queue:
+//
+//   kCoreAffinity_OnlyEfficiency  -> injectHighEfficiency, E schedulers only
+//   kCoreAffinity_OnlyPerformance -> injectHighPerformance, P schedulers only
+//   kCoreAffinity_None            -> inject, or a scheduler's own q; anyone
+//
+// The filter is not an optimisation, it is required for liveness. Both
+// pop_global() and work_available() are affinity-filtered, so waking a
+// scheduler of the wrong class is strictly worse than waking nobody: it finds
+// nothing, parks again, and -- because we wake exactly one -- the scheduler that
+// could have run the actor is never signalled at all. The work then waits out a
+// backstop timeout (up to park_timeout_max) instead of being picked up
+// immediately. ponyint_sched_start() assigns the E affinities to the low
+// indices, so an unfiltered scan starting at 0 hit precisely that case for
+// every injectHighPerformance push.
+static void wake_one_sleeper(int32_t for_affinity)
 {
     if(atomic_load_explicit(&schedulers_running, memory_order_acquire) == false)
         return;
@@ -109,12 +128,20 @@ static void wake_one_sleeper(void)
     // work and discovers more will push it, which wakes the next one in turn.
     for(uint32_t i = 0; i < scheduler_count; i++)
     {
+        if(for_affinity != kCoreAffinity_None &&
+           scheduler[i].coreAffinity != for_affinity)
+            continue;
+
         if(atomic_load_explicit(&scheduler[i].parked, memory_order_acquire))
         {
             ponyint_park_wake(&scheduler[i].park);
             return;
         }
     }
+
+    // Deliberately no fall back to an incompatible scheduler. If no scheduler of
+    // the target class is parked then they are all running, and pop_global()
+    // drains the queue when one of them next comes up for air.
 }
 
 static __pony_thread_local scheduler_t* this_scheduler;
@@ -155,27 +182,31 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
                 } else {
                     ponyint_mpmcq_push(&injectHighEfficiency, actor);
                 }
-                wake_one_sleeper();
+                // actor->coreAffinity is already exactly the class that can pop
+                // the queue we just pushed to.
+                wake_one_sleeper(actor->coreAffinity);
                 return;
             }
             break;
         case kCoreAffinity_PreferEfficiency:
             if (sched->coreAffinity == kCoreAffinity_OnlyPerformance) {
                 ponyint_mpmcq_push(&injectHighEfficiency, actor);
-                wake_one_sleeper();
+                wake_one_sleeper(kCoreAffinity_OnlyEfficiency);
                 return;
             }
             break;
         case kCoreAffinity_PreferPerformance:
             if (sched->coreAffinity == kCoreAffinity_OnlyEfficiency) {
                 ponyint_mpmcq_push(&injectHighPerformance, actor);
-                wake_one_sleeper();
+                wake_one_sleeper(kCoreAffinity_OnlyPerformance);
                 return;
             }
             break;
     }
+    // Our own queue: stealable by any scheduler, and push() has already routed
+    // away anything incompatible with sched, so any sleeper will do.
     ponyint_mpmcq_push_single(&sched->q, actor);
-    wake_one_sleeper();
+    wake_one_sleeper(kCoreAffinity_None);
 }
 
 /**
@@ -594,15 +625,30 @@ bool ponyint_sched_start()
     pony_register_thread();
     
     uint32_t start = 0;
+
+    // Assign every affinity before creating any thread. wake_one_sleeper() reads
+    // scheduler[i].coreAffinity from other threads, and interleaving the
+    // assignment with thread creation left scheduler j reading the affinity of
+    // scheduler i > j before it had been written.
+    uint32_t e_schedulers = ponyint_e_core_count();
+    if (e_schedulers >= scheduler_count) {
+        // Leave at least one performance scheduler, otherwise nothing ever pops
+        // injectHighPerformance and ponyint_sched_wait() cannot complete.
+        e_schedulers = scheduler_count - 1;
+    }
+
     for(uint32_t i = start; i < scheduler_count; i++)
     {
-        int qos = QOS_CLASS_USER_INITIATED;
-        scheduler[i].coreAffinity = kCoreAffinity_OnlyPerformance;
-        
-        if (i < ponyint_e_core_count()) {
-            qos = QOS_CLASS_UTILITY;
-            scheduler[i].coreAffinity = kCoreAffinity_OnlyEfficiency;
-        }
+        scheduler[i].coreAffinity = (i < e_schedulers)
+            ? kCoreAffinity_OnlyEfficiency
+            : kCoreAffinity_OnlyPerformance;
+    }
+
+    for(uint32_t i = start; i < scheduler_count; i++)
+    {
+        int qos = (scheduler[i].coreAffinity == kCoreAffinity_OnlyEfficiency)
+            ? QOS_CLASS_UTILITY
+            : QOS_CLASS_USER_INITIATED;
         
         if(!ponyint_thread_create(&scheduler[i].tid, run_thread, qos, &scheduler[i]))
             return false;
@@ -671,8 +717,9 @@ void ponyint_sched_add(pony_ctx_t* ctx, pony_actor_t* actor)
         // node threads, the main thread -- land here. pony_register_thread()
         // zeroes its placeholder scheduler_t, so ctx->scheduler is NULL for
         // them and all of their work funnels through the inject queue.
+        // Every scheduler pops inject first, regardless of affinity.
         ponyint_mpmcq_push(&inject, actor);
-        wake_one_sleeper();
+        wake_one_sleeper(kCoreAffinity_None);
     }
 }
 

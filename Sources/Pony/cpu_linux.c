@@ -402,7 +402,7 @@ void ponyint_cpu_init()
 #if __ANDROID__
     // On Android specifically, the sched_getaffinity() for unreliable. To combat this, we're going to
     // detected when then hw_core_count < 4 and up it to 8.
-    if (hw_core_count == 2) {
+    if (hw_core_count < 4) {
         hw_core_count = 8;
     }
 #endif
