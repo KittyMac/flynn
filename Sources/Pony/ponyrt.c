@@ -254,11 +254,7 @@ void pony_set_thread_name(const char * name) {
 }
 
 void pony_syslog(const char * tag, const char * msg) {
-    #if defined(__ANDROID__)
-    __android_log_print(ANDROID_LOG_INFO, tag, "%s", msg);
-    #elif defined(PONY_SYSLOG_TO_STDERR)
-    fprintf(stderr, "%s: %s\n", tag, msg);
-    #elif defined(PLATFORM_SUPPORTS_SYSLOG)
+    #ifdef PLATFORM_SUPPORTS_SYSLOG
     syslog(LOG_ERR, "%s: %s\n", tag, msg);
     #else
     fprintf(stderr, "%s: %s\n", tag, msg);
