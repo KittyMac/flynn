@@ -67,6 +67,7 @@ uint64_t pony_actor_new_then_id();
 
 bool pony_startup(int scheduler_count, int min_scheduler_count);
 void pony_shutdown(bool waitForRemotes);
+void pony_actor_debug_dump(void* actor);
 
 int pony_core_count();
 int pony_e_core_count();

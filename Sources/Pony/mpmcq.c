@@ -193,3 +193,22 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
     atomic_store_explicit(&q->pop_lock, false, memory_order_release);
     return data;
 }
+
+
+// Diagnostics only. Walks the queue counting how many entries hold `data`.
+// Not synchronised: intended to be called when the runtime is known wedged.
+int ponyint_mpmcq_contains(mpmcq_t* q, void* data)
+{
+    int found = 0;
+    int guard = 0;
+    mpmcq_node_t* tail = q->tail.object;
+    if(tail == NULL) return 0;
+    mpmcq_node_t* node = atomic_load_explicit(&tail->next, memory_order_acquire);
+    while(node != NULL && guard++ < 1000000)
+    {
+        if(atomic_load_explicit(&node->data, memory_order_acquire) == data)
+            found++;
+        node = atomic_load_explicit(&node->next, memory_order_acquire);
+    }
+    return found;
+}
