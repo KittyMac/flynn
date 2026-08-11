@@ -160,9 +160,9 @@ void ponyint_pool_free(void * p, size_t size) {
     }
     
     atomic_fetch_sub_explicit(&unsafe_pony_mapped_memory, size, memory_order_relaxed);
-#if DEBUG
+// #if DEBUG
     memset(p, 55, size);
-#endif
+// #endif
     free(p);
     
     //pony_syslog2("Flynn", "- %lu\n", (size_t)unsafe_pony_mapped_memory);
