@@ -27,7 +27,6 @@ typedef struct mpmcq_t
 void ponyint_mpmcq_init(mpmcq_t* q);
 
 void ponyint_mpmcq_destroy(mpmcq_t* q);
-int ponyint_mpmcq_contains(mpmcq_t* q, void* data);
 
 void ponyint_mpmcq_push(mpmcq_t* q, void* data);
 

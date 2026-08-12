@@ -192,10 +192,6 @@ open class Actor: Equatable, Hashable {
     }
 
     // MARK: - Functions
-    public func unsafeDebugDump() {
-        safeWithActorPtr { pony_actor_debug_dump($0) }
-    }
-    
     public func unsafeWait(_ minMsgs: Int32 = 0) {
         if safeWithActorPtr({ pony_actor_wait(minMsgs, $0) }) == nil {
             print("Warning: unsafeWait() called on a cancelled actor")
