@@ -121,7 +121,4 @@ void pony_syslog(const char * tag, const char * msg);
 char * pony_dns_resolve_cname(const char * domain);
 char * pony_dns_resolve_txt(const char * domain);
 
-void pony_actor_enable_trace(void* actor);
-void pony_set_trace_actor_uid(int32_t uid);
-
 #endif

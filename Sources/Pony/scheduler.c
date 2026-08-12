@@ -179,10 +179,8 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
             if (actor->coreAffinity != sched->coreAffinity) {
                 if (actor->coreAffinity == kCoreAffinity_OnlyPerformance) {
                     ponyint_mpmcq_push(&injectHighPerformance, actor);
-                    ACTOR_TRACE(actor, "push->injectHighPerf");
                 } else {
                     ponyint_mpmcq_push(&injectHighEfficiency, actor);
-                    ACTOR_TRACE(actor, "push->injectHighEff");
                 }
                 // actor->coreAffinity is already exactly the class that can pop
                 // the queue we just pushed to.
@@ -208,7 +206,6 @@ static void push(scheduler_t* sched, pony_actor_t* actor)
     // Our own queue: stealable by any scheduler, and push() has already routed
     // away anything incompatible with sched, so any sleeper will do.
     ponyint_mpmcq_push_single(&sched->q, actor);
-    ACTOR_TRACE_N(actor, "push->sched.q", sched->index);
     wake_one_sleeper(kCoreAffinity_None);
 }
 
@@ -418,10 +415,7 @@ static void run(scheduler_t* sched)
         if(actor != NULL) {
             atomic_store_explicit(&sched->idle, false, memory_order_relaxed);
             
-            ACTOR_TRACE(actor, "run:obtained");
-            
             if (COREAFFINITY_IS_INCOMPATIBLE(actor->coreAffinity, sched->coreAffinity)) {
-                ACTOR_TRACE(actor, "run:incompatible-repush");
                 push(sched, actor);
                 actor = NULL;
                 continue;
@@ -457,20 +451,16 @@ static void run(scheduler_t* sched)
             if(result == 1) {
                 bool actor_did_yield =
                     atomic_load_explicit(&actor->yield, memory_order_relaxed);
-                ACTOR_TRACE_N(actor, next ? "run:r=1 next!=NULL" : "run:r=1 next==NULL",
-                              actor_did_yield);
                 
                 if(next != NULL) {
                     if (actor_did_yield == false && actor->priority > next->priority) {
                         // our current actor has a higher priority than the next actor, so put
                         // the next actor back at the end of our queue.  Hopefully someone
                         // else will pick him up
-                        ACTOR_TRACE(actor, "run:r=1 KEEP (pushed next)");
                         push(sched, next);
                     }else{
                         // If we have a next actor, we go on the back of the queue. Otherwise,
                         // we continue to run this actor.
-                        ACTOR_TRACE(actor, "run:r=1 REQUEUE self");
                         push(sched, actor);
                         actor = next;
                     }
@@ -482,7 +472,6 @@ static void run(scheduler_t* sched)
                         if (targetAffinity != sched->coreAffinity) {
                             for (int i = 0; i < scheduler_count; i++){
                                 if (atomic_load_explicit(&scheduler[i].idle, memory_order_relaxed) == true && scheduler[i].coreAffinity == targetAffinity) {
-                                    ACTOR_TRACE_N(actor, "run:r=1 preferential handoff", i);
                                     push(sched, actor);
                                     actor = NULL;
                                     break;
@@ -494,12 +483,6 @@ static void run(scheduler_t* sched)
             } else {
                 // We aren't rescheduling, so run the next actor. This may be NULL if our
                 // queue was empty.
-                // If bit=0 here the actor has just been orphaned: we are letting go
-                // without requeueing and without the empty flag set, so no future
-                // messageq_push will ever report was_empty and schedule it again.
-                if(result != -1) {
-                    ACTOR_TRACE_N(actor, "run:DROP (result!=1)", result);
-                }
                 actor = next;
             }
             
@@ -779,11 +762,6 @@ uint32_t ponyint_sched_cores()
 uint32_t ponyint_active_sched_count()
 {
     return get_active_scheduler_count();
-}
-
-int32_t ponyint_sched_index(void)
-{
-    return (this_scheduler == NULL) ? -2 : this_scheduler->index;
 }
 
 void pony_register_thread()

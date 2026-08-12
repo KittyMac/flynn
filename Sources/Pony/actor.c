@@ -61,53 +61,6 @@ static bool actor_unsuspend(pony_actor_t* actor)
     return atomic_exchange_explicit(&actor->parked, false, memory_order_acq_rel);
 }
 
-// --- orphan tracing --------------------------------------------------------
-static PONY_ATOMIC(void*)   trace_actor_ptr = NULL;
-static PONY_ATOMIC(int32_t) trace_actor_uid = -1;
-
-void pony_actor_enable_trace(void* actor) {
-    atomic_store_explicit(&trace_actor_ptr, actor, memory_order_relaxed);
-    if(actor != NULL) {
-        pony_syslog2("FlynnTrace", "tracing actor %d (%p)",
-                     ((pony_actor_t*)actor)->uid, actor);
-    }
-}
-
-void pony_set_trace_actor_uid(int32_t uid) {
-    atomic_store_explicit(&trace_actor_uid, uid, memory_order_relaxed);
-    pony_syslog2("FlynnTrace", "tracing actor uid %d", uid);
-}
-
-bool ponyint_actor_traced(pony_actor_t* actor) {
-    if(actor == NULL) return false;
-    if(atomic_load_explicit(&trace_actor_ptr, memory_order_relaxed) == (void*)actor) return true;
-    return atomic_load_explicit(&trace_actor_uid, memory_order_relaxed) == actor->uid;
-}
-
-// One line per state transition. seq gives a total order across threads, which
-// logcat interleaving otherwise destroys. bit is the queue's empty flag -- the
-// ownership token. The orphan is created by whichever transition is the last
-// one logged before the actor goes silent.
-void ponyint_actor_trace(pony_actor_t* actor, const char* tag, int extra) {
-    static PONY_ATOMIC(uint32_t) seq = 0;
-    pony_msg_t* head = atomic_load_explicit(&actor->queue.head, memory_order_relaxed);
-    pony_msg_t* tail = actor->queue.tail;
-    int linked = 0;
-    pony_msg_t* n = tail;
-    if(n != NULL) n = atomic_load_explicit(&n->next, memory_order_relaxed);
-    while(n != NULL && linked < 64) { linked++; n = atomic_load_explicit(&n->next, memory_order_relaxed); }
-
-    pony_syslog2("FlynnTrace",
-        "#%05u sch=%-3d uid=%-4d %-24s bit=%d linked=%d nmsg=%d susp=%d park=%d extra=%d head=%p tail=%p",
-        atomic_fetch_add_explicit(&seq, 1, memory_order_relaxed),
-        ponyint_sched_index(), actor->uid, tag,
-        ((uintptr_t)head & 1) ? 1 : 0, linked,
-        (int)atomic_load_explicit(&actor->queue.num_messages, memory_order_relaxed),
-        (int)atomic_load_explicit(&actor->suspended, memory_order_relaxed),
-        (int)atomic_load_explicit(&actor->parked, memory_order_relaxed),
-        extra, (void*)head, (void*)tail);
-}
-
 int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
 {
     pony_msg_t* msg;
@@ -115,12 +68,8 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     
     atomic_store_explicit(&actor->yield, false, memory_order_relaxed);
     
-    ACTOR_TRACE_N(actor, "actor_run:enter", max_msgs);
-    
     if(atomic_load_explicit(&actor->suspended, memory_order_acquire)) {
-        int r = actor_park(actor) ? 1 : 0;
-        ACTOR_TRACE_N(actor, "actor_run:ret park-early", r);
-        return r;
+        return actor_park(actor) ? 1 : 0;
     }
     
     while((msg = (pony_msg_t *)ponyint_actor_messageq_pop(&actor->queue)) != NULL) {
@@ -161,13 +110,10 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
         }
     }
     
-    ACTOR_TRACE_N(actor, "actor_run:loop-done", n);
-    
     if (actor->destroy) {
         // Note this is checked before the suspended/park branch below on purpose:
         // a destroying actor must never park, or it would never be freed.
         if(!ponyint_messageq_markempty(&actor->queue)) {
-            ACTOR_TRACE_N(actor, "actor_run:ret destroy-retry", 1);
             return 1;
         }
         
@@ -179,15 +125,11 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     // A behaviour may have suspended us part way through the batch. The queue
     // can still hold messages, so we must not mark it empty -- park instead.
     if(atomic_load_explicit(&actor->suspended, memory_order_acquire)) {
-        int r = actor_park(actor) ? 1 : 0;
-        ACTOR_TRACE_N(actor, "actor_run:ret park-mid", r);
-        return r;
+        return actor_park(actor) ? 1 : 0;
     }
     
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
-    int r = (int)!ponyint_messageq_markempty(&actor->queue);
-    ACTOR_TRACE_N(actor, r ? "actor_run:ret markempty-FAIL" : "actor_run:ret markempty-OK", r);
-    return r;
+    return (int)!ponyint_messageq_markempty(&actor->queue);
 }
 
 int32_t ponyint_actor_getpriority(pony_actor_t* actor) {
@@ -224,19 +166,16 @@ void ponyint_actor_setProfileTypeID(pony_actor_t* actor, int32_t typeID)
 
 void ponyint_yield_actor(pony_actor_t* actor)
 {
-    ACTOR_TRACE(actor, "yield_actor");
     atomic_store_explicit(&actor->yield, true, memory_order_relaxed);
 }
 
 void ponyint_suspend_actor(pony_actor_t* actor)
 {
-    ACTOR_TRACE(actor, "suspend_actor");
     atomic_store_explicit(&actor->suspended, true, memory_order_seq_cst);
 }
 
 void ponyint_resume_actor(pony_ctx_t* ctx, pony_actor_t* actor)
 {
-    ACTOR_TRACE(actor, "resume_actor:enter");
     if(actor_unsuspend(actor)) {
         ponyint_sched_add(ctx, actor);
         return;
@@ -378,13 +317,9 @@ uint64_t pony_actor_get_then_id(const void * file, uint64_t line, uint64_t colum
 
 void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)
 {
-    bool was_empty = ponyint_actor_messageq_push(&to->queue, first, last);
-    ACTOR_TRACE_N(to, was_empty ? "sendv:was_empty->sched_add"
-                                : "sendv:not_empty (no add)", was_empty);
-    if(was_empty)
+    if(ponyint_actor_messageq_push(&to->queue, first, last))
     {
         ponyint_sched_add(ctx, to);
-        ACTOR_TRACE(to, "sendv:sched_add done");
     }
 }
 
