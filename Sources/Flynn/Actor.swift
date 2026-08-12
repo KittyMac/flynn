@@ -192,6 +192,10 @@ open class Actor: Equatable, Hashable {
     }
 
     // MARK: - Functions
+    public func unsafeEnableTrace() {
+        safeWithActorPtr { pony_actor_enable_trace($0) }
+    }
+    
     public func unsafeDebugDump() {
         safeWithActorPtr { pony_actor_debug_dump($0) }
     }

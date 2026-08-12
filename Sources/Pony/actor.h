@@ -44,6 +44,13 @@ void ponyint_destroy_actor(pony_actor_t* actor);
 
 int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs);
 
+// --- orphan tracing --------------------------------------------------------
+// Enable for one actor; every other actor pays one relaxed load per trace point.
+bool ponyint_actor_traced(pony_actor_t* actor);
+void ponyint_actor_trace(pony_actor_t* actor, const char* tag, int extra);
+#define ACTOR_TRACE(a, tag)         do { if(ponyint_actor_traced(a)) ponyint_actor_trace(a, tag, -1); } while(0)
+#define ACTOR_TRACE_N(a, tag, n)    do { if(ponyint_actor_traced(a)) ponyint_actor_trace(a, tag, (int)(n)); } while(0)
+
 int32_t ponyint_actor_getpriority(pony_actor_t* actor);
 void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority);
 

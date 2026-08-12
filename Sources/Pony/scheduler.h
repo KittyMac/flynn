@@ -63,6 +63,7 @@ void ponyint_sched_stop(void);
 void ponyint_sched_wait(bool waitForRemotes);
 
 void ponyint_sched_add(pony_ctx_t* ctx, pony_actor_t* actor);
+int32_t ponyint_sched_index(void);
 
 uint32_t ponyint_sched_cores(void);
 
