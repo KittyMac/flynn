@@ -584,6 +584,16 @@ pony_ctx_t* ponyint_sched_init(int force_scheduler_count, int minimum_scheduler_
         scheduler_count = force_scheduler_count;
     }
     
+    // Core affinity routing needs both an E and a P scheduler to exist (see
+    // ponyint_sched_start). One scheduler cannot be both, so floor the count at
+    // two. Nothing should be able to get here with a smaller value -- the
+    // minimum is clamped to 4 above and force_scheduler_count is only honoured
+    // when > 1 -- but the clamp in ponyint_sched_start relies on this, so make
+    // it explicit rather than implied.
+    if (scheduler_count < 2) {
+        scheduler_count = 2;
+    }
+    
     atomic_store_explicit(&active_scheduler_count, scheduler_count, memory_order_relaxed);
     atomic_store_explicit(&active_scheduler_count_check, scheduler_count, memory_order_relaxed);
     atomic_store_explicit(&sleeping_count, 0, memory_order_relaxed);
@@ -630,19 +640,40 @@ bool ponyint_sched_start()
     // scheduler[i].coreAffinity from other threads, and interleaving the
     // assignment with thread creation left scheduler j reading the affinity of
     // scheduler i > j before it had been written.
-    uint32_t e_schedulers = ponyint_e_core_count();
-    if (e_schedulers >= scheduler_count) {
-        // Leave at least one performance scheduler, otherwise nothing ever pops
-        // injectHighPerformance and ponyint_sched_wait() cannot complete.
+    uint32_t e_detected = ponyint_e_core_count();
+    uint32_t e_schedulers = e_detected;
+    
+    if (e_schedulers < 1) {
+        e_schedulers = 1;
+    }
+    if (e_schedulers > scheduler_count - 1) {
         e_schedulers = scheduler_count - 1;
     }
-
+    if (e_schedulers != e_detected) {
+        pony_syslog2("Flynn",
+                     "e_core_count %u out of range for %u schedulers, using %u efficiency schedulers",
+                     e_detected, scheduler_count, e_schedulers);
+    }
+    
     for(uint32_t i = start; i < scheduler_count; i++)
     {
         scheduler[i].coreAffinity = (i < e_schedulers)
             ? kCoreAffinity_OnlyEfficiency
             : kCoreAffinity_OnlyPerformance;
     }
+    
+    // sanity check we at least have 1 efficiency and 1 performance scheduler
+    uint32_t n_e = 0, n_p = 0;
+    for(uint32_t i = start; i < scheduler_count; i++)
+    {
+        if(scheduler[i].coreAffinity == kCoreAffinity_OnlyEfficiency) n_e++; else n_p++;
+    }
+    if(n_e == 0 || n_p == 0) {
+        pony_syslog2("Flynn",
+                     "FATAL: %u efficiency / %u performance schedulers -- actors routed to the "
+                     "empty class will never run", n_e, n_p);
+    }
+
 
     for(uint32_t i = start; i < scheduler_count; i++)
     {
