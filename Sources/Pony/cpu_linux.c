@@ -88,13 +88,9 @@ void pony_malloc_trim(size_t pad) {
 
     // Prefer the all-arena purge; fall back when the header knows M_PURGE_ALL but
     // the running platform does not implement it (mallopt returns 0 on failure).
-#if defined(M_PURGE_ALL)
-    if (pony_mallopt_fn(M_PURGE_ALL, 0) == 0) {
+    if (pony_mallopt_fn(-104 /* M_PURGE_ALL */, 0) == 0) {
         pony_mallopt_fn(M_PURGE, 0);
     }
-#elif defined(M_PURGE)
-    pony_mallopt_fn(M_PURGE, 0);
-#endif
 #else
     (void)pad;
 #endif
