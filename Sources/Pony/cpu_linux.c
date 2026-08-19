@@ -53,6 +53,25 @@ void pony_usleep(uint64_t usec)
 void pony_malloc_trim(size_t pad) {
 #if defined(__GLIBC__)
     malloc_trim(pad);
+#elif defined(__ANDROID__) || defined(__BIONIC__)
+    // bionic has no malloc_trim(). Android's allocator (Scudo, jemalloc on older
+    // releases) exposes the equivalent through mallopt():
+    //
+    //   M_PURGE      release free pages held by the calling thread's arena
+    //   M_PURGE_ALL  release free pages held by every arena (Android 13+)
+    //
+    (void)pad;
+#if defined(M_PURGE_ALL)
+    if (mallopt(M_PURGE_ALL, 0) == 0) {
+#if defined(M_PURGE)
+        mallopt(M_PURGE, 0);
+#endif
+    }
+#elif defined(M_PURGE)
+    mallopt(M_PURGE, 0);
+#endif
+#else
+    (void)pad;
 #endif
 }
 
