@@ -19,6 +19,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <malloc.h>
+#include <dlfcn.h>
+#include <pthread.h>
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -50,6 +52,20 @@ void pony_usleep(uint64_t usec)
     usleep(usec);
 }
 
+#if defined(__ANDROID__) || defined(__BIONIC__)
+// mallopt() is declared __INTRODUCED_IN(26) in bionic, so building against a
+// lower minSdk (API 24, for instance) sees the M_PURGE macro but not the function
+// declaration, and a direct call fails with -Wimplicit-function-declaration.
+// Declaring the prototype ourselves would compile but leave an unresolvable
+// symbol on pre-26 devices. Resolving it through dlsym() keeps one binary working
+// across every API level: purge where the platform provides it, no-op elsewhere.
+static int (*pony_mallopt_fn)(int, int) = NULL;
+
+static void pony_resolve_mallopt(void) {
+    pony_mallopt_fn = (int (*)(int, int))dlsym(RTLD_DEFAULT, "mallopt");
+}
+#endif
+
 void pony_malloc_trim(size_t pad) {
 #if defined(__GLIBC__)
     malloc_trim(pad);
@@ -60,15 +76,27 @@ void pony_malloc_trim(size_t pad) {
     //   M_PURGE      release free pages held by the calling thread's arena
     //   M_PURGE_ALL  release free pages held by every arena (Android 13+)
     //
+    // The value argument is ignored in both cases.
     (void)pad;
+
+    static pthread_once_t once = PTHREAD_ONCE_INIT;
+    pthread_once(&once, pony_resolve_mallopt);
+
+    if (pony_mallopt_fn == NULL) {
+        return;
+    }
+
+    // Prefer the all-arena purge; fall back when the header knows M_PURGE_ALL but
+    // the running platform does not implement it (mallopt returns 0 on failure).
 #if defined(M_PURGE_ALL)
-    if (mallopt(M_PURGE_ALL, 0) == 0) {
-#if defined(M_PURGE)
-        mallopt(M_PURGE, 0);
-#endif
+    pony_syslog("TAG", "M_PURGE_ALL");
+    if (pony_mallopt_fn(M_PURGE_ALL, 0) == 0) {
+        pony_syslog("TAG", " -> M_PURGE");
+        pony_mallopt_fn(M_PURGE, 0);
     }
 #elif defined(M_PURGE)
-    mallopt(M_PURGE, 0);
+    pony_syslog("TAG", "M_PURGE");
+    pony_mallopt_fn(M_PURGE, 0);
 #endif
 #else
     (void)pad;
