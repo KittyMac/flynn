@@ -20,6 +20,7 @@
 #include <sched.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <malloc/malloc.h>
 #include <errno.h>
 #include <string.h>
 
@@ -43,7 +44,8 @@ void pony_usleep(uint64_t usec)
 }
 
 void pony_malloc_trim(size_t pad) {
-    
+    (void)pad;
+    malloc_zone_pressure_relief(NULL, 0);
 }
 
 static uint32_t get_sys_info(int type_specifier, const char* name, uint32_t default_value) {
