@@ -28,26 +28,34 @@ func handleMessage(_ argumentPtr: AnyPtr) {
 }
 
 @usableFromInline
-class ActorMessage {
+class ActorMessage: CustomStringConvertible {
+    
+    let callSite: String
+    
+    public var description: String {
+        return "ActorMessage: \(callSite)"
+    }
     
     @usableFromInline
     var block: PonyBlock?
     
     @usableFromInline
     var thenId: UInt64
-
+    
     @usableFromInline
-    init(_ block: @escaping PonyBlock,
+    init(_ callSite: String,
+         _ block: @escaping PonyBlock,
          _ thenId: UInt64) {
+        self.callSite = callSite
         self.block = block
         self.thenId = thenId
     }
-
+    
     @inlinable
     func set(_ block: @escaping PonyBlock) {
         self.block = block
     }
-
+    
     @inlinable
     func run() {
         block?(thenId)
@@ -55,7 +63,7 @@ class ActorMessage {
 }
 
 open class Actor: Equatable, Hashable {
-    #if FLYNN_LEAK_ACTOR
+#if FLYNN_LEAK_ACTOR
     struct WeakActor {
         weak var actor: Actor?
     }
@@ -106,7 +114,7 @@ open class Actor: Equatable, Hashable {
         }
         recordedActorsLock.unlock()
     }
-    #endif
+#endif
     
     
     public static func == (lhs: Actor, rhs: Actor) -> Bool {
@@ -116,7 +124,7 @@ open class Actor: Equatable, Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(unsafeUUID)
     }
-
+    
     public let unsafeUUID: String
     
     private var _ponyActorPtr: AnyPtr
@@ -138,7 +146,7 @@ open class Actor: Equatable, Hashable {
         _ponyActorPtr = nil
         return ptr
     }
-
+    
     public var unsafeCoreAffinity: CoreAffinity {
         get {
             guard let raw = safeWithActorPtr({ pony_actor_getcoreAffinity($0) }) else {
@@ -160,7 +168,7 @@ open class Actor: Equatable, Hashable {
             }
         }
     }
-
+    
     public var unsafePriority: Int32 {
         get {
             guard let val = safeWithActorPtr({ pony_actor_getpriority($0) }) else {
@@ -175,7 +183,7 @@ open class Actor: Equatable, Hashable {
             }
         }
     }
-
+    
     public var unsafeMessageBatchSize: Int32 {
         get {
             guard let val = safeWithActorPtr({ pony_actor_getbatchSize($0) }) else {
@@ -190,21 +198,21 @@ open class Actor: Equatable, Hashable {
             }
         }
     }
-
+    
     // MARK: - Functions
     public func unsafeWait(_ minMsgs: Int32 = 0) {
         if safeWithActorPtr({ pony_actor_wait(minMsgs, $0) }) == nil {
             print("Warning: unsafeWait() called on a cancelled actor")
         }
     }
-
+    
     public func unsafeYield() {
         if safeWithActorPtr({ pony_actor_yield($0) }) == nil {
             print("Warning: unsafeYield() called on a cancelled actor")
         }
     }
     
-    public func unsafeCancel() {
+    public func unsafeCancelAllThens() {
         // Drain pending then-messages under the then-lock. Collect the pointers
         // first, then release them outside the lock to avoid re-entrant locking
         // if a released ActorMessage triggers further actor work.
@@ -218,6 +226,11 @@ open class Actor: Equatable, Hashable {
             // Consume the +1 retain from passRetained to avoid a leak.
             let _: ActorMessage? = Class(thenPtr)
         }
+        
+    }
+    
+    public func unsafeCancel() {
+        unsafeCancelAllThens()
         
         // Atomically claim the pointer so that deinit won't double-destroy.
         if let actorPtr = claimActorPtr() {
@@ -236,7 +249,7 @@ open class Actor: Equatable, Hashable {
             print("Warning: unsafeResume called on a cancelled actor")
         }
     }
-
+    
     public var unsafeMessagesCount: Int32 {
         guard let val = safeWithActorPtr({ pony_actor_num_messages($0) }) else {
             print("Warning: unsafeMessagesCount called on a cancelled actor")
@@ -244,26 +257,26 @@ open class Actor: Equatable, Hashable {
         }
         return val
     }
-
+    
     private let initTime: TimeInterval = ProcessInfo.processInfo.systemUptime
     public var unsafeUptime: TimeInterval {
         return ProcessInfo.processInfo.systemUptime - initTime
     }
-
+    
     public init() {
         Flynn.startup()
         unsafeUUID = UUID().uuidString
         _ponyActorPtr = pony_actor_create()
-
+        
         if let actorPtr = _ponyActorPtr {
             pony_actor_setProfileTypeID(actorPtr, Flynn.Profiler.typeID(for: type(of: self)))
         }
-
-        #if FLYNN_LEAK_ACTOR
+        
+#if FLYNN_LEAK_ACTOR
         Actor.record(actor: self)
-        #endif
+#endif
     }
-
+    
     deinit {
         let pendingPtrs: [UnsafeMutableRawPointer]
         safeThenLock.lock()
@@ -280,9 +293,9 @@ open class Actor: Equatable, Hashable {
             pony_actor_destroy(actorPtr)
         }
         
-        #if FLYNN_LEAK_ACTOR
+#if FLYNN_LEAK_ACTOR
         Actor.release(actor: self)
-        #endif
+#endif
     }
     
     @available(iOS 13.0, *)
@@ -317,7 +330,7 @@ open class Actor: Equatable, Hashable {
         }
         safeWithActorPtr { pony_actor_suspend($0) }
     }
-
+    
     public var unsafeStatus: String {
         var scratch = ""
         scratch.append("Actor UUID: \(unsafeUUID)\n")
@@ -330,10 +343,12 @@ open class Actor: Equatable, Hashable {
     }
     
     @discardableResult
-    public func unsafeSend(_ block: @escaping PonyBlock) -> Self {
+    public func unsafeSend(_ block: @escaping PonyBlock,
+                           _ file: StaticString = #file,
+                           _ line: UInt64 = #line) -> Self {
         let sent: Void? = safeWithActorPtr { actorPtr in
             let thenId = pony_actor_new_then_id()
-            let argumentPtr = Ptr(ActorMessage(block, thenId))
+            let argumentPtr = Ptr(ActorMessage("\(file):\(line)", block, thenId))
             pony_actor_send_message(actorPtr, argumentPtr, thenId, handleMessage)
         }
         if sent == nil {
@@ -356,7 +371,7 @@ open class Actor: Equatable, Hashable {
                          _ column: UInt64 = #column) -> Self {
         let sent: Void? = safeWithActorPtr { actorPtr in
             let thenId = pony_actor_new_then_id()
-            let argumentPtr = Ptr(ActorMessage(block, thenId))
+            let argumentPtr = Ptr(ActorMessage("\(file):\(line)", block, thenId))
             let prevThenId = pony_actor_get_then_id(file.utf8Start, line, column)
             
             guard prevThenId != 0 else {

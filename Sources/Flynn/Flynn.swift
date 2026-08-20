@@ -18,7 +18,9 @@ public enum CoreAffinity: Int32 {
 // also just use Flynn.main
 public class MainActor: Actor {
     @discardableResult
-    public override func unsafeSend(_ block: @escaping PonyBlock) -> Self {
+    public override func unsafeSend(_ block: @escaping PonyBlock,
+                                    _ file: StaticString = #file,
+                                    _ line: UInt64 = #line) -> Self {
         let result: Void? = safeWithActorPtr { actorPtr in
             DispatchQueue.main.async {
                 block(0)
