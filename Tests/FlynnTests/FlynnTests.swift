@@ -554,6 +554,15 @@ class FlynnTests: XCTestCase {
 
         expectation.fulfill()
     }
+    
+    func testUnsafeBeahviourCallback() {
+        let expectation = XCTestExpectation(description: #function)
+        
+        let a = ActorA()
+        a.beIncrement()
+
+        expectation.fulfill()
+    }
 
     func testImage() {
         let expectation = XCTestExpectation(description: #function)
