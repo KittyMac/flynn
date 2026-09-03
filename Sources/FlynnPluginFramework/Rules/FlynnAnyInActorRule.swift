@@ -12,7 +12,7 @@ struct FlynnAnyInActorRule: Rule {
             Example("""
                 class WhoseCallWasThisAnyway: Actor {
                     internal func _beCheckScript() {
-                        ScriptManager.shared.beGet(self) {
+                        ScriptManager.shared.beGet(unsafeSender: self) {
                             print("HERE")
                         }
                     }

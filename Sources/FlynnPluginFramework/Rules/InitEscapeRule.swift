@@ -62,7 +62,7 @@ struct InitEscapeRule: Rule {
                 class SomeActor: Actor {
                     private var timer: Flynn.Timer?
                     internal func _beStart() {
-                        timer = Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
+                        timer = Flynn.Timer(timeInterval: 1, repeats: true, unsafeSender: self) { [weak self] _ in
                             self?.unsafePriority = 1
                         }
                     }
@@ -79,7 +79,7 @@ struct InitEscapeRule: Rule {
                 class WhoseCallWasThisAnyway: Actor {
                     init {
                         unsafeSend { _ in
-                            ScriptManager.shared.beGet(self) {
+                            ScriptManager.shared.beGet(unsafeSender: self) {
                                 print("HERE")
                             }
                         }
@@ -90,7 +90,7 @@ struct InitEscapeRule: Rule {
                 class SomeActor: Actor {
                     init() {
                         super.init()
-                        Flynn.Timer(timeInterval: 1, immediate: false, repeats: true, self) { [weak self] _ in
+                        Flynn.Timer(timeInterval: 1, immediate: false, repeats: true, unsafeSender: self) { [weak self] _ in
                             self?.unsafePriority = 1
                         }
                     }
@@ -100,7 +100,7 @@ struct InitEscapeRule: Rule {
                 class SomeActor: Actor {
                     init() {
                         super.init()
-                        Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
+                        Flynn.Timer(timeInterval: 1, repeats: true, unsafeSender: self) { [weak self] _ in
                             self?.unsafePriority = 1
                         }
                     }
@@ -120,7 +120,15 @@ struct InitEscapeRule: Rule {
                 class SomeActor: Actor {
                     init(other: OtherActor) {
                         super.init()
-                        other.beRegister(self) { }
+                        other.beRegister(unsafeSender: self) { }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    init(other: OtherActor) {
+                        super.init()
+                        other.beRegister() { }
                     }
                 }
             """),
@@ -129,7 +137,18 @@ struct InitEscapeRule: Rule {
                     private var count = 0
                     init(other: OtherActor) {
                         super.init()
-                        other.beFoo(self) { result in
+                        other.beFoo(unsafeSender: self) { result in
+                            self.count += 1
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    private var count = 0
+                    init(other: OtherActor) {
+                        super.init()
+                        other.beFoo() { result in
                             self.count += 1
                         }
                     }
@@ -138,7 +157,16 @@ struct InitEscapeRule: Rule {
             Example("""
                 class WhoseCallWasThisAnyway: Actor {
                     init {
-                        ScriptManager.shared.beGet(self) {
+                        ScriptManager.shared.beGet(unsafeSender: self) {
+                            print("HERE")
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class WhoseCallWasThisAnyway: Actor {
+                    init {
+                        ScriptManager.shared.beGet() {
                             print("HERE")
                         }
                     }
@@ -148,7 +176,7 @@ struct InitEscapeRule: Rule {
                 class SomeActor: Actor {
                     init() {
                         super.init()
-                        Flynn.Timer(timeInterval: 1, immediate: true, repeats: true, self) { [weak self] _ in
+                        Flynn.Timer(timeInterval: 1, immediate: true, repeats: true, unsafeSender: self) { [weak self] _ in
                             self?.unsafePriority = 1
                         }
                     }
@@ -193,10 +221,14 @@ struct InitEscapeRule: Rule {
                     continue
                 }
                 
-                if let _ = arguments.popLast(),
-                   let selfArg = arguments.popLast(),
-                   selfArg == "self" {
-                    output.append(error(substructure.offset, syntax, description.console("unsafe behaviour call in init; wrap with unsafeSend")))
+                if let _ = arguments.popLast() {
+                    if arguments.count == 0 {
+                        output.append(error(substructure.offset, syntax, description.console("unsafe behaviour call in init; wrap with unsafeSend")))
+                    }
+                    if let selfArg = arguments.popLast(),
+                       selfArg == "unsafeSender: self" || selfArg.contains("unsafeSender") == false {
+                        output.append(error(substructure.offset, syntax, description.console("unsafe behaviour call in init; wrap with unsafeSend")))
+                    }
                     return false
                 } else {
                     // output.append(warning(substructure.offset, syntax, description.console("potentially unsafe behaviour call in init; wrap with unsafeSend")))
@@ -230,69 +262,6 @@ struct InitEscapeRule: Rule {
                            let substructures = function.substructure {
                             allPassed = recurseBehaviourCalls(ast, syntax, substructures, &output)
                         }
-                        
-                        /*
-                        if (function.name ?? "").hasPrefix(FlynnPluginTool.prefixBehaviorExternal) &&
-                            function.kind == .functionMethodInstance {
-                            // This might be an external behavior; if it is, then the body should
-                            // start with unsafeSend(). We have other rules in place to ensure that
-                            // this compliance is in place, so for here we just need to exempt it
-
-                            if let substructures = function.substructure {
-
-                                // must contain only parameters and one unsafe send
-                                var numParameters = 0
-                                var numUnsafeSend = 0
-                                var numOther = 0
-
-                                for substructure in substructures {
-                                    if substructure.kind == .exprCall &&
-                                        (substructure.name == "unsafeSend" || substructure.name == "self.unsafeSend") {
-                                        numUnsafeSend += 1
-                                    } else if substructure.kind == .varParameter {
-                                        numParameters += 1
-                                    } else {
-                                        numOther += 1
-                                    }
-                                }
-
-                                if !(numUnsafeSend == 1 && numOther == 0) {
-                                    output.append(error(function.offset, syntax, description.console("Behaviors must wrap their contents in a call to unsafeSend()")))
-                                    allPassed = false
-                                }
-                            }
-                            continue
-                        }
-
-                        if !(function.name ?? "").hasPrefix(FlynnPluginTool.prefixUnsafe) &&
-                            !(function.name ?? "").hasPrefix(FlynnPluginTool.prefixSafe) &&
-                            !(function.name ?? "").hasPrefix(FlynnPluginTool.prefixBehaviorInternal) &&
-                            !(function.name ?? "").hasPrefix("then(") &&
-                            !(function.name ?? "").hasPrefix("init(") &&
-                            !(function.name ?? "").hasPrefix("deinit") &&
-                            !(function.name ?? "").hasPrefix("hash(into") &&
-                            function.kind == .functionMethodInstance &&
-                            function.accessibility != .private {
-                            output.append(error(function.offset, syntax))
-                            allPassed = false
-                            continue
-                        }
-
-                        if (function.name ?? "").hasPrefix(FlynnPluginTool.prefixBehaviorInternal) &&
-                            function.kind == .functionMethodInstance &&
-                            function.accessibility != .internal {
-                            output.append(error(function.offset, syntax, description.console("Behaviours must be internal")))
-                            allPassed = false
-                            continue
-                        }
-
-                        if (function.name ?? "").hasPrefix(FlynnPluginTool.prefixUnsafe) &&
-                            function.kind == .functionMethodInstance &&
-                            function.accessibility != .private {
-                            output.append(warning(function.offset, syntax, description.console("Unsafe functions should not be used")))
-                            continue
-                        }
-*/
                     }
                 }
             }

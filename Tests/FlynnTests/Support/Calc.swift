@@ -9,14 +9,14 @@ class ActorA: Actor {
     
     internal func _beIncrement() {
         // safe: self means the callback will run on myself (this actor)
-        b.beAdd(x: counter, y: 1, self) { result in
+        b.beAdd(x: counter, y: 1) { result in
             self.counter = result
         }
         
         // unsafe: callback will run on the Flynn.any actor and access the internal state
         // of myself (which could be running in a different thread concurrently)
         let actor = Actor()
-        b.beAdd(x: counter, y: 1, actor) { result in
+        b.beAdd(x: counter, y: 1, unsafeSender: actor) { result in
             self.counter = 0
         }
     }

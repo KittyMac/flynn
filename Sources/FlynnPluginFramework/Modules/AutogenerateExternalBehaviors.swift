@@ -942,7 +942,7 @@ class AutogenerateExternalBehaviors {
                             if parameterLabels.count > minParameterCount {
                                 scratch.append(parameterNameHeader)
                             }
-                            scratch.append("_ sender: Actor,\n")
+                            scratch.append("unsafeSender: Actor? = nil,\n")
                             
                             if hasReturnCallback {
                                 scratch.append("\(parameterNameHeader)_ callback: @escaping ((")
@@ -1036,7 +1036,8 @@ class AutogenerateExternalBehaviors {
                                     scratch.append("                #endif\n")
                                 }
                                 
-                                scratch.append("                sender.unsafeSend { _ in\n")
+                                scratch.append("                let unsafeSender = unsafeSender ?? self\n")
+                                scratch.append("                unsafeSender.unsafeSend { _ in\n")
                                 scratch.append("                    callback(")
                                 for idx in 0..<returnCallbackParameters.count {
                                     scratch.append("arg\(idx), ")
@@ -1054,7 +1055,8 @@ class AutogenerateExternalBehaviors {
                                 scratch.append("            }\n")
                             } else {
                                 scratch.append(")\n")
-                                scratch.append("            sender.unsafeSend { _ in\n")
+                                scratch.append("            let unsafeSender = unsafeSender ?? self\n")
+                                scratch.append("            unsafeSender.unsafeSend { _ in\n")
                                 scratch.append("                callback(result)\n")
                                 scratch.append("                self.unsafeSend { _ in \(supportsThenSafeThenCall) }\n")
                                 scratch.append("            }\n")

@@ -16,7 +16,7 @@ struct WeakTimersRule: Rule {
             Example("""
                 class SomeActor: Actor {
                     func safeFoo() {
-                        timer = Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
+                        timer = Flynn.Timer(timeInterval: 1, repeats: true, unsafeSender: self) { [weak self] _ in
                             print("timer count")
                             count += 1
                         }
@@ -33,7 +33,7 @@ struct WeakTimersRule: Rule {
             Example("""
                 class SomeActor: Actor {
                     func safeFoo() {
-                        timer = Flynn.Timer(timeInterval: 1, repeats: true, self) { _ in
+                        timer = Flynn.Timer(timeInterval: 1, repeats: true, unsafeSender: self) { _ in
                             print("timer count")
                             count += 1
                         }

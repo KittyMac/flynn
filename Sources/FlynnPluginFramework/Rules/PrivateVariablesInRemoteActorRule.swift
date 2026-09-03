@@ -14,7 +14,7 @@ struct PrivateVariablesInRemoteActorRule: Rule {
             Example("class SomeActor: RemoteActor { private let x:Int = 0 }\n"),
             Example("""
                 class WhoseCallWasThisAnyway: RemoteActor {
-                    lazy var printFoo = ChainableBehavior(self) { (_: BehaviorArgs) in
+                    lazy var printFoo = ChainableBehavior(unsafeSender: self) { (_: BehaviorArgs) in
                         print("foo")
                     }
                 }

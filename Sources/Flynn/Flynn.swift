@@ -91,7 +91,7 @@ open class Flynn {
             
             if memoryTrimLimit > 0 {
                 let actor = Actor()
-                Flynn.Timer(timeInterval: 30.0, immediate: false, repeats: true, actor) { timer in
+                Flynn.Timer(timeInterval: 30.0, immediate: false, repeats: true, unsafeSender: actor) { timer in
                     if Flynn.appCurrentMemory > memoryTrimLimit {
                         Flynn.malloc_trim(pad: 0)
                     }

@@ -87,7 +87,7 @@ extension Flynn {
             Flynn.remotes.beRegisterActorTypesForRoot(remoteActorTypes,
                                                       fallbackRemoteActorTypes,
                                                       namedRemoteActorTypes,
-                                                      Flynn.any) { (_) in
+                                                      unsafeSender: Flynn.any) { (_) in
                 pony_root(address,
                           port,
                           nodeRegisterWithRoot,
@@ -100,7 +100,7 @@ extension Flynn {
         public static func remoteActorByUUID(_ actorUUID: String,
                                              _ sender: Actor,
                                              _ callback: @escaping (RemoteActor?) -> Void) {
-            Flynn.remotes.beGetActor(actorUUID, sender, callback)
+            Flynn.remotes.beGetActor(actorUUID, unsafeSender: sender, callback)
         }
     }
 
@@ -114,7 +114,7 @@ extension Flynn {
             
             Flynn.remotes.beRegisterActorTypesForNode(remoteActorTypes,
                                                       namedRemoteActors,
-                                                      Flynn.any) { (_) in
+                                                      unsafeSender: Flynn.any) { (_) in
                 
                 pony_node(address,
                           port,

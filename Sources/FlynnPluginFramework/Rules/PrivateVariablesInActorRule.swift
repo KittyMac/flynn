@@ -14,7 +14,7 @@ struct PrivateVariablesInActorRule: Rule {
             Example("class SomeActor: Actor { private let x:Int = 0 }\n"),
             Example("""
                 class WhoseCallWasThisAnyway: Actor {
-                    lazy var printFoo = ChainableBehavior(self) { (_: BehaviorArgs) in
+                    lazy var printFoo = ChainableBehavior(unsafeSender: self) { (_: BehaviorArgs) in
                         print("foo")
                     }
                 }

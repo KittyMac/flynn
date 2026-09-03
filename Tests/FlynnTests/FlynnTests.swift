@@ -14,19 +14,19 @@ class ThenActor: Actor {
         print("ThenActor - deinit")
     }
     internal func _beFirst(delay: Double, _ returnCallback: @escaping () -> ()) {
-        Flynn.Timer(timeInterval: delay, repeats: false, self) { [weak self] timer in
+        Flynn.Timer(timeInterval: delay, repeats: false, unsafeSender: self) { [weak self] timer in
             guard let _ = self else { return }
             returnCallback()
         }
     }
     internal func _beSecond(delay: Double, _ returnCallback: @escaping () -> ()) {
-        Flynn.Timer(timeInterval: delay, repeats: false, self) { [weak self] timer in
+        Flynn.Timer(timeInterval: delay, repeats: false, unsafeSender: self) { [weak self] timer in
             guard let _ = self else { return }
             returnCallback()
         }
     }
     internal func _beThird(delay: Double, _ returnCallback: @escaping () -> ()) {
-        Flynn.Timer(timeInterval: delay, repeats: false, self) { [weak self] timer in
+        Flynn.Timer(timeInterval: delay, repeats: false, unsafeSender: self) { [weak self] timer in
             guard let _ = self else { return }
             returnCallback()
         }
@@ -72,9 +72,9 @@ class ThenActor2: Actor {
     }
     
     internal func _beTest(_ returnCallback: @escaping () -> ()) {
-        self.beFirst(self) {
-        }.then().doSecond(self) {
-        }.then().doThird(self) {
+        self.beFirst() {
+        }.then().doSecond() {
+        }.then().doThird() {
         }.then().doFourth().unsafeSend { _ in
             returnCallback()
         }
@@ -288,11 +288,11 @@ class FlynnTests: XCTestCase {
                     return v
                 }
                 
-                ThenActor().beFirst(delay: hack(3.0), Flynn.any) {
+                ThenActor().beFirst(delay: hack(3.0), unsafeSender: Flynn.any) {
                     results.append("first")
-                }.then().doSecond(delay: hack(2.0), Flynn.any) {
+                }.then().doSecond(delay: hack(2.0), unsafeSender: Flynn.any) {
                     results.append("second")
-                }.then().doThird(delay: hack(1.0), Flynn.any) {
+                }.then().doThird(delay: hack(1.0), unsafeSender: Flynn.any) {
                     results.append("third")
                     expectation.fulfill()
                 }
@@ -377,11 +377,11 @@ class FlynnTests: XCTestCase {
             // "normal" behaviour calls are put onto the actor's message queue immediately,
             // so these messages will in the order of their delays (third processes in 1 second,
             // second in 2 seconds, first in 3 seconds)
-            ThenActor().beFirst(delay: 1.0, Flynn.any) {
+            ThenActor().beFirst(delay: 1.0, unsafeSender: Flynn.any) {
                 results.append("first")
-            }.beSecond(delay: 0.6, Flynn.any) {
+            }.beSecond(delay: 0.6, unsafeSender: Flynn.any) {
                 results.append("second")
-            }.beThird(delay: 0.3, Flynn.any) {
+            }.beThird(delay: 0.3, unsafeSender: Flynn.any) {
                 results.append("third")
             }
             
@@ -389,11 +389,11 @@ class FlynnTests: XCTestCase {
             // be added to this actor until the preceeding behaviour finishes (ie it calls its returnCallback).
             // So in this example we see first in 6 seconds, THEN we see second after 5 seconds, THEN
             // we see third after 4 seconds
-            ThenActor().beFirst(delay: 3.0, Flynn.any) {
+            ThenActor().beFirst(delay: 3.0, unsafeSender: Flynn.any) {
                 results.append("first")
-            }.then().doSecond(delay: 2.0, Flynn.any) {
+            }.then().doSecond(delay: 2.0, unsafeSender: Flynn.any) {
                 results.append("second")
-            }.then().doThird(delay: 1.0, Flynn.any) {
+            }.then().doThird(delay: 1.0, unsafeSender: Flynn.any) {
                 results.append("third")
             }
             
@@ -408,10 +408,10 @@ class FlynnTests: XCTestCase {
             // }
             
             // Finally, ensure we support "then" on behaviours which do not have a callback (for consistency)
-            ThenActor().beFirst(delay: 7.0, Flynn.any) {
+            ThenActor().beFirst(delay: 7.0, unsafeSender: Flynn.any) {
                 results.append("first")
             }.then().doFourth()
-                .then().doThird(delay: 1.0, Flynn.any) {
+                .then().doThird(delay: 1.0, unsafeSender: Flynn.any) {
                 results.append("third")
                 expectation.fulfill()
             }
@@ -429,7 +429,7 @@ class FlynnTests: XCTestCase {
         for _ in 0..<1_000_000 {
             if true {
                 let a = ThenActor2()
-                a.beTest(Flynn.any) {
+                a.beTest(unsafeSender: Flynn.any) {
                     count -= 1
                     if count <= 0 {
                         expectation.fulfill()
@@ -476,7 +476,7 @@ class FlynnTests: XCTestCase {
     func testMultipleDelayedReturns() {
         let expectation = XCTestExpectation(description: #function)
 
-        ActorExhaustive().beNoArgsTwoDelayedReturn(Flynn.any) { (string, int) in
+        ActorExhaustive().beNoArgsTwoDelayedReturn(unsafeSender: Flynn.any) { (string, int) in
             if string == "Hello World" && int == 42 {
                 expectation.fulfill()
             }
@@ -507,7 +507,7 @@ class FlynnTests: XCTestCase {
             .beInc(10)
             .beInc(20)
             .beDec(1)
-            .beGetValue(Flynn.any) { (value) in
+            .beGetValue(unsafeSender: Flynn.any) { (value) in
                 print("value: \(value)")
                 XCTAssertEqual(value, 30, "Counter did not add up to 30")
                 expectation.fulfill()
@@ -733,13 +733,13 @@ class FlynnTests: XCTestCase {
     func testTimerInterrupt() {
         let expectation = XCTestExpectation(description: #function)
 
-        Flynn.Timer(timeInterval: 20.0, repeats: false, Flynn.any, { (_) in })
+        Flynn.Timer(timeInterval: 20.0, repeats: false, unsafeSender: Flynn.any, { (_) in })
 
         // Note: why does sleep() not work in unit tests...
         let start = ProcessInfo.processInfo.systemUptime
         while ProcessInfo.processInfo.systemUptime - start < 1.0 { }
 
-        Flynn.Timer(timeInterval: 1.0, repeats: false, Flynn.any, { (_) in
+        Flynn.Timer(timeInterval: 1.0, repeats: false, unsafeSender: Flynn.any, { (_) in
             expectation.fulfill()
         })
 
@@ -754,7 +754,7 @@ class FlynnTests: XCTestCase {
         var totalTime: TimeInterval = 0
         var startTime = ProcessInfo.processInfo.systemUptime
 
-        Flynn.Timer(timeInterval: 0.2, repeats: true, Flynn.any, { (timer) in
+        Flynn.Timer(timeInterval: 0.2, repeats: true, unsafeSender: Flynn.any, { (timer) in
 
             let now = ProcessInfo.processInfo.systemUptime
             totalTime += now - startTime
@@ -778,9 +778,9 @@ class FlynnTests: XCTestCase {
 
         let counter = Counter()
 
-        Flynn.Timer(timeInterval: 0.01, repeats: true, counter, [1])
+        Flynn.Timer(timeInterval: 0.01, repeats: true, target: counter, [1])
 
-        Flynn.Timer(timeInterval: 1, repeats: false, counter, { [weak self] (_) in
+        Flynn.Timer(timeInterval: 1, repeats: false, unsafeSender: counter, { [weak self] (_) in
             guard let _ = self else { return }
             
             counter.beEquals { (value) in
@@ -798,7 +798,7 @@ class FlynnTests: XCTestCase {
 
         let builder = StringBuilder()
 
-        Flynn.Timer(timeInterval: 0.010, repeats: false, builder, { [weak self] (_) in
+        Flynn.Timer(timeInterval: 0.010, repeats: false, unsafeSender: builder, { [weak self] (_) in
             guard let _ = self else { return }
             
             builder.beResult { (value) in
@@ -807,15 +807,15 @@ class FlynnTests: XCTestCase {
             }
         })
 
-        Flynn.Timer(timeInterval: 0.006, repeats: false, builder, ["6"])
-        Flynn.Timer(timeInterval: 0.008, repeats: false, builder, ["8"])
-        Flynn.Timer(timeInterval: 0.003, repeats: false, builder, ["3"])
-        Flynn.Timer(timeInterval: 0.007, repeats: false, builder, ["7"])
-        Flynn.Timer(timeInterval: 0.005, repeats: false, builder, ["5"])
-        Flynn.Timer(timeInterval: 0.009, repeats: false, builder, ["9"])
-        Flynn.Timer(timeInterval: 0.002, repeats: false, builder, ["2"])
-        Flynn.Timer(timeInterval: 0.004, repeats: false, builder, ["4"])
-        Flynn.Timer(timeInterval: 0.001, repeats: false, builder, ["1"])
+        Flynn.Timer(timeInterval: 0.006, repeats: false, target: builder, ["6"])
+        Flynn.Timer(timeInterval: 0.008, repeats: false, target: builder, ["8"])
+        Flynn.Timer(timeInterval: 0.003, repeats: false, target: builder, ["3"])
+        Flynn.Timer(timeInterval: 0.007, repeats: false, target: builder, ["7"])
+        Flynn.Timer(timeInterval: 0.005, repeats: false, target: builder, ["5"])
+        Flynn.Timer(timeInterval: 0.009, repeats: false, target: builder, ["9"])
+        Flynn.Timer(timeInterval: 0.002, repeats: false, target: builder, ["2"])
+        Flynn.Timer(timeInterval: 0.004, repeats: false, target: builder, ["4"])
+        Flynn.Timer(timeInterval: 0.001, repeats: false, target: builder, ["1"])
 
         wait(for: [expectation], timeout: 1.0)
     }

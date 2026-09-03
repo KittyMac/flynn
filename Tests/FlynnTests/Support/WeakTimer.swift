@@ -15,7 +15,7 @@ class WeakTimer: Actor {
         Flynn.dock(self)
         
         var count = 0
-        timer = Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
+        timer = Flynn.Timer(timeInterval: 1, repeats: true, unsafeSender: self) { [weak self] _ in
             guard let self = self else { return }
             print("timer \(count)")
             count += 1

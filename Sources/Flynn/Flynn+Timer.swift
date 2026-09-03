@@ -32,7 +32,7 @@ public extension Flynn {
         var callback: TimerCallback?
 
         @discardableResult
-        public init(timeInterval: TimeInterval, repeats: Bool, _ target: Timerable) {
+        public init(timeInterval: TimeInterval, repeats: Bool, target: Timerable) {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.target = target
@@ -42,7 +42,7 @@ public extension Flynn {
         }
 
         @discardableResult
-        public init(timeInterval: TimeInterval, repeats: Bool, _ target: Timerable, _ args: TimerArgs) {
+        public init(timeInterval: TimeInterval, repeats: Bool, target: Timerable, _ args: TimerArgs) {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.target = target
@@ -55,13 +55,13 @@ public extension Flynn {
         @discardableResult
         public init(timeInterval: TimeInterval,
                     repeats: Bool,
-                    _ actor: Actor,
+                    unsafeSender: Actor,
                     _ callback: @escaping TimerCallback,
                     _ callingFunctionName: String = #function,
                     _ callingFunctionLine: Int = #line) {
             self.timeInterval = timeInterval
             self.repeats = repeats
-            self.actor = actor
+            self.actor = unsafeSender
             self.callback = callback
             self.caller = "\(callingFunctionName):\(callingFunctionLine)"
 
@@ -72,13 +72,13 @@ public extension Flynn {
         public init(timeInterval: TimeInterval,
                     immediate: Bool,
                     repeats: Bool,
-                    _ actor: Actor,
+                    unsafeSender: Actor,
                     _ callback: @escaping TimerCallback,
                     _ callingFunctionName: String = #function,
                     _ callingFunctionLine: Int = #line) {
             self.timeInterval = timeInterval
             self.repeats = repeats
-            self.actor = actor
+            self.actor = unsafeSender
             self.callback = callback
             self.caller = "\(callingFunctionName):\(callingFunctionLine)"
             

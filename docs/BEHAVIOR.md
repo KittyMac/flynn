@@ -172,7 +172,7 @@ class Scenario2: Actor {
         // important that ConcurrentDatastore is implemented to correctly
         // wrap the closure in unsafeSend {} to ensure it executes on
         // Scenario2 in a concurrency safe manner
-        monsters.beGet(name, self) { value in
+        monsters.beGet(name) { value in
             if let value = value {
                 print("\(value)")
             }

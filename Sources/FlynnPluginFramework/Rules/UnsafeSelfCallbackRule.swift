@@ -38,7 +38,7 @@ struct UnsafeSelfCallbackRule: Rule {
                 class SomeActor: Actor {
                     private var timer: Flynn.Timer?
                     internal func _beStart() {
-                        timer = Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
+                        timer = Flynn.Timer(timeInterval: 1, repeats: true, unsafeSender: self) { [weak self] _ in
                             self?.unsafePriority = 1
                         }
                     }
@@ -55,7 +55,7 @@ struct UnsafeSelfCallbackRule: Rule {
                 class WhoseCallWasThisAnyway: Actor {
                     init {
                         unsafeSend { _ in
-                            ScriptManager.shared.beGet(self) {
+                            ScriptManager.shared.beGet(unsafeSender: self) {
                                 print("HERE")
                             }
                         }
@@ -66,7 +66,7 @@ struct UnsafeSelfCallbackRule: Rule {
                 class SomeActor: Actor {
                     init() {
                         super.init()
-                        Flynn.Timer(timeInterval: 1, immediate: false, repeats: true, self) { [weak self] _ in
+                        Flynn.Timer(timeInterval: 1, immediate: false, repeats: true, unsafeSender: self) { [weak self] _ in
                             self?.unsafePriority = 1
                         }
                     }
@@ -76,7 +76,7 @@ struct UnsafeSelfCallbackRule: Rule {
                 class SomeActor: Actor {
                     init() {
                         super.init()
-                        Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
+                        Flynn.Timer(timeInterval: 1, repeats: true, unsafeSender: self) { [weak self] _ in
                             self?.unsafePriority = 1
                         }
                     }
