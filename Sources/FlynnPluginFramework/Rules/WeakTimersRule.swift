@@ -58,7 +58,7 @@ struct WeakTimersRule: Rule {
     func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
 
         var errorOffsets: [Int64] = []
-        syntax.matches(#"Flynn.Timer\([^\)]*\)[^{]*\{(.*)in"#) { offset, match, groups in
+        syntax.matches(#"Flynn.Timer\([^\)]*unsafeSender:\s*self\)[^{]*\{(.*)in"#) { offset, match, groups in
             if groups[1].contains("[weak self]") == false && groups[1].contains("[unowned self]") == false {
                 errorOffsets.append(offset)
             }

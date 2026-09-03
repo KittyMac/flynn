@@ -112,7 +112,7 @@ class FlynnPluginTests: XCTestCase {
     }
 
     func testOneRule() throws {
-        let rule = InitEscapeRule()
+        let rule = UnsafeSelfCallbackRule()
         XCTAssert(rule.test())
     }
 
