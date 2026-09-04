@@ -26,6 +26,30 @@ static __pony_thread_local uint64_t sendv_marked_then_id_hash[MAX_THEN] = {0};
 static __pony_thread_local const void * sendv_marked_then_id_file[MAX_THEN] = {0};
 static __pony_thread_local uint64_t sendv_marked_then_id_line[MAX_THEN] = {0};
 
+static __pony_thread_local pony_actor_t* current_actor = NULL;
+
+static void (*swift_actor_release)(void*) = NULL;
+
+pony_actor_t* ponyint_actor_current(void)
+{
+    return current_actor;
+}
+
+void ponyint_actor_setSwiftActor(pony_actor_t* actor, void* swiftActor)
+{
+    actor->swiftActor = swiftActor;
+}
+
+void* ponyint_actor_getSwiftActor(pony_actor_t* actor)
+{
+    return actor->swiftActor;
+}
+
+void ponyint_actor_set_swift_release(void (*release)(void*))
+{
+    swift_actor_release = release;
+}
+
 void ponyint_actor_destroy(pony_actor_t* actor);
 
 // The flags of a given actor cannot be mutated from more than one actor at
@@ -81,7 +105,11 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
                     sendv_last_then_id = 0;
                     sendv_marked_idx_push = 0;
                     sendv_marked_idx_pop = 0;
+                    
+                    pony_actor_t* prev_actor = current_actor;
+                    current_actor = actor;
                     m->func(m->arg);
+                    current_actor = prev_actor;
                     
                     if (sendv_marked_idx_push != sendv_marked_idx_pop) {
                         const char * file = sendv_marked_then_id_file[sendv_marked_idx_pop];
@@ -200,6 +228,11 @@ void ponyint_actor_destroy(pony_actor_t* actor)
     }
     
     ponyint_messageq_destroy(&actor->queue);
+    
+    if (actor->swiftActor != NULL && swift_actor_release != NULL) {
+        swift_actor_release(actor->swiftActor);
+        actor->swiftActor = NULL;
+    }
     
     int32_t typeSize = sizeof(pony_actor_t);
     ponyint_pool_free(actor, typeSize);

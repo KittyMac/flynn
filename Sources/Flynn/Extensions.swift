@@ -129,10 +129,10 @@ fileprivate func _asyncOOB<T: Collection>(count: Int,
 
 public extension Collection {
     func async(count: Int = 0,
-               _ sender: Actor,
+               unsafeSender: Actor? = nil,
                each: @escaping (Self.Element, @escaping synchronizedBlock) -> (),
                done: @escaping () -> ()) {
-        _async(count: count, self, each, sender, done)
+        _async(count: count, self, each, unsafeSender ?? Flynn.unsafeCurrentActor ?? Flynn.any, done)
     }
     func sync(count: Int = 0, _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
         _sync(count: count, self, block)
@@ -140,10 +140,10 @@ public extension Collection {
     
     func asyncOOB(count: Int = 0,
                   timeout: TimeInterval,
-                  _ sender: Actor,
+                  unsafeSender: Actor? = nil,
                   each: @escaping (Self.Element, @escaping synchronizedBlock) -> (),
                   done: @escaping () -> ()) {
-        _asyncOOB(count: count, self, each, sender, done)
+        _asyncOOB(count: count, self, each, unsafeSender ?? Flynn.unsafeCurrentActor ?? Flynn.any, done)
     }
     func syncOOB(count: Int = 0, timeout: TimeInterval, _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
         _syncOOB(count: count, timeout: timeout, self, block)

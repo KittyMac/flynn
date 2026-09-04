@@ -991,6 +991,7 @@ class AutogenerateExternalBehaviors {
                                 }
                             }
                             
+                            scratch.append("        let unsafeSender: Actor = unsafeSender ?? Flynn.unsafeCurrentActor ?? Flynn.any\n")
                             scratch.append("        return \(supportsThenUnsafeCallMethod) ({ thenPtr in\n")
                             
                             if hasReturnCallback == false {
@@ -1036,7 +1037,6 @@ class AutogenerateExternalBehaviors {
                                     scratch.append("                #endif\n")
                                 }
                                 
-                                scratch.append("                let unsafeSender = unsafeSender ?? self\n")
                                 scratch.append("                unsafeSender.unsafeSend { _ in\n")
                                 scratch.append("                    callback(")
                                 for idx in 0..<returnCallbackParameters.count {
@@ -1055,7 +1055,6 @@ class AutogenerateExternalBehaviors {
                                 scratch.append("            }\n")
                             } else {
                                 scratch.append(")\n")
-                                scratch.append("            let unsafeSender = unsafeSender ?? self\n")
                                 scratch.append("            unsafeSender.unsafeSend { _ in\n")
                                 scratch.append("                callback(result)\n")
                                 scratch.append("                self.unsafeSend { _ in \(supportsThenSafeThenCall) }\n")

@@ -92,6 +92,11 @@ void pony_actor_setcoreAffinity(void * actor, int coreAffinity);
 int pony_actor_getcoreAffinity(void * actor);
 
 void pony_actor_setProfileTypeID(void * actor, int typeID);
+
+void pony_actor_setSwiftActor(void * actor, void * swiftActor);
+void * pony_actor_getSwiftActor(void * actor);
+void pony_actor_set_swift_release(void (*release)(void *));
+
 void pony_profiler_enable(bool on);
 void pony_profiler_reset(void);
 int pony_profiler_max_types(void);
@@ -101,6 +106,10 @@ void pony_actor_yield(void * actor);
 void pony_actor_suspend(void * actor);
 void pony_actor_resume(void * actor);
 bool pony_actor_is_suspended(void * actor);
+
+// Returns the actor whose message is currently executing on the calling
+// thread, or NULL if the calling thread is not running an actor message.
+void * pony_actor_current(void);
 
 int pony_actor_num_messages(void * actor);
 void pony_actor_destroy(void * actor);

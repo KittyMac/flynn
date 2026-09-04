@@ -144,7 +144,7 @@ class FlynnTests: XCTestCase {
         let numbers = [0,1,2,3,4,5,6,7,8,9]
         var total = 0
         
-        numbers.async((Flynn.any)) { item, synchronized in
+        numbers.async { item, synchronized in
             // this scope happens in parallel on different actors; it would be
             // unsafe to increment total here
             print(item)
@@ -203,7 +203,7 @@ class FlynnTests: XCTestCase {
         let numbers = [0,1,2,3,4,5,6,7,8,9]
         var total = 0
         
-        numbers.asyncOOB(timeout: 0, (Flynn.any)) { item, synchronized in
+        numbers.asyncOOB(timeout: 0) { item, synchronized in
             // this scope happens in parallel on different actors; it would be
             // unsafe to increment total here
             print(item)
@@ -264,13 +264,72 @@ class FlynnTests: XCTestCase {
     func testSuppressCallbackTwice() {
         let test = TestDoubleCallback()
         var count = 0
-        test.beFunc(Flynn.any) {
+        test.beFunc {
             count += 1
         }
         Flynn.sleep(2)
         XCTAssertEqual(count, 1)
     }
      */
+
+    func testCurrentActor() {
+        let expectation = XCTestExpectation(description: #function)
+        
+        let probe = CurrentActorProbe()
+        
+        // Not on a scheduler thread: nothing is executing
+        XCTAssertNil(Flynn.unsafeCurrentActor)
+        XCTAssertFalse(probe.unsafeIsExecuting)
+        XCTAssertFalse(Flynn.unsafeIsExecutingActor)
+        
+        probe.beProbe { (isCurrent, isExecuting) in
+            // inside _beProbe, probe was the current actor
+            XCTAssertTrue(isCurrent)
+            XCTAssertTrue(isExecuting)
+            
+            // this callback runs on Flynn.any
+            XCTAssertTrue(Flynn.unsafeCurrentActor === Flynn.any)
+            XCTAssertFalse(probe.unsafeIsExecuting)
+            
+            probe.beDefaultSender { (ranOnProbe, counter) in
+                XCTAssertTrue(ranOnProbe, "default sender must resolve to the calling actor, not the callee")
+                XCTAssertEqual(counter, 1)
+                
+                probe.beExplicitSender { ranOnOther in
+                    XCTAssertTrue(ranOnOther, "explicit unsafeSender must be honoured")
+                    expectation.fulfill()
+                }
+            }
+        }
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
+    
+    func testCurrentActorSurvivesActorDeinit() {
+        // A message that does not capture its actor can still be running while the
+        // Swift Actor is deinitialized; unsafeCurrentActor must return nil, not crash.
+        let expectation = XCTestExpectation(description: #function)
+        let started = DispatchSemaphore(value: 0)
+        let released = DispatchSemaphore(value: 0)
+        
+        do {
+            let actor = Actor()
+            actor.unsafeSend { _ in
+                started.signal()
+                released.wait()
+                // actor has been released by the test thread by now
+                let current = Flynn.unsafeCurrentActor
+                XCTAssertNil(current)
+                XCTAssertTrue(Flynn.unsafeIsExecutingActor)
+                expectation.fulfill()
+            }
+        }
+        started.wait()
+        // `actor` is out of scope; the only remaining reference is... none, the message did not capture it
+        released.signal()
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
 
     func testActorInterruptingThens() {
         let expectation = XCTestExpectation(description: #function)
@@ -288,11 +347,11 @@ class FlynnTests: XCTestCase {
                     return v
                 }
                 
-                ThenActor().beFirst(delay: hack(3.0), unsafeSender: Flynn.any) {
+                ThenActor().beFirst(delay: hack(3.0)) {
                     results.append("first")
-                }.then().doSecond(delay: hack(2.0), unsafeSender: Flynn.any) {
+                }.then().doSecond(delay: hack(2.0)) {
                     results.append("second")
-                }.then().doThird(delay: hack(1.0), unsafeSender: Flynn.any) {
+                }.then().doThird(delay: hack(1.0)) {
                     results.append("third")
                     expectation.fulfill()
                 }
@@ -317,19 +376,19 @@ class FlynnTests: XCTestCase {
         
         a.beInc(1)
         
-        a.beGetValue(Flynn.any) { value in
+        a.beGetValue { value in
             results.append(value)
-        }.then(b).doGetValue(Flynn.any) { value in
+        }.then(b).doGetValue { value in
             results.append(value)
             expectation.fulfill()
         }
-        //.then(a).doGetValue(Flynn.any) { value in
+        //.then(a).doGetValue { value in
         //    results.append(value)
-        //}.then(b).doGetValue(Flynn.any) { value in
+        //}.then(b).doGetValue { value in
         //    results.append(value)
-        //}.then(a).doGetValue(Flynn.any) { value in
+        //}.then(a).doGetValue { value in
         //    results.append(value)
-        //}.then(b).doGetValue(Flynn.any) { value in
+        //}.then(b).doGetValue { value in
         //    results.append(value)
         //    expectation.fulfill()
         //}
@@ -340,7 +399,7 @@ class FlynnTests: XCTestCase {
         //     //expectation.fulfill()
         // }.then().doSecond(delay: 2.0, Flynn.any) {
         //     results.append("second")
-        // }.then(counter).beGetValue(Flynn.any) { value in
+        // }.then(counter).beGetValue { value in
         //     results.append("\(value)")
         // }.then(thenActor).doThird(delay: 1.0, Flynn.any) {
         //     results.append("third")
@@ -377,11 +436,11 @@ class FlynnTests: XCTestCase {
             // "normal" behaviour calls are put onto the actor's message queue immediately,
             // so these messages will in the order of their delays (third processes in 1 second,
             // second in 2 seconds, first in 3 seconds)
-            ThenActor().beFirst(delay: 1.0, unsafeSender: Flynn.any) {
+            ThenActor().beFirst(delay: 1.0) {
                 results.append("first")
-            }.beSecond(delay: 0.6, unsafeSender: Flynn.any) {
+            }.beSecond(delay: 0.6) {
                 results.append("second")
-            }.beThird(delay: 0.3, unsafeSender: Flynn.any) {
+            }.beThird(delay: 0.3) {
                 results.append("third")
             }
             
@@ -389,29 +448,29 @@ class FlynnTests: XCTestCase {
             // be added to this actor until the preceeding behaviour finishes (ie it calls its returnCallback).
             // So in this example we see first in 6 seconds, THEN we see second after 5 seconds, THEN
             // we see third after 4 seconds
-            ThenActor().beFirst(delay: 3.0, unsafeSender: Flynn.any) {
+            ThenActor().beFirst(delay: 3.0) {
                 results.append("first")
-            }.then().doSecond(delay: 2.0, unsafeSender: Flynn.any) {
+            }.then().doSecond(delay: 2.0) {
                 results.append("second")
-            }.then().doThird(delay: 1.0, unsafeSender: Flynn.any) {
+            }.then().doThird(delay: 1.0) {
                 results.append("third")
             }
             
             // The "then" allows use to avoid "callback hell". It is syntactically nicer than:
             // let a = ThenActor()
-            // a.beFirst(Flynn.any) {
-            //     a.beSecond(Flynn.any) {
-            //         a.beThird(Flynn.any) {
+            // a.beFirst {
+            //     a.beSecond {
+            //         a.beThird {
             //             expectation.fulfill()
             //         }
             //     }
             // }
             
             // Finally, ensure we support "then" on behaviours which do not have a callback (for consistency)
-            ThenActor().beFirst(delay: 7.0, unsafeSender: Flynn.any) {
+            ThenActor().beFirst(delay: 7.0) {
                 results.append("first")
             }.then().doFourth()
-                .then().doThird(delay: 1.0, unsafeSender: Flynn.any) {
+                .then().doThird(delay: 1.0) {
                 results.append("third")
                 expectation.fulfill()
             }
@@ -429,7 +488,7 @@ class FlynnTests: XCTestCase {
         for _ in 0..<1_000_000 {
             if true {
                 let a = ThenActor2()
-                a.beTest(unsafeSender: Flynn.any) {
+                a.beTest {
                     count -= 1
                     if count <= 0 {
                         expectation.fulfill()
@@ -476,7 +535,7 @@ class FlynnTests: XCTestCase {
     func testMultipleDelayedReturns() {
         let expectation = XCTestExpectation(description: #function)
 
-        ActorExhaustive().beNoArgsTwoDelayedReturn(unsafeSender: Flynn.any) { (string, int) in
+        ActorExhaustive().beNoArgsTwoDelayedReturn { (string, int) in
             if string == "Hello World" && int == 42 {
                 expectation.fulfill()
             }
@@ -507,7 +566,7 @@ class FlynnTests: XCTestCase {
             .beInc(10)
             .beInc(20)
             .beDec(1)
-            .beGetValue(unsafeSender: Flynn.any) { (value) in
+            .beGetValue { (value) in
                 print("value: \(value)")
                 XCTAssertEqual(value, 30, "Counter did not add up to 30")
                 expectation.fulfill()
@@ -733,13 +792,13 @@ class FlynnTests: XCTestCase {
     func testTimerInterrupt() {
         let expectation = XCTestExpectation(description: #function)
 
-        Flynn.Timer(timeInterval: 20.0, repeats: false, unsafeSender: Flynn.any, { (_) in })
+        Flynn.Timer(timeInterval: 20.0, repeats: false, { (_) in })
 
         // Note: why does sleep() not work in unit tests...
         let start = ProcessInfo.processInfo.systemUptime
         while ProcessInfo.processInfo.systemUptime - start < 1.0 { }
 
-        Flynn.Timer(timeInterval: 1.0, repeats: false, unsafeSender: Flynn.any, { (_) in
+        Flynn.Timer(timeInterval: 1.0, repeats: false, { (_) in
             expectation.fulfill()
         })
 
@@ -754,7 +813,7 @@ class FlynnTests: XCTestCase {
         var totalTime: TimeInterval = 0
         var startTime = ProcessInfo.processInfo.systemUptime
 
-        Flynn.Timer(timeInterval: 0.2, repeats: true, unsafeSender: Flynn.any, { (timer) in
+        Flynn.Timer(timeInterval: 0.2, repeats: true, { (timer) in
 
             let now = ProcessInfo.processInfo.systemUptime
             totalTime += now - startTime

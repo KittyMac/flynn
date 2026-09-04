@@ -55,13 +55,13 @@ public extension Flynn {
         @discardableResult
         public init(timeInterval: TimeInterval,
                     repeats: Bool,
-                    unsafeSender: Actor,
+                    unsafeSender: Actor? = nil,
                     _ callback: @escaping TimerCallback,
                     _ callingFunctionName: String = #function,
                     _ callingFunctionLine: Int = #line) {
             self.timeInterval = timeInterval
             self.repeats = repeats
-            self.actor = unsafeSender
+            self.actor = unsafeSender ?? Flynn.unsafeCurrentActor ?? Flynn.any
             self.callback = callback
             self.caller = "\(callingFunctionName):\(callingFunctionLine)"
 
@@ -72,13 +72,13 @@ public extension Flynn {
         public init(timeInterval: TimeInterval,
                     immediate: Bool,
                     repeats: Bool,
-                    unsafeSender: Actor,
+                    unsafeSender: Actor? = nil,
                     _ callback: @escaping TimerCallback,
                     _ callingFunctionName: String = #function,
                     _ callingFunctionLine: Int = #line) {
             self.timeInterval = timeInterval
             self.repeats = repeats
-            self.actor = unsafeSender
+            self.actor = unsafeSender ?? Flynn.unsafeCurrentActor ?? Flynn.any
             self.callback = callback
             self.caller = "\(callingFunctionName):\(callingFunctionLine)"
             

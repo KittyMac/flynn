@@ -64,6 +64,17 @@ open class Flynn {
     public static let any = Actor()
     public static let main = MainActor()
     
+    public static var unsafeCurrentActor: Actor? {
+        guard let actorPtr = pony_actor_current(),
+              let boxPtr = pony_actor_getSwiftActor(actorPtr) else { return nil }
+        return Unmanaged<ActorWeakBox>.fromOpaque(boxPtr).takeUnretainedValue().actor
+    }
+    
+    /// True if the calling thread is currently executing a message on some actor.
+    public static var unsafeIsExecutingActor: Bool {
+        return pony_actor_current() != nil
+    }
+    
     public static let ignore: () -> () = { }
     public static let warning: () -> () = {
         print("warning: remote call error'd out")
@@ -88,6 +99,11 @@ open class Flynn {
             timerLoop = TimerLoop()
             
             pony_startup(Int32(schedulerCount), Int32(minSchedulerCount))
+            
+            pony_actor_set_swift_release { boxPtr in
+                guard let boxPtr = boxPtr else { return }
+                Unmanaged<ActorWeakBox>.fromOpaque(boxPtr).release()
+            }
             
             if memoryTrimLimit > 0 {
                 let actor = Actor()

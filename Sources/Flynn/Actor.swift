@@ -27,6 +27,11 @@ func handleMessage(_ argumentPtr: AnyPtr) {
     }
 }
 
+final class ActorWeakBox {
+    weak var actor: Actor?
+    init(_ actor: Actor) { self.actor = actor }
+}
+
 @usableFromInline
 class ActorMessage: CustomStringConvertible {
     
@@ -250,6 +255,21 @@ open class Actor: Equatable, Hashable {
         }
     }
     
+    public var unsafeIsExecuting: Bool {
+        guard let current = pony_actor_current() else { return false }
+        return safeWithActorPtr({ $0 == current }) ?? false
+    }
+    
+    @inlinable
+    public func unsafeAssertExecuting(_ file: StaticString = #file,
+                                      _ line: UInt = #line) {
+        #if DEBUG
+        if unsafeIsExecuting == false {
+            fatalError("\(type(of: self)) state accessed from a thread which is not executing this actor", file: file, line: line)
+        }
+        #endif
+    }
+    
     public var unsafeMessagesCount: Int32 {
         guard let val = safeWithActorPtr({ pony_actor_num_messages($0) }) else {
             print("Warning: unsafeMessagesCount called on a cancelled actor")
@@ -270,6 +290,8 @@ open class Actor: Equatable, Hashable {
         
         if let actorPtr = _ponyActorPtr {
             pony_actor_setProfileTypeID(actorPtr, Flynn.Profiler.typeID(for: type(of: self)))
+            // +1 retain consumed by Flynn's registered release hook when the pony actor is freed
+            pony_actor_setSwiftActor(actorPtr, Unmanaged.passRetained(ActorWeakBox(self)).toOpaque())
         }
         
 #if FLYNN_LEAK_ACTOR

@@ -22,6 +22,8 @@ typedef struct pony_actor_t
     int32_t batchSize;
     int32_t profileTypeID;
 
+    void* swiftActor;
+
     PONY_ATOMIC(bool) suspended;
     PONY_ATOMIC(bool) yield;
 
@@ -43,6 +45,12 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx);
 void ponyint_destroy_actor(pony_actor_t* actor);
 
 int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs);
+
+pony_actor_t* ponyint_actor_current(void);
+
+void ponyint_actor_setSwiftActor(pony_actor_t* actor, void* swiftActor);
+void* ponyint_actor_getSwiftActor(pony_actor_t* actor);
+void ponyint_actor_set_swift_release(void (*release)(void*));
 
 int32_t ponyint_actor_getpriority(pony_actor_t* actor);
 void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority);

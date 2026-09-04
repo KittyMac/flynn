@@ -156,6 +156,18 @@ void pony_actor_setProfileTypeID(void * actor, int typeID) {
     ponyint_actor_setProfileTypeID(actor, typeID);
 }
 
+void pony_actor_setSwiftActor(void * actor, void * swiftActor) {
+    ponyint_actor_setSwiftActor(actor, swiftActor);
+}
+
+void * pony_actor_getSwiftActor(void * actor) {
+    return ponyint_actor_getSwiftActor(actor);
+}
+
+void pony_actor_set_swift_release(void (*release)(void *)) {
+    ponyint_actor_set_swift_release(release);
+}
+
 void pony_actor_yield(void * actor) {
     if (pony_is_inited == false) { return; }
     ponyint_yield_actor(actor);
@@ -174,6 +186,11 @@ void pony_actor_resume(void * actor) {
 bool pony_actor_is_suspended(void * actor) {
     if (pony_is_inited == false) { return 0; }
     return ponyint_actor_is_suspended(actor);
+}
+
+void * pony_actor_current(void) {
+    if (pony_is_inited == false) { return NULL; }
+    return ponyint_actor_current();
 }
 
 int pony_actors_load_balance(void * actorArray, int num_actors) {
