@@ -111,6 +111,8 @@ struct InitEscapeRule: Rule {
                     init(registry: SomeRegistry) {
                         super.init()
                         registry.current = self
+            
+                        processor.beSetClassifications(classificationsData)
                     }
                 }
             """)
@@ -181,6 +183,26 @@ struct InitEscapeRule: Rule {
                         }
                     }
                 }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    init() {
+                        super.init()
+                        Flynn.Timer(timeInterval: 1, immediate: true, repeats: true) { [weak self] _ in
+                            self?.unsafePriority = 1
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    init() {
+                        super.init()
+                        processor.beSetClassifications(classificationsData) { [weak self] _ in
+                            self?.unsafePriority = 1
+                        }
+                    }
+                }
             """)
         ]
     )
@@ -198,6 +220,16 @@ struct InitEscapeRule: Rule {
                substructure.name == "unsafeSend" {
                 continue
             }
+            
+            // if we are calling behaviours on self ( self.beDoSomething() ) in init it is possible the
+            // behaviour runs while init is still running
+            if substructure.kind == .exprCall,
+               substructure.name?.contains("self.be") == true {
+                output.append(error(substructure.offset, syntax, description.console("unsafe behaviour call in init; wrap with unsafeSend")))
+            }
+            
+            // if we are calling behaviours on another actor ( processor.beDoSomething(self) { } ) but
+            // the callback is on self.
             if substructure.kind == .exprCall,
                substructure.name?.contains(".be") == true ||
                 substructure.name == "Flynn.Timer" {
@@ -221,7 +253,9 @@ struct InitEscapeRule: Rule {
                     continue
                 }
                 
-                if let _ = arguments.popLast() {
+                if let closureArg = arguments.popLast(),
+                   closureArg.hasPrefix("{"),
+                   closureArg.hasSuffix("}") {
                     if arguments.count == 0 {
                         output.append(error(substructure.offset, syntax, description.console("unsafe behaviour call in init; wrap with unsafeSend")))
                     }
