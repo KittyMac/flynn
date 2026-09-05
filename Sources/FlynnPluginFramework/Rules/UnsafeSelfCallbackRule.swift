@@ -62,10 +62,30 @@ extension String {
     /// True if `self` is referenced anywhere inside this structure. `self` is a
     /// keyword token, so strings and comments cannot produce a false positive.
     func usesSelf(in structure: SyntaxStructure, _ output: inout [PrintError.Packet]) -> Bool {
-        for token in syntaxTokens(in: structure)
-        where token.type == SyntaxKind.keyword.rawValue && text(for: token) == "self" {
-            return true
+        let tokens = syntaxTokens(in: structure)
+        for idx in 0..<tokens.count-1 {
+            let token = tokens[idx]
+            let next = tokens[idx+1]
+            
+            if token.type == SyntaxKind.keyword.rawValue && text(for: token) == "self" {
+                if let nextText = text(for: next) {
+                    if nextText == "safeThen" {
+                        continue
+                    }
+                    if nextText == "unsafeSend" {
+                        // ideally we would walk past the contents of the unsafeSend closure,
+                        // however we cannot do that with just a tokens listing
+                        return false
+                    }
+                    if nextText.hasPrefix("unsafe") {
+                        // calling unsafe values on self would be allowed
+                        continue
+                    }
+                    return true
+                }
+            }
         }
+        
         return false
     }
 }
@@ -169,6 +189,48 @@ struct UnsafeSelfCallbackRule: Rule {
                     }
                 }
             """),
+            Example("""
+                class SomeActor: Actor {
+                    init(other: OtherActor) {
+                        super.init()
+                        other.beRegister(Flynn.any) { result in
+                            self.unsafeSend {
+                                self.beThis()
+                            }
+                            print("HI")
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    init(other: OtherActor) {
+                        httpSession.beBegin(urlSession: urlSession) { urlSession in
+                            self.unsafeSend { _ in
+                                self.waitingURLSessions.append(urlSession)
+                                self.checkForMoreSessions()
+                            }
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    init(other: OtherActor) {
+                        HTTPDeliveryManager.shared.beDeliver(url: url.toString(),
+                                                             httpMethod: "PUT",
+                                                             params: [:],
+                                                             headers: [:],
+                                                             proxy: nil,
+                                                             body: body,
+                                                             sender) { data, response, error in
+                            returnCallback(data, response, error)
+                            group.wait()
+                            self.safeThen(unsafeThenPtr)
+                        }
+                    }
+                }
+            """),
         ],
         triggeringExamples: [
             Example("""
@@ -219,12 +281,50 @@ struct UnsafeSelfCallbackRule: Rule {
         guard file.contents.contains("// flynn:ignore \(description.name)") == false else { return false }
         return true
     }
+    
+    func recurseBehaviourCallsFailOnSelf(_ ast: AST,
+                                         _ syntax: FileSyntax,
+                                         _ substructures: [SyntaxStructure],
+                                         _ output: inout [PrintError.Packet]) -> Bool {
+        // We are inside a closure which does not run on the current actor; references to
+        // self should be flagged as errors
+        for substructure in substructures {
+            
+            if let name = substructure.name {
+                if substructure.kind == .exprCall,
+                   name.hasSuffix("unsafeSend") {
+                    continue
+                }
+                if substructure.kind == .exprCall,
+                   name.hasSuffix("safeThen") {
+                    continue
+                }
+                
+                if name.hasPrefix("self.") {
+                    return false
+                }
+            }
+            
+            
+            
+            if let substructures = substructure.substructure {
+                let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &output)
+                if (!passed) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
         
-    func recurseBehaviourCalls(_ ast: AST, _ syntax: FileSyntax, _ substructures: [SyntaxStructure], _ output: inout [PrintError.Packet]) -> Bool {
+    func recurseBehaviourCalls(_ ast: AST,
+                               _ syntax: FileSyntax,
+                               _ substructures: [SyntaxStructure],
+                               _ output: inout [PrintError.Packet]) -> Bool {
         // do we contain behaviour calls which are not wrapped in unsafeSend?
         for substructure in substructures {
             if substructure.kind == .exprCall,
-               substructure.name == "unsafeSend" {
+               substructure.name == "unsafeSend" || substructure.name == "self.unsafeSend" {
                 continue
             }
             if substructure.kind == .exprCall,
@@ -257,6 +357,20 @@ struct UnsafeSelfCallbackRule: Rule {
                     
                     if let selfArg = arguments.popLast(),
                        selfArg != "self" {
+                        
+                        // examine the closure for uses of self. we need to
+                        // pre-handle some valid cases:
+                        // self.unsafe anything should be ignored (and their closure contents)
+                        
+                        if let finalClosureStructure = closureArg.syntaxStructure {
+                            if let substructures = finalClosureStructure.substructure {
+                                let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &output)
+                                if (!passed) {
+                                    return false
+                                }
+                            }
+                        }
+                        
                         if let finalClosureStructure = closureArg.syntaxStructure,
                            closureArg.usesSelf(in: finalClosureStructure, &output) {
                             output.append(error(substructure.offset, syntax))
