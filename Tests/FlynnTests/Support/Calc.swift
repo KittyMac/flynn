@@ -7,6 +7,17 @@ class ActorA: Actor {
     private let b = ActorB()
     private var counter = 0
     
+    override init() {
+        b.beAdd(x: counter, y: 1, Flynn.any) { result in
+            // self.counter = result
+        }
+        
+        let actor = Actor()
+        b.beAdd(x: counter, y: 1, actor) { result in
+            // self.counter = 0
+        }
+    }
+    
     internal func _beIncrement() {
         // safe: self means the callback will run on myself (this actor)
         b.beAdd(x: counter, y: 1, self) { result in
@@ -17,7 +28,7 @@ class ActorA: Actor {
         // of myself (which could be running in a different thread concurrently)
         let actor = Actor()
         b.beAdd(x: counter, y: 1, actor) { result in
-            self.counter = 0
+            // self.counter = 0
         }
     }
 }

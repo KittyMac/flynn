@@ -1,6 +1,75 @@
 import Foundation
 import SourceKittenFramework
 
+extension SyntaxStructure {
+    /// Non-trapping `kind`. The existing `.kind` force unwraps "key.kind", which
+    /// the root structure does not have; use this when walking arbitrary nodes.
+    var kindOrNil: SwiftDeclarationKind? {
+        guard let raw = self["key.kind"] as? String else { return nil }
+        return SwiftDeclarationKind(rawValue: raw)
+    }
+}
+
+extension String {
+    /// Parse this string as Swift source. One SourceKit request; use this when you
+    /// need both the structure and the syntax tokens.
+    var syntax: StructureAndSyntax? {
+        return try? StructureAndSyntax(file: File(contents: self))
+    }
+
+    /// The root SyntaxStructure (the whole "file"); use .substructure to descend.
+    var syntaxStructure: SyntaxStructure? {
+        return syntax?.structure
+    }
+
+    /// Top-level SyntaxStructures. [] if SourceKit returns nothing.
+    var syntaxStructures: [SyntaxStructure] {
+        return syntaxStructure?.substructure ?? []
+    }
+
+    /// The syntax token map. NOTE: the structure only contains declarations and
+    /// calls - assignments and bare member accesses (self.counter = x) never appear
+    /// in it. Tokens are how you see those.
+    var syntaxTokens: [SyntaxToken] {
+        return syntax?.syntax ?? []
+    }
+
+    /// Source text for a token. nil if the token's byte range is out of bounds or
+    /// does not land on a character boundary.
+    func text(for token: SyntaxToken) -> String? {
+        return text(offset: Int(token.offset.value), length: Int(token.length.value))
+    }
+
+    /// Source text for a byte offset/length pair (SourceKit offsets are UTF-8 bytes).
+    func text(offset: Int, length: Int) -> String? {
+        let bytes = Array(utf8)
+        guard offset >= 0, length >= 0, offset + length <= bytes.count else { return nil }
+        return String(bytes: bytes[offset..<(offset + length)], encoding: .utf8)
+    }
+
+    /// Tokens falling inside a structure's byte range - eg the tokens of one closure.
+    /// Includes tokens of anything nested inside it.
+    func syntaxTokens(in structure: SyntaxStructure) -> [SyntaxToken] {
+        guard let offset = structure.offset, let length = structure.length else { return [] }
+        let start = offset, end = offset + length
+        return syntaxTokens.filter {
+            let tokenStart = Int64($0.offset.value)
+            let tokenEnd = tokenStart + Int64($0.length.value)
+            return tokenStart >= start && tokenEnd <= end
+        }
+    }
+
+    /// True if `self` is referenced anywhere inside this structure. `self` is a
+    /// keyword token, so strings and comments cannot produce a false positive.
+    func usesSelf(in structure: SyntaxStructure, _ output: inout [PrintError.Packet]) -> Bool {
+        for token in syntaxTokens(in: structure)
+        where token.type == SyntaxKind.keyword.rawValue && text(for: token) == "self" {
+            return true
+        }
+        return false
+    }
+}
+
 struct UnsafeSelfCallbackRule: Rule {
 
     let description = RuleDescription(
@@ -150,7 +219,7 @@ struct UnsafeSelfCallbackRule: Rule {
         guard file.contents.contains("// flynn:ignore \(description.name)") == false else { return false }
         return true
     }
-    
+        
     func recurseBehaviourCalls(_ ast: AST, _ syntax: FileSyntax, _ substructures: [SyntaxStructure], _ output: inout [PrintError.Packet]) -> Bool {
         // do we contain behaviour calls which are not wrapped in unsafeSend?
         for substructure in substructures {
@@ -183,15 +252,18 @@ struct UnsafeSelfCallbackRule: Rule {
                 }
                 
                 if let closureArg = arguments.popLast(),
-                   let selfArg = arguments.popLast(),
                    closureArg.hasPrefix("{"),
-                   closureArg.hasSuffix("}"),
-                   selfArg != "self" {
+                   closureArg.hasSuffix("}") {
                     
-                    if closureArg.contains("self.") ||
-                        closureArg.contains("self?.") {
-                        output.append(warning(substructure.offset, syntax))
-                        return false
+                    if let selfArg = arguments.popLast(),
+                       selfArg != "self" {
+                        if let finalClosureStructure = closureArg.syntaxStructure,
+                           closureArg.usesSelf(in: finalClosureStructure, &output) {
+                            output.append(error(substructure.offset, syntax))
+                            return false
+                        }
+                    } else {
+                        // no argument other than the closure means we're inferred self
                     }
                 }
             }
