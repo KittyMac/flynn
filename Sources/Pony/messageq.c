@@ -6,6 +6,7 @@
 #include "ponyrt.h"
 #include "messageq.h"
 #include "memory.h"
+#include "tsan.h"
 
 static bool messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
 {
@@ -23,8 +24,15 @@ static bool messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
     pony_msg_t* prev = atomic_exchange_explicit(&q->head, last,
                                                 memory_order_relaxed);
     
+    PONY_HB_AFTER(&q->head);
+    
     bool was_empty = ((uintptr_t)prev & 1) != 0;
     prev = (pony_msg_t*)((uintptr_t)prev & ~(uintptr_t)1);
+    
+#ifdef PONY_TSAN_ENABLED
+    PONY_HB_BEFORE(&prev->next);
+    atomic_thread_fence(memory_order_release);
+#endif
     
     atomic_store_explicit(&prev->next, first, memory_order_relaxed);
     
@@ -71,6 +79,7 @@ pony_msg_t* ponyint_actor_messageq_pop(messageq_t* q)
     {
         q->tail = next;
         atomic_thread_fence(memory_order_acquire);
+        PONY_HB_AFTER(&tail->next);
         ponyint_pool_free(tail, tail->alloc_size);
     }
     
@@ -90,6 +99,7 @@ pony_msg_t* ponyint_thread_messageq_pop(messageq_t* q)
     {
         q->tail = next;
         atomic_thread_fence(memory_order_acquire);
+        PONY_HB_AFTER(&tail->next);
         ponyint_pool_free(tail, tail->alloc_size);
         
         atomic_fetch_sub_explicit(&q->num_messages, 1, memory_order_relaxed);
@@ -104,6 +114,7 @@ bool ponyint_messageq_markempty(messageq_t* q)
     pony_msg_t* head = atomic_load_explicit(&q->head, memory_order_relaxed);
     
     if(((uintptr_t)head & 1) != 0) {
+        PONY_HB_BEFORE(&q->head);
         atomic_store_explicit(&q->num_messages, 0, memory_order_relaxed);
         return true;
     }

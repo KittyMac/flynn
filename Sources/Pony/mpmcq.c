@@ -8,6 +8,7 @@
 #include "mpmcq.h"
 #include "memory.h"
 #include "cpu.h"
+#include "tsan.h"
 #include <stdio.h>
 
 typedef struct mpmcq_node_t mpmcq_node_t;
@@ -135,8 +136,9 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
             return NULL;
         }
         
-        // Note: Xcode address sanitizer fails on this call. unclear whether this is
-        // an actual problem with this fencing mechanism or a red herring
+        // Note: this relaxed load is paired with the acq_rel fence below.
+        // ThreadSanitizer does not model standalone fences, so the edge is
+        // made explicit for it via PONY_HB_AFTER after that fence.
         next = atomic_load_explicit(&tail->next, memory_order_relaxed);
         
         if(next == NULL) {
@@ -163,6 +165,7 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
     // operation because the latter would result in unnecessary synchronisation
     // on each loop iteration.
     atomic_thread_fence(memory_order_acq_rel);
+    PONY_HB_AFTER(&tail->next);
     
     void* data = atomic_load_explicit(&next->data, memory_order_acquire);
     
@@ -183,6 +186,7 @@ void* ponyint_mpmcq_pop(mpmcq_t* q)
     // old tail before freeing it. This is a standalone fence to avoid
     // unnecessary synchronisation on each loop iteration.
     atomic_thread_fence(memory_order_acquire);
+    PONY_HB_AFTER(&tail->data);
     
     node_free(tail);
     
