@@ -3,16 +3,38 @@ import Foundation
 internal class Queue<T: AnyObject> {
     // safe only so long as there is one consumer and multiple producers
     
+    // readIdx is owned by the consumer (guarded by readLock) and writeIdx by
+    // the producer (guarded by writeLock), but each side deliberately reads the
+    // OTHER side's index without taking that lock -- isEmpty, isFull, count,
+    // dequeueIf's early-out and dequeueAny's savedWriteIdx all do this. The
+    // algorithm tolerates a stale value, so the fix is atomic storage rather
+    // than more locking. arraySize and underPressure are likewise written under
+    // lock and read without one.
     @usableFromInline
-    var arraySize: Int = 0
-    
+    let arraySizeAtomic = AtomicInt(0)
+    @usableFromInline
+    var arraySize: Int {
+        get { return arraySizeAtomic.value }
+        set { arraySizeAtomic.value = newValue }
+    }
+
     private var arrayPtr: UnsafeMutablePointer<T?>
 
     @usableFromInline
-    var writeIdx = 0
-    
+    let writeIdxAtomic = AtomicInt(0)
     @usableFromInline
-    var readIdx = 0
+    var writeIdx: Int {
+        get { return writeIdxAtomic.value }
+        set { writeIdxAtomic.value = newValue }
+    }
+
+    @usableFromInline
+    let readIdxAtomic = AtomicInt(0)
+    @usableFromInline
+    var readIdx: Int {
+        get { return readIdxAtomic.value }
+        set { readIdxAtomic.value = newValue }
+    }
 
     private var readLock = NSLock()
     private var writeLock = NSLock()
@@ -21,18 +43,26 @@ internal class Queue<T: AnyObject> {
     private let manyConsumers: Bool
 
     @usableFromInline
-    var underPressure = false
+    let underPressureAtomic = AtomicBool(false)
+    @usableFromInline
+    var underPressure: Bool {
+        get { return underPressureAtomic.value }
+        set { underPressureAtomic.value = newValue }
+    }
 
     public init(size: Int,
                 manyProducers: Bool = true,
                 manyConsumers: Bool = true) {
 
-        arraySize = size
-        arrayPtr = UnsafeMutablePointer<T?>.allocate(capacity: arraySize)
-        arrayPtr.initialize(repeating: nil, count: arraySize)
+        arrayPtr = UnsafeMutablePointer<T?>.allocate(capacity: size)
+        arrayPtr.initialize(repeating: nil, count: size)
 
         self.manyProducers = manyProducers
         self.manyConsumers = manyConsumers
+
+        // arraySize is a computed property over atomic storage, so it can only
+        // be assigned once every stored property is initialized.
+        arraySize = size
     }
 
     deinit {
