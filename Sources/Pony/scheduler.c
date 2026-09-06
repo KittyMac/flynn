@@ -19,7 +19,10 @@
 
 #define PONY_PROFILE_MAX_TYPES 1024
 
-typedef struct prof_bucket_t { uint64_t ns; uint64_t count; } prof_bucket_t;
+typedef struct prof_bucket_t {
+    PONY_ATOMIC(uint64_t) ns;
+    PONY_ATOMIC(uint64_t) count;
+} prof_bucket_t;
 
 static prof_bucket_t* g_prof = NULL;
 static PONY_ATOMIC(bool) g_prof_enabled = false;
@@ -52,8 +55,11 @@ static scheduler_t* scheduler;
 void pony_profiler_reset(void)
 {
     if (g_prof == NULL) { return; }
-    memset(g_prof, 0,
-           (size_t)scheduler_count * PONY_PROFILE_MAX_TYPES * sizeof(prof_bucket_t));
+    size_t total = (size_t)scheduler_count * PONY_PROFILE_MAX_TYPES;
+    for (size_t i = 0; i < total; i++) {
+        atomic_store_explicit(&g_prof[i].ns, 0, memory_order_relaxed);
+        atomic_store_explicit(&g_prof[i].count, 0, memory_order_relaxed);
+    }
 }
 
 int pony_profiler_max_types(void)
@@ -69,8 +75,8 @@ int pony_profiler_collect(uint64_t* outNs, uint64_t* outCount, int maxTypes)
     for (uint32_t s = 0; s < scheduler_count; s++) {
         prof_bucket_t* row = &g_prof[(size_t)s * PONY_PROFILE_MAX_TYPES];
         for (int t = 0; t < n; t++) {
-            outNs[t]    += row[t].ns;
-            outCount[t] += row[t].count;
+            outNs[t]    += atomic_load_explicit(&row[t].ns, memory_order_relaxed);
+            outCount[t] += atomic_load_explicit(&row[t].count, memory_order_relaxed);
         }
     }
     return n;
@@ -438,8 +444,15 @@ static void run(scheduler_t* sched)
 
             if (profOn && g_prof != NULL && profTypeID >= 0 && profTypeID < PONY_PROFILE_MAX_TYPES) {
                 prof_bucket_t* b = &g_prof[(size_t)sched->index * PONY_PROFILE_MAX_TYPES + profTypeID];
-                b->ns    += (ponyint_cpu_tick() - profStart);   // own thread only -> no atomics
-                b->count += 1;
+                // Single writer (this scheduler owns its row), so a relaxed
+                // load/store pair is enough; no read-modify-write required.
+                atomic_store_explicit(&b->ns,
+                    atomic_load_explicit(&b->ns, memory_order_relaxed)
+                        + (ponyint_cpu_tick() - profStart),
+                    memory_order_relaxed);
+                atomic_store_explicit(&b->count,
+                    atomic_load_explicit(&b->count, memory_order_relaxed) + 1,
+                    memory_order_relaxed);
             }
                         
             pony_actor_t* next = pop_global(sched, sched);

@@ -18,7 +18,12 @@ public extension Flynn {
         
         var fireTime: TimeInterval = 0.0
 
-        var cancelled: Bool = false
+        // Set by cancel() from any thread, read by fire() on the timer loop.
+        private let _cancelled = AtomicBool(false)
+        var cancelled: Bool {
+            get { return _cancelled.value }
+            set { _cancelled.value = newValue }
+        }
 
         let timeInterval: TimeInterval
         let repeats: Bool

@@ -115,6 +115,13 @@ unsigned long pony_max_memory();
 unsigned long pony_current_memory();
 unsigned long pony_mapped_memory();
 
+// Atomic load/store primitives callable from Swift. See swift_atomics.c.
+int64_t pony_atomic_load64(const void* ptr);
+void    pony_atomic_store64(void* ptr, int64_t value);
+int64_t pony_atomic_add64(void* ptr, int64_t delta);
+bool    pony_atomic_load_bool(const void* ptr);
+void    pony_atomic_store_bool(void* ptr, bool value);
+
 void pony_set_thread_name(const char * name);
 void pony_syslog(const char * tag, const char * msg);
 char * pony_dns_resolve_cname(const char * domain);
