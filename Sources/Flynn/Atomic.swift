@@ -59,3 +59,28 @@ internal final class AtomicBool {
         set { pony_atomic_store_bool(ptr, newValue) }
     }
 }
+
+internal final class AtomicCondition {
+    private let active = AtomicBool(false)
+    private let lock = NSLock()
+
+    func checkInactive(_ block: () -> Void) {
+        if active.value { return }
+        lock.lock()
+        defer { lock.unlock() }
+        if active.value == false {
+            active.value = true
+            block()
+        }
+    }
+
+    func checkActive(_ block: () -> Void) {
+        if active.value == false { return }
+        lock.lock()
+        defer { lock.unlock() }
+        if active.value {
+            block()
+            active.value = false
+        }
+    }
+}

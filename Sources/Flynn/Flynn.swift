@@ -56,7 +56,7 @@ open class Flynn {
                                                   manyConsumers: true)
     
     private static var timerLoop: TimerLoop?
-    private static var running = AtomicContidion()
+    private static var running = AtomicCondition()
 
     private static var timeStart: TimeInterval = 0
     private static var registeredActorsCheckRunning = false
