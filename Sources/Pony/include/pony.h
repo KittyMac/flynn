@@ -53,8 +53,8 @@ void * pony_actor_create();
 void pony_actor_mark_then_id(const void *  file, uint64_t line, uint64_t column);
 uint64_t pony_actor_get_then_id(const void * file, uint64_t line, uint64_t column);
 
-void pony_actor_send_message(void * actor, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message));
-void pony_actor_complete_then_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message));
+void pony_actor_send_message(void * actor, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message), void (*releaseMessageFunc)(void * message));
+void pony_actor_complete_then_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message), void (*releaseMessageFunc)(void * message));
 void pony_actor_then_message(void * actor, uint64_t then_id);
 
 void pony_actor_setpriority(void * actor, int priority);
@@ -96,6 +96,10 @@ void    pony_atomic_store64(void* ptr, int64_t value);
 int64_t pony_atomic_add64(void* ptr, int64_t delta);
 bool    pony_atomic_load_bool(const void* ptr);
 void    pony_atomic_store_bool(void* ptr, bool value);
+
+// Registers the function used to release a message payload without running it.
+// Must be called before any actor is created. Flynn does this in startup().
+void pony_set_message_release(void (*releaseFunc)(void * message));
 
 void pony_set_thread_name(const char * name);
 void pony_syslog(const char * tag, const char * msg);

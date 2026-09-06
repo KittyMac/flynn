@@ -42,7 +42,15 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx);
 
 void ponyint_destroy_actor(pony_actor_t* actor);
 
-int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs);
+typedef struct actor_run_info_t
+{
+    bool    yielded;
+    int32_t priority;
+    int32_t coreAffinity;
+} actor_run_info_t;
+
+int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs,
+                      actor_run_info_t* out);
 
 int32_t ponyint_actor_getpriority(pony_actor_t* actor);
 void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority);
@@ -66,8 +74,8 @@ void ponyint_actor_setpendingdestroy(pony_actor_t* actor);
 
 size_t ponyint_actor_num_messages(pony_actor_t* actor);
 
-void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message));
-void pony_complete_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message));
+void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message), void (*releaseMessageFunc)(void * message));
+void pony_complete_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message), void (*releaseMessageFunc)(void * message));
 void pony_then_message(pony_ctx_t* ctx, pony_actor_t* to, uint64_t then_id);
 
 #endif /* actor_h */

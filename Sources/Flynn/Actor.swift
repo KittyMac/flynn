@@ -27,6 +27,11 @@ func handleMessage(_ argumentPtr: AnyPtr) {
     }
 }
 
+@inlinable
+func releaseMessage(_ argumentPtr: AnyPtr) {
+    let _: ActorMessage? = Class(argumentPtr)
+}
+
 @usableFromInline
 class ActorMessage: CustomStringConvertible {
     
@@ -349,7 +354,7 @@ open class Actor: Equatable, Hashable {
         let sent: Void? = safeWithActorPtr { actorPtr in
             let thenId = pony_actor_new_then_id()
             let argumentPtr = Ptr(ActorMessage("\(file):\(line)", block, thenId))
-            pony_actor_send_message(actorPtr, argumentPtr, thenId, handleMessage)
+            pony_actor_send_message(actorPtr, argumentPtr, thenId, handleMessage, releaseMessage)
         }
         if sent == nil {
             print("Warning: unsafeSend called on a cancelled actor")
@@ -402,7 +407,7 @@ open class Actor: Equatable, Hashable {
         guard let argumentPtr = argumentPtr else { return }
         
         let dispatched: Void? = safeWithActorPtr { actorPtr in
-            pony_actor_complete_then_message(actorPtr, argumentPtr, handleMessage)
+            pony_actor_complete_then_message(actorPtr, argumentPtr, handleMessage, releaseMessage)
         }
         
         // If the actor was already cancelled/destroyed, we still own the +1

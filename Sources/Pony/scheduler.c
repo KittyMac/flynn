@@ -438,7 +438,11 @@ static void run(scheduler_t* sched)
             bool     profOn     = atomic_load_explicit(&g_prof_enabled, memory_order_relaxed);
             uint64_t profStart  = profOn ? ponyint_cpu_tick() : 0;
 
-            int result = ponyint_actor_run(&sched->ctx, actor, actor->batchSize);
+            // ponyint_actor_run may publish or free the actor before it
+            // returns, so everything we need about it afterwards comes back in
+            // `info` rather than from the pointer.
+            actor_run_info_t info = { false, 0, kCoreAffinity_None };
+            int result = ponyint_actor_run(&sched->ctx, actor, actor->batchSize, &info);
 
             if (profOn && g_prof != NULL && profTypeID >= 0 && profTypeID < PONY_PROFILE_MAX_TYPES) {
                 prof_bucket_t* b = &g_prof[(size_t)sched->index * PONY_PROFILE_MAX_TYPES + profTypeID];
@@ -460,11 +464,10 @@ static void run(scheduler_t* sched)
 #endif
             
             if(result == 1) {
-                bool actor_did_yield =
-                    atomic_load_explicit(&actor->yield, memory_order_relaxed);
+                bool actor_did_yield = info.yielded;
                 
                 if(next != NULL) {
-                    if (actor_did_yield == false && actor->priority > next->priority) {
+                    if (actor_did_yield == false && info.priority > next->priority) {
                         // our current actor has a higher priority than the next actor, so put
                         // the next actor back at the end of our queue.  Hopefully someone
                         // else will pick him up
@@ -476,10 +479,10 @@ static void run(scheduler_t* sched)
                         actor = next;
                     }
                 } else {
-                    if (COREAFFINITY_IS_PREFERENTIAL(actor->coreAffinity)) {
+                    if (COREAFFINITY_IS_PREFERENTIAL(info.coreAffinity)) {
                         // If we prefer a different affinity, check to see if one of those schedulers
                         // is idle, if it is send this actor over to them
-                        int targetAffinity = COREAFFINITY_PREFER_TO_ONLY(actor->coreAffinity);
+                        int targetAffinity = COREAFFINITY_PREFER_TO_ONLY(info.coreAffinity);
                         if (targetAffinity != sched->coreAffinity) {
                             for (int i = 0; i < scheduler_count; i++){
                                 if (atomic_load_explicit(&scheduler[i].idle, memory_order_relaxed) == true && scheduler[i].coreAffinity == targetAffinity) {

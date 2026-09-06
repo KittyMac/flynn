@@ -61,7 +61,18 @@ static bool actor_unsuspend(pony_actor_t* actor)
     return atomic_exchange_explicit(&actor->parked, false, memory_order_acq_rel);
 }
 
-int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
+// Snapshot the fields the scheduler reads after we return. Must be called
+// before every release point -- see actor_run_info_t in actor.h.
+static void actor_snapshot(pony_actor_t* actor, actor_run_info_t* out)
+{
+    if (out == NULL) { return; }
+    out->yielded      = atomic_load_explicit(&actor->yield, memory_order_relaxed);
+    out->priority     = actor->priority;
+    out->coreAffinity = actor->coreAffinity;
+}
+
+int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs,
+                      actor_run_info_t* out)
 {
     pony_msg_t* msg;
     int n = 0;
@@ -69,6 +80,7 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     atomic_store_explicit(&actor->yield, false, memory_order_relaxed);
     
     if(atomic_load_explicit(&actor->suspended, memory_order_acquire)) {
+        actor_snapshot(actor, out);
         return actor_park(actor) ? 1 : 0;
     }
     
@@ -111,9 +123,16 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     }
     
     if (actor->destroy) {
+        actor_snapshot(actor, out);
         // Note this is checked before the suspended/park branch below on purpose:
         // a destroying actor must never park, or it would never be freed.
-        if(!ponyint_messageq_markempty(&actor->queue)) {
+        // Claim the queue rather than marking it empty. markempty() sets the
+        // empty bit, which PUBLISHES the actor -- a sender would then schedule
+        // it onto another scheduler while we free it, which is the
+        // use-after-free ASan reported. markdestroyed() sets a different bit
+        // that no sender treats as "unscheduled", so once it succeeds we are
+        // the actor's sole owner.
+        if(!ponyint_messageq_markdestroyed(&actor->queue)) {
             return 1;
         }
         
@@ -125,10 +144,16 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs)
     // A behaviour may have suspended us part way through the batch. The queue
     // can still hold messages, so we must not mark it empty -- park instead.
     if(atomic_load_explicit(&actor->suspended, memory_order_acquire)) {
+        actor_snapshot(actor, out);
         return actor_park(actor) ? 1 : 0;
     }
     
     // Return true (i.e. reschedule immediately) if our queue isn't empty.
+    //
+    // Snapshot BEFORE markempty: if it succeeds the actor is published and may
+    // already be running on another scheduler. Nothing below this point, here
+    // or in the caller, may touch `actor`.
+    actor_snapshot(actor, out);
     return (int)!ponyint_messageq_markempty(&actor->queue);
 }
 
@@ -181,7 +206,7 @@ void ponyint_resume_actor(pony_ctx_t* ctx, pony_actor_t* actor)
         return;
     }
     
-    pony_send_message(ctx, actor, NULL, 0, NULL);
+    pony_send_message(ctx, actor, NULL, 0, NULL, NULL);
 }
 
 bool ponyint_actor_is_suspended(pony_actor_t* actor)
@@ -193,9 +218,13 @@ void ponyint_actor_destroy(pony_actor_t* actor)
 {
     assert(has_flag(actor, FLAG_PENDINGDESTROY));
     
+    // The queue must carry the DESTROYED sentinel (bit 1), set by
+    // ponyint_messageq_markdestroyed(). This used to check the EMPTY bit
+    // (bit 0), which the destroy path no longer sets -- deliberately, since
+    // setting it would publish the actor to the next sender.
     pony_msg_t* head = atomic_load_explicit(&actor->queue.head, memory_order_acquire);
-    if(((uintptr_t)head & (uintptr_t)1) != (uintptr_t)1) {
-        pony_syslog2("Flynn", "ponyint_actor_destroy: queue not empty for actor %d, leaking", actor->uid);
+    if(((uintptr_t)head & (uintptr_t)2) != (uintptr_t)2) {
+        pony_syslog2("Flynn", "ponyint_actor_destroy: queue not claimed for actor %d, leaking", actor->uid);
         return;
     }
     
@@ -315,29 +344,58 @@ uint64_t pony_actor_get_then_id(const void * file, uint64_t line, uint64_t colum
     return matchedThenId;
 }
 
+// Discard a message chain that was never queued: release each payload, then
+// free the structs. Today the chain is always a single message.
+static void sendv_discard(pony_msg_t* first)
+{
+    pony_msg_t* msg = first;
+    while(msg != NULL) {
+        pony_msg_t* next = atomic_load_explicit(&msg->next, memory_order_relaxed);
+        if(msg->msgId == kMessagePointer) {
+            pony_msgfunc_t* m = (pony_msgfunc_t*)msg;
+            if(m->releaseFunc != NULL) {
+                m->releaseFunc(m->arg);
+            }
+        }
+        ponyint_pool_free(msg, msg->alloc_size);
+        msg = next;
+    }
+}
+
 void pony_sendv(pony_ctx_t* ctx, pony_actor_t* to, pony_msg_t* first, pony_msg_t* last)
 {
-    if(ponyint_actor_messageq_push(&to->queue, first, last))
+    push_result_t pushed = ponyint_actor_messageq_push(&to->queue, first, last);
+    
+    if(pushed == kPushRefused) {
+        // The actor is being destroyed. We still own the message, so release it
+        // here rather than leaking the Swift block it carries.
+        sendv_discard(first);
+        return;
+    }
+    
+    if(pushed == kPushWasEmpty)
     {
         ponyint_sched_add(ctx, to);
     }
 }
 
-void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message))
+void pony_send_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message), void (*releaseMessageFunc)(void * message))
 {
     sendv_last_then_id = then_id;
     
     pony_msgfunc_t* m = (pony_msgfunc_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kMessagePointer);
     m->arg = argumentPtr;
     m->func = handleMessageFunc;
+    m->releaseFunc = releaseMessageFunc;
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
-void pony_complete_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message))
+void pony_complete_then_message(pony_ctx_t* ctx, pony_actor_t* to, void * argumentPtr, void (*handleMessageFunc)(void * message), void (*releaseMessageFunc)(void * message))
 {
     pony_msgfunc_t* m = (pony_msgfunc_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kMessagePointer);
     m->arg = argumentPtr;
     m->func = handleMessageFunc;
+    m->releaseFunc = releaseMessageFunc;
     pony_sendv(ctx, to, &m->msg, &m->msg);
 }
 
@@ -354,9 +412,17 @@ void ponyint_destroy_actor(pony_actor_t* actor)
     // so send it a dummy message
     bool was_parked = actor_unsuspend(actor);
     pony_msgi_t* m = (pony_msgi_t*)pony_alloc_msg(sizeof(pony_msgfunc_t), kDestroyMessage);
-    bool was_unscheduled = ponyint_actor_messageq_push(&actor->queue, &m->msg, &m->msg);
+    push_result_t pushed = ponyint_actor_messageq_push(&actor->queue, &m->msg, &m->msg);
     
-    if (was_parked || was_unscheduled) {
+    if(pushed == kPushRefused) {
+        // Already claimed for destruction -- a second destroy request. Nothing
+        // to schedule; discard our dummy message. kDestroyMessage carries no
+        // payload, so there is nothing to release.
+        ponyint_pool_free(&m->msg, m->msg.alloc_size);
+        return;
+    }
+    
+    if (was_parked || pushed == kPushWasEmpty) {
         ponyint_sched_add(ctx, actor);
     }
 }

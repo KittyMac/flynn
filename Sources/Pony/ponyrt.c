@@ -86,14 +86,14 @@ void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
 }
 
-void pony_actor_send_message(void * actor, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message)) {
+void pony_actor_send_message(void * actor, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message), void (*releaseMessageFunc)(void * message)) {
     if (pony_is_inited == false) { return; }
-    pony_send_message(pony_ctx(), actor, argumentPtr, then_id, handleMessageFunc);
+    pony_send_message(pony_ctx(), actor, argumentPtr, then_id, handleMessageFunc, releaseMessageFunc);
 }
 
-void pony_actor_complete_then_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message)) {
+void pony_actor_complete_then_message(void * actor, void * argumentPtr, void (*handleMessageFunc)(void * message), void (*releaseMessageFunc)(void * message)) {
     if (pony_is_inited == false) { return; }
-    pony_complete_then_message(pony_ctx(), actor, argumentPtr, handleMessageFunc);
+    pony_complete_then_message(pony_ctx(), actor, argumentPtr, handleMessageFunc, releaseMessageFunc);
 }
 
 

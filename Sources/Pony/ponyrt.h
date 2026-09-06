@@ -68,6 +68,7 @@ typedef struct pony_msgfunc_t
     pony_msg_t msg;
     void* arg;
     void (*func)(void * message);
+    void (*releaseFunc)(void * message);
 } pony_msgfunc_t;
 
 #endif /* ponyrt_h */
