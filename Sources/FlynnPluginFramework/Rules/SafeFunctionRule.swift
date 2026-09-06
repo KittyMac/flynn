@@ -6,7 +6,8 @@ struct SafeFunctionRule: Rule {
     let safeCallString = ".\(FlynnPluginTool.prefixSafe)"
     let unsafeCallString = ".\(FlynnPluginTool.prefixUnsafe)"
     
-    let selfSafeCallString = "self.\(FlynnPluginTool.prefixSafe)"
+    let selfSafeCallStrings = ["self.\(FlynnPluginTool.prefixSafe)",
+                               "self?.\(FlynnPluginTool.prefixSafe)"]
 
     let description = RuleDescription(
         identifier: "actors_safe_func",
@@ -27,6 +28,19 @@ struct SafeFunctionRule: Rule {
                     override func safeFlowProcess() {
                         safeFoo()
                         self.safeFoo()
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    func safeFoo() {
+                        print("hello world")
+                    }
+
+                    override func safeFlowProcess() {
+                        // optional-chained self is still self; WeakTimersRule
+                        // asks for [weak self], which produces this form
+                        self?.safeFoo()
                     }
                 }
             """)
@@ -122,8 +136,8 @@ struct SafeFunctionRule: Rule {
     func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
         // Only functions of the class may call safe methods on a class
         if let functionCall = syntax.structure.name {
-            if  functionCall.range(of: safeCallString) != nil &&
-                functionCall.range(of: selfSafeCallString) == nil {
+            let isSelfCall = selfSafeCallStrings.contains { functionCall.range(of: $0) != nil }
+            if  functionCall.range(of: safeCallString) != nil && isSelfCall == false {
                 output.append(error(syntax.structure.offset, syntax))
                 return false
             }

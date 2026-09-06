@@ -231,8 +231,75 @@ struct UnsafeSelfCallbackRule: Rule {
                     }
                 }
             """),
+            Example("""
+                class SomeActor: Actor {
+                    private var value: Int = 0
+                    func safeRead() -> Int { return value }
+                    internal func _beStart() {
+                        unsafeSend { _ in
+                            _ = self.safeRead()
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    private var value: Int = 0
+                    func safeRead() -> Int { return value }
+                    internal func _beStart() {
+                        Flynn.Timer(timeInterval: 0.1, repeats: false, self) { [weak self] _ in
+                            _ = self?.safeRead()
+                        }
+                    }
+                }
+            """),
         ],
         triggeringExamples: [
+            Example("""
+                class SomeActor: Actor {
+                    private var value: Int = 0
+                    func safeRead() -> Int { return value }
+                    internal func _beStart(_ other: OtherActor) {
+                        other.beGet(Flynn.any) { _ in
+                            _ = self.safeRead()
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    private var value: Int = 0
+                    func safeRead() -> Int { return value }
+                    internal func _beStart(_ other: OtherActor) {
+                        other.unsafeSend { _ in
+                            _ = self.safeRead()
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    private var value: Int = 0
+                    func safeRead() -> Int { return value }
+                    internal func _beStart(_ other: OtherActor) {
+                        Flynn.Timer(timeInterval: 0.1, repeats: false, other) { _ in
+                            _ = self.safeRead()
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    private var value: Int = 0
+                    func safeRead() -> Int { return value }
+                    init(other: OtherActor) {
+                        super.init()
+                        Flynn.Timer(timeInterval: 0.1, repeats: true, other) { [weak self] _ in
+                            _ = self?.safeRead()
+                        }
+                    }
+                }
+            """),
             Example("""
                 class SomeActor: Actor {
                     init(other: OtherActor) {
@@ -327,6 +394,30 @@ struct UnsafeSelfCallbackRule: Rule {
                substructure.name == "unsafeSend" || substructure.name == "self.unsafeSend" {
                 continue
             }
+
+            if substructure.kind == .exprCall,
+               let callName = substructure.name,
+               callName.hasSuffix(".unsafeSend") {
+                let body = syntax.file.contents
+                var arguments: [String] = []
+                for substructure in substructure.substructure ?? [] {
+                    if substructure.kind == .exprArgument,
+                       let bodyoffset = substructure.offset,
+                       let bodylength = substructure.length,
+                       let value = body.substring(with: NSRange(location: Int(bodyoffset), length: Int(bodylength))) {
+                        arguments.append(value.description)
+                    }
+                }
+                if let closureArg = arguments.popLast(),
+                   closureArg.hasPrefix("{"),
+                   closureArg.hasSuffix("}"),
+                   let finalClosureStructure = closureArg.syntaxStructure,
+                   closureArg.usesSelf(in: finalClosureStructure, &output) {
+                    output.append(error(substructure.offset, syntax))
+                    return false
+                }
+            }
+
             if substructure.kind == .exprCall,
                substructure.name?.contains(".be") == true ||
                substructure.name?.contains(".do") == true ||
@@ -344,11 +435,6 @@ struct UnsafeSelfCallbackRule: Rule {
                        let value = body.substring(with: NSRange(location: Int(bodyoffset), length: Int(bodylength))) {
                         arguments.append(value.description)
                     }
-                }
-                
-                // if we are Flynn.Timer and we have immediate: true then we might be in trouble
-                if substructure.name == "Flynn.Timer" && arguments.contains("immediate: true") == false {
-                    continue
                 }
                 
                 if let closureArg = arguments.popLast(),
@@ -401,9 +487,12 @@ struct UnsafeSelfCallbackRule: Rule {
             if ast.isActor(resolvedClass) {
                 if let functions = syntax.structure.substructure {
                     for function in functions {
-                        if function.kind == .functionMethodInstance,
+                        if function.kind == .functionMethodInstance ||
+                           function.kind == .functionConstructor,
                            let substructures = function.substructure {
-                            allPassed = recurseBehaviourCalls(ast, syntax, substructures, &output)
+                            if recurseBehaviourCalls(ast, syntax, substructures, &output) == false {
+                                allPassed = false
+                            }
                         }
                     }
                 }
