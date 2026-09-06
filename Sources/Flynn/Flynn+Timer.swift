@@ -182,8 +182,7 @@ public extension Flynn {
 
     internal class TimerLoop {
 
-        internal var idle: Bool
-        internal var running: Bool
+        internal let running = AtomicBool(false)
 
     #if os(Linux) || os(Android) || os(Windows)
         private lazy var thread = Thread(block: run)
@@ -194,8 +193,7 @@ public extension Flynn {
         private var waitingForWorkSemaphore = DispatchSemaphore(value: 0)
 
         init() {
-            running = true
-            idle = false
+            running.value = true
 
             thread.name = "Flynn Timers"
             thread.qualityOfService = .default
@@ -207,7 +205,7 @@ public extension Flynn {
         }
 
         private func runLoop() {
-            while running {
+            while running.value {
                 let timeout = Flynn.checkRegisteredTimers()
                 if timeout.isFinite {
                     _ = waitingForWorkSemaphore.wait(timeout: DispatchTime.now() + timeout)
@@ -228,7 +226,7 @@ public extension Flynn {
         #endif
 
         public func join() {
-            running = false
+            running.value = false
             waitingForWorkSemaphore.signal()
             while thread.isFinished == false {
                 Flynn.usleep(1000)

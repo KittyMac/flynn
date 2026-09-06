@@ -75,9 +75,11 @@ void ponyint_mpmcq_push(mpmcq_t* q, void* data)
     // done by the next push, which would result in the pop incorrectly seeing
     // the queue as empty.
     // Also synchronise with the pop on prev->next.
+    PONY_HB_BEFORE(&q->head);
     atomic_thread_fence(memory_order_release);
     
     mpmcq_node_t* prev = atomic_exchange_explicit(&q->head, node, memory_order_relaxed);
+    PONY_HB_AFTER(&q->head);
     
     atomic_store_explicit(&prev->next, node, memory_order_release);
 }
@@ -89,8 +91,10 @@ void ponyint_mpmcq_push_single(mpmcq_t* q, void* data)
     atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
     
     // If we have a single producer, the swap of the head need not be atomic RMW.
+    PONY_HB_BEFORE(&q->head);
     mpmcq_node_t* prev = atomic_load_explicit(&q->head, memory_order_relaxed);
     atomic_store_explicit(&q->head, node, memory_order_relaxed);
+    PONY_HB_AFTER(&q->head);
     
     // If we have a single producer, the fence can be replaced with a store
     // release on prev->next.

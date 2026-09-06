@@ -16,6 +16,7 @@
 #include <mach/mach.h>
 #include <mach/thread_policy.h>
 #include <mach/mach_time.h>
+#include <dispatch/dispatch.h>
 
 #include <sched.h>
 #include <sys/types.h>
@@ -158,13 +159,15 @@ void ponyint_cpu_yield()
 uint64_t ponyint_cpu_tick()
 {
     static mach_timebase_info_data_t info;
-    static bool mach_timebase_init = false;
-    
-    if (mach_timebase_init == false) {
-        if (mach_timebase_info(&info) != KERN_SUCCESS) return (uint64_t)-1.0;
-        mach_timebase_init = true;
-    }
-    
+    static dispatch_once_t onceToken;
+    static bool ok = false;
+
+    dispatch_once(&onceToken, ^{
+        ok = (mach_timebase_info(&info) == KERN_SUCCESS);
+    });
+
+    if (!ok) return (uint64_t)-1.0;
+
     return mach_absolute_time () * info.numer / info.denom;
 }
 
