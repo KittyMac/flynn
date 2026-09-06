@@ -59,16 +59,6 @@ struct InitEscapeRule: Rule {
                 }
             """),
             Example("""
-                class SomeActor: Actor {
-                    private var timer: Flynn.Timer?
-                    internal func _beStart() {
-                        timer = Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
-                            self?.unsafePriority = 1
-                        }
-                    }
-                }
-            """),
-            Example("""
                 class SomeClass {
                     init(other: SomeRegistry) {
                         other.register(self)
@@ -88,26 +78,6 @@ struct InitEscapeRule: Rule {
             """),
             Example("""
                 class SomeActor: Actor {
-                    init() {
-                        super.init()
-                        Flynn.Timer(timeInterval: 1, immediate: false, repeats: true, self) { [weak self] _ in
-                            self?.unsafePriority = 1
-                        }
-                    }
-                }
-            """),
-            Example("""
-                class SomeActor: Actor {
-                    init() {
-                        super.init()
-                        Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
-                            self?.unsafePriority = 1
-                        }
-                    }
-                }
-            """),
-            Example("""
-                class SomeActor: Actor {
                     init(registry: SomeRegistry) {
                         super.init()
                         registry.current = self
@@ -115,7 +85,17 @@ struct InitEscapeRule: Rule {
                         processor.beSetClassifications(classificationsData)
                     }
                 }
-            """)
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    private var timer: Flynn.Timer?
+                    internal func _beStart() {
+                        timer = Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
+                            self?.unsafePriority = 1
+                        }
+                    }
+                }
+            """),
         ],
         triggeringExamples: [
             Example("""
@@ -175,7 +155,43 @@ struct InitEscapeRule: Rule {
                         }
                     }
                 }
-            """)
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    public init(url: URL,
+                                gates: [Gateable]) {
+                        Flynn.Timer(timeInterval: 0.01, repeats: true, self) { [weak self] (timer) in
+                            guard let self = self else { return }
+                            while self.readMore(next: next,
+                                                url: url,
+                                                file: file,
+                                                gates: gates) {
+                                
+                            }
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    init() {
+                        super.init()
+                        Flynn.Timer(timeInterval: 1, immediate: false, repeats: true, self) { [weak self] _ in
+                            self?.unsafePriority = 1
+                        }
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    init() {
+                        super.init()
+                        Flynn.Timer(timeInterval: 1, repeats: true, self) { [weak self] _ in
+                            self?.unsafePriority = 1
+                        }
+                    }
+                }
+            """),
         ]
     )
 
@@ -219,12 +235,7 @@ struct InitEscapeRule: Rule {
                         arguments.append(value.description)
                     }
                 }
-                
-                // if we are Flynn.Timer and we have immediate: true then we might be in trouble
-                if substructure.name == "Flynn.Timer" && arguments.contains("immediate: true") == false {
-                    continue
-                }
-                
+                                
                 if let closureArg = arguments.popLast(),
                    closureArg.hasPrefix("{"),
                    closureArg.hasSuffix("}") {
