@@ -45,15 +45,15 @@ struct FlynnAnyInActorRule: Rule {
 
     func check(_ ast: AST, _ syntax: FileSyntax, _ output: inout [PrintError.Packet]) -> Bool {
         
-        var isActorOrRemoteActor = false
+        var isActor = false
         for ancestor in syntax.ancestry {
-            if ast.isActor(ancestor) || ast.isRemoteActor(ancestor) {
-                isActorOrRemoteActor = true
+            if ast.isActor(ancestor) {
+                isActor = true
                 break
             }
         }
         
-        guard isActorOrRemoteActor else { return true }
+        guard isActor else { return true }
         
         var errorOffsets: [Int64] = []
         // Only perform this check if we are inside of an Actor

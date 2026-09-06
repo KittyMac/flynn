@@ -79,12 +79,6 @@ The Flynn library provides the mechanisms for safer concurrency and the FlynnPlu
 
 In this example, we have a public variable on our Counter Actor. Public variables are not allowed as they can be potentially accessed from other threads, breaking the concurrency safety the Actor-Model paradigm provides us.
 
-#### [Remote actors are actors which run elsewhere](docs/FLYNNPLUGIN.md)
-
-RemoteActors are an advanced topic and are likely useful only to a subset of developers.  
-
-As of v0.2 Flynn has a new kind of actor, the ```RemoteActor```.  RemoteActors behave similarly to Actors; they have internal state which is concurrency safe and you interact with them by calling behaviors. RemoteActors are intended to execute outside of your normal Flynn environment, usually that's in another process running on an different machine.  Since RemoteActors run elsewhere, they are more restrictive then normal Actors (for instance, you cannot choose to unsafely expose access RemoteActors).  Please see the RemoteActor documentation for more details.
-
 ## Docs
 
 [Actors](docs/ACTOR.md) - Concurrency safe Swift classes  
@@ -93,7 +87,6 @@ As of v0.2 Flynn has a new kind of actor, the ```RemoteActor```.  RemoteActors b
 [FlynnPlugin](docs/FLYNNPLUGIN.md) - Protects against data races and other bad things  
 [Flowable Actors](docs/FLOWABLE.md) - Easily chainable networks of actors  
 [Flynn.Timer](docs/TIMERS.md) - Actor friendly Timers  
-[RemoteActors](docs/REMOTEACTOR.md) - Run actors in another process  
 
 [Coexisting with Swift Concurrecy](docs/SWIFTCONCURRENCY.md) - Coexisting peacefully with async/await  
 

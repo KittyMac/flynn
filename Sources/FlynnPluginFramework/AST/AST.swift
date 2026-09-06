@@ -282,24 +282,6 @@ struct AST {
         return false
     }
 
-    func isRemoteActor(_ name: String) -> Bool {
-        let actorName = "RemoteActor"
-        if name == actorName {
-            return true
-        }
-        if let actualClass = getClassOrProtocol(name) {
-            return isSubclassOf(actualClass, actorName)
-        }
-        return false
-    }
-    
-    func isRemoteActor(_ syntax: FileSyntax) -> Bool {
-        if let name = syntax.structure.name {
-            return isRemoteActor(name)
-        }
-        return false
-    }
-
     private static func recurseClassFullName(_ path: inout [String],
                                              _ current: SyntaxStructure,
                                              _ target: String) -> Bool {

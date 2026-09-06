@@ -42,8 +42,6 @@ extern void *objc_autoreleasePoolPush();
 extern void objc_autoreleasePoolPop(void *);
 #endif
 
-extern int pony_root_num_active_remotes();
-
 static DECLARE_THREAD_FN(run_thread);
 
 // Scheduler global data.
@@ -701,9 +699,9 @@ bool ponyint_sched_start()
     return true;
 }
 
-void ponyint_sched_wait(bool waitForRemotes)
+void ponyint_sched_wait()
 {
-    // block until no local actors or remote actors are in existance for
+    // block until no local actors are in existance for
     // for the specified amount of time.
     int32_t usSleep = 5000;
     int32_t numRepeatIdle = (1000 * 1000) / usSleep;
@@ -718,22 +716,10 @@ void ponyint_sched_wait(bool waitForRemotes)
             }
         }
         
-        // in order to be able to shutdown, all schedules must be idle
-        // all injection queues must be empty
-        // all remote actors must be destroyed
-        /*
-         pony_syslog2("Flynn", "%d  %d  %d  %d  %d\n",
-                active,
-                (int)inject.num_messages,
-                (int)injectHighEfficiency.num_messages,
-                (int)injectHighPerformance.num_messages,
-                pony_root_num_active_remotes() );
-         */
         if (active == 0 &&
             inject.num_messages == 0 &&
             injectHighEfficiency.num_messages == 0 &&
-            injectHighPerformance.num_messages == 0 &&
-            (waitForRemotes == false || pony_root_num_active_remotes() == 0)) {
+            injectHighPerformance.num_messages == 0) {
             timesIdle--;
             if (timesIdle <= 0) {
                 break;

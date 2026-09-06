@@ -27,10 +27,6 @@
 #include <syslog.h>
 #endif
 
-extern int ponyint_remote_nodes_count();
-extern int ponyint_remote_core_count();
-extern int ponyint_remote_core_count_by_socket(int socketfd);
-
 uint64_t pony_actor_new_then_id() {
     static PONY_ATOMIC(uint64_t) global_then_id;
     uint64_t next_then_id = atomic_fetch_add_explicit(&global_then_id, 1, memory_order_relaxed);
@@ -58,14 +54,11 @@ bool pony_startup(int scheduler_count, int min_scheduler_count) {
     return pony_is_inited;
 }
 
-void pony_shutdown(bool waitForRemotes) {
+void pony_shutdown() {
     if (!pony_is_inited) { return; }
     
-    ponyint_sched_wait(waitForRemotes);
-    
-    //pony_syslog2("Flynn", "pony remote shutdown\n");
-    pony_remote_shutdown();
-    
+    ponyint_sched_wait();
+        
     //pony_syslog2("Flynn", "pony scheduler shutdown\n");
     ponyint_sched_stop();
     
@@ -83,18 +76,6 @@ int pony_e_core_count() {
 
 int pony_p_core_count() {
     return ponyint_p_core_count();
-}
-
-int pony_remote_core_count() {
-    return ponyint_remote_core_count();
-}
-
-int pony_remote_core_count_by_socket(int socketfd) {
-    return ponyint_remote_core_count_by_socket(socketfd);
-}
-
-int pony_remote_nodes_count() {
-    return ponyint_remote_nodes_count();
 }
 
 bool pony_core_affinity_enabled() {

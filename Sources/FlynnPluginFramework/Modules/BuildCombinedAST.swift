@@ -315,14 +315,11 @@ class ASTBuilder: Sequence {
     }
     
     func isActor(_ syntax: FileSyntax) -> Bool {
-        if syntax.structure.name == "Actor" || syntax.structure.name == "RemoteActor" {
+        if syntax.structure.name == "Actor" {
             return true
         }
         if let inheritedTypes = syntax.structure.inheritedTypes {
             for type in inheritedTypes where (type["key.name"] as? String) == "Actor" {
-                return true
-            }
-            for type in inheritedTypes where (type["key.name"] as? String) == "RemoteActor" {
                 return true
             }
         }

@@ -18,8 +18,6 @@ struct Ruleset {
             WeakTimersRule.self,
             ThenNotFollowedByADoCall.self,
             //DoNotPrecededByThenCall.self,
-            PrivateFunctionInRemoteActorRule.self,
-            PrivateVariablesInRemoteActorRule.self
         ]
 
         for ruleClass in allRules {

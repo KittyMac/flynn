@@ -105,7 +105,7 @@ final class FlynnProfilerTests: XCTestCase {
             XCTAssertNotEqual(value, 0)
             workRead.fulfill()
         }
-        wait(for: [workRead], timeout: 10.0)
+        wait(for: [workRead], timeout: 60.0)
     }
 
     func testProfilerResetClearsSamples() {

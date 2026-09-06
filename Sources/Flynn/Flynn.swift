@@ -72,8 +72,6 @@ open class Flynn {
         fatalError("Flynn.fatal called")
     }
     
-    static var remotes = RemoteActorManager()
-
     public class func startup(schedulerCount: Int = 0,
                               minSchedulerCount: Int = 0,
                               memoryTrimLimit: Int = 0) {
@@ -100,16 +98,13 @@ open class Flynn {
         }
     }
 
-    public class func shutdown(waitForRemotes: Bool = false) {
+    public class func shutdown() {
         running.checkActive {
             timerLoop?.join()
             timerLoop = nil
 
-            pony_shutdown(waitForRemotes)
+            pony_shutdown()
             
-            remotes.unsafeReset()
-            remotes = RemoteActorManager()
-
             // wait until the registered actors thread ends
             clearRegisteredTimers()
         }
@@ -146,19 +141,7 @@ open class Flynn {
     public static var pCores: Int {
         return Int(pony_p_core_count())
     }
-    
-    public static var remoteEnabled: Bool {
-        return pony_remote_enabled() != 0;
-    }
-
-    public static var remoteNodes: Int {
-        return Int(pony_remote_nodes_count())
-    }
-
-    public static var remoteCores: Int {
-        return Int(pony_remote_core_count())
-    }
-    
+        
     public static var appCurrentMemory: UInt64 {
         return UInt64(pony_current_memory())
     }

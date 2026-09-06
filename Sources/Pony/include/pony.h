@@ -36,37 +36,12 @@ void pony_node(const char * address,
                MessageActorFunc messageActorFunc,
                RegisterActorsOnRootFunc registerActorsOnRootFunc);
 
-int pony_remote_enabled();
-
-int pony_remote_nodes_count();
-int pony_remote_core_count();
-int pony_remote_core_count_by_socket(int socketfd);
-
 int pony_next_messageId();
-
-int pony_root_num_active_remotes();
-
-int pony_root_send_actor_message_to_node(const char * actorUUID,
-                                         const char * actorType,
-                                         const char * behaviorType,
-                                         bool actorNeedsCreated,
-                                         int nodeSocketFD,
-                                         const void * bytes,
-                                         int count);
-void pony_node_send_actor_message_to_root(int socketfd,
-                                          int messageID,
-                                          const void * bytes,
-                                          int count);
-void pony_register_node_to_root(int socketfd,
-                                const char * actorRegistrationString);
-
-void pony_root_destroy_actor_to_node(const char * actorUUID, int nodeSocketFD);
-void pony_node_destroy_actor_to_root(int socketfd);
 
 uint64_t pony_actor_new_then_id();
 
 bool pony_startup(int scheduler_count, int min_scheduler_count);
-void pony_shutdown(bool waitForRemotes);
+void pony_shutdown();
 
 int pony_core_count();
 int pony_e_core_count();

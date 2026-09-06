@@ -12,8 +12,6 @@
 #include <stdbool.h>
 #include "atomics.h"
 
-int pony_remote_enabled();
-void pony_remote_shutdown();
 void pony_set_thread_name(const char * name);
 void pony_syslog(const char * tag, const char * msg);
 void pony_syslog2(const char * tag, const char *format, ...);
@@ -22,15 +20,6 @@ char * pony_dns_resolve_txt(const char * domain);
 
 #define kDestroyMessage 0
 #define kMessagePointer 1
-#define kRemote_Version 2
-#define kRemote_RegisterWithRoot 3
-#define kRemote_CreateActor 4
-#define kRemote_DestroyActor 5
-#define kRemote_SendMessage 6
-#define kRemote_SendReply 7
-#define kRemote_SendCoreCount 8
-#define kRemote_SendHeartbeat 9
-#define kRemote_DestroyActorAck 10
 
 typedef struct pony_actor_t pony_actor_t;
 
@@ -80,65 +69,5 @@ typedef struct pony_msgfunc_t
     void* arg;
     void (*func)(void * message);
 } pony_msgfunc_t;
-
-/// Convenience message for sending remote message.
-typedef struct pony_msg_remote_version_t
-{
-    pony_msg_t msg;
-} pony_msg_remote_version_t;
-
-typedef struct pony_msg_remote_createactor_t
-{
-    pony_msg_t msg;
-    char actorUUID[128];
-    char actorType[128];
-} pony_msg_remote_createactor_t;
-
-typedef struct pony_msg_remote_destroyactor_t
-{
-    pony_msg_t msg;
-    char actorUUID[128];
-} pony_msg_remote_destroyactor_t;
-
-typedef struct pony_msg_remote_sendmessage_t
-{
-    pony_msg_t msg;
-    uint32_t messageId;
-    char actorUUID[128];
-    char behaviorType[128];
-    void * payload;
-    uint32_t length;
-} pony_msg_remote_sendmessage_t;
-
-
-typedef struct pony_msg_remote_register_t
-{
-    pony_msg_t msg;
-    char * registration;
-    uint32_t length;
-} pony_msg_remote_register_t;
-
-typedef struct pony_msg_remote_core_count_t
-{
-    pony_msg_t msg;
-} pony_msg_remote_core_count_t;
-
-typedef struct pony_msg_remote_heartbeat_t
-{
-    pony_msg_t msg;
-} pony_msg_remote_heartbeat_t;
-
-typedef struct pony_msg_remote_destroy_actor_ack_t
-{
-    pony_msg_t msg;
-} pony_msg_remote_destroy_actor_ack_t;
-
-typedef struct pony_msg_remote_sendreply_t
-{
-    pony_msg_t msg;
-    uint32_t messageId;
-    void * payload;
-    uint32_t length;
-} pony_msg_remote_sendreply_t;
 
 #endif /* ponyrt_h */

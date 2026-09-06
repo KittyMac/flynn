@@ -43,10 +43,6 @@ class FlynnPluginTests: XCTestCase {
             "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Extensions.swift",
             "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Queue.swift",
             "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Actor.swift",
-            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/Flynn+Remote.swift",
-            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActorManager.swift",
-            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActorRunner.swift",
-            "/Users/rjbowli/Development/chimerasw/Flynn/Sources/Flynn/Remote/RemoteActor.swift",
             "/Users/rjbowli/Development/chimerasw/Flynn/Tests/FlynnTests/Support/WeakTimer.swift",
             "/Users/rjbowli/Development/chimerasw/flynn/Tests/FlynnTests/Support/Echo.swift",
             

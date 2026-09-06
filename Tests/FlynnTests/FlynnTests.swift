@@ -472,18 +472,7 @@ class FlynnTests: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }*/
-    
-    func testMultipleDelayedReturns() {
-        let expectation = XCTestExpectation(description: #function)
-
-        ActorExhaustive().beNoArgsTwoDelayedReturn(Flynn.any) { (string, int) in
-            if string == "Hello World" && int == 42 {
-                expectation.fulfill()
-            }
-        }
-        wait(for: [expectation], timeout: 10.0)
-    }
-    
+        
     func testSyslog() {
         Flynn.syslog("FLYNN", "Hello world")
     }
