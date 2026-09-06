@@ -20,6 +20,15 @@ struct SafeVariableRule: Rule {
                 }
             """),
             Example("""
+                class SomeActor: Actor {
+                    var safeColorable = 5
+                    func foo() {
+                        // [weak self] callbacks produce this form; still self
+                        self?.safeColorable = 15
+                    }
+                }
+            """),
+            Example("""
                 func testColor() {
                     let expectation = XCTestExpectation(description: "Protocols, extensions etc...")
                     let color = Color()
@@ -64,6 +73,27 @@ struct SafeVariableRule: Rule {
                     print(color.safeColorable._color)
                     expectation.fulfill()
                 }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    var safeColorable = 5
+                }
+                class OtherActor: SomeActor {
+                    func foo() {
+                        let a: SomeActor? = SomeActor()
+                        a?.safeColorable = 15
+                    }
+                }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    var safeColorable = 5
+                }
+                class OtherActor: SomeActor {
+                    func foo(myself: SomeActor) {
+                        myself.safeColorable = 15
+                    }
+                }
             """)
         ]
     )
@@ -80,7 +110,7 @@ struct SafeVariableRule: Rule {
         // or any instances of .safe which are not self.safe This is
         // FAR from perfect, but until sourcekit provides the full, unadultered
         // AST what can we do?
-        if let innerOffset = syntax.match(#"\w+(?<!self)\."# + FlynnPluginTool.prefixSafe + #"\w"#) {
+        if let innerOffset = syntax.match(#"\w+\??(?<!\bself)(?<!\bself\?)\."# + FlynnPluginTool.prefixSafe + #"\w"#) {
             output.append(error(innerOffset, syntax))
             return false
         }
