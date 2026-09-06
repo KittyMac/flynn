@@ -14,6 +14,9 @@ static push_result_t messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t*
     
     atomic_store_explicit(&last->next, NULL, memory_order_relaxed);
     
+    // Publish this write for TSAN at the address it lands on.
+    PONY_HB_BEFORE(&last->next);
+    
     // Without that fence, the store to last->next above could be reordered after
     // the exchange on the head and after the store to prev->next done by the
     // next push, which would result in the pop incorrectly seeing the queue as
