@@ -94,8 +94,18 @@ unsigned long pony_mapped_memory();
 int64_t pony_atomic_load64(const void* ptr);
 void    pony_atomic_store64(void* ptr, int64_t value);
 int64_t pony_atomic_add64(void* ptr, int64_t delta);
+int64_t pony_atomic_exchange64(void* ptr, int64_t value);
+bool    pony_atomic_cas64(void* ptr, int64_t* expected, int64_t desired);
+
+int32_t pony_atomic_load32(const void* ptr);
+void    pony_atomic_store32(void* ptr, int32_t value);
+int32_t pony_atomic_add32(void* ptr, int32_t delta);
+int32_t pony_atomic_exchange32(void* ptr, int32_t value);
+bool    pony_atomic_cas32(void* ptr, int32_t* expected, int32_t desired);
+
 bool    pony_atomic_load_bool(const void* ptr);
 void    pony_atomic_store_bool(void* ptr, bool value);
+bool    pony_atomic_exchange_bool(void* ptr, bool value);
 
 // Registers the function used to release a message payload without running it.
 // Must be called before any actor is created. Flynn does this in startup().
