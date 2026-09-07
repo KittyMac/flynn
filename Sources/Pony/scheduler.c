@@ -177,18 +177,19 @@ static pony_actor_t* pop(scheduler_t* sched)
  */
 static void push(scheduler_t* sched, pony_actor_t* actor)
 {
-    switch (actor->coreAffinity) {
+    int32_t affinity = ponyint_actor_coreaffinity(actor);
+    switch (affinity) {
         case kCoreAffinity_OnlyPerformance:
         case kCoreAffinity_OnlyEfficiency:
-            if (actor->coreAffinity != sched->coreAffinity) {
-                if (actor->coreAffinity == kCoreAffinity_OnlyPerformance) {
+            if (affinity != sched->coreAffinity) {
+                if (affinity == kCoreAffinity_OnlyPerformance) {
                     ponyint_mpmcq_push(&injectHighPerformance, actor);
                 } else {
                     ponyint_mpmcq_push(&injectHighEfficiency, actor);
                 }
                 // actor->coreAffinity is already exactly the class that can pop
                 // the queue we just pushed to.
-                wake_one_sleeper(actor->coreAffinity);
+                wake_one_sleeper(affinity);
                 return;
             }
             break;
@@ -357,7 +358,7 @@ static pony_actor_t* steal(scheduler_t* sched)
             actor = pop_global(sched, victim);
             
             // If we stole the wrong actor, throw it back in the sea
-            if (actor != NULL && COREAFFINITY_IS_INCOMPATIBLE(actor->coreAffinity, sched->coreAffinity)) {
+            if (actor != NULL && COREAFFINITY_IS_INCOMPATIBLE(ponyint_actor_coreaffinity(actor), sched->coreAffinity)) {
                 push(sched, actor);
                 actor = NULL;
             }
@@ -419,7 +420,7 @@ static void run(scheduler_t* sched)
         if(actor != NULL) {
             atomic_store_explicit(&sched->idle, false, memory_order_relaxed);
             
-            if (COREAFFINITY_IS_INCOMPATIBLE(actor->coreAffinity, sched->coreAffinity)) {
+            if (COREAFFINITY_IS_INCOMPATIBLE(ponyint_actor_coreaffinity(actor), sched->coreAffinity)) {
                 push(sched, actor);
                 actor = NULL;
                 continue;
@@ -467,7 +468,7 @@ static void run(scheduler_t* sched)
                 bool actor_did_yield = info.yielded;
                 
                 if(next != NULL) {
-                    if (actor_did_yield == false && info.priority > next->priority) {
+                    if (actor_did_yield == false && info.priority > ponyint_actor_priority(next)) {
                         // our current actor has a higher priority than the next actor, so put
                         // the next actor back at the end of our queue.  Hopefully someone
                         // else will pick him up

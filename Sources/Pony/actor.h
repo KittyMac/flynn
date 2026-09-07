@@ -17,8 +17,8 @@ typedef struct pony_actor_t
     messageq_t queue;
     PONY_ATOMIC(uint8_t) flags;
     int32_t uid;
-    int32_t priority;
-    int32_t coreAffinity;
+    PONY_ATOMIC(int32_t) priority;
+    PONY_ATOMIC(int32_t) coreAffinity;
     int32_t batchSize;
     int32_t profileTypeID;
 
@@ -51,6 +51,16 @@ typedef struct actor_run_info_t
 
 int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs,
                       actor_run_info_t* out);
+
+static inline int32_t ponyint_actor_priority(pony_actor_t* actor)
+{
+    return atomic_load_explicit(&actor->priority, memory_order_relaxed);
+}
+
+static inline int32_t ponyint_actor_coreaffinity(pony_actor_t* actor)
+{
+    return atomic_load_explicit(&actor->coreAffinity, memory_order_relaxed);
+}
 
 int32_t ponyint_actor_getpriority(pony_actor_t* actor);
 void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority);

@@ -67,8 +67,8 @@ static void actor_snapshot(pony_actor_t* actor, actor_run_info_t* out)
 {
     if (out == NULL) { return; }
     out->yielded      = atomic_load_explicit(&actor->yield, memory_order_relaxed);
-    out->priority     = actor->priority;
-    out->coreAffinity = actor->coreAffinity;
+    out->priority     = ponyint_actor_priority(actor);
+    out->coreAffinity = ponyint_actor_coreaffinity(actor);
 }
 
 int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs,
@@ -158,12 +158,12 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs,
 }
 
 int32_t ponyint_actor_getpriority(pony_actor_t* actor) {
-    return actor->priority;
+    return ponyint_actor_priority(actor);
 }
 
 void ponyint_actor_setpriority(pony_actor_t* actor, int32_t priority)
 {
-    actor->priority = priority;
+    atomic_store_explicit(&actor->priority, priority, memory_order_relaxed);
 }
 
 int32_t ponyint_actor_getbatchSize(pony_actor_t* actor) {
@@ -176,12 +176,12 @@ void ponyint_actor_setbatchSize(pony_actor_t* actor, int32_t batchSize)
 }
 
 int32_t ponyint_actor_getcoreAffinity(pony_actor_t* actor) {
-    return actor->coreAffinity;
+    return ponyint_actor_coreaffinity(actor);
 }
 
 void ponyint_actor_setcoreAffinity(pony_actor_t* actor, int32_t coreAffinity)
 {
-    actor->coreAffinity = coreAffinity;
+    atomic_store_explicit(&actor->coreAffinity, coreAffinity, memory_order_relaxed);
 }
 
 void ponyint_actor_setProfileTypeID(pony_actor_t* actor, int32_t typeID)
@@ -269,7 +269,7 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     
     static PONY_ATOMIC(int32_t) actorUID = 1;
     actor->uid = atomic_fetch_add_explicit(&actorUID, 1, memory_order_relaxed);
-    actor->coreAffinity = kCoreAffinity_None;
+    atomic_store_explicit(&actor->coreAffinity, kCoreAffinity_None, memory_order_relaxed);
     actor->batchSize = 1000;
     
     ponyint_messageq_init(&actor->queue);
