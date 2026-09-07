@@ -4,6 +4,7 @@
 
 #include "ponyrt.h"
 #include "threads.h"
+#include "tsan.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -144,6 +145,18 @@ void * ponyint_pool_alloc(size_t size) {
     
     void * p = pool_pop(size);
     if (p != NULL) {
+        // Recycled block. ThreadSanitizer only special-cases real malloc/free,
+        // so it still holds shadow state from whatever previously lived at this
+        // address -- and the previous owner may have been a different type on a
+        // different thread (a 128-byte message block comes back as a 128-byte
+        // actor, where +8 stops being msg.next and becomes queue.tail).
+        // Acquire what the freeing thread released, so every prior owner's
+        // accesses are ordered before ours.
+        //
+        // The address is used only as a key, so this orders this block's
+        // previous owner before us and nothing else; it cannot mask a race on
+        // unrelated memory.
+        PONY_HB_AFTER(p);
         return p;
     }
         
@@ -154,6 +167,12 @@ void * ponyint_pool_alloc(size_t size) {
 
 void ponyint_pool_free(void * p, size_t size) {
     size = ponyint_alloc_size(size);
+    
+    // Publish everything this thread has seen about the block before handing it
+    // back. The freeing thread necessarily happens-after every legitimate prior
+    // owner, so releasing here carries their clocks too -- which is the edge
+    // that pool recycling otherwise loses.
+    PONY_HB_BEFORE(p);
     
     if (pool_push(p, size)) {
         return;
