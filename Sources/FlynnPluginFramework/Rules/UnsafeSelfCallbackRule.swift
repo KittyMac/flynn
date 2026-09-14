@@ -253,6 +253,16 @@ struct UnsafeSelfCallbackRule: Rule {
                     }
                 }
             """),
+            Example("""
+                class SomeActor: Actor {
+                    init() {
+                        super.init()
+                    }
+                    internal func _beStartup() {
+                        beCheckDB()
+                    }
+                }
+            """)
         ],
         triggeringExamples: [
             Example("""
@@ -339,6 +349,19 @@ struct UnsafeSelfCallbackRule: Rule {
                         }
                     }
                 }
+            """),
+            Example("""
+                class SomeActor: Actor {
+                    init() {
+                        super.init()
+                    }
+                    
+                    internal func _beStartup() {
+                        beLoad(Flynn.any) { error in
+                            roverServerAuthorization = self.disConfig[hitch: "roverServerAuthorization"]
+                        }
+                    }
+                }
             """)
         ]
     )
@@ -419,6 +442,7 @@ struct UnsafeSelfCallbackRule: Rule {
             }
 
             if substructure.kind == .exprCall,
+               substructure.name?.hasPrefix("be") == true ||
                substructure.name?.contains(".be") == true ||
                substructure.name?.contains(".do") == true ||
                 substructure.name == "Flynn.Timer" {

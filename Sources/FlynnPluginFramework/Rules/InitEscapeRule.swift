@@ -219,6 +219,7 @@ struct InitEscapeRule: Rule {
             // if we are calling behaviours on another actor ( processor.beDoSomething(self) { } ) but
             // the callback is on self.
             if substructure.kind == .exprCall,
+               substructure.name?.hasPrefix("be") == true ||
                substructure.name?.contains(".be") == true ||
                 substructure.name == "Flynn.Timer" {
                 let body = syntax.file.contents
