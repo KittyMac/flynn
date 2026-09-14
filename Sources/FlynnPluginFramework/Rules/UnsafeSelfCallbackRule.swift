@@ -362,6 +362,22 @@ struct UnsafeSelfCallbackRule: Rule {
                         }
                     }
                 }
+            """),
+            Example("""
+                class Counter: Actor, Timerable {
+                    private func apply(_ value: Int) {
+                        counter += value
+                        
+                        beGetValue(Flynn.any) { v in
+                            let x = self.counter
+
+                            self.beGetValue(Flynn.any) { v in
+                                //let y = self.counter
+                                
+                            }
+                        }
+                    }
+                }
             """)
         ]
     )
@@ -381,6 +397,7 @@ struct UnsafeSelfCallbackRule: Rule {
         for substructure in substructures {
             
             if let name = substructure.name {
+                print(name)
                 if substructure.kind == .exprCall,
                    name.hasSuffix("unsafeSend") {
                     continue
@@ -476,6 +493,7 @@ struct UnsafeSelfCallbackRule: Rule {
                             if let substructures = finalClosureStructure.substructure {
                                 let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &output)
                                 if (!passed) {
+                                    output.append(error(substructure.offset, syntax))
                                     return false
                                 }
                             }
@@ -495,6 +513,7 @@ struct UnsafeSelfCallbackRule: Rule {
             if let substructures = substructure.substructure {
                 let passed = recurseBehaviourCalls(ast, syntax, substructures, &output)
                 if (!passed) {
+                    output.append(error(substructure.offset, syntax))
                     return false
                 }
             }
