@@ -63,6 +63,7 @@ extension String {
     /// keyword token, so strings and comments cannot produce a false positive.
     func usesSelf(in structure: SyntaxStructure, _ output: inout [PrintError.Packet]) -> Bool {
         let tokens = syntaxTokens(in: structure)
+        guard tokens.count > 0 else { return true }
         for idx in 0..<tokens.count-1 {
             let token = tokens[idx]
             let next = tokens[idx+1]
@@ -398,9 +399,31 @@ struct UnsafeSelfCallbackRule: Rule {
                         }
                     }
                 }
-            """)
+            """),
+            Example("""
+                class Counter: Actor, Timerable {
+                    private func apply(_ value: Int) {
+                        let handle = FileHandle.standardInput
+                        handle.readabilityHandler = { fh in
+                            let _ = self.counter
+                        }
+                    }
+                }
+            """),
+              Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let handle = FileHandle.standardInput
+                          handle.readabilityHandler = { fh in
+                              let _ = self.counter
+                          }
+                      }
+                  }
+              """)
         ]
     )
+    
+    
 
     func precheck(_ file: File) -> Bool {
         guard file.contents.contains("// flynn:ignore all") == false else { return false }
@@ -449,43 +472,81 @@ struct UnsafeSelfCallbackRule: Rule {
                                _ output: inout [PrintError.Packet]) -> Bool {
         // do we contain behaviour calls which are not wrapped in unsafeSend?
         for substructure in substructures {
+            // print("\(substructure.name) :: \(substructure.kind)")
+            // print(substructure)
+            
             if substructure.kind == .exprCall,
                substructure.name == "unsafeSend" || substructure.name == "self.unsafeSend" {
                 continue
             }
-
+            
+            var examineStructure = false
+            
             if substructure.kind == .exprCall,
                let callName = substructure.name,
                callName.hasSuffix(".unsafeSend") {
-                let body = syntax.file.contents
-                var arguments: [String] = []
-                for substructure in substructure.substructure ?? [] {
-                    if substructure.kind == .exprArgument,
-                       let bodyoffset = substructure.offset,
-                       let bodylength = substructure.length,
-                       let value = body.substring(with: NSRange(location: Int(bodyoffset), length: Int(bodylength))) {
-                        arguments.append(value.description)
-                    }
-                }
-                if let closureArg = arguments.popLast(),
-                   closureArg.hasPrefix("{"),
-                   closureArg.hasSuffix("}"),
-                   let finalClosureStructure = closureArg.syntaxStructure,
-                   closureArg.usesSelf(in: finalClosureStructure, &output) {
-                    output.append(error(substructure.offset, syntax))
-                    return false
-                }
-            } else
+                examineStructure = true
+            }
+            
+            if substructure.kind == .exprClosure,
+               substructure.name == nil {
+                examineStructure = true
+            }
+            
             if substructure.kind == .exprCall,
-               substructure.name?.hasPrefix("be") == true ||
-               substructure.name?.contains(".be") == true ||
-               substructure.name?.contains(".do") == true ||
+                substructure.name == "Task" ||
+                substructure.name == "Thread" ||
+                substructure.name == "DispatchWorkItem" ||
+                substructure.name == "BlockOperation" ||
+                substructure.name == "withTaskGroup" ||
+                substructure.name == "withThrowingTaskGroup" ||
+                substructure.name == "withTaskCancellationHandler" ||
+                substructure.name == "withCheckedContinuation" ||
+                substructure.name == "AsyncStream" ||
+                
+                substructure.name?.hasPrefix("be") == true ||
+                substructure.name?.contains(".be") == true ||
+                substructure.name?.contains(".do") == true ||
+                substructure.name?.contains(".addOperation") == true ||
+                substructure.name?.contains(".async") == true ||
+                substructure.name?.contains(".sync") == true ||
+                substructure.name?.contains(".notify") == true ||
+                substructure.name?.contains(".concurrentPerform") == true ||
+                
+                substructure.name?.contains(".setEventHandler") == true ||
+                substructure.name?.contains(".setCancelHandler") == true ||
+                substructure.name?.contains(".detachNewThread") == true ||
+                substructure.name?.contains(".addExecutionBlock") == true ||
+                substructure.name?.contains(".completionBlock") == true ||
+                substructure.name?.contains(".addBarrierBlock") == true ||
+                
+                substructure.name?.contains(".detached") == true ||
+                substructure.name?.contains(".run") == true ||
+                substructure.name?.contains(".addTask") == true ||
+                substructure.name?.contains(".observe") == true ||
+                
+                substructure.name?.contains(".scheduledTimer") == true ||
+                substructure.name?.contains(".perform") == true ||
+                substructure.name?.contains(".addObserver") == true ||
+                
+                substructure.name?.contains(".dataTask") == true ||
+                substructure.name?.contains(".animate") == true ||
+                substructure.name?.contains(".readabilityHandler") == true ||
+                substructure.name?.contains(".terminationHandler") == true ||
+                substructure.name?.contains(".stateUpdateHandler") == true ||
+                
                 substructure.name == "Flynn.Timer" {
+                
+                examineStructure = true
+            }
+
+            if examineStructure {
                 let body = syntax.file.contents
                 
                 // does this behaviour call back to self?  this requires:
                 // the last argument to be a closure
                 // the second to last argument to be self
+                // things like beSend(self) {  }
                 var arguments: [String] = []
                 for substructure in substructure.substructure ?? [] {
                     if substructure.kind == .exprArgument,
@@ -496,17 +557,21 @@ struct UnsafeSelfCallbackRule: Rule {
                     }
                 }
                 
+                // things like handle.readabilityHandler = { }
+                if substructure.kind == .exprClosure,
+                   let bodyoffset = substructure.offset,
+                   let bodylength = substructure.length,
+                   let value = body.substring(with: NSRange(location: Int(bodyoffset), length: Int(bodylength))) {
+                    arguments.append(value.description)
+                }
+                
                 if let closureArg = arguments.popLast(),
                    closureArg.hasPrefix("{"),
                    closureArg.hasSuffix("}") {
-                    
-                    if let selfArg = arguments.popLast(),
-                       selfArg != "self" {
-                        
+                    if arguments.last != "self" {
                         // examine the closure for uses of self. we need to
                         // pre-handle some valid cases:
                         // self.unsafe anything should be ignored (and their closure contents)
-                        
                         if let finalClosureStructure = closureArg.syntaxStructure {
                             if let substructures = finalClosureStructure.substructure {
                                 let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &output)
@@ -522,63 +587,19 @@ struct UnsafeSelfCallbackRule: Rule {
                             output.append(error(substructure.offset, syntax))
                             return false
                         }
-                    } else {
-                        // no argument other than the closure means we're inferred self
                     }
                 }
-            } else
-            if substructure.kind == .exprCall {
-                // bare closures from non-flynn APIs could come back on any thread; we should flag
-                // self references as a warning
-                let body = syntax.file.contents
-                
-                var arguments: [String] = []
-                for substructure in substructure.substructure ?? [] {
-                    if substructure.kind == .exprArgument,
-                       let bodyoffset = substructure.offset,
-                       let bodylength = substructure.length,
-                       let value = body.substring(with: NSRange(location: Int(bodyoffset), length: Int(bodylength))) {
-                        arguments.append(value.description)
-                    }
-                }
-                
-                if let closureArg = arguments.popLast(),
-                   closureArg.hasPrefix("{"),
-                   closureArg.hasSuffix("}") {                    
-                    if let finalClosureStructure = closureArg.syntaxStructure {
-                        if let substructures = finalClosureStructure.substructure {
-                            let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &output)
-                            if (!passed) {
-                                output.append(warning(substructure.offset, syntax, "Unsafe Self Violation: Potentially unsafe reference to self in closure"))
-                                return false
-                            }
-                        }
-                    }
-                    
-                    if let finalClosureStructure = closureArg.syntaxStructure,
-                       closureArg.usesSelf(in: finalClosureStructure, &output) {
-                        output.append(warning(substructure.offset, syntax, "Unsafe Self Violation: Potentially unsafe reference to self in closure"))
-                        return false
-                    }
-                }
-                
+            } else {
                 if let substructures = substructure.substructure {
                     let passed = recurseBehaviourCalls(ast, syntax, substructures, &output)
                     if (!passed) {
-                        output.append(warning(substructure.offset, syntax, "Unsafe Self Violation: Potentially unsafe reference to self in closure"))
+                        output.append(error(substructure.offset, syntax))
                         return false
                     }
                 }
-                continue
             }
             
-            if let substructures = substructure.substructure {
-                let passed = recurseBehaviourCalls(ast, syntax, substructures, &output)
-                if (!passed) {
-                    output.append(error(substructure.offset, syntax))
-                    return false
-                }
-            }
+            
         }
         return true
     }
