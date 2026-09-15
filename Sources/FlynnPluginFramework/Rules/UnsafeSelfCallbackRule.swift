@@ -61,7 +61,8 @@ extension String {
 
     /// True if `self` is referenced anywhere inside this structure. `self` is a
     /// keyword token, so strings and comments cannot produce a false positive.
-    func usesSelf(in structure: SyntaxStructure, _ output: inout [PrintError.Packet]) -> Bool {
+    func usesSelf(in structure: SyntaxStructure,
+                  _ offset: inout Int64) -> Bool {
         let tokens = syntaxTokens(in: structure)
         guard tokens.count > 0 else { return true }
         for idx in 0..<tokens.count-1 {
@@ -82,6 +83,7 @@ extension String {
                         // calling unsafe values on self would be allowed
                         continue
                     }
+                    offset = Int64(token.offset.value)
                     return true
                 }
             }
@@ -96,7 +98,7 @@ struct UnsafeSelfCallbackRule: Rule {
     let description = RuleDescription(
         identifier: "unsafe_self_behaviour_callback",
         name: "Unsafe Self Violation",
-        description: "self referenced in a behaviour callback executed on a different actor",
+        description: "self referenced in a callback executed on a different actor or thread",
         syntaxTriggers: [.class, .extension],
         nonTriggeringExamples: [
             Example("class SomeClass {}\n"),
@@ -263,6 +265,25 @@ struct UnsafeSelfCallbackRule: Rule {
                         beCheckDB()
                     }
                 }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let group = DispatchGroup()
+                          group.notify(actor: self) {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          dispatchQueue.sync {
+                              let _ = self.counter
+                          }
+                      }
+                  }
             """)
         ],
         triggeringExamples: [
@@ -443,15 +464,6 @@ struct UnsafeSelfCallbackRule: Rule {
             Example("""
                   class Counter: Actor, Timerable {
                       private func apply(_ value: Int) {
-                          dispatchQueue.sync {
-                              let _ = self.counter
-                          }
-                      }
-                  }
-            """),
-            Example("""
-                  class Counter: Actor, Timerable {
-                      private func apply(_ value: Int) {
                           DispatchQueue.main.async {
                               let _ = self.counter
                           }
@@ -587,6 +599,16 @@ struct UnsafeSelfCallbackRule: Rule {
                           }
                       }
                   }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let group = DispatchGroup()
+                          group.notify(actor: Flynn.any) {
+                              let _ = self.counter
+                          }
+                      }
+                  }
             """)
         ]
     )
@@ -602,7 +624,7 @@ struct UnsafeSelfCallbackRule: Rule {
     func recurseBehaviourCallsFailOnSelf(_ ast: AST,
                                          _ syntax: FileSyntax,
                                          _ substructures: [SyntaxStructure],
-                                         _ output: inout [PrintError.Packet]) -> Bool {
+                                         _ offset: inout Int64) -> Bool {
         // We are inside a closure which does not run on the current actor; references to
         // self should be flagged as errors
         for substructure in substructures {
@@ -618,6 +640,9 @@ struct UnsafeSelfCallbackRule: Rule {
                 }
                 
                 if name.hasPrefix("self.") {
+                    if let substructureOffset = substructure.offset {
+                        offset = substructureOffset
+                    }
                     return false
                 }
             }
@@ -625,7 +650,7 @@ struct UnsafeSelfCallbackRule: Rule {
             
             
             if let substructures = substructure.substructure {
-                let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &output)
+                let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &offset)
                 if (!passed) {
                     return false
                 }
@@ -706,7 +731,6 @@ struct UnsafeSelfCallbackRule: Rule {
                 substructure.name?.contains(".do") == true ||
                 substructure.name?.contains(".addOperation") == true ||
                 substructure.name?.contains(".async") == true ||
-                substructure.name?.contains(".sync") == true ||
                 substructure.name?.contains(".notify") == true ||
                 substructure.name?.contains(".concurrentPerform") == true ||
                 
@@ -765,23 +789,25 @@ struct UnsafeSelfCallbackRule: Rule {
                 if let closureArg = arguments.popLast(),
                    closureArg.hasPrefix("{"),
                    closureArg.hasSuffix("}") {
-                    if arguments.last != "self" {
+                    if arguments.last != "self" && arguments.last != "actor: self" && arguments.last != "actor:self" {
                         // examine the closure for uses of self. we need to
                         // pre-handle some valid cases:
                         // self.unsafe anything should be ignored (and their closure contents)
                         if let finalClosureStructure = closureArg.syntaxStructure {
                             if let substructures = finalClosureStructure.substructure {
-                                let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &output)
+                                var offset: Int64 = 0
+                                let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &offset)
                                 if (!passed) {
-                                    output.append(error(substructure.offset, syntax))
+                                    output.append(error((substructure.offset ?? 0) + offset, syntax))
                                     return false
                                 }
                             }
                         }
                         
+                        var offset: Int64 = 0
                         if let finalClosureStructure = closureArg.syntaxStructure,
-                           closureArg.usesSelf(in: finalClosureStructure, &output) {
-                            output.append(error(substructure.offset, syntax))
+                           closureArg.usesSelf(in: finalClosureStructure, &offset) {
+                            output.append(error((substructure.substructure?.last?.offset ?? 0) + offset, syntax))
                             return false
                         }
                     }
@@ -791,7 +817,6 @@ struct UnsafeSelfCallbackRule: Rule {
             if let substructures = substructure.substructure {
                 let passed = recurseBehaviourCalls(ast, syntax, substructures, &output)
                 if (!passed) {
-                    output.append(error(substructure.offset, syntax))
                     return false
                 }
             }

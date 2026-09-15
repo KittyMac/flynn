@@ -73,6 +73,12 @@ class ActorA: Actor {
         group.notify(queue: .main) {
             // let _ = self.counter
         }
+        group.notify(actor: self) {
+            let _ = self.counter
+        }
+        group.notify(actor: Flynn.any) {
+            // let _ = self.counter
+        }
 
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.setEventHandler {
