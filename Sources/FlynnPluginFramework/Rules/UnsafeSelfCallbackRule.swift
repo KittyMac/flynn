@@ -410,7 +410,7 @@ struct UnsafeSelfCallbackRule: Rule {
                     }
                 }
             """),
-              Example("""
+            Example("""
                   class Counter: Actor, Timerable {
                       private func apply(_ value: Int) {
                           let handle = FileHandle.standardInput
@@ -419,7 +419,175 @@ struct UnsafeSelfCallbackRule: Rule {
                           }
                       }
                   }
-              """)
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let opetationQueue = OperationQueue()
+                          opetationQueue.addOperation {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let dispatchQueue = DispatchQueue(label: "some.queue")
+                          dispatchQueue.async {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          dispatchQueue.sync {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          DispatchQueue.main.async {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          DispatchQueue.global(qos: .background).async {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          queue.asyncAfter(deadline: .now() + 1) {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          DispatchQueue.concurrentPerform(iterations: 10) { index in
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let workItem = DispatchWorkItem {
+                              let _ = self.counter
+                          }
+                          queue.async(execute: workItem)
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          workItem.notify(queue: .main) {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let timer = DispatchSource.makeTimerSource(queue: queue)
+                          timer.setEventHandler {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          timer.setCancelHandler {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          Thread.detachNewThread {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let blockOp = BlockOperation {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          blockOp.addExecutionBlock {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          blockOp.completionBlock = {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          OperationQueue.main.addOperation {
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let url = URL(fileURLWithPath: "/tmp")
+                          URLSession.shared.dataTask(with: url) { data, response, error in
+                              let _ = self.counter
+                          }.resume()
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          let handle = FileHandle.standardInput
+                          handle.readabilityHandler = { fh in
+                              let _ = self.counter
+                          }
+                      }
+                  }
+            """)
         ]
     )
     
@@ -470,10 +638,10 @@ struct UnsafeSelfCallbackRule: Rule {
                                _ syntax: FileSyntax,
                                _ substructures: [SyntaxStructure],
                                _ output: inout [PrintError.Packet]) -> Bool {
+        let body = syntax.file.contents
+        
         // do we contain behaviour calls which are not wrapped in unsafeSend?
         for substructure in substructures {
-            // print("\(substructure.name) :: \(substructure.kind)")
-            // print(substructure)
             
             if substructure.kind == .exprCall,
                substructure.name == "unsafeSend" || substructure.name == "self.unsafeSend" {
@@ -488,9 +656,38 @@ struct UnsafeSelfCallbackRule: Rule {
                 examineStructure = true
             }
             
+            // like: handle.readabilityHandler = { fh in
+            //    let _ = self.counter
+            // }
+            // but only yhe closure part; the set on the variable is
+            // blind to the substructure
             if substructure.kind == .exprClosure,
-               substructure.name == nil {
-                examineStructure = true
+               substructure.name == nil,
+               let offset = substructure.offset {
+                // if this follows the above = { } then we should
+                // see if its a name we care about
+                let arr = Array(body)
+                var ptr = Int(clamping: offset)
+                
+                if ptr > 3,
+                   arr[ptr-1] == "=" || arr[ptr-2] == "=" {
+                    while ptr > 0 && arr[ptr-1] != "\n" {
+                        ptr -= 1
+                    }
+                    let precursor = body.substring(with:  NSRange(location: ptr, length: Int(Int(offset) - ptr)))
+                    if precursor?.hasSuffix("Block = ") == true ||
+                        precursor?.hasSuffix("block = ") == true ||
+                        precursor?.hasSuffix("Handler = ") == true ||
+                        precursor?.hasSuffix("handler = ") == true ||
+                        precursor?.hasSuffix("Callback = ") == true ||
+                        precursor?.hasSuffix("callback = ") == true ||
+                        precursor?.contains(".completionBlock") == true ||
+                        precursor?.contains(".readabilityHandler") == true ||
+                        precursor?.contains(".terminationHandler") == true ||
+                        precursor?.contains(".stateUpdateHandler") == true {
+                        examineStructure = true
+                    }
+                }
             }
             
             if substructure.kind == .exprCall,
@@ -530,6 +727,8 @@ struct UnsafeSelfCallbackRule: Rule {
                 substructure.name?.contains(".addObserver") == true ||
                 
                 substructure.name?.contains(".dataTask") == true ||
+                substructure.name?.contains(".uploadTask") == true ||
+                substructure.name?.contains(".downloadTask") == true ||
                 substructure.name?.contains(".animate") == true ||
                 substructure.name?.contains(".readabilityHandler") == true ||
                 substructure.name?.contains(".terminationHandler") == true ||
@@ -539,10 +738,8 @@ struct UnsafeSelfCallbackRule: Rule {
                 
                 examineStructure = true
             }
-
+            
             if examineStructure {
-                let body = syntax.file.contents
-                
                 // does this behaviour call back to self?  this requires:
                 // the last argument to be a closure
                 // the second to last argument to be self
@@ -589,16 +786,15 @@ struct UnsafeSelfCallbackRule: Rule {
                         }
                     }
                 }
-            } else {
-                if let substructures = substructure.substructure {
-                    let passed = recurseBehaviourCalls(ast, syntax, substructures, &output)
-                    if (!passed) {
-                        output.append(error(substructure.offset, syntax))
-                        return false
-                    }
-                }
             }
             
+            if let substructures = substructure.substructure {
+                let passed = recurseBehaviourCalls(ast, syntax, substructures, &output)
+                if (!passed) {
+                    output.append(error(substructure.offset, syntax))
+                    return false
+                }
+            }
             
         }
         return true
