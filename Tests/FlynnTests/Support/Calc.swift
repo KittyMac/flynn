@@ -16,6 +16,12 @@ class ActorA: Actor {
         b.beAdd(x: counter, y: 1, actor) { result in
             // self.counter = 0
         }
+        
+        super.init()
+        
+        Thread {
+            let _ = self.counter
+        }.start()
     }
     
     internal func _beIncrement() {

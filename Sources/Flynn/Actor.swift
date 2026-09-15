@@ -1,4 +1,5 @@
 // flynn:ignore Access Level Violation: Unsafe variables should not be used
+// flynn:ignore Unsafe Self Violation: Potentially unsafe reference to self in closure
 
 import Foundation
 import Pony

@@ -378,6 +378,26 @@ struct UnsafeSelfCallbackRule: Rule {
                         }
                     }
                 }
+            """),
+            Example("""
+                class Counter: Actor, Timerable {
+                    private func apply(_ value: Int) {
+                        counter += value
+                        Thread {
+                            let x = self.counter
+                        }.start()
+                    }
+                }
+            """),
+            Example("""
+                class Counter: Actor, Timerable {
+                    private func apply(_ value: Int) {
+                        counter += value
+                        Task {
+                            let x = self.counter
+                        }
+                    }
+                }
             """)
         ]
     )
@@ -397,7 +417,6 @@ struct UnsafeSelfCallbackRule: Rule {
         for substructure in substructures {
             
             if let name = substructure.name {
-                print(name)
                 if substructure.kind == .exprCall,
                    name.hasSuffix("unsafeSend") {
                     continue
@@ -456,8 +475,7 @@ struct UnsafeSelfCallbackRule: Rule {
                     output.append(error(substructure.offset, syntax))
                     return false
                 }
-            }
-
+            } else
             if substructure.kind == .exprCall,
                substructure.name?.hasPrefix("be") == true ||
                substructure.name?.contains(".be") == true ||
@@ -508,6 +526,50 @@ struct UnsafeSelfCallbackRule: Rule {
                         // no argument other than the closure means we're inferred self
                     }
                 }
+            } else
+            if substructure.kind == .exprCall {
+                // bare closures from non-flynn APIs could come back on any thread; we should flag
+                // self references as a warning
+                let body = syntax.file.contents
+                
+                var arguments: [String] = []
+                for substructure in substructure.substructure ?? [] {
+                    if substructure.kind == .exprArgument,
+                       let bodyoffset = substructure.offset,
+                       let bodylength = substructure.length,
+                       let value = body.substring(with: NSRange(location: Int(bodyoffset), length: Int(bodylength))) {
+                        arguments.append(value.description)
+                    }
+                }
+                
+                if let closureArg = arguments.popLast(),
+                   closureArg.hasPrefix("{"),
+                   closureArg.hasSuffix("}") {                    
+                    if let finalClosureStructure = closureArg.syntaxStructure {
+                        if let substructures = finalClosureStructure.substructure {
+                            let passed = recurseBehaviourCallsFailOnSelf(ast, syntax, substructures, &output)
+                            if (!passed) {
+                                output.append(warning(substructure.offset, syntax, "Unsafe Self Violation: Potentially unsafe reference to self in closure"))
+                                return false
+                            }
+                        }
+                    }
+                    
+                    if let finalClosureStructure = closureArg.syntaxStructure,
+                       closureArg.usesSelf(in: finalClosureStructure, &output) {
+                        output.append(warning(substructure.offset, syntax, "Unsafe Self Violation: Potentially unsafe reference to self in closure"))
+                        return false
+                    }
+                }
+                
+                if let substructures = substructure.substructure {
+                    let passed = recurseBehaviourCalls(ast, syntax, substructures, &output)
+                    if (!passed) {
+                        output.append(warning(substructure.offset, syntax, "Unsafe Self Violation: Potentially unsafe reference to self in closure"))
+                        return false
+                    }
+                }
+                continue
             }
             
             if let substructures = substructure.substructure {
