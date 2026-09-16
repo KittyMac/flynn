@@ -68,6 +68,23 @@ class ActorMessage: CustomStringConvertible {
     }
 }
 
+/// An actor which owns a thread of its own instead of sharing the pool of
+/// scheduler threads.
+///
+/// An IOActor is an ordinary actor in every respect except where it runs, so
+/// none of that applies: behaviours may simply block.
+///
+///     class Database: IOActor {
+///         private var connection: Connection?
+///
+///         private func _beQuery(_ sql: String,
+///                               _ returnCallback: @escaping ([Row]) -> ()) {
+///             // Blocking here costs nobody but this actor.
+///             returnCallback(connection?.query(sql) ?? [])
+///         }
+///     }
+open class IOActor: Actor { }
+
 open class Actor: Equatable, Hashable {
 #if FLYNN_LEAK_ACTOR
     struct WeakActor {
@@ -272,28 +289,12 @@ open class Actor: Equatable, Hashable {
     public init() {
         Flynn.startup()
         unsafeUUID = UUID().uuidString
-        _ponyActorPtr = pony_actor_create()
         
-        if let actorPtr = _ponyActorPtr {
-            pony_actor_setProfileTypeID(actorPtr, Flynn.Profiler.typeID(for: type(of: self)))
-        }
-        
-#if FLYNN_LEAK_ACTOR
-        Actor.record(actor: self)
-#endif
-    }
-    
-    public init(dedicatedThread: Bool,
-                coreAffinity: CoreAffinity = .none) {
-        Flynn.startup()
-        unsafeUUID = UUID().uuidString
         _ponyActorPtr = nil
         
-        if dedicatedThread {
-            // type(of: self) is available here: Actor is a root class, so self
-            // is fully initialized once its stored properties are.
+        if self is IOActor {
             _ponyActorPtr = pony_actor_create_dedicated("\(type(of: self))",
-                                                        coreAffinity.rawValue)
+                                                        Flynn.defaultIOActorAffinity.rawValue)
         } else {
             _ponyActorPtr = pony_actor_create()
         }
