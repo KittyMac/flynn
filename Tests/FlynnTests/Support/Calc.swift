@@ -19,6 +19,8 @@ class ActorA: Actor {
         
         super.init()
         
+        #if os(macOS)
+        
         Thread {
             // let _ = self.counter
         }.start()
@@ -170,10 +172,12 @@ class ActorA: Actor {
             // let _ = self.counter
         }
 
+        #endif
     }
     
     private func runConcurrentTasks() async throws {
         
+        #if os(macOS)
         await _Concurrency.MainActor.run {
             // let _ = self.counter
         }
@@ -201,6 +205,8 @@ class ActorA: Actor {
             // let _ = self.counter
             continuation.resume()
         }
+        #endif
+        
     }
     
     internal func _beIncrement() {
