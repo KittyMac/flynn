@@ -11,6 +11,7 @@
 #include "memory.h"
 #include "cpu.h"
 #include "actor.h"
+#include "dedicated.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -534,6 +535,10 @@ static void ponyint_sched_shutdown()
     
     start = 0;
     
+    // Dedicated threads first: they can push work onto scheduler queues, so
+    // they have to be finished before the schedulers they would push to go away.
+    ponyint_dedicated_stop_all();
+    
     // Stop anyone outside the scheduler threads from reaching into the array
     // before we start tearing it down.
     atomic_store_explicit(&schedulers_running, false, memory_order_release);
@@ -723,7 +728,8 @@ void ponyint_sched_wait()
         if (active == 0 &&
             inject.num_messages == 0 &&
             injectHighEfficiency.num_messages == 0 &&
-            injectHighPerformance.num_messages == 0) {
+            injectHighPerformance.num_messages == 0 &&
+            ponyint_dedicated_is_idle()) {
             timesIdle--;
             if (timesIdle <= 0) {
                 break;
@@ -743,6 +749,15 @@ void ponyint_sched_stop()
 
 void ponyint_sched_add(pony_ctx_t* ctx, pony_actor_t* actor)
 {
+    // A dedicated actor is never placed on a scheduler queue: rescheduling it
+    // means waking the one thread that owns it. Every reschedule path --
+    // pony_sendv() on kPushWasEmpty, ponyint_resume_actor(),
+    // ponyint_destroy_actor() -- funnels through here.
+    if(actor->dedicated != NULL) {
+        ponyint_dedicated_wake(actor);
+        return;
+    }
+
     if(ctx->scheduler != NULL) {
         // push() wakes a sleeper itself
         push(ctx->scheduler, actor);

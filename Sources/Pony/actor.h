@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stdalign.h>
 
+typedef struct dedicated_t dedicated_t;
+
 typedef struct pony_actor_t
 {
     messageq_t queue;
@@ -26,6 +28,8 @@ typedef struct pony_actor_t
     PONY_ATOMIC(bool) yield;
 
     PONY_ATOMIC(bool) parked;
+
+    dedicated_t* dedicated;
 
     bool destroy;
 } pony_actor_t;

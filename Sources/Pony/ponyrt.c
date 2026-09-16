@@ -20,6 +20,7 @@
 #include "messageq.h"
 #include "scheduler.h"
 #include "actor.h"
+#include "dedicated.h"
 #include "cpu.h"
 #include "memory.h"
 
@@ -48,6 +49,8 @@ bool pony_startup(int scheduler_count, int min_scheduler_count) {
     ponyint_cpu_init();
     
     ponyint_sched_init(scheduler_count, min_scheduler_count);
+    
+    ponyint_dedicated_init();
     
     pony_is_inited = ponyint_sched_start();
     
@@ -84,6 +87,14 @@ bool pony_core_affinity_enabled() {
 
 void * pony_actor_create() {
     return ponyint_create_actor(pony_ctx());
+}
+
+void * pony_actor_create_dedicated(const char * name, int coreAffinity) {
+    return ponyint_dedicated_create_actor(name, coreAffinity);
+}
+
+int pony_dedicated_actor_count() {
+    return (int)ponyint_dedicated_count();
 }
 
 void pony_actor_send_message(void * actor, void * argumentPtr, uint64_t then_id, void (*handleMessageFunc)(void * message), void (*releaseMessageFunc)(void * message)) {

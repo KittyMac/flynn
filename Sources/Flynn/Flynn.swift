@@ -51,6 +51,8 @@ open class Flynn {
     public static var defaultActorAffinity: CoreAffinity = .none
 #endif
 
+    public static var defaultIOActorAffinity: CoreAffinity = .preferEfficiency
+
     private static var dockedQueue = Queue<Actor>(size: 1024,
                                                   manyProducers: true,
                                                   manyConsumers: true)
@@ -140,6 +142,10 @@ open class Flynn {
 
     public static var pCores: Int {
         return Int(pony_p_core_count())
+    }
+
+    public static var ioActors: Int {
+        return Int(pony_dedicated_actor_count())
     }
         
     public static var appCurrentMemory: UInt64 {

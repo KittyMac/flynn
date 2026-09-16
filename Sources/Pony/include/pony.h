@@ -49,6 +49,9 @@ int pony_p_core_count();
 bool pony_core_affinity_enabled();
 
 void * pony_actor_create();
+void * pony_actor_create_dedicated(const char * name, int coreAffinity);
+
+int pony_dedicated_actor_count();
 
 void pony_actor_mark_then_id(const void *  file, uint64_t line, uint64_t column);
 uint64_t pony_actor_get_then_id(const void * file, uint64_t line, uint64_t column);

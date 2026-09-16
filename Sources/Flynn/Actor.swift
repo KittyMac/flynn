@@ -283,6 +283,30 @@ open class Actor: Equatable, Hashable {
 #endif
     }
     
+    public init(dedicatedThread: Bool,
+                coreAffinity: CoreAffinity = .none) {
+        Flynn.startup()
+        unsafeUUID = UUID().uuidString
+        _ponyActorPtr = nil
+        
+        if dedicatedThread {
+            // type(of: self) is available here: Actor is a root class, so self
+            // is fully initialized once its stored properties are.
+            _ponyActorPtr = pony_actor_create_dedicated("\(type(of: self))",
+                                                        coreAffinity.rawValue)
+        } else {
+            _ponyActorPtr = pony_actor_create()
+        }
+        
+        if let actorPtr = _ponyActorPtr {
+            pony_actor_setProfileTypeID(actorPtr, Flynn.Profiler.typeID(for: type(of: self)))
+        }
+        
+#if FLYNN_LEAK_ACTOR
+        Actor.record(actor: self)
+#endif
+    }
+    
     deinit {
         let pendingPtrs: [UnsafeMutableRawPointer]
         safeThenLock.lock()
