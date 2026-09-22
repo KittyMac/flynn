@@ -214,6 +214,7 @@ struct InitEscapeRule: Rule {
             if substructure.kind == .exprCall,
                substructure.name?.contains("self.be") == true {
                 output.append(error(substructure.offset, syntax, description.console("unsafe behaviour call in init; wrap with unsafeSend")))
+                return false
             }
             
             // if we are calling behaviours on another actor ( processor.beDoSomething(self) { } ) but

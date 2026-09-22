@@ -83,6 +83,10 @@ extension String {
                         // calling unsafe values on self would be allowed
                         continue
                     }
+                    if nextText.hasPrefix("be") || nextText.hasPrefix("do") {
+                        // calling behaviours on self is allowed
+                        continue
+                    }
                     offset = Int64(token.offset.value)
                     return true
                 }
@@ -281,6 +285,15 @@ struct UnsafeSelfCallbackRule: Rule {
                       private func apply(_ value: Int) {
                           dispatchQueue.sync {
                               let _ = self.counter
+                          }
+                      }
+                  }
+            """),
+            Example("""
+                  class Counter: Actor, Timerable {
+                      private func apply(_ value: Int) {
+                          task.terminationHandler = { code, error in
+                              self.beFinished()
                           }
                       }
                   }
@@ -639,7 +652,9 @@ struct UnsafeSelfCallbackRule: Rule {
                     continue
                 }
                 
-                if name.hasPrefix("self.") {
+                if name.hasPrefix("self.") == true,
+                   name.hasPrefix("self.be") == false,
+                   name.hasPrefix("self.do") == false {
                     if let substructureOffset = substructure.offset {
                         offset = substructureOffset
                     }
