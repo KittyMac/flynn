@@ -19,7 +19,7 @@ void ponyint_park_destroy(pony_park_t* park) {
     DeleteCriticalSection(&park->mutex);
 }
 
-void ponyint_park_wait(pony_park_t* park, uint64_t timeout_us) {
+bool ponyint_park_wait(pony_park_t* park, uint64_t timeout_us) {
     EnterCriticalSection(&park->mutex);
 
     // If a wake landed while we were deciding to park, consume it and return
@@ -36,8 +36,10 @@ void ponyint_park_wait(pony_park_t* park, uint64_t timeout_us) {
 
     // Spurious wakeups need no loop here: the caller's response to waking is to
     // go re-poll the queues, which is exactly the right thing to do anyway.
+    bool was_signalled = park->signalled;
     park->signalled = false;
     LeaveCriticalSection(&park->mutex);
+    return was_signalled;
 }
 
 void ponyint_park_wake(pony_park_t* park) {

@@ -104,6 +104,10 @@ static size_t ponyint_alloc_size(size_t size) {
 }
 
 static void* pool_pop(size_t size) {
+#ifdef FLYNN_DISABLE_POOL
+    (void)size;
+    return NULL;
+#endif
     int32_t pool_index = ponyint_pool_index(size);
     if (pool_index < 0) {
         return NULL;
@@ -120,6 +124,10 @@ static void* pool_pop(size_t size) {
 }
 
 static bool pool_push(void * p, size_t size) {
+#ifdef FLYNN_DISABLE_POOL
+    (void)p; (void)size;
+    return false;
+#endif
     int32_t pool_index = ponyint_pool_index(size);
     
     if (pool_index >= 0) {

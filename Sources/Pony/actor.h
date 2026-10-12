@@ -32,7 +32,12 @@ typedef struct pony_actor_t
     dedicated_t* dedicated;
 
     bool destroy;
+    
+    uint32_t magic;
 } pony_actor_t;
+
+#define PONY_ACTOR_MAGIC_LIVE 0xF1F1A770u
+#define PONY_ACTOR_MAGIC_DEAD 0xDEADA770u
 
 enum
 {

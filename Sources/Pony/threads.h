@@ -70,7 +70,7 @@
 
 void ponyint_park_init(pony_park_t* park);
 void ponyint_park_destroy(pony_park_t* park);
-void ponyint_park_wait(pony_park_t* park, uint64_t timeout_us);
+bool ponyint_park_wait(pony_park_t* park, uint64_t timeout_us);
 void ponyint_park_wake(pony_park_t* park);
 
 PONY_MUTEX ponyint_mutex_create();

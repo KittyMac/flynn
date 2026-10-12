@@ -77,6 +77,16 @@ int ponyint_actor_run(pony_ctx_t* ctx, pony_actor_t* actor, int max_msgs,
     pony_msg_t* msg;
     int n = 0;
     
+    // Fail loudly and early if a scheduler hands us an actor that has already
+    // been destroyed (or a pointer that was never an actor). Without this the
+    // first symptom is a wild read deep inside ponyint_actor_messageq_pop().
+    if(actor->magic != PONY_ACTOR_MAGIC_LIVE) {
+        pony_syslog2("Flynn", "ponyint_actor_run on %s actor %p (magic 0x%08x)",
+                     actor->magic == PONY_ACTOR_MAGIC_DEAD ? "destroyed" : "invalid",
+                     (void*)actor, actor->magic);
+        return 0;
+    }
+    
     atomic_store_explicit(&actor->yield, false, memory_order_relaxed);
     
     if(atomic_load_explicit(&actor->suspended, memory_order_acquire)) {
@@ -230,6 +240,8 @@ void ponyint_actor_destroy(pony_actor_t* actor)
     
     ponyint_messageq_destroy(&actor->queue);
     
+    actor->magic = PONY_ACTOR_MAGIC_DEAD;
+    
     int32_t typeSize = sizeof(pony_actor_t);
     ponyint_pool_free(actor, typeSize);
     
@@ -266,6 +278,7 @@ pony_actor_t* ponyint_create_actor(pony_ctx_t* ctx)
     pony_actor_t* actor = (pony_actor_t*)ponyint_pool_alloc(typeSize);
     
     memset(actor, 0, typeSize);
+    actor->magic = PONY_ACTOR_MAGIC_LIVE;
     
     static PONY_ATOMIC(int32_t) actorUID = 1;
     actor->uid = atomic_fetch_add_explicit(&actorUID, 1, memory_order_relaxed);

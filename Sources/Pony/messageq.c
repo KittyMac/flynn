@@ -10,8 +10,6 @@
 
 static push_result_t messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t* last)
 {
-    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
-    
     atomic_store_explicit(&last->next, NULL, memory_order_relaxed);
     
     // Without that fence, the store to last->next above could be reordered after
@@ -21,8 +19,16 @@ static push_result_t messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t*
     // Also synchronise with the pop on prev->next.
     atomic_thread_fence(memory_order_release);
     
-    pony_msg_t* prev = atomic_exchange_explicit(&q->head, last,
-                                                memory_order_relaxed);
+    pony_msg_t* prev = atomic_load_explicit(&q->head, memory_order_relaxed);
+    do {
+        if(((uintptr_t)prev & 2) != 0) {
+            // Being torn down: refuse without touching the queue. The caller
+            // still owns the message.
+            return kPushRefused;
+        }
+    } while(!atomic_compare_exchange_weak_explicit(&q->head, &prev, last,
+                                                   memory_order_relaxed,
+                                                   memory_order_relaxed));
     
     // This relaxed RMW joins the release sequence headed by the release CAS in
     // ponyint_messageq_markempty, which is what orders the thread that last
@@ -32,14 +38,8 @@ static push_result_t messageq_push(messageq_t* q, pony_msg_t* first, pony_msg_t*
     // explicitly so the unschedule -> reschedule edge is visible.
     PONY_HB_AFTER(&q->head);
     
-    // The queue is being torn down. Put the sentinel back exactly as we found
-    // it -- the destroying thread relies on it staying set -- and hand the
-    // message back to the caller to release. Appending here would write into a
-    // queue that is about to be freed.
-    if(((uintptr_t)prev & 2) != 0) {
-        atomic_store_explicit(&q->head, prev, memory_order_relaxed);
-        return kPushRefused;
-    }
+    // Count only messages that were actually queued
+    atomic_fetch_add_explicit(&q->num_messages, 1, memory_order_relaxed);
     
     bool was_empty = ((uintptr_t)prev & 1) != 0;
     prev = (pony_msg_t*)((uintptr_t)prev & ~(uintptr_t)1);
