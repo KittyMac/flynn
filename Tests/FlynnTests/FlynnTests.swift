@@ -223,6 +223,100 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(45, total)
     }
     
+    func testArraySyncLarge() {
+        let numbers = Array(0..<1_000_000)
+        var total = 0
+        numbers.sync(count: 16) { item, synchronized in
+            synchronized { total += item }
+        }
+        XCTAssertEqual(499999500000, total)
+    }
+    
+    func testArrayAsyncLarge() {
+        let expectation = XCTestExpectation(description: #function)
+        let numbers = Array(0..<1_000_000)
+        var total = 0
+        numbers.async(count: 16, Flynn.any) { item, synchronized in
+            synchronized { total += item }
+        } done: {
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 60.0)
+        XCTAssertEqual(499999500000, total)
+    }
+    
+    func testArraySyncOOBLarge() {
+        let n = Int(ProcessInfo.processInfo.environment["FLYNN_OOB_N"] ?? "") ?? 3_000_000
+        let numbers = Array(0..<n)
+        var total = 0
+        let start = Date()
+        numbers.syncOOB(count: 64, timeout: 30 * 60) { item, synchronized in
+            synchronized { total += item }
+        }
+        print("syncOOB of \(n) items took \(Date().timeIntervalSince(start))s")
+        XCTAssertEqual(n * (n - 1) / 2, total)
+    }
+    
+    func testArraySyncOOBEmpty() {
+        let numbers: [Int] = []
+        var calls = 0
+        numbers.syncOOB(count: 8, timeout: 1) { _, synchronized in
+            synchronized { calls += 1 }
+        }
+        XCTAssertEqual(0, calls)
+    }
+    
+    func testArraySyncOOBTimeoutReplacesStuckWorker() {
+        // One worker; the first item hangs. After the timeout a replacement
+        // worker must finish the remaining items.
+        let numbers = Array(0..<10)
+        var total = 0
+        let start = Date()
+        numbers.syncOOB(count: 1, timeout: 1) { item, synchronized in
+            if item == 0 {
+                let date = Date()
+                while abs(date.timeIntervalSinceNow) < 10 { usleep(1000) }
+                return
+            }
+            synchronized { total += item }
+        }
+        XCTAssertEqual(45, total)
+        XCTAssertLessThan(Date().timeIntervalSince(start), 5)
+    }
+    
+    func testArrayAsyncOOBWithTimeout() {
+        // Every item hangs; done must still arrive once each has exceeded the
+        // timeout. Worst case (a single core, so one worker) is about one
+        // timeout check interval past the timeout per item.
+        let expectation = XCTestExpectation(description: #function)
+        let numbers = [1, 2, 3]
+        var total = 0
+        numbers.asyncOOB(count: 3, timeout: 0.5, Flynn.any) { item, synchronized in
+            synchronized { total += item }
+            let date = Date()
+            while abs(date.timeIntervalSinceNow) < 10 { usleep(1000) }
+        } done: {
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 8.0)
+        XCTAssertEqual(6, total)
+    }
+    
+    func testTimedOperationQueueLarge() {
+        let queue = TimedOperationQueue()
+        queue.maxConcurrentOperationCount = 16
+        let lock = NSLock()
+        var total = 0
+        for item in 0..<200_000 {
+            queue.addOperation { _ in
+                lock.lock(); total += item; lock.unlock()
+                return true
+            }
+        }
+        queue.waitUntilAllOperationsAreFinished()
+        XCTAssertEqual(19999900000, total)
+    }
+    
     func testTimedOperationQueueRetry() {
         let queue = TimedOperationQueue()
         

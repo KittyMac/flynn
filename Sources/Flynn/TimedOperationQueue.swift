@@ -6,11 +6,11 @@ import Foundation
 // - ability to provide a retry which preserves the order of queued operations
 
 private class TimedOperation: Equatable {
+    // Identity is all equality needs; this used to generate and compare a UUID string
+    // for every operation.
     static func == (lhs: TimedOperation, rhs: TimedOperation) -> Bool {
-        return lhs.uuid == rhs.uuid
+        return lhs === rhs
     }
-    
-    let uuid = UUID().uuidString
     
     let block: (Int) -> Bool
     let timeout: TimeInterval?
@@ -75,6 +75,43 @@ private class TimedOperation: Equatable {
     }
 }
 
+private struct TimedOperationFIFO {
+    private var items: [TimedOperation?] = []
+    private var head = 0
+    
+    var count: Int {
+        return items.count - head
+    }
+    
+    mutating func append(_ operation: TimedOperation) {
+        items.append(operation)
+    }
+    
+    mutating func pushFront(_ operation: TimedOperation) {
+        if head > 0 {
+            head -= 1
+            items[head] = operation
+        } else {
+            items.insert(operation, at: 0)
+        }
+    }
+    
+    mutating func removeFirst() -> TimedOperation {
+        let operation = items[head]!
+        items[head] = nil
+        head += 1
+        
+        if head == items.count {
+            items.removeAll(keepingCapacity: true)
+            head = 0
+        } else if head >= 1024 && head * 2 >= items.count {
+            items.removeFirst(head)
+            head = 0
+        }
+        return operation
+    }
+}
+
 private struct WeakTimedOperationQueue {
     weak var timedOperationQueue: TimedOperationQueue?
 }
@@ -93,7 +130,7 @@ public class TimedOperationQueue {
         }
     }
     
-    private var waiting: [TimedOperation] = []
+    private var waiting = TimedOperationFIFO()
     private var executing: [TimedOperation] = []
     // Read by count()/waitingCount()/activeCount() without taking `lock`, and
     // written under `lock` by advance()/addOperation(). The unlocked read is
@@ -231,7 +268,7 @@ public class TimedOperationQueue {
                 self.lock.lock()
                 if next.retry > 0 {
                     next.retry -= 1
-                    self.waiting.insert(next, at: 0)
+                    self.waiting.pushFront(next)
                 }
                 self._waitingCount.value = self.waiting.count
                 self._activeCount.value = self.executing.count
@@ -242,7 +279,7 @@ public class TimedOperationQueue {
                 guard let self = self else { return }
                 
                 self.lock.lock()
-                if let index = self.executing.firstIndex(of: next) {
+                if let index = self.executing.firstIndex(where: { $0 === next }) {
                     self.executing.remove(at: index)
                 }
                 self._waitingCount.value = self.waiting.count
