@@ -53,6 +53,11 @@ open class Flynn {
 
     public static var defaultIOActorAffinity: CoreAffinity = .preferEfficiency
 
+    public static var prioritiesEnabled: Bool {
+        get { return pony_priorities_enabled() }
+        set { pony_priorities_enable(newValue) }
+    }
+
     private static var dockedQueue = Queue<Actor>(size: 1024,
                                                   manyProducers: true,
                                                   manyConsumers: true)

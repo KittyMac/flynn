@@ -33,6 +33,6 @@ A running Actor cannot be preempted by the scheduler it is running on. As such, 
 
 When an actor needs scheduling, Flynn adds the actor the end of a scheduler's actor queue and then wakes it up if the scheduler is idle. The scheduler then pops the next actor off of its queue and tells the actor to run.  The actor will execute a number of messages from its own message queue, and then return to the scheduler telling it whether it should be rescheduled or not.
 
-If the actor needs to be rescheduled, then scheduler pops the next actor off of its queue.  If there is, then it compares that actor's priority to the priority of the actor which just finished. If the current actor's priority is higher, then the scheduler re-runs the current actor and asks Flynn to reschedule the other actor on a different scheduler.
+If the actor needs to be rescheduled, then scheduler pops the next actor off of its queue.  If there is, then it compares that actor's priority to the priority of the actor which just finished. If the current actor's priority is higher, then the scheduler re-runs the current actor and asks Flynn to reschedule the other actor on a different scheduler. This comparison is skipped when `Flynn.prioritiesEnabled` is false, in which case the current actor always goes to the back of the queue and the next actor runs.
 
 If an actor with a core affinity incompatible with the scheduler's core affinity is encountered, the scheduler is responsible for rescheduling it.

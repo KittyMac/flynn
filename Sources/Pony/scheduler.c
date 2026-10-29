@@ -33,6 +33,21 @@ void pony_profiler_enable(bool on)
     atomic_store_explicit(&g_prof_enabled, on, memory_order_relaxed);
 }
 
+// When false, the scheduler ignores per-actor priorities entirely and treats
+// every actor as equal (plain round-robin). Actors keep their stored priority
+// values, so re-enabling restores the previous behavior.
+static PONY_ATOMIC(bool) g_priorities_enabled = true;
+
+void pony_priorities_enable(bool on)
+{
+    atomic_store_explicit(&g_priorities_enabled, on, memory_order_relaxed);
+}
+
+bool pony_priorities_enabled(void)
+{
+    return atomic_load_explicit(&g_priorities_enabled, memory_order_relaxed);
+}
+
 #ifndef PLATFORM_IS_APPLE
 #define QOS_CLASS_USER_INITIATED 0
 #define QOS_CLASS_UTILITY 1
@@ -469,7 +484,9 @@ static void run(scheduler_t* sched)
                 bool actor_did_yield = info.yielded;
                 
                 if(next != NULL) {
-                    if (actor_did_yield == false && info.priority > ponyint_actor_priority(next)) {
+                    if (actor_did_yield == false &&
+                        atomic_load_explicit(&g_priorities_enabled, memory_order_relaxed) &&
+                        info.priority > ponyint_actor_priority(next)) {
                         // our current actor has a higher priority than the next actor, so put
                         // the next actor back at the end of our queue.  Hopefully someone
                         // else will pick him up

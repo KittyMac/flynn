@@ -62,6 +62,8 @@ void pony_actor_then_message(void * actor, uint64_t then_id);
 
 void pony_actor_setpriority(void * actor, int priority);
 int pony_actor_getpriority(void * actor);
+void pony_priorities_enable(bool on);
+bool pony_priorities_enabled(void);
 
 void pony_actor_setbatchSize(void * actor, int batchSize);
 int pony_actor_getbatchSize(void * actor);

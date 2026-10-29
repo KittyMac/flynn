@@ -91,6 +91,22 @@ class FlynnTests: XCTestCase {
         Flynn.shutdown()
     }
     
+    func testPrioritiesToggle() {
+        let actor = Actor()
+        actor.unsafePriority = 42
+
+        XCTAssertTrue(Flynn.prioritiesEnabled)
+
+        Flynn.prioritiesEnabled = false
+        XCTAssertFalse(Flynn.prioritiesEnabled)
+        // Disabling only affects scheduling; the actor keeps its value
+        XCTAssertEqual(actor.unsafePriority, 42)
+
+        Flynn.prioritiesEnabled = true
+        XCTAssertTrue(Flynn.prioritiesEnabled)
+        XCTAssertEqual(actor.unsafePriority, 42)
+    }
+
     func testDnsResolve() {
         XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
         XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)

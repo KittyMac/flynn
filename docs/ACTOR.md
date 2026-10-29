@@ -42,6 +42,12 @@ FlynnPlugin ensures that your actor code adheres to the best practices.  For act
 
 Actors execute cooperatively on schedulers; there is one scheduler per CPU core. For some actor configurations, it may be beneficial to give an actor higher or lower priority to than other actors. For example, if you have a pool of producer actors feeding a single consumer actor, you might want to give the consumer actor a higher priority to ensure it receives preferencial scheduling compared to the producers.
 
+Priorities can be turned off globally, for example to compare performance with and without them. When disabled, schedulers ignore every actor's priority and run all actors round-robin; each actor keeps its `unsafePriority` value, so turning priorities back on restores the previous behavior. The setting can be changed at any time.
+
+```swift
+Flynn.prioritiesEnabled = false
+```
+
 
 ## Actor Core Affinity
 
