@@ -7,11 +7,13 @@ fileprivate var flynnGroupDidInit: Bool = false
 
 public extension DispatchGroup {
     func notify(actor: Actor,
-                _ block: @escaping () -> ()) {
+                _ block: @escaping () -> (),
+                file: StaticString = #file,
+                line: UInt64 = #line) {
         notify(queue: .global()) {
-            actor.unsafeSend { _ in
+            actor.unsafeSend({ _ in
                 block()
-            }
+            }, file, line)
         }
     }
 }
@@ -19,6 +21,8 @@ public extension DispatchGroup {
 fileprivate struct GroupObserver {
     let actor: Actor
     let block: () -> ()
+    let file: StaticString
+    let line: UInt64
 }
 
 public extension Flynn {
@@ -42,9 +46,9 @@ public extension Flynn {
             if count <= 0 {
                 count = 0
                 for observer in observers {
-                    observer.actor.unsafeSend { _ in
+                    observer.actor.unsafeSend({ _ in
                         observer.block()
-                    }
+                    }, observer.file, observer.line)
                 }
                 observers = []
             }
@@ -59,19 +63,24 @@ public extension Flynn {
         }
         
         public func notify(actor: Actor,
-                    _ block: @escaping () -> ()) {
+                           _ block: @escaping () -> (),
+                           file: StaticString = #file,
+                           line: UInt64 = #line) {
             lock.lock()
             
             if count == 0 {
-                actor.unsafeSend { _ in
+                lock.unlock()
+                actor.unsafeSend({ _ in
                     block()
-                }
+                }, file, line)
                 return
             }
             
             observers.append(
                 GroupObserver(actor: actor,
-                              block: block)
+                              block: block,
+                              file: file,
+                              line: line)
             )
             lock.unlock()
         }

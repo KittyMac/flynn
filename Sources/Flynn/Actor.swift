@@ -42,7 +42,7 @@ class ActorMessage: CustomStringConvertible {
     let line: UInt64
     
     public var description: String {
-        return "ActorMessage: \(file):\(line)"
+        return "ActorMessage: \(Flynn.CallSites.format(file, line))"
     }
     
     @usableFromInline

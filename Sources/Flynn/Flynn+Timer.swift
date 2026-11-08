@@ -5,8 +5,14 @@ public typealias TimerArgs = [Any?]
 public typealias TimerCallback = (_ timer: Flynn.Timer) -> Void
 
 public protocol Timerable: Actor {
+    // The call site parameters let a timer attribute the message it sends to the
+    // code which created the timer. The generated beTimerFired behaviour satisfies
+    // this requirement (its call site parameters default to #file / #line).
     @discardableResult
-    func beTimerFired(_ timer: Flynn.Timer, _ args: TimerArgs) -> Self
+    func beTimerFired(_ timer: Flynn.Timer,
+                      _ args: TimerArgs,
+                      _ file__internal: StaticString,
+                      _ line__internal: UInt64) -> Self
 }
 
 public extension Flynn {
@@ -30,6 +36,10 @@ public extension Flynn {
         
         let caller: String
 
+        // where the timer was created; messages sent when it fires are attributed here
+        let file: StaticString
+        let line: UInt64
+
         weak var target: Timerable?
         var args: TimerArgs = []
 
@@ -37,22 +47,35 @@ public extension Flynn {
         var callback: TimerCallback?
 
         @discardableResult
-        public init(timeInterval: TimeInterval, repeats: Bool, _ target: Timerable) {
+        public init(timeInterval: TimeInterval,
+                    repeats: Bool,
+                    _ target: Timerable,
+                    file: StaticString = #file,
+                    line: UInt64 = #line) {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.target = target
-            self.caller = ""
+            self.caller = "\(file):\(line)"
+            self.file = file
+            self.line = line
 
             schedule()
         }
 
         @discardableResult
-        public init(timeInterval: TimeInterval, repeats: Bool, _ target: Timerable, _ args: TimerArgs) {
+        public init(timeInterval: TimeInterval,
+                    repeats: Bool,
+                    _ target: Timerable,
+                    _ args: TimerArgs,
+                    file: StaticString = #file,
+                    line: UInt64 = #line) {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.target = target
             self.args = args
-            self.caller = ""
+            self.caller = "\(file):\(line)"
+            self.file = file
+            self.line = line
 
             schedule()
         }
@@ -63,12 +86,15 @@ public extension Flynn {
                     _ actor: Actor,
                     _ callback: @escaping TimerCallback,
                     _ callingFunctionName: String = #function,
-                    _ callingFunctionLine: Int = #line) {
+                    _ callingFunctionLine: Int = #line,
+                    file: StaticString = #file) {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.actor = actor
             self.callback = callback
             self.caller = "\(callingFunctionName):\(callingFunctionLine)"
+            self.file = file
+            self.line = UInt64(callingFunctionLine)
 
             schedule()
         }
@@ -80,12 +106,15 @@ public extension Flynn {
                     _ actor: Actor,
                     _ callback: @escaping TimerCallback,
                     _ callingFunctionName: String = #function,
-                    _ callingFunctionLine: Int = #line) {
+                    _ callingFunctionLine: Int = #line,
+                    file: StaticString = #file) {
             self.timeInterval = timeInterval
             self.repeats = repeats
             self.actor = actor
             self.callback = callback
             self.caller = "\(callingFunctionName):\(callingFunctionLine)"
+            self.file = file
+            self.line = UInt64(callingFunctionLine)
             
             if immediate {
                 callback(self)
@@ -119,9 +148,9 @@ public extension Flynn {
                 return
             }
             if let target = target {
-                target.beTimerFired(self, args)
+                target.beTimerFired(self, args, file, line)
             } else if let callback = callback, let actor = actor {
-                actor.unsafeSend { _ in callback(self) }
+                actor.unsafeSend({ _ in callback(self) }, file, line)
             } else {
                 cancelled = true
             }

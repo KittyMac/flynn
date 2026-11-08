@@ -156,7 +156,15 @@ class AutogenerateExternalBehaviors {
                         let supportsThenSafeThenCall = "self.safeThen(thenPtr)"
                         var callSiteArgs = ""
                         
-                        if includeCallSite {
+                        if includeCallSite == false {
+                            // Only reached through a protocol requirement, where the caller's
+                            // location is not available. Name the behaviour instead, so these
+                            // messages are still identifiable rather than pointing at this
+                            // generated file.
+                            let behaviourCallSite = "\"\(fullActorName).\(behaviourName) (via protocol)\", 0"
+                            supportsThenCallArgs = ", \(behaviourCallSite)"
+                            callSiteArgs = ", \(behaviourCallSite)"
+                        } else {
                             // #file/#line default arguments are evaluated at the caller, so the
                             // message records the call site in user code rather than in this
                             // generated file. Replies sent back to the sender (and the then

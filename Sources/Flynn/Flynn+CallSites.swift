@@ -50,6 +50,12 @@ extension Flynn {
         /// released from their counts as they finish.
         public static func stop() { enabled = false }
 
+        /// "file:line", or just the name when there is no line (behaviours called
+        /// through a protocol record "Type.beBehaviour (via protocol)" with line 0)
+        static func format(_ file: StaticString, _ line: UInt64) -> String {
+            return line == 0 ? "\(file)" : "\(file):\(line)"
+        }
+
         @inline(__always)
         private static func key(_ file: StaticString, _ line: UInt64) -> Key {
             let address = file.hasPointerRepresentation ? UInt(bitPattern: file.utf8Start) : 0
@@ -91,7 +97,7 @@ extension Flynn {
             for shard in shards {
                 shard.lock.lock()
                 for entry in shard.entries.values where entry.live > 0 {
-                    samples.append(Sample(callSite: "\(entry.file):\(entry.line)", live: entry.live))
+                    samples.append(Sample(callSite: format(entry.file, entry.line), live: entry.live))
                 }
                 shard.lock.unlock()
             }

@@ -70,28 +70,35 @@ fileprivate func workerCount(_ count: Int) -> Int {
 /// Re-sending (instead of looping) yields the actor's scheduler thread between items,
 /// as the previous one-message-per-item version did, while keeping at most one message
 /// per worker queued.
+///
+/// file/line are the call site of the sync()/async() call, so every worker message is
+/// attributed to the code which started the work rather than to this file.
 fileprivate func pump<T: Collection>(_ actor: Actor,
                                      _ cursor: CollectionCursor<T>,
-                                     _ group: DispatchGroup) {
-    actor.unsafeSend { _ in
+                                     _ group: DispatchGroup,
+                                     _ file: StaticString,
+                                     _ line: UInt64) {
+    actor.unsafeSend({ _ in
         guard let item = cursor.next() else {
             group.leave()
             return
         }
         cursor.block(item, cursor.synchronized)
-        pump(actor, cursor, group)
-    }
+        pump(actor, cursor, group, file, line)
+    }, file, line)
 }
 
 fileprivate func startPumps<T: Collection>(count: Int,
                                            _ collection: T,
-                                           _ block: @escaping (T.Element, @escaping synchronizedBlock) -> ()) -> DispatchGroup {
+                                           _ block: @escaping (T.Element, @escaping synchronizedBlock) -> (),
+                                           _ file: StaticString,
+                                           _ line: UInt64) -> DispatchGroup {
     let group = DispatchGroup()
     let cursor = CollectionCursor(collection, block)
     let workers = min(workerCount(count), collection.count)
     for idx in 0..<workers {
         group.enter()
-        pump(pool[idx], cursor, group)
+        pump(pool[idx], cursor, group, file, line)
     }
     return group
 }
@@ -101,8 +108,10 @@ fileprivate func startPumps<T: Collection>(count: Int,
 // wait for all actors to finish
 fileprivate func _sync<T: Collection>(count: Int,
                                       _ collection: T,
-                                      _ block: @escaping (T.Element, @escaping synchronizedBlock) -> ()) {
-    startPumps(count: count, collection, block).wait()
+                                      _ block: @escaping (T.Element, @escaping synchronizedBlock) -> (),
+                                      _ file: StaticString,
+                                      _ line: UInt64) {
+    startPumps(count: count, collection, block, file, line).wait()
 }
 
 // Process each item concurrently without waiting, calling
@@ -111,8 +120,10 @@ fileprivate func _async<T: Collection>(count: Int,
                                        _ collection: T,
                                        _ block: @escaping (T.Element, @escaping synchronizedBlock) -> (),
                                        _ sender: Actor,
-                                       _ returnComplete: @escaping () -> ()) {
-    startPumps(count: count, collection, block).notify(actor: sender, returnComplete)
+                                       _ returnComplete: @escaping () -> (),
+                                       _ file: StaticString,
+                                       _ line: UInt64) {
+    startPumps(count: count, collection, block, file, line).notify(actor: sender, returnComplete, file: file, line: line)
 }
 
 /// Runs a collection on dedicated threads ("out-of-band" as far as the Flynn scheduler
@@ -234,34 +245,45 @@ fileprivate func _asyncOOB<T: Collection>(count: Int,
                                           _ collection: T,
                                           _ block: @escaping (T.Element, @escaping synchronizedBlock) -> (),
                                           _ sender: Actor,
-                                          _ returnComplete: @escaping () -> ()) {
+                                          _ returnComplete: @escaping () -> (),
+                                          _ file: StaticString,
+                                          _ line: UInt64) {
     let run = OOBRun(timeout: timeout, collection, block)
     Thread {
         Flynn.threadSetName("Flynn OOB")
         run.run(count: count)
-        sender.unsafeSend { _ in
+        sender.unsafeSend({ _ in
             returnComplete()
-        }
+        }, file, line)
     }.start()
 }
 
+// file/line default to the caller's location; the messages these send (worker items and
+// the done callback) are attributed there.
 public extension Collection {
     func async(count: Int = 0,
                _ sender: Actor,
                each: @escaping (Self.Element, @escaping synchronizedBlock) -> (),
-               done: @escaping () -> ()) {
-        _async(count: count, self, each, sender, done)
+               done: @escaping () -> (),
+               file: StaticString = #file,
+               line: UInt64 = #line) {
+        _async(count: count, self, each, sender, done, file, line)
     }
-    func sync(count: Int = 0, _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
-        _sync(count: count, self, block)
+    func sync(count: Int = 0,
+              _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> (),
+              file: StaticString = #file,
+              line: UInt64 = #line) {
+        _sync(count: count, self, block, file, line)
     }
     
     func asyncOOB(count: Int = 0,
                   timeout: TimeInterval,
                   _ sender: Actor,
                   each: @escaping (Self.Element, @escaping synchronizedBlock) -> (),
-                  done: @escaping () -> ()) {
-        _asyncOOB(count: count, timeout: timeout, self, each, sender, done)
+                  done: @escaping () -> (),
+                  file: StaticString = #file,
+                  line: UInt64 = #line) {
+        _asyncOOB(count: count, timeout: timeout, self, each, sender, done, file, line)
     }
     func syncOOB(count: Int = 0, timeout: TimeInterval, _ block: @escaping (Self.Element, @escaping synchronizedBlock) -> ()) {
         _syncOOB(count: count, timeout: timeout, self, block)
