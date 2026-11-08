@@ -154,11 +154,11 @@ open class Flynn {
     }
         
     public static var appCurrentMemory: UInt64 {
-        return UInt64(pony_current_memory())
+        return pony_current_memory()
     }
     
     public static var flynnCurrentMemory: UInt64 {
-        return UInt64(pony_mapped_memory())
+        return pony_mapped_memory()
     }
     
     public static func syslog(_ tag: String, _ message: String) {

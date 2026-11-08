@@ -91,9 +91,9 @@ bool pony_actors_should_wait(int min_msgs, void * actorArray, int num_actors);
 void pony_actors_wait(int min_msgs, void * actor, int num_actors);
 void pony_actor_wait(int min_msgs, void * actor);
 
-unsigned long pony_max_memory();
-unsigned long pony_current_memory();
-unsigned long pony_mapped_memory();
+uint64_t pony_max_memory();
+uint64_t pony_current_memory();
+uint64_t pony_mapped_memory();
 
 // Atomic load/store primitives callable from Swift. See swift_atomics.c.
 int64_t pony_atomic_load64(const void* ptr);

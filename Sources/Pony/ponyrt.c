@@ -229,16 +229,16 @@ void pony_actor_destroy(void * actor) {
     ponyint_destroy_actor(actor);
 }
 
-unsigned long pony_max_memory() {
-    return (unsigned long)ponyint_max_memory();
+uint64_t pony_max_memory() {
+    return ponyint_max_memory();
 }
 
-unsigned long pony_current_memory() {
-    return (unsigned long)ponyint_total_memory();
+uint64_t pony_current_memory() {
+    return ponyint_total_memory();
 }
 
-unsigned long pony_mapped_memory() {
-    return (unsigned long)ponyint_usafe_mapped_memory();
+uint64_t pony_mapped_memory() {
+    return ponyint_usafe_mapped_memory();
 }
 
 void pony_set_thread_name(const char * name) {
