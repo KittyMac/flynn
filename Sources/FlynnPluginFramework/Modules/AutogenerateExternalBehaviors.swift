@@ -64,7 +64,7 @@ class AutogenerateExternalBehaviors {
 
                     didHaveBehavior = true
 
-                    let createBehaviour: (Bool) -> () = { supportsThen in
+                    let createBehaviour: (Bool, Bool) -> () = { supportsThen, includeCallSite in
                         // Note: The information we need comes from two places:
                         // 1. behavior.function.structure.name is formatted like this:
                         //    _beSetCoreAffinity(theAffinity:arg2:)
@@ -86,6 +86,12 @@ class AutogenerateExternalBehaviors {
                         // 2. the names and type of the parameters are in the substructures
                         if behavior.function.structure.has(attribute: .inlinable) {
                             scratch.append("    @inlinable\n")
+                        }
+                        if includeCallSite == false {
+                            // The exact-signature overload exists so that behaviours can still
+                            // satisfy protocol requirements (Timerable, Flowable, ...). It is
+                            // disfavored so that direct calls resolve to the call-site overload.
+                            scratch.append("    @_disfavoredOverload\n")
                         }
                         scratch.append("    @discardableResult\n")
                         let functionNameHeader = "    public func \(behaviourName)("
@@ -141,20 +147,36 @@ class AutogenerateExternalBehaviors {
                             }
                         }
                         
+                        // Every generated behaviour captures the call site of the code which
+                        // called it (#file/#line are evaluated at the caller), and forwards it
+                        // to unsafeSend/unsafeDo. Without this every message would be attributed
+                        // to the generated FlynnPlugin.swift file.
                         var supportsThenCallArgs = ""
                         var supportsThenUnsafeCallMethod = "unsafeSend"
                         let supportsThenSafeThenCall = "self.safeThen(thenPtr)"
-                        if supportsThen {
-                            supportsThenUnsafeCallMethod = "unsafeDo"
-                            supportsThenCallArgs = ", file__internal, line__internal, column__internal"
+                        var callSiteArgs = ""
+                        
+                        if includeCallSite {
+                            // #file/#line default arguments are evaluated at the caller, so the
+                            // message records the call site in user code rather than in this
+                            // generated file. Replies sent back to the sender (and the then
+                            // completion message) are attributed to the same call site.
+                            supportsThenCallArgs = ", file__internal, line__internal"
+                            callSiteArgs = ", file__internal, line__internal"
                             
                             if parameterLabels.count > minParameterCount || returnType != nil {
                                 scratch.append(",\n")
                                 scratch.append(parameterNameHeader)
                             }
                             scratch.append("_ file__internal: StaticString = #file,\n")
-                            scratch.append(parameterNameHeader + "_ line__internal: UInt64 = #line,\n")
-                            scratch.append(parameterNameHeader + "_ column__internal: UInt64 = #column")
+                            if supportsThen {
+                                supportsThenUnsafeCallMethod = "unsafeDo"
+                                supportsThenCallArgs = ", file__internal, line__internal, column__internal"
+                                scratch.append(parameterNameHeader + "_ line__internal: UInt64 = #line,\n")
+                                scratch.append(parameterNameHeader + "_ column__internal: UInt64 = #column")
+                            } else {
+                                scratch.append(parameterNameHeader + "_ line__internal: UInt64 = #line")
+                            }
                         }
                         
                         scratch.append(") -> Self {\n")
@@ -213,7 +235,7 @@ class AutogenerateExternalBehaviors {
                                     scratch.append("                #endif\n")
                                 }
                                 
-                                scratch.append("                sender.unsafeSend { _ in\n")
+                                scratch.append("                sender.unsafeSend({ _ in\n")
                                 scratch.append("                    callback(")
                                 for idx in 0..<returnCallbackParameters.count {
                                     scratch.append("arg\(idx), ")
@@ -225,16 +247,16 @@ class AutogenerateExternalBehaviors {
                                 scratch.append(")\n")
                                 
                                 // TODO: tell pony this message is done
-                                scratch.append("                    self.unsafeSend { _ in \(supportsThenSafeThenCall) }\n")
+                                scratch.append("                    self.unsafeSend({ _ in \(supportsThenSafeThenCall) }\(callSiteArgs))\n")
                                 
-                                scratch.append("                }\n")
+                                scratch.append("                }\(callSiteArgs))\n")
                                 scratch.append("            }\n")
                             } else {
                                 scratch.append(")\n")
-                                scratch.append("            sender.unsafeSend { _ in\n")
+                                scratch.append("            sender.unsafeSend({ _ in\n")
                                 scratch.append("                callback(result)\n")
-                                scratch.append("                self.unsafeSend { _ in \(supportsThenSafeThenCall) }\n")
-                                scratch.append("            }\n")
+                                scratch.append("                self.unsafeSend({ _ in \(supportsThenSafeThenCall) }\(callSiteArgs))\n")
+                                scratch.append("            }\(callSiteArgs))\n")
                             }
                             
                             scratch.append("        }\(supportsThenCallArgs))\n")
@@ -267,8 +289,9 @@ class AutogenerateExternalBehaviors {
                         }
                     }
                     
-                    createBehaviour(false)
-                    createBehaviour(true)
+                    createBehaviour(false, false)   // exact signature, for protocol conformance
+                    createBehaviour(false, true)    // beX(...) recording the caller's call site
+                    createBehaviour(true, true)     // doX(...) for then/do
                 }
 
                 scratch.append("\n}\n")

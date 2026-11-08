@@ -36,10 +36,13 @@ func releaseMessage(_ argumentPtr: AnyPtr) {
 @usableFromInline
 class ActorMessage: CustomStringConvertible {
     
-    let callSite: String
+    @usableFromInline
+    let file: StaticString
+    @usableFromInline
+    let line: UInt64
     
     public var description: String {
-        return "ActorMessage: \(callSite)"
+        return "ActorMessage: \(file):\(line)"
     }
     
     @usableFromInline
@@ -49,12 +52,27 @@ class ActorMessage: CustomStringConvertible {
     var thenId: UInt64
     
     @usableFromInline
-    init(_ callSite: String,
+    let tracked: Bool
+    
+    @usableFromInline
+    init(_ file: StaticString,
+         _ line: UInt64,
          _ block: @escaping PonyBlock,
          _ thenId: UInt64) {
-        self.callSite = callSite
+        self.file = file
+        self.line = line
         self.block = block
         self.thenId = thenId
+        self.tracked = Flynn.CallSites.enabled
+        if tracked {
+            Flynn.CallSites.retain(file, line)
+        }
+    }
+    
+    deinit {
+        if tracked {
+            Flynn.CallSites.release(file, line)
+        }
     }
     
     @inlinable
@@ -379,7 +397,7 @@ open class Actor: Equatable, Hashable {
                            _ line: UInt64 = #line) -> Self {
         let sent: Void? = safeWithActorPtr { actorPtr in
             let thenId = pony_actor_new_then_id()
-            let argumentPtr = Ptr(ActorMessage("\(file):\(line)", block, thenId))
+            let argumentPtr = Ptr(ActorMessage(file, line, block, thenId))
             pony_actor_send_message(actorPtr, argumentPtr, thenId, handleMessage, releaseMessage)
         }
         if sent == nil {
@@ -402,7 +420,7 @@ open class Actor: Equatable, Hashable {
                          _ column: UInt64 = #column) -> Self {
         let sent: Void? = safeWithActorPtr { actorPtr in
             let thenId = pony_actor_new_then_id()
-            let argumentPtr = Ptr(ActorMessage("\(file):\(line)", block, thenId))
+            let argumentPtr = Ptr(ActorMessage(file, line, block, thenId))
             let prevThenId = pony_actor_get_then_id(file.utf8Start, line, column)
             
             guard prevThenId != 0 else {
