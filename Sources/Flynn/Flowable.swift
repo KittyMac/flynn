@@ -1,3 +1,5 @@
+// flynn:ignore Access Level Violation: Behaviors must wrap their contents in a call to unsafeSend()
+
 import Foundation
 
 public typealias FlowableArgs = [Any?]
@@ -88,13 +90,17 @@ public class FlowableState {
         return flowTargets[poolIdx]
     }
 
-    fileprivate func flowTarget(_ args: FlowableArgs) {
-        flowTarget?.beFlow(args)
+    fileprivate func flowTarget(_ args: FlowableArgs,
+                                _ file: StaticString,
+                                _ line: UInt64) {
+        flowTarget?.beFlow(args, file, line)
     }
 
-    fileprivate func flowNextTarget(_ args: FlowableArgs) {
+    fileprivate func flowNextTarget(_ args: FlowableArgs,
+                                    _ file: StaticString,
+                                    _ line: UInt64) {
         poolIdx = (poolIdx + 1) % numTargets
-        flowTargets[poolIdx].beFlow(args)
+        flowTargets[poolIdx].beFlow(args, file, line)
     }
 
     fileprivate func shouldWaitOnTargets() -> Bool {
@@ -104,25 +110,29 @@ public class FlowableState {
         return false
     }
 
-    fileprivate func _beRetryEndFlowToNextTarget(_ actor: Flowable) {
+    fileprivate func _beRetryEndFlowToNextTarget(_ actor: Flowable,
+                                                 _ file: StaticString,
+                                                 _ line: UInt64) {
         switch self.numTargets {
         case 0:
             return
         case 1:
-            flowTarget?.beFlow([])
+            flowTarget?.beFlow([], file, line)
         default:
             if shouldWaitOnTargets() {
-                beRetryEndFlowToNextTarget(actor)
+                beRetryEndFlowToNextTarget(actor, file, line)
                 actor.unsafeYield()
                 return
             }
-            nextTarget().beFlow([])
+            nextTarget().beFlow([], file, line)
         }
     }
-    fileprivate func beRetryEndFlowToNextTarget(_ actor: Flowable) {
-        actor.unsafeSend { _ in
-            self._beRetryEndFlowToNextTarget(actor)
-        }
+    fileprivate func beRetryEndFlowToNextTarget(_ actor: Flowable,
+                                                _ file: StaticString,
+                                                _ line: UInt64) {
+        actor.unsafeSend({ _ in
+            self._beRetryEndFlowToNextTarget(actor, file, line)
+        }, file, line)
     }
 
     fileprivate func _beTarget(_ localTarget: Flowable) {
@@ -148,10 +158,17 @@ public protocol Flowable: Actor {
     func beTargets(_ targets: [Flowable]) -> Self
 
     @discardableResult
-    func beFlow(_ args: FlowableArgs) -> Self
+    func beFlow(_ args: FlowableArgs, _ file__internal: StaticString, _ line__internal: UInt64) -> Self
 }
 
 public extension Flowable {
+    
+    @discardableResult
+    func beFlow(_ args: FlowableArgs,
+                file: StaticString = #file,
+                line: UInt64 = #line) -> Self {
+        return beFlow(args, file, line)
+    }
     
     func beTarget(_ target: Flowable) -> Self {
         unsafeSend { _ in
@@ -177,21 +194,23 @@ public extension Flowable {
         }
     }
 
-    func safeFlowToNextTarget(_ args: FlowableArgs) {
+    func safeFlowToNextTarget(_ args: FlowableArgs,
+                              file: StaticString = #file,
+                              line: UInt64 = #line) {
         switch safeFlowable.numTargets {
         case 0:
             return
         case 1:
-            safeFlowable.flowTarget(args)
+            safeFlowable.flowTarget(args, file, line)
         default:
             if args.isEmpty {
                 if safeFlowable.shouldWaitOnTargets() {
-                    safeFlowable.beRetryEndFlowToNextTarget(self)
+                    safeFlowable.beRetryEndFlowToNextTarget(self, file, line)
                     unsafeYield()
                     return
                 }
             }
-            safeFlowable.flowNextTarget(args)
+            safeFlowable.flowNextTarget(args, file, line)
         }
     }
 }

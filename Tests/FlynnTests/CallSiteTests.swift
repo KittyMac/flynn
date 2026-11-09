@@ -111,21 +111,94 @@ class CallSiteTests: XCTestCase {
     }
 
     func testProtocolCallIsAttributedToBehaviour() {
-        // Flowable.beFlow is a protocol requirement without call site parameters, so the
-        // caller is unknown; the message is labelled with the behaviour instead
+        // Viewable.beRender is a protocol requirement without call site parameters, so
+        // the caller is unknown; the message is labelled with the behaviour instead
+        let color = Color()
+        color.unsafeSuspend()
+
+        let viewable: Viewable = color
+        viewable.beRender()
+
+        let samples = Flynn.CallSites.top()
+        XCTAssertTrue(samples.contains { $0.callSite == "Viewable.beRender (via protocol)" && $0.live == 1 },
+                      "\(samples)")
+        XCTAssertFalse(samples.contains { $0.callSite.contains("FlynnPlugin.swift") })
+
+        color.unsafeResume()
+        color.unsafeWait()
+    }
+
+    func testFlowableProtocolCallIsAttributedToCaller() {
+        // Flowable.beFlow carries call site parameters, and the protocol extension keeps
+        // the one-argument call working through the protocol type
         let passthrough = Passthrough()
         passthrough.unsafeSuspend()
 
         let flowable: Flowable = passthrough
+        let callLine: UInt = #line + 1
         flowable.beFlow(["x"])
 
-        let samples = Flynn.CallSites.top()
-        XCTAssertTrue(samples.contains { $0.callSite == "Passthrough.beFlow (via protocol)" && $0.live == 1 },
-                      "\(samples)")
-        XCTAssertFalse(samples.contains { $0.callSite.contains("FlynnPlugin.swift") })
+        XCTAssertEqual(live(#file, callLine), 1)
+        XCTAssertFalse(Flynn.CallSites.top().contains { $0.callSite.contains("via protocol") })
 
         passthrough.unsafeResume()
-        passthrough.unsafeWait()
+        XCTAssertEqual(waitForLive(0, #file, callLine), 0)
+    }
+
+    func testFlowableConcreteCallIsAttributedToCaller() {
+        // on the concrete type, the generated behaviour must win over the protocol extension
+        let passthrough = Passthrough()
+        passthrough.unsafeSuspend()
+
+        let callLine: UInt = #line + 1
+        passthrough.beFlow(["x"])
+
+        XCTAssertEqual(live(#file, callLine), 1)
+
+        passthrough.unsafeResume()
+        XCTAssertEqual(waitForLive(0, #file, callLine), 0)
+    }
+
+    func testFlowablePipelineIsAttributedToSendingStage() {
+        // a message flowing from one stage to the next is attributed to the line in the
+        // upstream stage's _beFlow that called safeFlowToNextTarget
+        let first = Passthrough()
+        let second = Passthrough()
+        second.unsafeSuspend()
+        first |> second
+
+        first.beFlow(["x"])
+        first.unsafeWait()
+
+        let deadline = Date().addingTimeInterval(5)
+        var samples = Flynn.CallSites.top()
+        while samples.contains(where: { $0.callSite.hasSuffix("Support/Flowable.swift:11") }) == false && Date() < deadline {
+            usleep(1000)
+            samples = Flynn.CallSites.top()
+        }
+        XCTAssertTrue(samples.contains { $0.callSite.hasSuffix("Support/Flowable.swift:11") && $0.live == 1 },
+                      "\(samples)")
+        XCTAssertFalse(samples.contains { $0.callSite.contains("Sources/Flynn/Flowable.swift") })
+
+        second.unsafeResume()
+        second.unsafeWait()
+    }
+
+    func testTimerableProtocolCallStillCompiles() {
+        // the protocol extension keeps the two-argument call working through the protocol type
+        let counter = Counter()
+        counter.unsafeSuspend()
+        let timer = Flynn.Timer(timeInterval: 60, repeats: false, counter, [5])
+        timer.cancel()
+
+        let target: Timerable = counter
+        let callLine: UInt = #line + 1
+        target.beTimerFired(timer, [5], #file, #line)
+
+        XCTAssertEqual(live(#file, callLine), 1)
+
+        counter.unsafeResume()
+        XCTAssertEqual(waitForLive(0, #file, callLine), 0)
     }
 
     func testGroupNotifyIsAttributedToCaller() {
