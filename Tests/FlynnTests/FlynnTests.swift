@@ -107,6 +107,20 @@ class FlynnTests: XCTestCase {
         XCTAssertEqual(actor.unsafePriority, 42)
     }
 
+    func testPriorityStarvationLimit() {
+        let original = Flynn.priorityStarvationLimit
+        defer { Flynn.priorityStarvationLimit = original }
+
+        XCTAssertEqual(original, 16)
+
+        Flynn.priorityStarvationLimit = 4
+        XCTAssertEqual(Flynn.priorityStarvationLimit, 4)
+
+        // negative restores strict (starvation-prone) priorities
+        Flynn.priorityStarvationLimit = -1
+        XCTAssertEqual(Flynn.priorityStarvationLimit, -1)
+    }
+
     func testDnsResolve() {
         XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)
         XCTAssertEqual(Flynn.dns_resolve_cname(domain: "staging.rover.smallplanet.com")?.contains("amazonaws.com"), true)

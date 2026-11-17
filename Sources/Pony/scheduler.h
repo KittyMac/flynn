@@ -14,8 +14,8 @@ typedef struct scheduler_t scheduler_t;
 
 #include "messageq.h"
 
-// default actor priority
 #define PONY_DEFAULT_ACTOR_PRIORITY 0
+#define PONY_DEFAULT_PRIORITY_STARVATION_LIMIT 16
 
 #define SPECIAL_THREADID_KQUEUE   -10
 #define SPECIAL_THREADID_IOCP     -11
@@ -38,6 +38,13 @@ struct scheduler_t
     
     // These are changed primarily by the owning scheduler thread.
     alignas(64) struct scheduler_t* last_victim;
+
+    // Priority aging state; owner thread only. priority_deferrals counts the
+    // batches given to higher-priority actors since a lower-priority actor
+    // was last passed over and then served; priority_deferred_floor is the
+    // lowest priority passed over in that window (INT32_MAX when none).
+    uint32_t priority_deferrals;
+    int32_t priority_deferred_floor;
     
     pony_ctx_t ctx;
     

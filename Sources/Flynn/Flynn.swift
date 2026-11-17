@@ -58,6 +58,14 @@ open class Flynn {
         set { pony_priorities_enable(newValue) }
     }
 
+    /// Defaults to 16. A negative value restores strict priorities, where
+    /// lower-priority actors can be starved indefinitely while higher-priority
+    /// actors stay busy. 0 disables the preference without disabling priorities.
+    public static var priorityStarvationLimit: Int {
+        get { return Int(pony_priorities_starvation_limit()) }
+        set { pony_priorities_set_starvation_limit(Int32(clamping: newValue)) }
+    }
+
     private static var dockedQueue = Queue<Actor>(size: 1024,
                                                   manyProducers: true,
                                                   manyConsumers: true)

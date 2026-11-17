@@ -12,6 +12,7 @@
 #include "cpu.h"
 #include "actor.h"
 #include "dedicated.h"
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,6 +47,69 @@ void pony_priorities_enable(bool on)
 bool pony_priorities_enabled(void)
 {
     return atomic_load_explicit(&g_priorities_enabled, memory_order_relaxed);
+}
+
+static PONY_ATOMIC(int32_t) g_priority_starvation_limit = PONY_DEFAULT_PRIORITY_STARVATION_LIMIT;
+
+void pony_priorities_set_starvation_limit(int limit)
+{
+    atomic_store_explicit(&g_priority_starvation_limit, (int32_t)limit, memory_order_relaxed);
+}
+
+int pony_priorities_starvation_limit(void)
+{
+    return atomic_load_explicit(&g_priority_starvation_limit, memory_order_relaxed);
+}
+
+static inline void priority_reset(scheduler_t* sched)
+{
+    sched->priority_deferrals = 0;
+    sched->priority_deferred_floor = INT32_MAX;
+}
+
+// Decide whether the actor that just ran (current) should keep the scheduler
+// instead of switching to `next`.
+//
+// This is priority aging, kept on the scheduler rather than on the actor: a
+// higher-priority actor may run ahead of a waiting lower-priority actor for at
+// most min(priority gap, starvation limit) batches. After that the scheduler
+// switches anyway, so lower-priority work keeps making progress even when
+// every scheduler is saturated with higher-priority actors (which is exactly
+// when "hopefully another scheduler steals it" stops working).
+//
+// The gap scaling keeps the existing meaning of priority values: an actor at
+// 99 is strongly favored over one at 0, an actor at 1 only mildly over one at
+// 0. The arithmetic is done in 64 bits so extreme int32 priorities cannot
+// overflow.
+static inline bool priority_should_defer(scheduler_t* sched, int32_t current, int32_t next)
+{
+    if(current <= next)
+        return false;
+
+    if(atomic_load_explicit(&g_priorities_enabled, memory_order_relaxed) == false)
+        return false;
+
+    int32_t limit = atomic_load_explicit(&g_priority_starvation_limit, memory_order_relaxed);
+    if(limit < 0)
+        return true;    // strict priorities (legacy behavior)
+
+    int64_t gap = (int64_t)current - (int64_t)next;
+    int64_t allowance = (gap < (int64_t)limit) ? gap : (int64_t)limit;
+
+    return (int64_t)sched->priority_deferrals < allowance;
+}
+
+static inline void priority_note_deferred(scheduler_t* sched, int32_t next)
+{
+    sched->priority_deferrals++;
+    if(next < sched->priority_deferred_floor)
+        sched->priority_deferred_floor = next;
+}
+
+static inline void priority_note_switch(scheduler_t* sched, int32_t next)
+{
+    if(next <= sched->priority_deferred_floor)
+        priority_reset(sched);
 }
 
 #ifndef PLATFORM_IS_APPLE
@@ -480,20 +544,28 @@ static void run(scheduler_t* sched)
             autorelease_pool_is_dirty = true;
 #endif
             
+            // Our queue is empty, so whatever we were deferring has been run
+            // or stolen elsewhere; there is nobody left here to owe.
+            if(next == NULL) {
+                priority_reset(sched);
+            }
+            
             if(result == 1) {
-                bool actor_did_yield = info.yielded;
-                
                 if(next != NULL) {
-                    if (actor_did_yield == false &&
-                        atomic_load_explicit(&g_priorities_enabled, memory_order_relaxed) &&
-                        info.priority > ponyint_actor_priority(next)) {
-                        // our current actor has a higher priority than the next actor, so put
-                        // the next actor back at the end of our queue.  Hopefully someone
-                        // else will pick him up
+                    int32_t next_priority = ponyint_actor_priority(next);
+                    
+                    if (info.yielded == false &&
+                        priority_should_defer(sched, info.priority, next_priority)) {
+                        // Our current actor has a higher priority than the next actor
+                        // and has not used up its allowance, so put the next actor back
+                        // at the end of our queue (where another scheduler may steal it)
+                        // and keep running the current one.
+                        priority_note_deferred(sched, next_priority);
                         push(sched, next);
                     }else{
                         // If we have a next actor, we go on the back of the queue. Otherwise,
                         // we continue to run this actor.
+                        priority_note_switch(sched, next_priority);
                         push(sched, actor);
                         actor = next;
                     }
@@ -516,6 +588,9 @@ static void run(scheduler_t* sched)
             } else {
                 // We aren't rescheduling, so run the next actor. This may be NULL if our
                 // queue was empty.
+                if(next != NULL) {
+                    priority_note_switch(sched, ponyint_actor_priority(next));
+                }
                 actor = next;
             }
             
@@ -651,6 +726,7 @@ pony_ctx_t* ponyint_sched_init(int force_scheduler_count, int minimum_scheduler_
         scheduler[i].ctx.scheduler = &scheduler[i];
         scheduler[i].last_victim = &scheduler[i];
         scheduler[i].index = i;
+        priority_reset(&scheduler[i]);
         ponyint_messageq_init(&scheduler[i].mq);
         ponyint_mpmcq_init(&scheduler[i].q);
         ponyint_park_init(&scheduler[i].park);

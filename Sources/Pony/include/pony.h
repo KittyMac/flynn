@@ -64,6 +64,8 @@ void pony_actor_setpriority(void * actor, int priority);
 int pony_actor_getpriority(void * actor);
 void pony_priorities_enable(bool on);
 bool pony_priorities_enabled(void);
+void pony_priorities_set_starvation_limit(int limit);
+int pony_priorities_starvation_limit(void);
 
 void pony_actor_setbatchSize(void * actor, int batchSize);
 int pony_actor_getbatchSize(void * actor);
